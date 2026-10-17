@@ -49,9 +49,9 @@ namespace Didit
                 throw new ArgumentException("AuthenticationOptions.Timeout must be positive.", nameof(options));
             }
 
-            if (options.ClockSkew < TimeSpan.Zero)
+            if (options.ClockSkew < TimeSpan.Zero || options.ClockSkew > TimeSpan.FromDays(1))
             {
-                throw new ArgumentException("AuthenticationOptions.ClockSkew must not be negative.", nameof(options));
+                throw new ArgumentException("AuthenticationOptions.ClockSkew must be between zero and one day.", nameof(options));
             }
 
             Issuer = valid;

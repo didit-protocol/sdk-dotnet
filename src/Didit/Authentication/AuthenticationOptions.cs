@@ -15,7 +15,7 @@ namespace Didit
         /// <summary>Timeout of each request to the issuer. Defaults to 30 seconds.</summary>
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 
-        /// <summary>Tolerance applied to <c>exp</c>, <c>nbf</c> and <c>iat</c> when verifying tokens. Defaults to 60 seconds.</summary>
+        /// <summary>Tolerance applied to <c>exp</c>, <c>nbf</c> and <c>iat</c> when verifying tokens. Defaults to 60 seconds; at most one day.</summary>
         public TimeSpan ClockSkew { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>Clock used for token lifetimes and cache expiry. Defaults to <see cref="DateTimeOffset.UtcNow"/>; replace it in tests.</summary>

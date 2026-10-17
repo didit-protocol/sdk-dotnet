@@ -139,6 +139,7 @@ namespace Didit.Tests.Authentication
         {
             Assert.Throws<ArgumentException>(() => new Didit.Authentication("https://acme.auth.didit.me", new AuthenticationOptions { Timeout = TimeSpan.Zero }));
             Assert.Throws<ArgumentException>(() => new Didit.Authentication("https://acme.auth.didit.me", new AuthenticationOptions { ClockSkew = TimeSpan.FromSeconds(-1) }));
+            Assert.Throws<ArgumentException>(() => new Didit.Authentication("https://acme.auth.didit.me", new AuthenticationOptions { ClockSkew = TimeSpan.MaxValue }));
         }
 
         [Fact]
