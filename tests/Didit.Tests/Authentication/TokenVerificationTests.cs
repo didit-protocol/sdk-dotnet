@@ -99,7 +99,7 @@ namespace Didit.Tests.Authentication
             var token = TestIssuer.SignWith(TestIssuer.Header(alg: "none"), _issuer.AccessClaims(), _ => Array.Empty<byte>());
 
             await AssertRejected(auth, token, TokenVerificationReason.UnsupportedAlgorithm);
-            Assert.Equal(0, _issuer.Handler.Requests.Count);
+            Assert.Empty(_issuer.Handler.Requests);
         }
 
         [Fact]

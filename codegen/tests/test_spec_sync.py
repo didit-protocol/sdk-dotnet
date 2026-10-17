@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import hashlib
 import io
 import json
@@ -327,7 +326,7 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("Newly required query parameter `limit` on `GET /v3/widgets/` (widgets.list)", breaking)
         self.assertIn("Newly required query parameter `expand` on `GET /v3/widgets/{widget_id}/` (widgets.retrieve)", breaking)
         self.assertIn("Newly required request property `color` on `POST /v3/widgets/` (widgets.create)", breaking)
-        self.assertNotIn("widget_id", breaking, "an unchanged path-level parameter is not newly required")
+        self.assertNotIn("parameter `widget_id`", breaking, "an unchanged path-level parameter is not newly required")
         self.assertIn("`Widget` (verification)", self.section(summary, "Schemas"))
         self.assertEqual(sorted(key for key, _ in report.changed_ops), ["GET /v3/widgets/", "GET /v3/widgets/{widget_id}/", "POST /v3/widgets/"])
 
