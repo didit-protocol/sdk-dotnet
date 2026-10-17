@@ -34,7 +34,11 @@ namespace Didit.Internal
             var builder = new StringBuilder(value.Length);
             foreach (var c in value.Trim())
             {
-                builder.Append(c >= 0x20 && c < 0x7f && c != '(' && c != ')' && c != ';' ? c : ' ');
+                var safe = c > 0x20 && c < 0x7f && c != '(' && c != ')' && c != ';' ? c : ' ';
+                if (safe != ' ' || (builder.Length > 0 && builder[builder.Length - 1] != ' '))
+                {
+                    builder.Append(safe);
+                }
             }
 
             return builder.ToString().Trim();
