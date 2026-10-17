@@ -448,7 +448,7 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             report.overlay_notes.append(
                 f"Naming change `{key}`: overlay `{label(entry)}`, upstream `{label(upstream)}`. Upstream wins; overlay entry deleted."
             )
-            if isinstance(entry, dict) and renamed(entry, upstream):
+            if key in old_ops and isinstance(entry, dict) and renamed(entry, upstream):
                 report.breaking.append(f"SDK naming of `{key}` changes from `{label(entry)}` to `{label(upstream)}`")
 
     # Added, removed and changed operations.
