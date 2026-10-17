@@ -121,6 +121,8 @@ def load(root: Path) -> Spec:
     overlay = json.loads((openapi / "overlay.json").read_text("utf-8"))
     overlay_ops: dict[str, Any] = overlay.get("operations", {})
 
+    _restore_deprecated(openapi, verification, account)
+
     spec = Spec(root, verification, account, overlay)
     used: set[str] = set()
     missing: list[str] = []
@@ -155,6 +157,34 @@ def load(root: Path) -> Spec:
     _check_unique_methods(spec)
     _check_application_scope(spec)
     return spec
+
+
+def _restore_deprecated(openapi: Path, verification: Document, account: Document) -> None:
+    """Operations removed upstream stay in the SDK, marked obsolete, for one minor version (DESIGN.md 3.1).
+
+    codegen/spec_sync.py records them in openapi/deprecated-operations.json with the schemas they reference.
+    """
+    path = openapi / "deprecated-operations.json"
+    if not path.exists():
+        return
+    data = json.loads(path.read_text("utf-8"))
+    docs = {"verification": verification, "account": account}
+    for api, schemas in (data.get("schemas") or {}).items():
+        target = docs[api].data.setdefault("components", {}).setdefault("schemas", {})
+        for name, schema in schemas.items():
+            target.setdefault(name, schema)
+    for key, entry in (data.get("operations") or {}).items():
+        api = "account" if key.startswith("account ") else "verification"
+        doc = docs[api]
+        method = str(entry["method"]).lower()
+        path_item = doc.data.setdefault("paths", {}).setdefault(entry["path"], {})
+        if method in path_item:
+            continue  # back upstream; spec_sync drops the entry
+        operation = dict(entry["operation"])
+        operation["deprecated"] = True
+        operation["x-didit-sdk"] = entry["naming"]
+        operation["x-didit-removed-on"] = entry.get("removed_on")
+        path_item[method] = operation
 
 
 def _operation_id(spec: Spec, key: str) -> str:
