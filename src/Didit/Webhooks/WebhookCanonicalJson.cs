@@ -271,7 +271,7 @@ namespace Didit.Internal
 
         // Maps UTF-16 code units so that ordinal comparison matches code point order: surrogates (U+D800..U+DFFF,
         // always part of a code point above U+FFFF) rank after U+E000..U+FFFF.
-        private static int CodePointRank(char c) => c >= '' ? c - 0x800 : c >= '\uD800' ? c + 0x2000 : c;
+        private static int CodePointRank(char c) => c >= '\uE000' ? c - 0x800 : c >= '\uD800' ? c + 0x2000 : c;
 
         private static double ParseDouble(string token)
         {

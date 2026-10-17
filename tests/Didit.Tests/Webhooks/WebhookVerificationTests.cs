@@ -361,13 +361,13 @@ namespace Didit.Tests.Webhooks
             var sent = "{\"session_id\":\"s-1\",\"status\":\"Approved\",\"timestamp\":" + Text(Timestamp)
                 + ",\"vendor_data\":\"Jos\\u00e9 \\ud83d\\ude00\",\"webhook_type\":\"status.updated\"}";
             var headers = SignedHeaders(sent);
-            var reEncoded = "{\"webhook_type\": \"status.updated\", \"vendor_data\": \"José \U0001F600\", \"timestamp\": " + Text(Timestamp)
+            var reEncoded = "{\"webhook_type\": \"status.updated\", \"vendor_data\": \"Jos\u00e9 \U0001F600\", \"timestamp\": " + Text(Timestamp)
                 + ", \"status\": \"Approved\", \"session_id\": \"s-1\"}";
 
             var verified = VerifyAt(reEncoded, headers);
 
             Assert.Equal(WebhookSignature.Canonical, verified.VerifiedBy);
-            Assert.Equal("José \U0001F600", ((SessionEvent)verified).VendorData);
+            Assert.Equal("Jos\u00e9 \U0001F600", ((SessionEvent)verified).VendorData);
         }
 
         [Fact]
