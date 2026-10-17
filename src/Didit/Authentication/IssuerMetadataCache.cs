@@ -98,21 +98,16 @@ namespace Didit.Internal
                 cached = _keys;
                 if (cached is null || cached.ExpiresAt <= now)
                 {
+                    // A set fetched just now is current; an unknown kid is not worth a second request.
                     cached = await FetchKeysAsync(cancellationToken).ConfigureAwait(false);
-                    var found = Match(cached.Value, keyId);
-                    if (found.Count > 0)
-                    {
-                        return found;
-                    }
+                    return Match(cached.Value, keyId);
                 }
-                else
+
+                // Another caller may have refreshed the set while this one waited for the lock.
+                var found = Match(cached.Value, keyId);
+                if (found.Count > 0)
                 {
-                    // Another caller may have refreshed the set while this one waited for the lock.
-                    var found = Match(cached.Value, keyId);
-                    if (found.Count > 0)
-                    {
-                        return found;
-                    }
+                    return found;
                 }
 
                 // Unknown kid: the issuer may have rotated its keys. Refetch at most once per interval so a flood of tokens with
