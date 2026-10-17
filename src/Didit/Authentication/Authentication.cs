@@ -17,7 +17,7 @@ namespace Didit
     /// </summary>
     /// <remarks>
     /// Thread-safe and reusable: create one instance per issuer and share it. The discovery document and the JWKS are fetched on
-    /// first use and cached for the issuer's <c>Cache-Control: max-age</c>.
+    /// first use and cached for the issuer's <c>Cache-Control: max-age</c> (at least one minute).
     /// </remarks>
     public sealed class Authentication : IDisposable
     {
