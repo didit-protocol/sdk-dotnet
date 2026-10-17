@@ -10,6 +10,9 @@ namespace Didit.Internal
     {
         private static readonly IReadOnlyList<string> EmptyList = Array.Empty<string>();
 
+        /// <summary>A detached empty JSON object.</summary>
+        public static JsonElement EmptyObject { get; } = CreateEmptyObject();
+
         public static JsonElement Parse(byte[] utf8, string what)
         {
             try
@@ -155,6 +158,12 @@ namespace Didit.Internal
             }
 
             return GetStringList(element, name);
+        }
+
+        private static JsonElement CreateEmptyObject()
+        {
+            using var document = JsonDocument.Parse("{}");
+            return document.RootElement.Clone();
         }
     }
 }

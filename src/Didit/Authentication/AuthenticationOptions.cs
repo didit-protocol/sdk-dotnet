@@ -18,12 +18,6 @@ namespace Didit
         /// <summary>Tolerance applied to <c>exp</c>, <c>nbf</c> and <c>iat</c> when verifying tokens. Defaults to 60 seconds.</summary>
         public TimeSpan ClockSkew { get; set; } = TimeSpan.FromSeconds(60);
 
-        /// <summary>
-        /// The OAuth <c>client_id</c> sent to the token endpoint. Defaults to the application id, which the issuer derives from
-        /// its own discovery document; set it only when your issuer differs.
-        /// </summary>
-        public string? ClientId { get; set; }
-
         /// <summary>Clock used for token lifetimes and cache expiry. Defaults to <see cref="DateTimeOffset.UtcNow"/>; replace it in tests.</summary>
         public Func<DateTimeOffset>? UtcNow { get; set; }
     }

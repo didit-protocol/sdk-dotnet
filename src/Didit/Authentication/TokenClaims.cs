@@ -21,7 +21,7 @@ namespace Didit
             VendorData = AuthJson.GetText(payload, "vendor_data");
             Amr = AuthJson.GetStringList(payload, "amr");
             Organization = AuthJson.TryGet(payload, "org", out var org) && org.ValueKind == JsonValueKind.Object ? new AuthOrganizationClaim(org.Clone()) : null;
-            Verified = new AuthVerifiedClaim(AuthJson.TryGet(payload, "verified", out var verified) && verified.ValueKind == JsonValueKind.Object ? verified.Clone() : EmptyObject());
+            Verified = AuthVerifiedClaim.FromJson(AuthJson.GetElement(payload, "verified"));
             Actor = AuthJson.TryGet(payload, "act", out var act) && act.ValueKind == JsonValueKind.Object ? new AuthActorClaim(act.Clone()) : null;
         }
 
@@ -91,12 +91,6 @@ namespace Didit
 
         private protected static DateTimeOffset? ReadTime(JsonElement payload, string name) =>
             AuthJson.TryGet(payload, name, out var value) ? ToTime(value) : null;
-
-        private static JsonElement EmptyObject()
-        {
-            using var document = JsonDocument.Parse("{}");
-            return document.RootElement.Clone();
-        }
     }
 
     /// <summary>The verified claims of a Didit access token. Returned by <see cref="Authentication.VerifyAccessTokenAsync"/>.</summary>
