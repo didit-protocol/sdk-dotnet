@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from . import names
-from .spec import APPLICATION_PREFIX, Document, RawOperation, Spec, SpecError
+from .spec import Document, RawOperation, Spec, SpecError
 
 REQUEST = "request"
 RESPONSE = "response"
@@ -227,19 +227,8 @@ class ModelBuilder:
         name = self.component_names[key]
         role = REQUEST if comp in self.request_components[doc.api] else RESPONSE
         kind = self._shape(doc, schema)
-        if kind == "object":
-            ref = TypeRef("named", name=name)
-            self.component_refs[key] = ref
-            self._build_object(doc, schema, name, role, f"{doc.file}#/components/schemas/{comp}")
-            return ref
-        if kind == "enum":
-            ref = TypeRef("named", name=name)
-            self.component_refs[key] = ref
-            resolved = self.resolve(doc, schema, name, role, reserve=False)
-            return resolved
-        # Aliases of primitives, arrays and maps resolve to their target type.
-        placeholder = TypeRef("any")
-        self.component_refs[key] = placeholder
+        # Registered before resolving so recursive schemas terminate.
+        self.component_refs[key] = TypeRef("named", name=name) if kind in ("object", "enum") else TypeRef("any", nullable=True)
         resolved = self.resolve(doc, schema, name, role, reserve=False)
         self.component_refs[key] = resolved
         return resolved
@@ -341,10 +330,11 @@ class ModelBuilder:
             if enum_values is not None:
                 if any(None in (doc.resolve(v).get("enum") or []) for v in variants):
                     nullable = True
-                single_refs = [v["$ref"] for v in variants if isinstance(v, dict) and "$ref" in v and None not in (doc.resolve(v).get("enum") or []) and "" not in (doc.resolve(v).get("enum") or [])]
-                if len(single_refs) == 1 and set(enum_values) - {""} == set(v for v in (doc.resolve({"$ref": single_refs[0]}).get("enum") or []) if v):
-                    target = self.component(doc, single_refs[0].split("/")[-1])
-                    return target.with_nullable(True if nullable else target.nullable)
+                # drf-spectacular: oneOf [SomeEnum, BlankEnum, NullEnum] is SomeEnum, nullable.
+                substantive = [v for v in variants if [x for x in (doc.resolve(v).get("enum") or []) if x not in (None, "")]]
+                if len(substantive) == 1 and isinstance(substantive[0], dict) and "$ref" in substantive[0]:
+                    target = self.resolve(doc, substantive[0], hint, role, reserve)
+                    return target.with_nullable(True)
                 name = self._unique(hint) if reserve else hint
                 self.enums[name] = EnumDef(name, schema.get("description"), enum_values, hint)
                 return TypeRef("named", name=name, nullable=nullable)
@@ -695,7 +685,4 @@ def _ref_key(ref: TypeRef) -> Any:
 
 
 def build(spec: Spec) -> Model:
-    model = ModelBuilder(spec).build()
-    if APPLICATION_PREFIX is None:  # pragma: no cover
-        raise SpecError("unreachable")
-    return model
+    return ModelBuilder(spec).build()
