@@ -119,6 +119,6 @@ Preview a sync locally without writing anything with `python3 codegen/spec_sync.
 
 - Fill in the pull request template, including the parity line.
 - Public API changes need tests, README updates and a conventional commit type that matches their semver impact.
-- Never commit secrets, API keys or real customer data; fixtures are synthetic.
+- Never commit secrets, API keys or real customer data; fixtures are synthetic. CI scans the full history with gitleaks (`.gitleaks.toml`), which allows only the upstream copies in `openapi/` and `whsec_test_` webhook secrets: when it flags a fake value, change the value rather than the allowlist.
 
 Report security issues privately as described in [SECURITY.md](SECURITY.md).
