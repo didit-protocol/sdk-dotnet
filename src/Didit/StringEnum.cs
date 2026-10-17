@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,6 +9,7 @@ namespace Didit
     /// An open enumeration backed by a string. The generated enum types expose the known values as static
     /// properties, but accept any string, so a value added to the API later never breaks deserialisation.
     /// </summary>
+    [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "DESIGN.md 5.1 names them open string enums.")]
     public interface IStringEnum
     {
         /// <summary>The wire value.</summary>

@@ -105,27 +105,27 @@ namespace Didit.Resources
             }
             if (parameters.ExpirationDateNotDetectedAction.IsSet)
             {
-                form.Add("expiration_date_not_detected_action", parameters.ExpirationDateNotDetectedAction.Value?.Value);
+                form.Add("expiration_date_not_detected_action", parameters.ExpirationDateNotDetectedAction.Value.Value);
             }
             if (parameters.InvalidMrzAction.IsSet)
             {
-                form.Add("invalid_mrz_action", parameters.InvalidMrzAction.Value?.Value);
+                form.Add("invalid_mrz_action", parameters.InvalidMrzAction.Value.Value);
             }
             if (parameters.InconsistentDataAction.IsSet)
             {
-                form.Add("inconsistent_data_action", parameters.InconsistentDataAction.Value?.Value);
+                form.Add("inconsistent_data_action", parameters.InconsistentDataAction.Value.Value);
             }
             if (parameters.CriticalFieldOcclusionAction.IsSet)
             {
-                form.Add("critical_field_occlusion_action", parameters.CriticalFieldOcclusionAction.Value?.Value);
+                form.Add("critical_field_occlusion_action", parameters.CriticalFieldOcclusionAction.Value.Value);
             }
             if (parameters.DocumentOrPersonalNumberFormatMismatchAction.IsSet)
             {
-                form.Add("document_or_personal_number_format_mismatch_action", parameters.DocumentOrPersonalNumberFormatMismatchAction.Value?.Value);
+                form.Add("document_or_personal_number_format_mismatch_action", parameters.DocumentOrPersonalNumberFormatMismatchAction.Value.Value);
             }
             if (parameters.PreferredCharacters.IsSet)
             {
-                form.Add("preferred_characters", parameters.PreferredCharacters.Value?.Value);
+                form.Add("preferred_characters", parameters.PreferredCharacters.Value.Value);
             }
             if (parameters.SaveApiRequest.IsSet)
             {

@@ -104,23 +104,23 @@ namespace Didit.Resources
             }
             if (parameters.DocumentAiUnreadableDocumentAction.IsSet)
             {
-                form.Add("document_ai_unreadable_document_action", parameters.DocumentAiUnreadableDocumentAction.Value?.Value);
+                form.Add("document_ai_unreadable_document_action", parameters.DocumentAiUnreadableDocumentAction.Value.Value);
             }
             if (parameters.DocumentAiMissingRequiredFieldsAction.IsSet)
             {
-                form.Add("document_ai_missing_required_fields_action", parameters.DocumentAiMissingRequiredFieldsAction.Value?.Value);
+                form.Add("document_ai_missing_required_fields_action", parameters.DocumentAiMissingRequiredFieldsAction.Value.Value);
             }
             if (parameters.DocumentAiDocumentTamperingAction.IsSet)
             {
-                form.Add("document_ai_document_tampering_action", parameters.DocumentAiDocumentTamperingAction.Value?.Value);
+                form.Add("document_ai_document_tampering_action", parameters.DocumentAiDocumentTamperingAction.Value.Value);
             }
             if (parameters.DocumentAiNameMismatchAction.IsSet)
             {
-                form.Add("document_ai_name_mismatch_action", parameters.DocumentAiNameMismatchAction.Value?.Value);
+                form.Add("document_ai_name_mismatch_action", parameters.DocumentAiNameMismatchAction.Value.Value);
             }
             if (parameters.DocumentAiUnsupportedFileAction.IsSet)
             {
-                form.Add("document_ai_unsupported_file_action", parameters.DocumentAiUnsupportedFileAction.Value?.Value);
+                form.Add("document_ai_unsupported_file_action", parameters.DocumentAiUnsupportedFileAction.Value.Value);
             }
             if (parameters.SaveApiRequest.IsSet)
             {

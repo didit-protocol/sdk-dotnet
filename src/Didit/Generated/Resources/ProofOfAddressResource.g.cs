@@ -117,27 +117,27 @@ namespace Didit.Resources
             }
             if (parameters.PoaNameMismatchAction.IsSet)
             {
-                form.Add("poa_name_mismatch_action", parameters.PoaNameMismatchAction.Value?.Value);
+                form.Add("poa_name_mismatch_action", parameters.PoaNameMismatchAction.Value.Value);
             }
             if (parameters.PoaDocumentIssuesAction.IsSet)
             {
-                form.Add("poa_document_issues_action", parameters.PoaDocumentIssuesAction.Value?.Value);
+                form.Add("poa_document_issues_action", parameters.PoaDocumentIssuesAction.Value.Value);
             }
             if (parameters.PoaDocumentAuthenticityAction.IsSet)
             {
-                form.Add("poa_document_authenticity_action", parameters.PoaDocumentAuthenticityAction.Value?.Value);
+                form.Add("poa_document_authenticity_action", parameters.PoaDocumentAuthenticityAction.Value.Value);
             }
             if (parameters.PoaUnsupportedLanguageAction.IsSet)
             {
-                form.Add("poa_unsupported_language_action", parameters.PoaUnsupportedLanguageAction.Value?.Value);
+                form.Add("poa_unsupported_language_action", parameters.PoaUnsupportedLanguageAction.Value.Value);
             }
             if (parameters.PoaAddressMismatchAction.IsSet)
             {
-                form.Add("poa_address_mismatch_action", parameters.PoaAddressMismatchAction.Value?.Value);
+                form.Add("poa_address_mismatch_action", parameters.PoaAddressMismatchAction.Value.Value);
             }
             if (parameters.PoaIssuerNotIdentifiedAction.IsSet)
             {
-                form.Add("poa_issuer_not_identified_action", parameters.PoaIssuerNotIdentifiedAction.Value?.Value);
+                form.Add("poa_issuer_not_identified_action", parameters.PoaIssuerNotIdentifiedAction.Value.Value);
             }
             if (parameters.SaveApiRequest.IsSet)
             {

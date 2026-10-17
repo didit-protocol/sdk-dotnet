@@ -295,7 +295,6 @@ namespace Didit.Internal
     [JsonSerializable(typeof(DatabaseValidationValidateResponseDatabaseValidationStatus))]
     [JsonSerializable(typeof(DatabaseValidationValidateResponseDatabaseValidationValidationType))]
     [JsonSerializable(typeof(DatabaseValidationValidateResponseDatabaseValidationWarnings))]
-    [JsonSerializable(typeof(DateTimeOffset), TypeInfoPropertyName = "GenDateTimeOffset")]
     [JsonSerializable(typeof(DigitalIdWalletApiAudkenniWalletVerificationStartCountryEnum))]
     [JsonSerializable(typeof(DigitalIdWalletApiAudkenniWalletVerificationStartRequest))]
     [JsonSerializable(typeof(DigitalIdWalletApiBankidCzWalletVerificationStartRequest))]
@@ -503,7 +502,6 @@ namespace Didit.Internal
     [JsonSerializable(typeof(IdVerificationVerifyResponseIdVerificationWarnings))]
     [JsonSerializable(typeof(IdVerificationVerifyResponseIdVerificationWarningsFeature))]
     [JsonSerializable(typeof(IdVerificationVerifyResponseIdVerificationWarningsLogType))]
-    [JsonSerializable(typeof(JsonElement), TypeInfoPropertyName = "GenJsonElement")]
     [JsonSerializable(typeof(KYBRegistryAddress))]
     [JsonSerializable(typeof(KYBRegistryIndustry))]
     [JsonSerializable(typeof(KYBRegistryOwnership))]
@@ -1320,11 +1318,6 @@ namespace Didit.Internal
     [JsonSerializable(typeof(WorkflowListItemCreatedByType))]
     [JsonSerializable(typeof(WorkflowListItemStatus))]
     [JsonSerializable(typeof(WorkflowsListParams))]
-    [JsonSerializable(typeof(bool), TypeInfoPropertyName = "Genbool")]
-    [JsonSerializable(typeof(double), TypeInfoPropertyName = "Gendouble")]
-    [JsonSerializable(typeof(long), TypeInfoPropertyName = "Genlong")]
-    [JsonSerializable(typeof(object))]
-    [JsonSerializable(typeof(string), TypeInfoPropertyName = "Genstring")]
     internal sealed partial class DiditJsonContext : JsonSerializerContext
     {
     }

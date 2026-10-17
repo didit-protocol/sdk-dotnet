@@ -575,8 +575,7 @@ class Emitter:
     def multipart_prop(self, holder: str, prop: Prop, role: str, indent: str) -> list[str]:
         optional = role == REQUEST and not prop.required
         expr = f"{holder}.{prop.cs_name}.Value" if optional else f"{holder}.{prop.cs_name}"
-        nullable_static = optional and prop.nullable or (not optional and prop.nullable)
-        call = self.multipart_call(prop.json_name, expr, prop.type, nullable_static or optional)
+        call = self.multipart_call(prop.json_name, expr, prop.type, prop.nullable)
         if optional:
             return [f"{indent}if ({holder}.{prop.cs_name}.IsSet)", f"{indent}{{", f"{indent}    {call}", f"{indent}}}"]
         return [f"{indent}{call}"]
@@ -667,14 +666,16 @@ class Emitter:
             if ref.kind == "file":
                 continue
             register(t.base(ref, REQUEST))
-        for scalar in ("string", "long", "double", "bool", "DateTimeOffset", "JsonElement", "IReadOnlyList<string>", "IReadOnlyList<long>", "IReadOnlyDictionary<string, string>", "IReadOnlyDictionary<string, JsonElement>"):
-            register(scalar)
+        for collection in ("IReadOnlyList<string>", "IReadOnlyList<long>", "IReadOnlyDictionary<string, string>", "IReadOnlyDictionary<string, JsonElement>"):
+            register(collection)
+        for builtin in ("string", "long", "double", "bool", "DateTimeOffset", "JsonElement", "object"):
+            registrations.pop(builtin, None)
 
         out = [HEADER, "using System;", "using System.Collections.Generic;", "using System.Text.Json;", "using System.Text.Json.Serialization;", "", "namespace Didit.Internal", "{"]
         out.append("    /// <summary>System.Text.Json source generation for every request and response type.</summary>")
         out.append("    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]")
         for key in sorted(registrations):
-            if "<" in key or key in ("string", "long", "double", "bool", "DateTimeOffset", "JsonElement"):
+            if "<" in key:
                 prop_name = "Gen" + re.sub(r"[^A-Za-z0-9]", "", key.replace("IReadOnlyList", "ListOf").replace("IReadOnlyDictionary", "MapOf").replace("PageBody", "PageOf"))
                 out.append(f"    [JsonSerializable(typeof({key}), TypeInfoPropertyName = \"{prop_name}\")]")
             else:

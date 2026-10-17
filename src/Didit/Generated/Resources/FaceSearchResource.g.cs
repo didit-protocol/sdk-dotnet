@@ -88,7 +88,7 @@ namespace Didit.Resources
             form.Add("user_image", parameters.UserImage);
             if (parameters.SearchType.IsSet)
             {
-                form.Add("search_type", parameters.SearchType.Value?.Value);
+                form.Add("search_type", parameters.SearchType.Value.Value);
             }
             if (parameters.RotateImage.IsSet)
             {

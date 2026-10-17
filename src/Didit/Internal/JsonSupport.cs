@@ -27,7 +27,7 @@ namespace Didit.Internal
 
         private static JsonSerializerOptions Create()
         {
-            IJsonTypeInfoResolver resolver = JsonTypeInfoResolver.Combine(DiditJsonContext.Default, CoreJsonContext.Default);
+            IJsonTypeInfoResolver resolver = DiditJsonContext.Default;
             if (ReflectionAllowed())
             {
                 // Free-form request values (metadata dictionaries, anonymous objects) are serialised by reflection.
