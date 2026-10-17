@@ -10,8 +10,9 @@ With --write it copies the upstream files byte for byte, records their URL, SHA-
 openapi/SOURCE.json, deletes overlay entries whose operation now carries x-didit-sdk upstream, and copies removed
 server operations into openapi/deprecated-operations.json so their SDK methods stay, marked [Obsolete], until the next
 minor release. A renamed server operation is recorded there too, so its old method stays as an [Obsolete] alias; a
-removed operation whose naming an added one carries (the endpoint moved) keeps its method on the new path instead. Writes changed=true|false, needs_naming=true|false and date=YYYY-MM-DD to $GITHUB_OUTPUT when that
-variable is set. Exit code 0 on success (changed or not), 2 when a download or validation fails.
+removed operation whose naming an added one carries (the endpoint moved) keeps its method on the new path instead.
+Writes changed=true|false, needs_naming=true|false and date=YYYY-MM-DD to $GITHUB_OUTPUT when that variable is set.
+Exit code 0 on success (changed or not), 2 when a download or validation fails.
 
 Standard library only, Python 3.10+.
 """
@@ -526,7 +527,7 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             report.breaking.append(f"Removed operation `{key}` ({name})")
 
     # A renamed server operation keeps its old method as an obsolete alias for one minor version (DESIGN.md 3.1).
-    live_names = {sdk_name(naming_of(op, overlay_ops)) for op in new_ops.values()}
+    live_names = {name for op in new_ops.values() if (name := sdk_name(naming_of(op, overlay_ops))) is not None}
     for key in sorted(deprecated["operations"]):
         record = deprecated["operations"][key]
         if "renamed_to" in record and sdk_name(record.get("naming")) in live_names:
