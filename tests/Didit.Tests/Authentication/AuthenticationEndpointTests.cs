@@ -209,7 +209,7 @@ namespace Didit.Tests.Authentication
                 HttpStatusCode.Created);
             using var auth = _issuer.Create();
 
-            var stepUp = await auth.CreateStepUpAsync(AccessToken, "payout", "https://app.example.com/payouts", "250.00", "EUR");
+            var stepUp = await auth.CreateStepUpAsync(AccessToken, "payout", "250.00", "EUR", "https://app.example.com/payouts");
 
             var request = Runtime().Single();
             Assert.Equal(HttpMethod.Post, request.Method);
@@ -238,7 +238,7 @@ namespace Didit.Tests.Authentication
             _issuer.Runtime = _ => StubHttpHandler.Json("{\"required\":false}");
             using var auth = _issuer.Create();
 
-            var stepUp = await auth.CreateStepUpAsync(AccessToken, "bank", "https://app.example.com/bank");
+            var stepUp = await auth.CreateStepUpAsync(AccessToken, "bank", returnTo: "https://app.example.com/bank");
 
             Assert.Equal("{\"action\":\"bank\",\"return_to\":\"https://app.example.com/bank\"}", Runtime().Single().Body);
             Assert.False(stepUp.Required);
@@ -291,7 +291,7 @@ namespace Didit.Tests.Authentication
             using var client = new HttpClient(handler);
             using var auth = new Didit.Authentication(TestIssuer.Url, new AuthenticationOptions { HttpClient = client });
 
-            var error = await Assert.ThrowsAsync<ApiConnectionException>(() => auth.CreateStepUpAsync("rt_secret", "bank", "https://app.example.com/bank"));
+            var error = await Assert.ThrowsAsync<ApiConnectionException>(() => auth.CreateStepUpAsync("rt_secret", "bank", returnTo: "https://app.example.com/bank"));
 
             Assert.IsNotType<ApiTimeoutException>(error);
             Assert.Equal(1, calls);
@@ -346,7 +346,7 @@ namespace Didit.Tests.Authentication
             await Assert.ThrowsAsync<ArgumentException>(() => auth.RefreshAsync(string.Empty));
             await Assert.ThrowsAsync<ArgumentException>(() => auth.GetSessionAsync(string.Empty));
             await Assert.ThrowsAsync<ArgumentException>(() => auth.RevokeSessionAsync(string.Empty));
-            await Assert.ThrowsAsync<ArgumentNullException>(() => auth.CreateStepUpAsync(AccessToken, "payout", null!));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => auth.CreateStepUpAsync(AccessToken, null!));
             await Assert.ThrowsAsync<ArgumentException>(() => auth.RetrieveStepUpAsync(AccessToken, string.Empty));
             Assert.Empty(_issuer.Handler.Requests);
         }

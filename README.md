@@ -275,7 +275,7 @@ var idClaims = await auth.VerifyIdTokenAsync(tokens.IdToken!, nonce, audience: "
 var refreshed = await auth.RefreshAsync(tokens.RefreshToken!); // serialise refreshes per session: a reused refresh token revokes it
 ```
 
-Step-up verification before a sensitive action: `CreateStepUpAsync(accessToken, action, returnTo, amount, currency)` and `RetrieveStepUpAsync(accessToken, id)`; act only when the status is `approved`. See [examples/AuthenticationApi](examples/AuthenticationApi).
+Step-up verification before a sensitive action: `CreateStepUpAsync(accessToken, action, amount: ..., currency: ..., returnTo: ...)` and `RetrieveStepUpAsync(accessToken, id)`; act only when the status is `approved`. Pass `returnTo`: the issuer currently requires it. See [examples/AuthenticationApi](examples/AuthenticationApi).
 
 ## Account management
 
