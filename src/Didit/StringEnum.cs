@@ -19,7 +19,7 @@ namespace Didit.Internal
 {
     /// <summary>Base JSON converter of the generated open string enums.</summary>
     /// <typeparam name="T">The enum type.</typeparam>
-    public abstract class StringEnumJsonConverter<T> : JsonConverter<T>
+    internal abstract class StringEnumJsonConverter<T> : JsonConverter<T>
         where T : struct, IStringEnum
     {
         /// <summary>Creates the enum value from its wire value.</summary>

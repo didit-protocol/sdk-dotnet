@@ -76,7 +76,7 @@ namespace Didit
 namespace Didit.Internal
 {
     /// <summary>Serialises <see cref="Optional{T}"/> as its value. Absent values are skipped by the property's ignore condition.</summary>
-    public sealed class OptionalJsonConverterFactory : JsonConverterFactory
+    internal sealed class OptionalJsonConverterFactory : JsonConverterFactory
     {
         /// <inheritdoc />
         public override bool CanConvert(Type typeToConvert) =>
@@ -92,7 +92,7 @@ namespace Didit.Internal
 
     /// <summary>Converter for one closed <see cref="Optional{T}"/>.</summary>
     /// <typeparam name="T">The field type.</typeparam>
-    public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
+    internal sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
     {
         /// <inheritdoc />
         public override bool HandleNull => true;
