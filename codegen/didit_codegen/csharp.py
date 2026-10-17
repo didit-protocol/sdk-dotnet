@@ -66,6 +66,10 @@ def is_file(ref: TypeRef) -> bool:
 
 def obsolete_message(op: Operation) -> str:
     removed_on = op.raw.op.get("x-didit-removed-on")
+    renamed_to = op.raw.op.get("x-didit-renamed-to")
+    if isinstance(renamed_to, dict) and renamed_to.get("resource") and renamed_to.get("method"):
+        target = ".".join(names.pascal(segment) for segment in str(renamed_to["resource"]).split(".")) + "." + names.method_name(str(renamed_to["method"]))
+        return f"Renamed to {target} on {removed_on}. This alias is deleted in the next minor release."
     if removed_on:
         return f"Removed from the Didit API on {removed_on}. This method is deleted in the next minor release."
     return "Deprecated by the Didit API."

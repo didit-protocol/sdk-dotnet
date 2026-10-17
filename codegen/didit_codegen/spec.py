@@ -121,7 +121,7 @@ def load(root: Path) -> Spec:
     overlay = json.loads((openapi / "overlay.json").read_text("utf-8"))
     overlay_ops: dict[str, Any] = overlay.get("operations", {})
 
-    _restore_deprecated(openapi, verification, account)
+    removed, aliases = _restore_deprecated(openapi, verification, account)
 
     spec = Spec(root, verification, account, overlay)
     used: set[str] = set()
@@ -154,26 +154,34 @@ def load(root: Path) -> Spec:
         )
 
     spec.stale_overlay = sorted(set(overlay_ops) - used)
+    _apply_deprecations(spec, removed, aliases)
     _check_unique_methods(spec)
     _check_application_scope(spec)
     return spec
 
 
-def _restore_deprecated(openapi: Path, verification: Document, account: Document) -> None:
-    """Operations removed upstream stay in the SDK, marked obsolete, for one minor version (DESIGN.md 3.1).
+def _restore_deprecated(openapi: Path, verification: Document, account: Document) -> tuple[set[str], dict[str, dict[str, Any]]]:
+    """Operations removed or renamed upstream keep their SDK method, marked obsolete, for one minor version (DESIGN.md 3.1).
 
-    codegen/spec_sync.py records them in openapi/deprecated-operations.json with the schemas they reference.
+    codegen/spec_sync.py records them in openapi/deprecated-operations.json: a removed operation with its last definition
+    and the schemas it references, a renamed one ("renamed_to") with its old naming only. Removed operations are put back
+    into the documents here; returns their keys and the rename records, which _apply_deprecations turns into methods.
     """
     path = openapi / "deprecated-operations.json"
     if not path.exists():
-        return
+        return set(), {}
     data = json.loads(path.read_text("utf-8"))
     docs = {"verification": verification, "account": account}
     for api, schemas in (data.get("schemas") or {}).items():
         target = docs[api].data.setdefault("components", {}).setdefault("schemas", {})
         for name, schema in schemas.items():
             target.setdefault(name, schema)
+    removed: set[str] = set()
+    aliases: dict[str, dict[str, Any]] = {}
     for key, entry in (data.get("operations") or {}).items():
+        if "renamed_to" in entry:
+            aliases[key] = entry
+            continue
         api = "account" if key.startswith("account ") else "verification"
         doc = docs[api]
         method = str(entry["method"]).lower()
@@ -185,6 +193,34 @@ def _restore_deprecated(openapi: Path, verification: Document, account: Document
         operation["x-didit-sdk"] = entry["naming"]
         operation["x-didit-removed-on"] = entry.get("removed_on")
         path_item[method] = operation
+        removed.add(operation_key(api, method, entry["path"]))
+    return removed, aliases
+
+
+def _apply_deprecations(spec: Spec, removed: set[str], aliases: dict[str, dict[str, Any]]) -> None:
+    """A live operation owns its method name: a removed operation whose name it took (the endpoint moved) is dropped, and
+    a renamed operation gets its old name back as an obsolete alias of the same endpoint, unless another operation took it."""
+
+    def ident(naming: Naming) -> tuple[str, str]:
+        return naming.resource, naming.method
+
+    live = {ident(op.naming) for op in spec.operations if op.key not in removed and op.naming.server}
+    spec.operations = [op for op in spec.operations if not (op.key in removed and ident(op.naming) in live)]
+    by_key = {op.key: op for op in spec.operations}
+    taken = {ident(op.naming) for op in spec.operations if op.naming.server}
+    for alias_key, entry in sorted(aliases.items()):
+        api = "account" if alias_key.startswith("account ") else "verification"
+        target = by_key.get(operation_key(api, str(entry["method"]).lower(), entry["path"]))
+        naming = _validate_naming(alias_key, entry["naming"], "deprecated-operations.json")
+        if target is None or not naming.server or ident(naming) in taken:
+            continue
+        operation = dict(target.op)
+        operation["deprecated"] = True
+        operation["x-didit-sdk"] = entry["naming"]
+        operation["x-didit-removed-on"] = entry.get("removed_on")
+        operation["x-didit-renamed-to"] = entry["renamed_to"]
+        spec.operations.append(RawOperation(target.doc, alias_key, target.http_method, target.path, operation, target.path_item, naming))
+        taken.add(ident(naming))
 
 
 def _operation_id(spec: Spec, key: str) -> str:
