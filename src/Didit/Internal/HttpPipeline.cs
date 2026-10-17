@@ -308,6 +308,11 @@ namespace Didit.Internal
                     "This operation is application-scoped. Set DiditClientOptions.OrganizationId and ApplicationId (or the DIDIT_ORGANIZATION_ID and DIDIT_APPLICATION_ID environment variables).");
             }
 
+            if (request.ApplicationScoped && (PathParameter.IsDotSegment(settings.OrganizationId!) || PathParameter.IsDotSegment(settings.ApplicationId!)))
+            {
+                throw new ConfigurationException("DiditClientOptions.OrganizationId and ApplicationId must not be '.' or '..'.");
+            }
+
             return settings;
         }
 
