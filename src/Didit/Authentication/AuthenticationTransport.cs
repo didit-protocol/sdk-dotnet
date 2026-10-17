@@ -92,7 +92,8 @@ namespace Didit.Internal
 #if NET8_0_OR_GREATER
                         body = await response.Content.ReadAsByteArrayAsync(timeoutSource.Token).ConfigureAwait(false);
 #else
-                        body = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                        // .NET Framework handlers may return a response without content.
+                        body = response.Content is null ? Array.Empty<byte>() : await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 #endif
                     }
                     catch
@@ -149,7 +150,18 @@ namespace Didit.Internal
         private static Dictionary<string, IReadOnlyList<string>> CollectHeaders(HttpResponseMessage response)
         {
             var headers = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var header in response.Headers.Concat(response.Content.Headers))
+            foreach (var header in response.Headers)
+            {
+                headers[header.Key] = header.Value.ToArray();
+            }
+
+#if !NET8_0_OR_GREATER
+            if (response.Content is null)
+            {
+                return headers;
+            }
+#endif
+            foreach (var header in response.Content.Headers)
             {
                 headers[header.Key] = header.Value.ToArray();
             }
