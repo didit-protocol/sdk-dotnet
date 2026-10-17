@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Didit.Internal;
+using Didit.Tests.Support;
 using Xunit;
 
 namespace Didit.Tests.Core
@@ -91,6 +92,42 @@ namespace Didit.Tests.Core
             Assert.Equal("a%2Fb", PathParameter.Encode("a/b", "id"));
             Assert.Equal("12", PathParameter.Encode(12L, "id"));
             Assert.Throws<ArgumentException>(() => PathParameter.Encode((string?)null, "id"));
+            Assert.Equal("...", PathParameter.Encode("...", "id"));
+            Assert.Equal("a.b", PathParameter.Encode("a.b", "id"));
+        }
+
+        [Theory]
+        [InlineData(".")]
+        [InlineData("..")]
+        public async Task Dot_segment_ids_are_refused_before_anything_is_sent(string id)
+        {
+            var handler = new MockHttpHandler();
+            using var client = TestClients.Create(handler);
+
+            // DELETE .../cases/{case}/notes/.. would otherwise resolve to DELETE .../cases/{case}/.
+            var error = await Assert.ThrowsAsync<ArgumentException>(() => client.Cases.Notes.DeleteAsync("case-1", id));
+            Assert.Equal("noteUuid", error.ParamName);
+            await Assert.ThrowsAsync<ArgumentException>(() => client.Sessions.UpdateFeatureStatusAsync("session-1", id, new SessionsUpdateFeatureStatusParams
+            {
+                NewStatus = SessionsUpdateFeatureStatusParamsNewStatus.Approved,
+            }));
+            Assert.Empty(handler.Requests);
+        }
+
+        [Theory]
+        [InlineData("..", "app-test")]
+        [InlineData("org-test", ".")]
+        public async Task Dot_segment_organization_or_application_ids_are_a_configuration_error(string organizationId, string applicationId)
+        {
+            var handler = new MockHttpHandler();
+            using var client = TestClients.Create(handler, options =>
+            {
+                options.OrganizationId = organizationId;
+                options.ApplicationId = applicationId;
+            });
+
+            await Assert.ThrowsAsync<ConfigurationException>(() => client.Cases.Notes.DeleteAsync("case-1", "note-1"));
+            Assert.Empty(handler.Requests);
         }
 
         [Fact]
