@@ -69,7 +69,8 @@ Better still, get `x-didit-sdk` into the upstream OpenAPI document in mintlify-d
 dotnet build Didit.sln -c Release
 dotnet test tests/Didit.Tests/Didit.Tests.csproj -c Release -f net8.0
 dotnet format Didit.sln --verify-no-changes --exclude src/Didit/Generated tests/Didit.Tests/Generated
-dotnet pack Didit.sln -c Release -o artifacts
+dotnet pack src/Didit/Didit.csproj -c Release -o artifacts
+dotnet pack src/Didit.Extensions.DependencyInjection/Didit.Extensions.DependencyInjection.csproj -c Release -o artifacts
 ```
 
 Use `-f net9.0`, `-f net10.0` or, on Windows, `-f net472` for the other target frameworks.

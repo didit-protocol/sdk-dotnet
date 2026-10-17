@@ -149,7 +149,9 @@ jobs:
             9.0.x
             10.0.x
       - name: Pack (never pushed from CI)
-        run: dotnet pack Didit.sln -c Release -o artifacts
+        run: |
+          dotnet pack src/Didit/Didit.csproj -c Release -o artifacts
+          dotnet pack src/Didit.Extensions.DependencyInjection/Didit.Extensions.DependencyInjection.csproj -c Release -o artifacts
       - name: List packages
         run: ls -l artifacts
       - name: Upload packages

@@ -20,7 +20,7 @@ dotnet CLI, xUnit, nullable enabled, warnings as errors, targets net8.0 and nets
 - Install and build: `dotnet build Didit.sln -c Release` (restores NuGet packages; the build is the type check: nullable reference types, warnings as errors, .NET analyzers).
 - Test: `dotnet test tests/Didit.Tests/Didit.Tests.csproj -c Release -f net8.0` (also `net9.0`, `net10.0`; `net472` on Windows).
 - Lint: `dotnet format Didit.sln --verify-no-changes --exclude src/Didit/Generated tests/Didit.Tests/Generated`.
-- Pack (never publish): `dotnet pack Didit.sln -c Release -o artifacts`.
+- Pack (never publish): `dotnet pack src/Didit/Didit.csproj -c Release -o artifacts` (and the same for `src/Didit.Extensions.DependencyInjection`).
 - Live smoke tests (opt-in): `DIDIT_SANDBOX_API_KEY=... dotnet test tests/Didit.SmokeTests`.
 - Spec sync (the daily workflow runs it): `python3 codegen/spec_sync.py --write --summary spec-sync-summary.md`.
 

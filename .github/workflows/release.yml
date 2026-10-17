@@ -59,7 +59,9 @@ jobs:
       - name: Test (net8.0)
         run: dotnet test tests/Didit.Tests/Didit.Tests.csproj -c Release --no-build -f net8.0
       - name: Pack
-        run: dotnet pack Didit.sln -c Release --no-build -o artifacts
+        run: |
+          dotnet pack src/Didit/Didit.csproj -c Release --no-build -o artifacts
+          dotnet pack src/Didit.Extensions.DependencyInjection/Didit.Extensions.DependencyInjection.csproj -c Release --no-build -o artifacts
       - name: Check the packages
         env:
           VERSION: ${{ steps.version.outputs.version }}
