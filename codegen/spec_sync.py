@@ -618,7 +618,8 @@ def write_github_output(report: Report) -> None:
 
 
 def sorted_operations(operations: dict[str, Any]) -> dict[str, Any]:
-    return {key: dict(sorted(value.items())) if isinstance(value, dict) else value for key, value in sorted(operations.items())}
+    """Operation keys sorted; each entry keeps its own key order, so untouched entries do not churn."""
+    return dict(sorted(operations.items()))
 
 
 def run(root: Path, offline: Path | None = None, write: bool = False, summary_path: Path | None = None, now: datetime | None = None) -> Report:
