@@ -73,6 +73,9 @@ class Body:
     params_type: str | None  # set when the body type is the generated <Resource><Method>Params
     example: Any = None
     schema: dict[str, Any] | None = None
+    # multipart/form-data when a file is set, application/json otherwise: the operation accepts both and only the
+    # multipart form can carry its files.
+    json_without_files: bool = False
 
 
 @dataclass
@@ -615,6 +618,15 @@ class ModelBuilder:
         content = request_body.get("content") or {}
         json_media = content.get("application/json")
         multipart_media = content.get("multipart/form-data")
+        if (
+            json_media is not None
+            and multipart_media is not None
+            and not _has_binary(doc, json_media.get("schema"))
+            and _has_binary(doc, multipart_media.get("schema"))
+        ):
+            dual = self._dual_body(raw, params_name, bool(request_body.get("required")), json_media, multipart_media)
+            if dual is not None:
+                return dual
         if json_media is not None and not _has_binary(doc, json_media.get("schema")):
             content_type, media = "application/json", json_media
         elif multipart_media is not None:
