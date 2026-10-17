@@ -9,7 +9,8 @@
 With --write it copies the upstream files byte for byte, records their URL, SHA-256 and fetch time in
 openapi/SOURCE.json, deletes overlay entries whose operation now carries x-didit-sdk upstream, and copies removed
 server operations into openapi/deprecated-operations.json so their SDK methods stay, marked [Obsolete], until the next
-minor release. Writes changed=true|false, needs_naming=true|false and date=YYYY-MM-DD to $GITHUB_OUTPUT when that
+minor release. A renamed server operation is recorded there too, so its old method stays as an [Obsolete] alias; a
+removed operation whose naming an added one carries (the endpoint moved) keeps its method on the new path instead. Writes changed=true|false, needs_naming=true|false and date=YYYY-MM-DD to $GITHUB_OUTPUT when that
 variable is set. Exit code 0 on success (changed or not), 2 when a download or validation fails.
 
 Standard library only, Python 3.10+.
@@ -40,10 +41,12 @@ UPSTREAM_FILES = (("verification", "verification.json"), ("account", "account.js
 APIS = ("verification", "account")
 DEPRECATED_FILE = "deprecated-operations.json"
 DEPRECATED_DESCRIPTION = (
-    "Server operations removed upstream. Their SDK methods stay, marked [Obsolete], until the next minor release "
+    "Server operations removed or renamed upstream. Their SDK methods stay, marked [Obsolete], until the next minor release "
     "(docs/DESIGN.md section 3.1); delete an entry in that release. Written by codegen/spec_sync.py. Keys follow "
     "overlay.json (\"<METHOD> <path>\", \"account <METHOD> <path>\"). Each operation is the last upstream definition "
-    "with path-level parameters merged and non-schema $refs inlined; its schema $refs point into schemas.<api>."
+    "with path-level parameters merged and non-schema $refs inlined; its schema $refs point into schemas.<api>. A renamed "
+    "operation (key suffix \" (renamed from <resource>.<method>)\") has \"renamed_to\" and no definition: its old method "
+    "is an alias of the live operation."
 )
 SCHEMA_REF = "#/components/schemas/"
 DOWNLOAD_ATTEMPTS = 3
@@ -95,6 +98,7 @@ class Report:
     breaking: list[str] = field(default_factory=list)
     overlay_notes: list[str] = field(default_factory=list)
     deprecated: list[tuple[str, str]] = field(default_factory=list)
+    moved: list[tuple[str, str, str]] = field(default_factory=list)  # old key, new key, SDK name
     needs_naming: list[str] = field(default_factory=list)
 
 
@@ -278,6 +282,17 @@ def renamed(old: dict[str, Any], new: dict[str, Any]) -> bool:
     return any(old.get(key) != new.get(key) for key in ("resource", "method", "server"))
 
 
+def sdk_name(naming: dict[str, Any] | None) -> tuple[Any, Any] | None:
+    """The server SDK method a naming produces, or None when it is not in the server SDK."""
+    if not naming or naming.get("server") is not True:
+        return None
+    return naming.get("resource"), naming.get("method")
+
+
+def alias_key(key: str, naming: dict[str, Any]) -> str:
+    return f"{key} (renamed from {naming.get('resource')}.{naming.get('method')})"
+
+
 def api_of(key: str) -> str:
     return "account" if key.startswith("account ") else "verification"
 
@@ -448,8 +463,6 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             report.overlay_notes.append(
                 f"Naming change `{key}`: overlay `{label(entry)}`, upstream `{label(upstream)}`. Upstream wins; overlay entry deleted."
             )
-            if key in old_ops and isinstance(entry, dict) and renamed(entry, upstream):
-                report.breaking.append(f"SDK naming of `{key}` changes from `{label(entry)}` to `{label(upstream)}`")
 
     # Added, removed and changed operations.
     for key in sorted(new_ops.keys() - old_ops.keys()):
@@ -469,6 +482,13 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             detail = f"operationId `{op.op.get('operationId', '-')}`" + (f", {summary}" if summary else "")
             report.needs_naming.append(f"`{key}` ({detail})")
 
+    # An added operation that carries a removed operation's naming replaces it: the endpoint moved, the method stays.
+    added_by_name: dict[tuple[Any, Any], str] = {}
+    for key in sorted(new_ops.keys() - old_ops.keys()):
+        name_of_added = sdk_name(naming_of(new_ops[key], overlay_ops))
+        if name_of_added is not None:
+            added_by_name.setdefault(name_of_added, key)
+
     for key in sorted(old_ops.keys() - new_ops.keys()):
         op = old_ops[key]
         naming = naming_of(op, original_overlay)
@@ -476,6 +496,13 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
         report.removed.append((key, name))
         if key in overlay_ops:
             del overlay_ops[key]
+        replacement = added_by_name.get(sdk_name(naming)) if sdk_name(naming) is not None else None
+        if replacement is not None:
+            report.moved.append((key, replacement, name))
+            if key in original_overlay:
+                report.overlay_notes.append(f"Deleted `{key}`: `{replacement}` carries its naming now.")
+            report.breaking.extend(operation_breaking(old_docs[op.api], new_docs[op.api], op, new_ops[replacement], name))
+            continue
         if naming is not None and naming.get("server") is True:
             schemas = old_docs[op.api].get("components", {}).get("schemas", {})
             operation = inline_refs(old_docs[op.api], op.effective)
@@ -497,6 +524,35 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             if key in original_overlay:
                 report.overlay_notes.append(f"Deleted `{key}`: the operation was removed upstream.")
             report.breaking.append(f"Removed operation `{key}` ({name})")
+
+    # A renamed server operation keeps its old method as an obsolete alias for one minor version (DESIGN.md 3.1).
+    live_names = {sdk_name(naming_of(op, overlay_ops)) for op in new_ops.values()}
+    for key in sorted(deprecated["operations"]):
+        record = deprecated["operations"][key]
+        if "renamed_to" in record and sdk_name(record.get("naming")) in live_names:
+            del deprecated["operations"][key]
+            report.overlay_notes.append(f"`{key}`: an operation carries that naming again; deleted from `{DEPRECATED_FILE}`.")
+    for key in sorted(old_ops.keys() & new_ops.keys()):
+        before = naming_of(old_ops[key], original_overlay)
+        after = naming_of(new_ops[key], overlay_ops)
+        if not before or not after or not renamed(before, after):
+            continue
+        if sdk_name(before) is None or sdk_name(before) in live_names:
+            report.breaking.append(f"SDK naming of `{key}` changes from `{label(before)}` to `{label(after)}`")
+            continue
+        record_naming = {**after, "resource": before.get("resource"), "method": before.get("method"), "server": True}
+        deprecated["operations"][alias_key(key, before)] = {
+            "removed_on": report.date,
+            "naming": record_naming,
+            "path": new_ops[key].path,
+            "method": new_ops[key].method,
+            "renamed_to": copy.deepcopy(after),
+        }
+        report.deprecated.append((alias_key(key, before), label(before)))
+        report.breaking.append(
+            f"SDK naming of `{key}` changes from `{label(before)}` to `{label(after)}`: the old method stays as an "
+            "`[Obsolete]` alias until the next minor release"
+        )
 
     for key in sorted(old_ops.keys() & new_ops.keys()):
         old, new = old_ops[key], new_ops[key]
@@ -579,6 +635,9 @@ def render_summary(report: Report) -> str:
         lines += [f"#### {title} ({len(items)})", ""]
         lines += bullet_list([f"`{key}`: {name}" for key, name in items]) if items else ["None."]
         lines.append("")
+    if report.moved:
+        lines += [f"#### Moved ({len(report.moved)})", "", "The SDK method keeps its name and calls the new path.", ""]
+        lines += bullet_list([f"`{old}` to `{new}`: {name}" for old, new, name in report.moved]) + [""]
 
     lines += ["### Schemas", ""]
     for title, names in (("Added", report.schemas_added), ("Removed", report.schemas_removed), ("Changed", report.schemas_changed)):
@@ -590,8 +649,8 @@ def render_summary(report: Report) -> str:
         lines += [
             "### Deprecated SDK methods",
             "",
-            "These server operations were removed upstream. Their SDK methods are not deleted: they stay, marked "
-            f"`[Obsolete]`, until the next minor release. Their last definitions are kept in `openapi/{DEPRECATED_FILE}`.",
+            "These server operations were removed or renamed upstream. Their SDK methods are not deleted: they stay, marked "
+            f"`[Obsolete]`, until the next minor release. They are recorded in `openapi/{DEPRECATED_FILE}`.",
             "",
         ]
         lines += bullet_list([f"`{key}`: {name}" for key, name in report.deprecated]) + [""]
