@@ -23,14 +23,19 @@ namespace Didit
         public string CodeChallenge { get; }
 
         /// <summary>Always <c>S256</c>: send it as <c>code_challenge_method</c>.</summary>
-        public string CodeChallengeMethod => S256;
+        public string CodeChallengeMethod { get; } = S256;
 
         internal static PkcePair FromVerifier(string codeVerifier) => new(codeVerifier, ComputeChallenge(codeVerifier));
 
         internal static string ComputeChallenge(string codeVerifier)
         {
+            var verifier = Encoding.ASCII.GetBytes(codeVerifier);
+#if NET8_0_OR_GREATER
+            return Base64Url.Encode(SHA256.HashData(verifier));
+#else
             using var sha256 = SHA256.Create();
-            return Base64Url.Encode(sha256.ComputeHash(Encoding.ASCII.GetBytes(codeVerifier)));
+            return Base64Url.Encode(sha256.ComputeHash(verifier));
+#endif
         }
     }
 }

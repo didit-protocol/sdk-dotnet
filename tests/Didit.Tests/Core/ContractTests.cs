@@ -37,7 +37,7 @@ namespace Didit.Tests.Core
         [Fact]
         public void Every_method_takes_request_options_and_a_cancellation_token_last()
         {
-            foreach (var method in ResourceTypes(typeof(DiditClient), "Resource").SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)))
+            foreach (var method in ResourceTypes(typeof(DiditClient), "Resource").SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)).Where(m => !m.IsSpecialName))
             {
                 var parameters = method.GetParameters();
                 Assert.True(parameters.Length >= 2, method.Name);
@@ -94,7 +94,7 @@ namespace Didit.Tests.Core
                 foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.PropertyType.Name.EndsWith(suffix, StringComparison.Ordinal)))
                 {
                     var path = prefix.Length == 0 ? property.Name : prefix + "." + property.Name;
-                    foreach (var method in property.PropertyType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                    foreach (var method in property.PropertyType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
                     {
                         if (!method.IsSpecialName)
                         {

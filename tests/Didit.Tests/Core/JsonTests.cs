@@ -110,7 +110,7 @@ namespace Didit.Tests.Core
             handler.Enqueue(200, "{}");
             using var client = TestClients.Create(handler);
 
-            await client.Sessions.UpdateAmlHitStatusAsync("s-1", new SessionsUpdateAmlHitStatusParams { HitId = "h-1", ReviewStatus = "False Positive", NodeId = "node-7" });
+            await client.Sessions.UpdateAmlHitStatusAsync("s-1", new SessionsUpdateAmlHitStatusParams { HitId = "h-1", ReviewStatus = "False Positive", NodeIdQuery = "node-7" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("?node_id=node-7", request.Query);

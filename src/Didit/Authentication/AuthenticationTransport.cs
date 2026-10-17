@@ -128,10 +128,22 @@ namespace Didit.Internal
                         return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
                     }
 
-                    var requestId = RequestIdHeaders.Select(name => headers.TryGetValue(name, out var values) ? values.FirstOrDefault() : null).FirstOrDefault(value => !string.IsNullOrEmpty(value));
-                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, requestId, secret);
+                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secret);
                 }
             }
+        }
+
+        private static string? FindRequestId(Dictionary<string, IReadOnlyList<string>> headers)
+        {
+            foreach (var name in RequestIdHeaders)
+            {
+                if (headers.TryGetValue(name, out var values) && values.Count > 0 && !string.IsNullOrEmpty(values[0]))
+                {
+                    return values[0];
+                }
+            }
+
+            return null;
         }
 
         private static Dictionary<string, IReadOnlyList<string>> CollectHeaders(HttpResponseMessage response)

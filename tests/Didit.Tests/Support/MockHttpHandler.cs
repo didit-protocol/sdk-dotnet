@@ -100,7 +100,8 @@ namespace Didit.Tests.Support
             var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var header in request.Headers)
             {
-                headers[header.Key] = string.Join(",", header.Value);
+                var separator = string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase) ? " " : ",";
+                headers[header.Key] = string.Join(separator, header.Value);
             }
 
             byte[] body = Array.Empty<byte>();

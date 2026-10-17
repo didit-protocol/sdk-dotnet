@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -36,6 +37,8 @@ namespace Didit.Internal
 
             var options = new JsonSerializerOptions
             {
+                // Request bodies go to an API, not into HTML: write non-ASCII text and '+' literally.
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
                 PropertyNameCaseInsensitive = false,

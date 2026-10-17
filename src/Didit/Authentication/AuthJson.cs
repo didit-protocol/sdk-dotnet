@@ -9,6 +9,7 @@ namespace Didit.Internal
     internal static class AuthJson
     {
         private static readonly IReadOnlyList<string> EmptyList = Array.Empty<string>();
+        private static readonly char[] Space = { ' ' };
 
         /// <summary>A detached empty JSON object.</summary>
         public static JsonElement EmptyObject { get; } = CreateEmptyObject();
@@ -154,7 +155,7 @@ namespace Didit.Internal
         {
             if (TryGet(element, name, out var value) && value.ValueKind == JsonValueKind.String)
             {
-                return value.GetString()!.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                return value.GetString()!.Split(Space, StringSplitOptions.RemoveEmptyEntries);
             }
 
             return GetStringList(element, name);
