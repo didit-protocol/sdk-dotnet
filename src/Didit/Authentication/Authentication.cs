@@ -113,7 +113,7 @@ namespace Didit
         /// (5 minutes). Call <see cref="GetSessionAsync"/> before sensitive actions for an instant revocation check.
         /// </remarks>
         /// <param name="token">The compact JWT, without the <c>Bearer</c> prefix.</param>
-        /// <param name="audience">When given, <c>aud</c> must contain it.</param>
+        /// <param name="audience">When given, <c>aud</c> must contain it. <c>null</c> skips the check; an empty string is refused.</param>
         /// <param name="cancellationToken">Cancels a discovery or JWKS fetch.</param>
         /// <exception cref="TokenVerificationException">The token is not valid; <see cref="TokenVerificationException.Reason"/> says why.</exception>
         /// <exception cref="ApiStatusException">The discovery document or JWKS could not be fetched.</exception>
@@ -125,7 +125,13 @@ namespace Didit
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var jwt = await VerifyAsync(token, idToken: false, string.IsNullOrEmpty(audience) ? null : audience, cancellationToken).ConfigureAwait(false);
+            if (audience is not null && audience.Length == 0)
+            {
+                // An empty value usually means a missing configuration entry: fail closed instead of skipping the check.
+                throw new ArgumentException("The audience must not be empty; pass null to skip the audience check.", nameof(audience));
+            }
+
+            var jwt = await VerifyAsync(token, idToken: false, audience, cancellationToken).ConfigureAwait(false);
             return AccessTokenClaims.FromPayload(jwt.Payload);
         }
 
