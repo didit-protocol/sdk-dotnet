@@ -102,14 +102,7 @@ namespace Didit.Resources
         /// <summary>
         /// Register a wallet address
         /// </summary>
-        /// <remarks>
-        /// Add an entry to your Travel Rule wallet address book so inbound INTERNAL-rail transfers can resolve against it.
-        /// <para/>
-        /// <c>POST /v3/travel-rule/wallet-addresses/</c> (<c>travel_rule.wallet_addresses.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<WalletAddressEntry>> CreateAsync(WalletAddressEntryCreate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -130,14 +123,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete a wallet address
         /// </summary>
-        /// <remarks>
-        /// Deletes the entry. It stops matching new transfers immediately and the address is freed up for re-registration.
-        /// <para/>
-        /// <c>DELETE /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.delete</c>).
-        /// </remarks>
-        /// <param name="entryUuid">Path parameter <c>entry_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string entryUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/travel-rule/wallet-addresses/" + PathParameter.Encode(entryUuid, "entryUuid") + "/")
@@ -152,14 +138,7 @@ namespace Didit.Resources
         /// <summary>
         /// List wallet address book entries
         /// </summary>
-        /// <remarks>
-        /// Paginated list of your application's Travel Rule wallet address book, newest first.
-        /// <para/>
-        /// <c>GET /v3/travel-rule/wallet-addresses/</c> (<c>travel_rule.wallet_addresses.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<WalletAddressEntry>>> ListAsync(TravelRuleWalletAddressesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/wallet-addresses/")
@@ -176,15 +155,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update wallet address holder metadata
         /// </summary>
-        /// <remarks>
-        /// Partial update of holder_name, holder_vendor_data, entity_type, and travel_address. Setting travel_address attaches a TRP routing address to the entry; invalid values are rejected with 400. The response echoes only these four fields.
-        /// <para/>
-        /// <c>PATCH /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.update</c>).
-        /// </remarks>
-        /// <param name="entryUuid">Path parameter <c>entry_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<WalletAddressEntryUpdate>> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

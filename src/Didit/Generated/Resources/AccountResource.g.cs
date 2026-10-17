@@ -122,14 +122,7 @@ namespace Didit.Resources
         /// <summary>
         /// Programmatic Login
         /// </summary>
-        /// <remarks>
-        /// Authenticate any verified email/password Didit account and receive an RS256 JWT pair (default lifetime 86400s). Console-created email/password accounts can use this endpoint; OAuth-only console accounts must set a password first.
-        /// <para/>
-        /// <c>POST /programmatic/login/</c> (<c>account.login</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountResource.LoginAsync"/>.</remarks>
         public Task<DiditResponse<LoginResponse>> LoginAsync(LoginRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -150,14 +143,7 @@ namespace Didit.Resources
         /// <summary>
         /// Register Account
         /// </summary>
-        /// <remarks>
-        /// Step 1 of programmatic onboarding. Creates a pending account and emails a 6-char code (10 min TTL). Rate limit: 5/IP/hour.
-        /// <para/>
-        /// <c>POST /programmatic/register/</c> (<c>account.register</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountResource.RegisterAsync"/>.</remarks>
         public Task<DiditResponse<RegisterResponse>> RegisterAsync(RegisterRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -178,16 +164,7 @@ namespace Didit.Resources
         /// <summary>
         /// Resend the email verification code
         /// </summary>
-        /// <remarks>
-        /// Resend the 6-character verification code for an unverified programmatic account. Requires the account's email and password so only the owner can trigger a new code (no console Basic Auth). A fresh code replaces the previous one and is valid for 10 minutes.
-        /// <para/>
-        /// Rate limits: a per-email cooldown of 60 seconds between resends (HTTP 429 with <c>Retry-After</c>), and the same 5-per-IP-per-hour budget as registration.
-        /// <para/>
-        /// <c>POST /programmatic/resend-otp/</c> (<c>account.resend_otp</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountResource.ResendOtpAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> ResendOtpAsync(AccountResendOtpParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -208,14 +185,7 @@ namespace Didit.Resources
         /// <summary>
         /// Verify Email and Issue Credentials
         /// </summary>
-        /// <remarks>
-        /// Step 2 of onboarding. Exchanges the 6-char code for a verified account, a default org+app, and a JWT pair. Persist the returned <c>api_key</c>.
-        /// <para/>
-        /// <c>POST /programmatic/verify-email/</c> (<c>account.verify_email</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountResource.VerifyEmailAsync"/>.</remarks>
         public Task<DiditResponse<VerifyEmailResponse>> VerifyEmailAsync(VerifyEmailRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

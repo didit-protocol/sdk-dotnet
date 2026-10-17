@@ -54,15 +54,7 @@ namespace Didit.Resources
         /// <summary>
         /// List networks for a business session
         /// </summary>
-        /// <remarks>
-        /// List the networks the business session's vendor business belongs to.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/business-sessions/{business_session_id}/networks/</c> (<c>business_sessions.list_networks</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="businessSessionId">Business session UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessSessionsResource.ListNetworksAsync"/>.</remarks>
         public Task<DiditResponse<BusinessSessionsListNetworksResponse>> ListNetworksAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/business-sessions/" + PathParameter.Encode(businessSessionId, "businessSessionId") + "/networks/")

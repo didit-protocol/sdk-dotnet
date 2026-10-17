@@ -71,32 +71,7 @@ namespace Didit.Resources
         /// <summary>
         /// Proof of Address (document OCR + address checks)
         /// </summary>
-        /// <remarks>
-        /// Extract and validate a Proof of Address document — utility bills, bank statements, and government-issued documents — in one call. Returns the issuer, issue/expiry dates, the holder name, the raw and parsed/geocoded address, an <c>Approved</c>/<c>Declined</c> <c>status</c>, and a <c>warnings</c> list explaining every issue found.
-        /// <para/>
-        /// Latency. Extraction is LLM-based: typical calls take 5–15 seconds, multi-page PDFs up to ~30 seconds. Configure a client timeout of at least 45 seconds and do not retry before the call completes.
-        /// <para/>
-        /// How it works. The document (image or PDF, up to 15 MB; encrypted PDFs require <c>document_password</c>) is classified into a document type and subtype (e.g. <c>UTILITY_BILL</c> / <c>WATER_BILL</c>), and the issuer, dates, holder name, and address are extracted with LLM-based extraction. The address is parsed and geocoded into <c>poa_parsed_address</c>. PDF/EXIF forensics screen for tampering — modification after digital signing, known PDF editors, overlay-text manipulation, suspicious re-exports — surfacing <c>SUSPECTED_DOCUMENT_MANIPULATION</c> or <c>DOCUMENT_METADATA_MISMATCH</c>. Document age is validated against <c>poa_document_age_months</c>, and the language against <c>poa_languages_allowed</c>. If you pass <c>expected_address</c>, <c>expected_country</c>, or <c>expected_first_name</c>/<c>expected_last_name</c>, the extracted values are cross-checked and mismatches are flagged.
-        /// <para/>
-        /// Decision logic. <c>status</c> is <c>Approved</c> unless at least one warning resolves to a decline. Hard failures always decline: <c>MISSING_ADDRESS_INFORMATION</c>, <c>POA_DOCUMENT_EXPIRED</c>, <c>INVALID_DOCUMENT_TYPE</c>, <c>UNABLE_TO_VALIDATE_DOCUMENT_AGE</c>, plus <c>UNABLE_TO_EXTRACT_ISSUE_DATE</c> and <c>POA_NAME_NOT_DETECTED</c> (not configurable on this endpoint). Five risk groups are configurable per request via the <c>poa_*_action</c> options (<c>DECLINE</c> or <c>NO_ACTION</c>, all defaulting to <c>DECLINE</c>). <c>POA_DOCUMENT_NOT_SUPPORTED_FOR_APPLICATION</c> and <c>UNPARSABLE_OR_INVALID_ADDRESS</c> are informational on this endpoint and never decline. A document that cannot be processed at all returns <c>400</c>; a readable but problematic document returns <c>200</c> with <c>status: "Declined"</c> — always inspect <c>poa.status</c> and <c>poa.warnings</c>, not just the HTTP code.
-        /// <para/>
-        /// Billing. Each <c>200</c> response consumes one Proof of Address API credit (standalone APIs have no free tier). When the organization's balance cannot cover the call, the endpoint returns <c>403</c> with the not-enough-credits error before any document processing.
-        /// <para/>
-        /// Session persistence (<c>save_api_request</c>, default <c>true</c>). When <c>true</c>, the call is persisted as an API-type session: it appears in the Business Console, the uploaded document is stored, the returned <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c> (the decision additionally exposes <c>document_file</c> and the <c>document_metadata</c> forensics, which this response omits), and a <c>status.updated</c> webhook is emitted. When <c>false</c>, nothing is stored and <c>request_id</c> is a one-off correlation UUID that cannot be looked up later.
-        /// <para/>
-        /// Sandbox. Sandbox API keys skip all processing and billing: after request validation (malformed input still returns <c>400</c>), the endpoint returns a static <c>Approved</c> mock payload (a fictional "Sandbox Power Co." electricity bill), no session is persisted, and no credits are consumed.
-        /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limit. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints; exceeding it returns <c>429</c>.
-        /// <para/>
-        /// Note: <c>FUTURE_ISSUE_DATE</c> and <c>POOR_DOCUMENT_QUALITY</c> exist in workflow sessions but are never produced by this standalone endpoint — a future-dated document is not auto-declined here.
-        /// <para/>
-        /// <c>POST /v3/poa/</c> (<c>proof_of_address.verify</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="ProofOfAddressResource.VerifyAsync"/>.</remarks>
         public Task<DiditResponse<ProofOfAddressVerifyResponse>> VerifyAsync(ProofOfAddressVerifyParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

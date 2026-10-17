@@ -144,16 +144,7 @@ namespace Didit.Resources
         /// <summary>
         /// POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/
         /// </summary>
-        /// <remarks>
-        /// Add a case-scoped note. An optional client_reference makes an unchanged retry return the same note without duplicate activity or notifications. reply_to must identify a live note in this case. The response includes a bounded parent excerpt without copying that excerpt into the saved reply.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/</c> (<c>cases.notes.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesNotesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<CaseCollaborationCaseNote>> CreateAsync(string caseUuid, CaseCollaborationCaseNoteCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -174,16 +165,7 @@ namespace Didit.Resources
         /// <summary>
         /// Upload note attachment
         /// </summary>
-        /// <remarks>
-        /// Upload a file (JPEG, PNG, WebP, PDF, plain text, or CSV; max 5 MB) to attach to a note. Returns the s3_key to pass in the note's attachments array.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/presign/</c> (<c>cases.notes.create_attachment_upload</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesNotesResource.CreateAttachmentUploadAsync"/>.</remarks>
         public Task<DiditResponse<CasesNotesCreateAttachmentUploadResponse>> CreateAttachmentUploadAsync(string caseUuid, CasesNotesCreateAttachmentUploadParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -206,14 +188,7 @@ namespace Didit.Resources
         /// <summary>
         /// DELETE /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/{note_uuid}/
         /// </summary>
-        /// <remarks>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/{note_uuid}/</c> (<c>cases.notes.delete</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="noteUuid">Path parameter <c>note_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesNotesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string caseUuid, string noteUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/notes/" + PathParameter.Encode(noteUuid, "noteUuid") + "/")
@@ -228,14 +203,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/</c> (<c>cases.notes.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesNotesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<CaseCollaborationCaseNote>>> ListAsync(string caseUuid, CasesNotesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/notes/")
@@ -253,16 +221,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get note attachment URL
         /// </summary>
-        /// <remarks>
-        /// Mint a fresh presigned download URL for an attachment already stored on one of the case's notes.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/presign/</c> (<c>cases.notes.retrieve_attachment_url</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesNotesResource.RetrieveAttachmentUrlAsync"/>.</remarks>
         public Task<DiditResponse<CasesNotesRetrieveAttachmentUrlResponse>> RetrieveAttachmentUrlAsync(string caseUuid, CasesNotesRetrieveAttachmentUrlParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -283,17 +242,7 @@ namespace Didit.Resources
         /// <summary>
         /// PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/{note_uuid}/
         /// </summary>
-        /// <remarks>
-        /// Pin or unpin an existing note. Pinned notes appear first. Pin changes are recorded in case activity and do not change evidence or source decisions.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/{note_uuid}/</c> (<c>cases.notes.update</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="noteUuid">Path parameter <c>note_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesNotesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<CaseCollaborationCaseNote>> UpdateAsync(string caseUuid, string noteUuid, CaseCollaborationPatchedCaseNoteUpdateRequest? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Patch, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/notes/" + PathParameter.Encode(noteUuid, "noteUuid") + "/")

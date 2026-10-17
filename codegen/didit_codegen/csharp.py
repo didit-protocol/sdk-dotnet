@@ -422,7 +422,14 @@ class Emitter:
         decls, args = self.signature(op)
         response_type = self.response_type(op)
         name = names.method_name(op.method)
-        lines = self.method_docs(op)
+        if raw:
+            node_type = names.resource_type_name(op.resource) + "Resource"
+            lines = summary(doc_text(op.summary), indent, f"{op.http_method} {op.path}")
+            lines.append(f"{indent}/// <remarks>Raw-response variant of <see cref=\"{node_type}.{name}\"/>.</remarks>")
+            if op.deprecated:
+                lines.append(f"{indent}[Obsolete(\"Deprecated by the API.\")]")
+        else:
+            lines = self.method_docs(op)
         if not raw:
             if response_type is None:
                 lines.append(f"{indent}public Task {name}({', '.join(decls)}) =>")

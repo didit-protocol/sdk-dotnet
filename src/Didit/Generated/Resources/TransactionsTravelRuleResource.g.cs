@@ -72,15 +72,7 @@ namespace Didit.Resources
         /// <summary>
         /// Confirm or deny wallet ownership
         /// </summary>
-        /// <remarks>
-        /// Called by the beneficiary's application when its INTERNAL-rail transfer is UNCONFIRMED_OWNERSHIP. Confirming marks the matching wallet address book entry as ownership-verified and runs the beneficiary name match on both sides of the transfer; denying declines both sides.
-        /// <para/>
-        /// <c>POST /v3/transactions/{transaction_id}/travel-rule/ownership/</c> (<c>transactions.travel_rule.confirm_ownership</c>).
-        /// </remarks>
-        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer (the beneficiary side's transaction).</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.ConfirmOwnershipAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleTransferDetail>> ConfirmOwnershipAsync(string transactionId, TravelRuleOwnershipConfirmRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -101,15 +93,7 @@ namespace Didit.Resources
         /// <summary>
         /// Finish, cancel, or resend a Travel Rule transfer
         /// </summary>
-        /// <remarks>
-        /// Provide <c>payment_txn_id</c> to report the on-chain hash and move an outbound COMPLETED transfer to FINISHED (its INTERNAL-rail counterpart also moves to FINISHED), <c>{"action": "cancel"}</c> to cancel a non-terminal transfer, or <c>{"action": "resend"}</c> to re-run routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA (improve the counterparty data first, e.g. add a travel_address to the destination wallet entry).
-        /// <para/>
-        /// <c>PATCH /v3/transactions/{transaction_id}/travel-rule/</c> (<c>transactions.travel_rule.update_transfer</c>).
-        /// </remarks>
-        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.UpdateTransferAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleTransferDetail>> UpdateTransferAsync(string transactionId, TravelRuleTransferPatchRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

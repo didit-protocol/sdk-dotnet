@@ -52,13 +52,7 @@ namespace Didit.Resources
         /// <summary>
         /// List My Organizations
         /// </summary>
-        /// <remarks>
-        /// List organizations the authenticated user belongs to. Each entry's <c>uuid</c> is the <c>org_id</c> used on the application endpoints.
-        /// <para/>
-        /// <c>GET /organizations/me/</c> (<c>account.organizations.list</c>).
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountOrganizationsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<IReadOnlyList<Organization>>> ListAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/organizations/me/")

@@ -187,14 +187,7 @@ namespace Didit.Resources
         /// <summary>
         /// Backtest rule configuration
         /// </summary>
-        /// <remarks>
-        /// Evaluate a hypothetical rule configuration against your recent transactions (most recent first, up to the backtest cap) without creating a rule or touching any transaction. Use it before activating a rule to see how often it would have matched and how many subjects it would have affected.
-        /// <para/>
-        /// <c>POST /v3/transactions/rules/backtest/</c> (<c>transactions.rules.backtest</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.BacktestAsync"/>.</remarks>
         public Task<DiditResponse<TransactionRuleBacktestResult>> BacktestAsync(TransactionRuleBacktestRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -215,14 +208,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create rule
         /// </summary>
-        /// <remarks>
-        /// Create a CUSTOM transaction-monitoring rule. Titles are unique per application (duplicate -&gt; 400). A <c>change_status</c> action targeting <c>AWAITING_USER</c> must carry <c>workflow_id</c>. Rules created in ACTIVE mode apply to new transactions immediately - the recommended workflow is create in TEST mode, backtest, then switch mode to ACTIVE.
-        /// <para/>
-        /// <c>POST /v3/transactions/rules/</c> (<c>transactions.rules.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<TransactionRuleDetail>> CreateAsync(TransactionRuleCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -243,14 +229,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete rule
         /// </summary>
-        /// <remarks>
-        /// Delete a CUSTOM rule. Deletion is immediate and permanent: the rule stops evaluating for new transactions and disappears from listings, while past rule runs on already-evaluated transactions keep their recorded results. Library rules cannot be deleted - uninstall them via the install endpoint instead (they can always be reinstalled from the library).
-        /// <para/>
-        /// <c>DELETE /v3/transactions/rules/{rule_uuid}/</c> (<c>transactions.rules.delete</c>).
-        /// </remarks>
-        /// <param name="ruleUuid">The rule's uuid from list or create.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string ruleUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/transactions/rules/" + PathParameter.Encode(ruleUuid, "ruleUuid") + "/")
@@ -265,14 +244,7 @@ namespace Didit.Resources
         /// <summary>
         /// Install library rules
         /// </summary>
-        /// <remarks>
-        /// Install one or more presets onto the application, by <c>library_keys</c> or a whole <c>bundle</c>. Installed presets evaluate immediately in their default mode; already-installed keys are skipped.
-        /// <para/>
-        /// <c>POST /v3/transactions/rules/install/</c> (<c>transactions.rules.install_library</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.InstallLibraryAsync"/>.</remarks>
         public Task<DiditResponse<TransactionRuleInstallResult>> InstallLibraryAsync(TransactionRuleInstallRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -293,14 +265,7 @@ namespace Didit.Resources
         /// <summary>
         /// List rules
         /// </summary>
-        /// <remarks>
-        /// List the application's transaction-monitoring rules: your custom rules plus any library presets you have installed. Filter by source, category, mode, bundle or free-text search; order with <c>ordering</c> (run_count, approved_pct, reviewed_pct, declined_pct, latest_triggered_at, title, created_at, source, each with an optional <c>-</c> prefix).
-        /// <para/>
-        /// <c>GET /v3/transactions/rules/</c> (<c>transactions.rules.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<TransactionRuleDetail>>> ListAsync(TransactionsRulesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/rules/")
@@ -323,14 +288,7 @@ namespace Didit.Resources
         /// <summary>
         /// List rule library
         /// </summary>
-        /// <remarks>
-        /// Browse the full preset rule library (150+ rules) with each entry's complete configuration and an <c>is_installed</c> flag for this application. Filter by bundle, category, or free-text search.
-        /// <para/>
-        /// <c>GET /v3/transactions/rules/library/</c> (<c>transactions.rules.list_library</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.ListLibraryAsync"/>.</remarks>
         public Task<DiditResponse<Page<TransactionRuleLibraryEntry>>> ListLibraryAsync(TransactionsRulesListLibraryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/rules/library/")
@@ -350,14 +308,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get rule
         /// </summary>
-        /// <remarks>
-        /// Retrieve one rule with its full configuration and execution counters.
-        /// <para/>
-        /// <c>GET /v3/transactions/rules/{rule_uuid}/</c> (<c>transactions.rules.retrieve</c>).
-        /// </remarks>
-        /// <param name="ruleUuid">The rule's uuid from list or create.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<TransactionRuleDetail>> RetrieveAsync(string ruleUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/rules/" + PathParameter.Encode(ruleUuid, "ruleUuid") + "/")
@@ -372,14 +323,7 @@ namespace Didit.Resources
         /// <summary>
         /// Uninstall library rules
         /// </summary>
-        /// <remarks>
-        /// Remove installed presets from the application, by <c>library_keys</c> or a whole <c>bundle</c>. Uninstalled presets stop evaluating immediately and can be reinstalled from the library at any time.
-        /// <para/>
-        /// <c>DELETE /v3/transactions/rules/install/</c> (<c>transactions.rules.uninstall_library</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.UninstallLibraryAsync"/>.</remarks>
         public Task<DiditResponse<TransactionRuleInstallResult>> UninstallLibraryAsync(TransactionRuleInstallRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -400,15 +344,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update rule
         /// </summary>
-        /// <remarks>
-        /// Partially update a rule. Custom rules accept every configuration field. Library (PRESET) rules accept only <c>mode</c> - use it to activate, disable, or switch a preset to TEST; any other field returns 400.
-        /// <para/>
-        /// <c>PATCH /v3/transactions/rules/{rule_uuid}/</c> (<c>transactions.rules.update</c>).
-        /// </remarks>
-        /// <param name="ruleUuid">The rule's uuid from list or create.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsRulesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<TransactionRuleDetail>> UpdateAsync(string ruleUuid, TransactionRuleUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

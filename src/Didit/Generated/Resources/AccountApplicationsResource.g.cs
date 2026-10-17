@@ -108,15 +108,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create Application
         /// </summary>
-        /// <remarks>
-        /// Create an application inside an organization. The response includes <c>api_key</c>; persist it now (recoverable via GET). Requires owner/admin JWT.
-        /// <para/>
-        /// <c>POST /organizations/me/{org_id}/applications/</c> (<c>account.applications.create</c>).
-        /// </remarks>
-        /// <param name="orgId">UUID of the organization. Look it up with <c>GET /organizations/me/</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountApplicationsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<Application>> CreateAsync(string orgId, ApplicationCreateRequest? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/organizations/me/" + PathParameter.Encode(orgId, "orgId") + "/applications/")
@@ -135,14 +127,7 @@ namespace Didit.Resources
         /// <summary>
         /// List the organization's applications
         /// </summary>
-        /// <remarks>
-        /// List every application in the organization. Use this to discover <c>app_id</c> values when recovering credentials from a new machine — follow with <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> for the API key. Requires an owner or admin Bearer token.
-        /// <para/>
-        /// <c>GET /organizations/me/{org_id}/applications/</c> (<c>account.applications.list</c>).
-        /// </remarks>
-        /// <param name="orgId">UUID of the organization. Look it up with <c>GET /organizations/me/</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountApplicationsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> ListAsync(string orgId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/organizations/me/" + PathParameter.Encode(orgId, "orgId") + "/applications/")
@@ -157,15 +142,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get Application Credentials
         /// </summary>
-        /// <remarks>
-        /// Read one application's full record including <c>client_id</c> and <c>api_key</c>. Use this to recover a lost <c>api_key</c>.
-        /// <para/>
-        /// <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.retrieve</c>).
-        /// </remarks>
-        /// <param name="orgId">UUID of the organization that owns the application.</param>
-        /// <param name="appId">UUID of the application whose credentials you want to read.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountApplicationsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<Application>> RetrieveAsync(string orgId, string appId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/organizations/me/" + PathParameter.Encode(orgId, "orgId") + "/applications/" + PathParameter.Encode(appId, "appId") + "/")
@@ -180,16 +157,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update Application
         /// </summary>
-        /// <remarks>
-        /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. Requires owner/admin JWT.
-        /// <para/>
-        /// <c>PATCH /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.update</c>).
-        /// </remarks>
-        /// <param name="orgId">UUID of the organization that owns the application.</param>
-        /// <param name="appId">UUID of the application to update.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AccountApplicationsResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<Application>> UpdateAsync(string orgId, string appId, ApplicationUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

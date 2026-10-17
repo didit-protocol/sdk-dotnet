@@ -89,16 +89,7 @@ namespace Didit.Resources
         /// <summary>
         /// Add case link
         /// </summary>
-        /// <remarks>
-        /// Attach a session, business session, or transaction to the case. Rejected with 400 if the entity belongs to a different subject than the case.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/links/</c> (<c>cases.links.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesLinksResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<CaseLink>> CreateAsync(string caseUuid, CasesLinksCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -119,16 +110,7 @@ namespace Didit.Resources
         /// <summary>
         /// Remove case link
         /// </summary>
-        /// <remarks>
-        /// Detach a linked session, business session, or transaction from the case.
-        /// <para/>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/links/{link_uuid}/</c> (<c>cases.links.delete</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="linkUuid">Link UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesLinksResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string caseUuid, string linkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/links/" + PathParameter.Encode(linkUuid, "linkUuid") + "/")
@@ -143,15 +125,7 @@ namespace Didit.Resources
         /// <summary>
         /// List case links
         /// </summary>
-        /// <remarks>
-        /// List sessions, business sessions, and transactions attached to the case.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/links/</c> (<c>cases.links.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesLinksResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<IReadOnlyList<CaseLink>>> ListAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/links/")

@@ -67,28 +67,7 @@ namespace Didit.Resources
         /// <summary>
         /// Age Estimation (face age + passive liveness)
         /// </summary>
-        /// <remarks>
-        /// Estimate a person's age from a single face photo and run a passive liveness check in the same call — returns the model-predicted <c>age_estimation</c> (in years), a liveness <c>score</c> (0–100), and an <c>Approved</c>/<c>Declined</c> <c>status</c>. The age is model-predicted from the face, not verified against a document — use it for age gates and low-friction checks, not as legal proof of age.
-        /// <para/>
-        /// How it works. The image is analyzed for faces (set <c>rotate_image=true</c> if captures may be sideways or upside down); each detected face gets an estimated age, and the largest face in the frame drives <c>age_estimation</c>. In parallel, a passive liveness model scores whether the photo shows a live person (no user challenge required) and detects presentation attacks (photos of photos, screens, masks). Submit one clear, front-facing, well-lit face per image for best results.
-        /// <para/>
-        /// Decision logic. Any warning declines: <c>status</c> is <c>Approved</c> only when the <c>warnings</c> array is empty. A liveness <c>score</c> at or below <c>face_liveness_score_decline_threshold</c> (default <c>30</c>) adds <c>LOW_LIVENESS_SCORE</c>; a detected attack adds <c>LIVENESS_FACE_ATTACK</c>; no face found by the liveness model adds <c>NO_FACE_DETECTED</c>; no estimable face age adds <c>AGE_NOT_DETECTED</c> (<c>age_estimation</c> is <c>null</c>); an estimated age below <c>age_estimation_decline_threshold</c> (default <c>18</c>) adds <c>AGE_BELOW_MINIMUM</c>. Borderline ages near your threshold deserve a fallback to document-based verification — the model's error grows for faces close to the limit.
-        /// <para/>
-        /// Billing. Each <c>200</c> response consumes one Age Estimation API credit (standalone APIs have no free tier). When the organization's balance cannot cover the call, the endpoint returns <c>403</c> with the not-enough-credits error before any image processing.
-        /// <para/>
-        /// Session persistence (<c>save_api_request</c>, default <c>true</c>). When <c>true</c>, the call is persisted as an API-type session: it appears in the Business Console, the returned <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c> (the result is exposed there in <c>liveness_checks[]</c>, with <c>features: ["AGE_ESTIMATION"]</c>), the face crop and reference image are stored, the face embedding is added to your application's face index (used by face search and duplicate detection), and a <c>status.updated</c> webhook is emitted. When <c>false</c>, nothing is stored and <c>request_id</c> is a one-off correlation UUID that cannot be looked up later.
-        /// <para/>
-        /// Sandbox. Sandbox API keys skip all processing and billing: after request validation (malformed input still returns <c>400</c>), the endpoint returns a static <c>Approved</c> mock payload (<c>age_estimation: 30</c>, no warnings), no session is persisted, and no credits are consumed.
-        /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limit. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints; exceeding it returns <c>429</c>.
-        /// <para/>
-        /// <c>POST /v3/age-estimation/</c> (<c>age_estimation.estimate</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AgeEstimationResource.EstimateAsync"/>.</remarks>
         public Task<DiditResponse<AgeEstimationEstimateResponse>> EstimateAsync(AgeEstimationEstimateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

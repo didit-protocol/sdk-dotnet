@@ -80,19 +80,7 @@ namespace Didit.Resources
         /// <summary>
         /// Add a review note to a session's audit trail
         /// </summary>
-        /// <remarks>
-        /// Append a note to a User Verification (KYC) session's review / activity feed. This endpoint only records an entry — it never changes the session. The session's <c>status</c> is left untouched, no status-transition validation runs, and no webhook fires. To actually approve, decline, or re-open a session (which also writes a fully-attributed <c>STATUS_UPDATED</c> entry to this feed), use <c>PATCH /v3/session/{session_id}/update-status/</c> instead.
-        /// <para/>
-        /// Both body fields are optional and an empty JSON object is accepted. <c>new_status</c> is stored purely as a label on the entry and accepts any of the ten session status values (case-sensitive). <c>@email</c> mentions inside <c>comment</c> are stored as plain text only — they trigger no notifications on this endpoint, and the entry's <c>mentioned_emails</c> stays empty.
-        /// <para/>
-        /// Note on attribution: entries created here carry no actor information. In the feed they show <c>actor_display: "Unknown"</c>, <c>actor_type: "CONSOLE_USER"</c>, and <c>activity_type: "STATUS_UPDATED"</c> (storage defaults), and the <c>201</c> body's <c>user</c> field is <c>"Unknown"</c>.
-        /// <para/>
-        /// <c>POST /v3/sessions/{session_id}/reviews/</c> (<c>sessions.reviews.create</c>).
-        /// </remarks>
-        /// <param name="sessionId">UUID of the User Verification (KYC) session. Must belong to the same application as the API key — cross-application UUIDs, deleted sessions, and Business Verification (KYB) session IDs all return <c>404</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="SessionsReviewsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<SessionsReviewsCreateResponse>> CreateAsync(string sessionId, SessionsReviewsCreateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/sessions/" + PathParameter.Encode(sessionId, "sessionId") + "/reviews/")
@@ -111,19 +99,7 @@ namespace Didit.Resources
         /// <summary>
         /// List session reviews and activity log
         /// </summary>
-        /// <remarks>
-        /// Return the audit trail / activity feed for a User Verification (KYC) session, newest first, in a paginated envelope (<c>count</c> / <c>next</c> / <c>previous</c> / <c>results</c>, 50 entries per page by default).
-        /// <para/>
-        /// Feed entries are written by every actor that touches the session: manual decisions made through <c>PATCH /v3/session/{session_id}/update-status/</c> (which records <c>previous_status</c> → <c>new_status</c>), Console reviewer activity (comments with <c>@email</c> mentions, KYC/POA data edits, file uploads/removals, tag changes, detail-page views), AML ongoing-monitoring matches, and notes appended via <c>POST</c> on this same path. Reading this feed is the API-side equivalent of the Activity panel in the Didit Console session view.
-        /// <para/>
-        /// Only User Verification (KYC) sessions are addressable here; Business Verification (KYB) session IDs return <c>404</c>.
-        /// <para/>
-        /// <c>GET /v3/sessions/{session_id}/reviews/</c> (<c>sessions.reviews.list</c>).
-        /// </remarks>
-        /// <param name="sessionId">UUID of the User Verification (KYC) session. Must belong to the same application as the API key — cross-application UUIDs, deleted sessions, and Business Verification (KYB) session IDs all return <c>404</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="SessionsReviewsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<ReviewItem>>> ListAsync(string sessionId, SessionsReviewsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/sessions/" + PathParameter.Encode(sessionId, "sessionId") + "/reviews/")

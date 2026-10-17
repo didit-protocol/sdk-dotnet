@@ -74,16 +74,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create report from case
         /// </summary>
-        /// <remarks>
-        /// Create a draft FIU report for the case: DRAFT status, auto-populated from the optional template plus the case's subject, linked transactions, and narrative. Validate then finalize to produce the goAML XML and PDF.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/regulatory-reports/</c> (<c>cases.regulatory_reports.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRegulatoryReportsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportDetail>> CreateAsync(string caseUuid, CasesRegulatoryReportsCreateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/regulatory-reports/")
@@ -102,16 +93,7 @@ namespace Didit.Resources
         /// <summary>
         /// List reports for case
         /// </summary>
-        /// <remarks>
-        /// List FIU reports generated for the case.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/regulatory-reports/</c> (<c>cases.regulatory_reports.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRegulatoryReportsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<RegulatoryReportDetail>>> ListAsync(string caseUuid, CasesRegulatoryReportsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/regulatory-reports/")

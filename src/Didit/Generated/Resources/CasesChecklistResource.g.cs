@@ -74,15 +74,7 @@ namespace Didit.Resources
         /// <summary>
         /// List case checklist
         /// </summary>
-        /// <remarks>
-        /// List the case's checklist items, copied from the blueprint's content_config.checklist.items at creation, ordered.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/checklist/</c> (<c>cases.checklist.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesChecklistResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<IReadOnlyList<CaseChecklistItem>>> ListAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/checklist/")
@@ -97,17 +89,7 @@ namespace Didit.Resources
         /// <summary>
         /// Toggle checklist item
         /// </summary>
-        /// <remarks>
-        /// Mark a checklist item complete or incomplete. Resolution is blocked while any item is incomplete, unless the blueprint marks the checklist optional.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/checklist/{item_uuid}/</c> (<c>cases.checklist.toggle_item</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Case UUID.</param>
-        /// <param name="itemUuid">Checklist item UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesChecklistResource.ToggleItemAsync"/>.</remarks>
         public Task<DiditResponse<CaseChecklistItem>> ToggleItemAsync(string caseUuid, string itemUuid, CasesChecklistToggleItemParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

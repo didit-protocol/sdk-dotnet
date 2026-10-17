@@ -157,14 +157,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create transaction
         /// </summary>
-        /// <remarks>
-        /// Submit a transaction for synchronous AML/risk monitoring. The transaction is created <c>APPROVED</c>, then your rules (and crypto screening, when applicable) run inline and may flip the returned <c>status</c> to <c>IN_REVIEW</c> or <c>DECLINED</c>. <c>transaction_id</c> is your idempotency key (max 128 chars, unique per app); reusing it returns 400. A <c>transaction.created</c> webhook is dispatched on success (sandbox applications are not billed and do not emit webhooks).
-        /// <para/>
-        /// <c>POST /v3/transactions/</c> (<c>transactions.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<TransactionDetail>> CreateAsync(TransactionsCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -185,14 +178,7 @@ namespace Didit.Resources
         /// <summary>
         /// Mint an SDK transaction token
         /// </summary>
-        /// <remarks>
-        /// Mint a short-lived scoped token your app passes to the Didit SDKs so they can submit transactions directly from the end-user's device via <c>POST /v1/transactions/</c>. The token is bound to one <c>vendor_data</c> (your user id): every transaction submitted with it has its subject identity enforced server-side from that binding, so a tampered client cannot submit on behalf of another user. Mint tokens from your backend - never ship the API key itself in an app. camelCase aliases (<c>vendorData</c>, <c>ttlSeconds</c>, <c>maxUses</c>) are also accepted.
-        /// <para/>
-        /// <c>POST /v3/transactions/sdk-token/</c> (<c>transactions.create_sdk_token</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.CreateSdkTokenAsync"/>.</remarks>
         public Task<DiditResponse<TransactionsCreateSdkTokenResponse>> CreateSdkTokenAsync(TransactionsCreateSdkTokenParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -213,14 +199,7 @@ namespace Didit.Resources
         /// <summary>
         /// List transactions
         /// </summary>
-        /// <remarks>
-        /// Paginated list of monitored transactions, newest first (<c>txn_date</c> desc). <c>count</c> is capped at 100; use <c>total_transactions</c> for the true row count. This endpoint does not support filtering or search parameters.
-        /// <para/>
-        /// <c>GET /v3/transactions/</c> (<c>transactions.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<TransactionsListResponseResults>>> ListAsync(TransactionsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/")
@@ -237,15 +216,7 @@ namespace Didit.Resources
         /// <summary>
         /// List networks for a transaction
         /// </summary>
-        /// <remarks>
-        /// List the networks the transaction's backing KYC/KYB subject belongs to (resolved through the transaction's session or business session).
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/transactions/{transaction_uuid}/networks/</c> (<c>transactions.list_networks</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="transactionUuid">Transaction UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListNetworksAsync"/>.</remarks>
         public Task<DiditResponse<TransactionsListNetworksResponse>> ListNetworksAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/transactions/" + PathParameter.Encode(transactionUuid, "transactionUuid") + "/networks/")
@@ -260,16 +231,7 @@ namespace Didit.Resources
         /// <summary>
         /// List networks for a transaction party
         /// </summary>
-        /// <remarks>
-        /// List the networks a transaction party (remitter, beneficiary, or counterparty) belongs to, resolved through the party itself rather than through the transaction's backing session.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/transactions/{transaction_uuid}/parties/{transaction_party_uuid}/networks/</c> (<c>transactions.list_party_networks</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="transactionUuid">Transaction UUID.</param>
-        /// <param name="transactionPartyUuid">Transaction party UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListPartyNetworksAsync"/>.</remarks>
         public Task<DiditResponse<TransactionsListPartyNetworksResponse>> ListPartyNetworksAsync(string transactionUuid, string transactionPartyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/transactions/" + PathParameter.Encode(transactionUuid, "transactionUuid") + "/parties/" + PathParameter.Encode(transactionPartyUuid, "transactionPartyUuid") + "/networks/")
@@ -284,14 +246,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get transaction
         /// </summary>
-        /// <remarks>
-        /// Retrieve the full monitoring record for one transaction: parties, score/severity, rule runs, alerts, Travel Rule outcome, remediation session.
-        /// <para/>
-        /// <c>GET /v3/transactions/{transaction_id}/</c> (<c>transactions.retrieve</c>).
-        /// </remarks>
-        /// <param name="transactionId">Didit-stable transaction UUID (the <c>uuid</c> returned from create / list, not your <c>txn_id</c>).</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<TransactionDetail>> RetrieveAsync(string transactionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/" + PathParameter.Encode(transactionId, "transactionId") + "/")

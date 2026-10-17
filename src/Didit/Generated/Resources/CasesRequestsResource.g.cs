@@ -141,14 +141,7 @@ namespace Didit.Resources
         /// <summary>
         /// POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/cancel/
         /// </summary>
-        /// <remarks>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/cancel/</c> (<c>cases.requests.cancel</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="requestUuid">Path parameter <c>request_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.CancelAsync"/>.</remarks>
         public Task<DiditResponse<CustomerMessagingCaseRequest>> CancelAsync(string caseUuid, string requestUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/requests/" + PathParameter.Encode(requestUuid, "requestUuid") + "/cancel/")
@@ -163,16 +156,7 @@ namespace Didit.Resources
         /// <summary>
         /// POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/
         /// </summary>
-        /// <remarks>
-        /// Confirm the exact signed preview within 15 minutes. Only fixed templates and an OTP-verified contact belonging to the case subject are accepted. The request ID makes retries idempotent. Delivery is queued; SENT, SIMULATED and UNKNOWN are distinct outcomes. An actionable request sets the case to Awaiting user. A review update leaves its status unchanged.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/</c> (<c>cases.requests.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<CustomerMessagingCaseRequest>> CreateAsync(string caseUuid, CustomerMessagingCaseRequestConfirmRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -193,14 +177,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/</c> (<c>cases.requests.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<CustomerMessagingCaseRequest>>> ListAsync(string caseUuid, CasesRequestsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/requests/")
@@ -218,16 +195,7 @@ namespace Didit.Resources
         /// <summary>
         /// POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/preview/
         /// </summary>
-        /// <remarks>
-        /// Render the production email without sending or changing the case. Returns the exact recipient, sender, subject, body and a signed preview_token. Send the same contact_id, purpose, language, request_id, expires_at and preview_token to confirm within 15 minutes.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/preview/</c> (<c>cases.requests.preview</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.PreviewAsync"/>.</remarks>
         public Task<DiditResponse<CustomerMessagingCaseRequestPreviewResponse>> PreviewAsync(string caseUuid, CustomerMessagingCaseRequestPreviewRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -248,14 +216,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/attachment/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/attachment/</c> (<c>cases.requests.retrieve_attachment</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="requestUuid">Path parameter <c>request_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.RetrieveAttachmentAsync"/>.</remarks>
         public Task<DiditResponse<BinaryResponse>> RetrieveAttachmentAsync(string caseUuid, string requestUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/requests/" + PathParameter.Encode(requestUuid, "requestUuid") + "/attachment/")
@@ -270,13 +231,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/options/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/options/</c> (<c>cases.requests.retrieve_options</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.RetrieveOptionsAsync"/>.</remarks>
         public Task<DiditResponse<CustomerMessagingCaseRequestOptions>> RetrieveOptionsAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/requests/options/")

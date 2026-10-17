@@ -249,14 +249,7 @@ namespace Didit.Resources
         /// <summary>
         /// Batch delete businesses
         /// </summary>
-        /// <remarks>
-        /// Permanently delete businesses — this cannot be undone. For blocking prefer [Update Business Status](#patch-/v3/businesses/-vendor_data-/update-status/) with <c>BLOCKED</c>.
-        /// <para/>
-        /// <c>POST /v3/businesses/delete/</c> (<c>businesses.batch_delete</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.BatchDeleteAsync"/>.</remarks>
         public Task<DiditResponse<BusinessesBatchDeleteResponse>> BatchDeleteAsync(BusinessesBatchDeleteParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -277,14 +270,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create business
         /// </summary>
-        /// <remarks>
-        /// Pre-create a [business](/entities/businesses) *without* a KYB session. All fields are optional, but you should always send <c>vendor_data</c> — without it the record cannot be linked to sessions or transactions. When provided, <c>vendor_data</c> must be unique among non-deleted businesses (exact match; conflicts return 400). Not idempotent.
-        /// <para/>
-        /// <c>POST /v3/businesses/create/</c> (<c>businesses.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<BusinessDetailItem>> CreateAsync(BusinessesCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -305,14 +291,7 @@ namespace Didit.Resources
         /// <summary>
         /// List businesses
         /// </summary>
-        /// <remarks>
-        /// List [businesses](/entities/businesses) Didit assembles from KYB sessions sharing the same <c>vendor_data</c> (free-form string, NOT a UUID), plus businesses created via the API. Paginated, ordered by <c>last_session_at</c> desc. This endpoint does not support filtering or search parameters — fetch pages and filter client-side.
-        /// <para/>
-        /// <c>GET /v3/businesses/</c> (<c>businesses.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<BusinessListItem>>> ListAsync(BusinessesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/businesses/")
@@ -329,15 +308,7 @@ namespace Didit.Resources
         /// <summary>
         /// List networks for a business
         /// </summary>
-        /// <remarks>
-        /// List the networks a vendor business belongs to.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/businesses/{vendor_business_uuid}/networks/</c> (<c>businesses.list_networks</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="vendorBusinessUuid">Vendor business UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.ListNetworksAsync"/>.</remarks>
         public Task<DiditResponse<BusinessesListNetworksResponse>> ListNetworksAsync(string vendorBusinessUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/businesses/" + PathParameter.Encode(vendorBusinessUuid, "vendorBusinessUuid") + "/networks/")
@@ -352,14 +323,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get business
         /// </summary>
-        /// <remarks>
-        /// Fetch one [business](/entities/businesses) by <c>vendor_data</c> (exact match). Adds <c>metadata</c> and <c>updated_at</c> to the list view. Deleted businesses return 404.
-        /// <para/>
-        /// <c>GET /v3/businesses/{vendor_data}/</c> (<c>businesses.retrieve</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the business — a free-form string (NOT a UUID), matched exactly as sent.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<BusinessDetailItem>> RetrieveAsync(string vendorData, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/businesses/" + PathParameter.Encode(vendorData, "vendorData") + "/")
@@ -374,15 +338,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get AML ongoing monitoring job
         /// </summary>
-        /// <remarks>
-        /// Progress and per-outcome counters of a monitoring toggle job. Poll every couple of seconds while status is PENDING or PROCESSING.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/vendor-businesses/toggle-ongoing-monitoring/{job_id}/</c> (<c>businesses.retrieve_ongoing_monitoring_job</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="jobId">Monitoring job UUID returned by the toggle endpoint.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.RetrieveOngoingMonitoringJobAsync"/>.</remarks>
         public Task<DiditResponse<BusinessesRetrieveOngoingMonitoringJobResponse>> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/vendor-businesses/toggle-ongoing-monitoring/" + PathParameter.Encode(jobId, "jobId") + "/")
@@ -397,15 +353,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get AML ongoing monitoring job
         /// </summary>
-        /// <remarks>
-        /// Progress and per-outcome counters of a monitoring toggle job. Poll every couple of seconds while status is PENDING or PROCESSING.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/businesses/toggle-ongoing-monitoring/{job_id}/</c> (<c>businesses.retrieve_session_ongoing_monitoring_job</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="jobId">Monitoring job UUID returned by the toggle endpoint.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.RetrieveSessionOngoingMonitoringJobAsync"/>.</remarks>
         public Task<DiditResponse<BusinessesRetrieveSessionOngoingMonitoringJobResponse>> RetrieveSessionOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/businesses/toggle-ongoing-monitoring/" + PathParameter.Encode(jobId, "jobId") + "/")
@@ -420,16 +368,7 @@ namespace Didit.Resources
         /// <summary>
         /// Enable or disable AML ongoing monitoring for businesses
         /// </summary>
-        /// <remarks>
-        /// Turns AML ongoing monitoring on or off for the selected businesses, with the same semantics as the Business Console. Exactly one monitored AML screening is kept per business, so a profile that verified several times is monitored and billed once; disabling turns monitoring off across all of the profile's screenings. Businesses without any AML screening are screened first (billed as a regular AML screening) when they have the legal or display name needed; otherwise they are reported as <c>skipped_no_identity_data</c>.
-        /// <para/>
-        /// Set <c>estimate_only: true</c> to preview counts and costs without writing anything. Selections of 20 profiles or fewer resolve inline and return <c>200</c> with the completed job; larger selections return <c>202</c> and run in the background - poll [Get AML monitoring job](#get-/v3/aml-monitoring/jobs/-job_id-/) with the returned <c>job_id</c>. Enabling is refused with <c>403</c> when the organization balance does not cover the estimate. Identifiers that match nothing are listed in <c>unmatched</c> and never fail the request: a selection that matches nothing completes as an empty job (<c>total</c> 0), the same convention as the batch delete endpoints.
-        /// <para/>
-        /// <c>POST /v3/businesses/aml-monitoring/</c> (<c>businesses.set_aml_monitoring</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.SetAmlMonitoringAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> SetAmlMonitoringAsync(BusinessesSetAmlMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -450,15 +389,7 @@ namespace Didit.Resources
         /// <summary>
         /// Toggle AML ongoing monitoring for businesses
         /// </summary>
-        /// <remarks>
-        /// Business-level equivalent of the user toggle: one monitored AML screening per business, with businesses lacking any AML screening screened first (company entity). Same estimate_only, inline fast-path and async job contract.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/vendor-businesses/toggle-ongoing-monitoring/</c> (<c>businesses.set_ongoing_monitoring</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.SetOngoingMonitoringAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> SetOngoingMonitoringAsync(BusinessesSetOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -479,15 +410,7 @@ namespace Didit.Resources
         /// <summary>
         /// Toggle AML ongoing monitoring for business sessions
         /// </summary>
-        /// <remarks>
-        /// Session-level toggle for KYB verifications, addressed by session number. Sessions without an AML screening get one created and attached to the session itself. Same estimate_only, inline fast-path and async job contract as the user-level endpoints. Replaces the legacy synchronous behavior that skipped sessions without an AML screening.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/businesses/toggle-ongoing-monitoring/</c> (<c>businesses.set_session_ongoing_monitoring</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.SetSessionOngoingMonitoringAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> SetSessionOngoingMonitoringAsync(BusinessesSetSessionOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -508,15 +431,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update business
         /// </summary>
-        /// <remarks>
-        /// Partial update of a business: <c>display_name</c>, <c>legal_name</c>, <c>registration_number</c>, <c>country_code</c>, <c>status</c>, <c>metadata</c>. <c>metadata</c> fully replaces. Setting <c>status</c> to <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry.
-        /// <para/>
-        /// <c>PATCH /v3/businesses/{vendor_data}/</c> (<c>businesses.update</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the business (free-form string, NOT a UUID).</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<BusinessDetailItem>> UpdateAsync(string vendorData, BusinessesUpdateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -537,15 +452,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update business status
         /// </summary>
-        /// <remarks>
-        /// Flip only the lifecycle <c>status</c> of a business — VendorBusinessStatusChoices (<c>ACTIVE</c>/<c>FLAGGED</c>/<c>BLOCKED</c>, NOT session statuses). <c>BLOCKED</c> adds <c>vendor_data</c> to the system blocklist.
-        /// <para/>
-        /// <c>PATCH /v3/businesses/{vendor_data}/update-status/</c> (<c>businesses.update_status</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the business (free-form string, NOT a UUID).</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.UpdateStatusAsync"/>.</remarks>
         public Task<DiditResponse<BusinessDetailItem>> UpdateStatusAsync(string vendorData, BusinessesUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

@@ -90,16 +90,7 @@ namespace Didit.Resources
         /// <summary>
         /// Add a private network note
         /// </summary>
-        /// <remarks>
-        /// Requires a console user with write:networks. The author is assigned from the authenticated user. Supply a new random UUID client_reference for each note; retry the same body and reference after an uncertain response to avoid duplicates. Reusing a reference for another body, author or network returns 409. Notes follow the surviving investigation when networks merge.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/notes/</c> (<c>networks.notes.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksNotesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<NetworkNote>> CreateAsync(string networkUuid, NetworksNotesCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -120,16 +111,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete your network note
         /// </summary>
-        /// <remarks>
-        /// Requires write:networks and the authenticated author of the note. Deletion is irreversible. Connected account and verification data are unaffected.
-        /// <para/>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/notes/{note_uuid}/</c> (<c>networks.notes.delete</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="noteUuid">Path parameter <c>note_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksNotesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string networkUuid, string noteUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/notes/" + PathParameter.Encode(noteUuid, "noteUuid") + "/")
@@ -144,16 +126,7 @@ namespace Didit.Resources
         /// <summary>
         /// List private network notes
         /// </summary>
-        /// <remarks>
-        /// Console users with read:networks can read notes on a network visible to the application. Notes stay within the organization and are not contributed to shared intelligence. Newest notes appear first.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/notes/</c> (<c>networks.notes.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksNotesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<NetworkNote>>> ListAsync(string networkUuid, NetworksNotesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/notes/")

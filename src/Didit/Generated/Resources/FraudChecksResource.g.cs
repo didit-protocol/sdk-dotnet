@@ -89,16 +89,7 @@ namespace Didit.Resources
         /// <summary>
         /// Run a Fraud Check
         /// </summary>
-        /// <remarks>
-        /// Submit one or more typed identifiers and receive normalization, fresh enrichment, authoritative validation where the country and identifier type are covered, independent risk dimensions and a recommendation in one response.
-        /// <para/>
-        /// These profiles support identifier checks. Selfie-based identity binding (<c>biometric_identity</c>) requires profile version <c>2026-09-14.2</c> and a Brazilian CPF; it runs only with the user's consent and when your organization is entitled to it. Earlier versions report it as <c>not_available_in_profile_version</c>. Modules that cannot run are reported as skipped with a deterministic reason; a source that could not answer is never reported as an identity mismatch.
-        /// <para/>
-        /// <c>POST /v3/fraud/checks/</c> (<c>fraud_checks.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="FraudChecksResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<FraudCheckResponse>> CreateAsync(FraudCheckRequestRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -119,14 +110,7 @@ namespace Didit.Resources
         /// <summary>
         /// Plan a Fraud Check
         /// </summary>
-        /// <remarks>
-        /// Validate selected checks and estimate their price without executing, creating a session or billing.
-        /// <para/>
-        /// <c>POST /v3/fraud/checks/plan/</c> (<c>fraud_checks.plan</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="FraudChecksResource.PlanAsync"/>.</remarks>
         public Task<DiditResponse<FraudCheckPlan>> PlanAsync(FraudCheckRequestRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -147,14 +131,7 @@ namespace Didit.Resources
         /// <summary>
         /// Retrieve a Fraud Check
         /// </summary>
-        /// <remarks>
-        /// Fetch a previously created check by its <c>check_id</c>.
-        /// <para/>
-        /// <c>GET /v3/fraud/checks/{check_id}/</c> (<c>fraud_checks.retrieve</c>).
-        /// </remarks>
-        /// <param name="checkId">Path parameter <c>check_id</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="FraudChecksResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<FraudCheckResponse>> RetrieveAsync(string checkId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/fraud/checks/" + PathParameter.Encode(checkId, "checkId") + "/")

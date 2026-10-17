@@ -553,14 +553,7 @@ namespace Didit.Resources
         /// <summary>
         /// Cancel a wallet verification
         /// </summary>
-        /// <remarks>
-        /// Withdraw a pending verification: it is declined as cancelled and never billed. A decided one is returned unchanged. Smart-ID and Mobile-ID: a cancel that arrives while a poll is checking the sign-in waits a few seconds for that poll, then declines it, or returns it verified if the user had already confirmed. A verification the user is completing right now cannot be cancelled (409 verification_in_progress with Retry-After): retry after that many seconds to read its outcome.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/verifications/{request_id}/cancel/</c> (<c>id_wallets.cancel_verification</c>).
-        /// </remarks>
-        /// <param name="requestId">The request_id the start endpoint returned.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.CancelVerificationAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> CancelVerificationAsync(string requestId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/id-verification/wallets/verifications/" + PathParameter.Encode(requestId, "requestId") + "/cancel/")
@@ -575,13 +568,7 @@ namespace Didit.Resources
         /// <summary>
         /// List Digital ID wallets
         /// </summary>
-        /// <remarks>
-        /// Every Digital ID wallet with its start endpoint, countries, required fields and whether this application can start it in this environment now. Listed does not mean live.
-        /// <para/>
-        /// <c>GET /v3/id-verification/wallets/</c> (<c>id_wallets.list</c>).
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletCatalogResponse>> ListAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/id-verification/wallets/")
@@ -596,14 +583,7 @@ namespace Didit.Resources
         /// <summary>
         /// Poll a wallet verification
         /// </summary>
-        /// <remarks>
-        /// Smart-ID and Mobile-ID: ask the provider whether the user confirmed, refused or let the prompt lapse, and verify the signed identity when they confirmed. Redirect wallets complete through the user's browser, so for them this only reads the verification back. Answers the verification as it is afterwards.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/verifications/{request_id}/poll/</c> (<c>id_wallets.poll_verification</c>).
-        /// </remarks>
-        /// <param name="requestId">The request_id the start endpoint returned.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.PollVerificationAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> PollVerificationAsync(string requestId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/id-verification/wallets/verifications/" + PathParameter.Encode(requestId, "requestId") + "/poll/")
@@ -618,14 +598,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get a wallet verification
         /// </summary>
-        /// <remarks>
-        /// Status and result of a wallet verification: the normalized identity and the wallet's own attributes once verified, the error code once declined, the next action while pending. A verification past expires_at is decided timeout.
-        /// <para/>
-        /// <c>GET /v3/id-verification/wallets/verifications/{request_id}/</c> (<c>id_wallets.retrieve_verification</c>).
-        /// </remarks>
-        /// <param name="requestId">The request_id the start endpoint returned.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.RetrieveVerificationAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> RetrieveVerificationAsync(string requestId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/id-verification/wallets/verifications/" + PathParameter.Encode(requestId, "requestId") + "/")
@@ -640,15 +613,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Auðkenni verification
         /// </summary>
-        /// <remarks>
-        /// Start a Auðkenni sign-in (Auðkenni (Icelandic electronic ID); ISL) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/audkenni/</c> (<c>id_wallets.start_audkenni</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartAudkenniAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartAudkenniAsync(DigitalIdWalletApiAudkenniWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -669,15 +634,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Bank iD verification
         /// </summary>
-        /// <remarks>
-        /// Start a Bank iD sign-in (Bankovní identita, a.s.; CZE) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/bankid-cz/</c> (<c>id_wallets.start_bankid_cz</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartBankidCzAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartBankidCzAsync(DigitalIdWalletApiBankidCzWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -698,15 +655,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start BankID (NOR) verification
         /// </summary>
-        /// <remarks>
-        /// Start a BankID (NOR) sign-in (BankID BankAxept AS; NOR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/bankid-no/</c> (<c>id_wallets.start_bankid_no</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartBankidNoAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartBankidNoAsync(DigitalIdWalletApiBankidNoWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -727,15 +676,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start BankID (SWE) verification
         /// </summary>
-        /// <remarks>
-        /// Start a BankID (SWE) sign-in (Finansiell ID-Teknik / bank consortium; SWE) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/bankid-se/</c> (<c>id_wallets.start_bankid_se</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartBankidSeAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartBankidSeAsync(DigitalIdWalletApiBankidSeWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -756,15 +697,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Buypass ID verification
         /// </summary>
-        /// <remarks>
-        /// Start a Buypass ID sign-in (Buypass AS; NOR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/buypass/</c> (<c>id_wallets.start_buypass</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartBuypassAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartBuypassAsync(DigitalIdWalletApiBuypassWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -785,15 +718,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start ConnectID verification
         /// </summary>
-        /// <remarks>
-        /// Start a ConnectID sign-in (Australian Payments Plus; AUS) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/connectid/</c> (<c>id_wallets.start_connectid</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartConnectidAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartConnectidAsync(DigitalIdWalletApiConnectidWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -814,15 +739,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Diia verification
         /// </summary>
-        /// <remarks>
-        /// Start a Diia sign-in (Ministry of Digital Transformation of Ukraine; UKR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/diia/</c> (<c>id_wallets.start_diia</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartDiiaAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartDiiaAsync(DigitalIdWalletApiDiiaWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -843,15 +760,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start eParaksts mobile verification
         /// </summary>
-        /// <remarks>
-        /// Start a eParaksts mobile sign-in (LVRTC (Latvian State Radio and Television Centre); LVA) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/eparaksts-mobile/</c> (<c>id_wallets.start_eparaksts_mobile</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartEparakstsMobileAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartEparakstsMobileAsync(DigitalIdWalletApiEparakstsMobileWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -872,15 +781,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start EUDI Wallet verification
         /// </summary>
-        /// <remarks>
-        /// Start a EUDI Wallet sign-in (The user's own member state; the issuer differs per country; AUT, BEL, BGR, HRV, CYP, CZE, DNK, EST, FIN, FRA, DEU, GRC, HUN, IRL, ITA, LVA, LTU, LUX, MLT, NLD, POL, PRT, ROU, SVK, SVN, ESP, SWE, ISL, LIE, NOR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/eudi/</c> (<c>id_wallets.start_eudi</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartEudiAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartEudiAsync(DigitalIdWalletApiEudiWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -901,15 +802,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start FranceConnect verification
         /// </summary>
-        /// <remarks>
-        /// Start a FranceConnect sign-in (DINUM (French state); FRA) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/franceconnect/</c> (<c>id_wallets.start_franceconnect</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartFranceconnectAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartFranceconnectAsync(DigitalIdWalletApiFranceconnectWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -930,15 +823,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Freja eID verification
         /// </summary>
-        /// <remarks>
-        /// Start a Freja eID sign-in (Freja eID Group; SWE) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/frejaid/</c> (<c>id_wallets.start_frejaid</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartFrejaidAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartFrejaidAsync(DigitalIdWalletApiFrejaidWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -959,15 +844,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Finnish Trust Network verification
         /// </summary>
-        /// <remarks>
-        /// Start a Finnish Trust Network sign-in (Finnish banks and mobile operators (FTN); FIN) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/ftn/</c> (<c>id_wallets.start_ftn</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartFtnAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartFtnAsync(DigitalIdWalletApiFtnWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -988,15 +865,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start gov.br verification
         /// </summary>
-        /// <remarks>
-        /// Start a gov.br sign-in (Governo Federal do Brasil; BRA) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/govbr/</c> (<c>id_wallets.start_govbr</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartGovbrAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartGovbrAsync(DigitalIdWalletApiGovbrWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1017,15 +886,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start GOV.UK Wallet verification
         /// </summary>
-        /// <remarks>
-        /// Start a GOV.UK Wallet sign-in (UK Government Digital Service; GBR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/govuk-wallet/</c> (<c>id_wallets.start_govuk_wallet</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartGovukWalletAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartGovukWalletAsync(DigitalIdWalletApiGovukWalletWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1046,15 +907,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Estonian ID-card verification
         /// </summary>
-        /// <remarks>
-        /// Start a Estonian ID-card sign-in (Police and Border Guard Board (Estonia); EST) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/idcard-ee/</c> (<c>id_wallets.start_idcard_ee</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartIdcardEeAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartIdcardEeAsync(DigitalIdWalletApiIdcardEeWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1075,15 +928,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start iDIN verification
         /// </summary>
-        /// <remarks>
-        /// Start a iDIN sign-in (Dutch banks (Currence iDIN); NLD) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/idin/</c> (<c>id_wallets.start_idin</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartIdinAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartIdinAsync(DigitalIdWalletApiIdinWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1104,15 +949,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start itsme verification
         /// </summary>
-        /// <remarks>
-        /// Start a itsme sign-in (Belgian Mobile ID; BEL, LUX, NLD) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/itsme/</c> (<c>id_wallets.start_itsme</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartItsmeAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartItsmeAsync(DigitalIdWalletApiItsmeWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1133,15 +970,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start MitID verification
         /// </summary>
-        /// <remarks>
-        /// Start a MitID sign-in (Danish Agency for Digital Government; DNK) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/mitid/</c> (<c>id_wallets.start_mitid</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartMitidAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartMitidAsync(DigitalIdWalletApiMitidWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1162,15 +991,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Mobile-ID verification
         /// </summary>
-        /// <remarks>
-        /// Start a Mobile-ID sign-in (SK ID Solutions with the national mobile operators; EST, LTU) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=confirm_in_app with the comparison code to show the user; the user confirms it and enters their PIN in the app (never collect the PIN). Poll POST /v3/id-verification/wallets/verifications/{request_id}/poll/ every poll_interval_seconds, or rely on the webhook: Didit polls in the background too. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/mobile-id/</c> (<c>id_wallets.start_mobile_id</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartMobileIdAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartMobileIdAsync(DigitalIdWalletApiMobileIdWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1191,15 +1012,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start MojeID verification
         /// </summary>
-        /// <remarks>
-        /// Start a MojeID sign-in (CZ.NIC; CZE) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/mojeid/</c> (<c>id_wallets.start_mojeid</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartMojeidAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartMojeidAsync(DigitalIdWalletApiMojeidWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1220,15 +1033,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start OneID verification
         /// </summary>
-        /// <remarks>
-        /// Start a OneID sign-in (OneID (UK bank-verified identity); GBR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/oneid/</c> (<c>id_wallets.start_oneid</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartOneidAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartOneidAsync(DigitalIdWalletApiOneidWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1249,15 +1054,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Personalausweis verification
         /// </summary>
-        /// <remarks>
-        /// Start a Personalausweis sign-in (Bundesministerium des Innern (eID); DEU) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/personalausweis/</c> (<c>id_wallets.start_personalausweis</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartPersonalausweisAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartPersonalausweisAsync(DigitalIdWalletApiPersonalausweisWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1278,15 +1075,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Smart-ID verification
         /// </summary>
-        /// <remarks>
-        /// Start a Smart-ID sign-in (SK ID Solutions; EST, LVA, LTU, BEL) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=confirm_in_app with the comparison code to show the user; the user confirms it and enters their PIN in the app (never collect the PIN). Poll POST /v3/id-verification/wallets/verifications/{request_id}/poll/ every poll_interval_seconds, or rely on the webhook: Didit polls in the background too. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/smart-id/</c> (<c>id_wallets.start_smart_id</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartSmartIdAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartSmartIdAsync(DigitalIdWalletApiSmartIdWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1307,15 +1096,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start UAE PASS verification
         /// </summary>
-        /// <remarks>
-        /// Start a UAE PASS sign-in (UAE Digital Government Authority; ARE) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/uae-pass/</c> (<c>id_wallets.start_uae_pass</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartUaePassAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartUaePassAsync(DigitalIdWalletApiUaePassWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -1336,15 +1117,7 @@ namespace Didit.Resources
         /// <summary>
         /// Start Vipps verification
         /// </summary>
-        /// <remarks>
-        /// Start a Vipps sign-in (Vipps MobilePay / BankID NO; NOR) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=redirect with the URL to send the user's browser to; the user returns to return_url with request_id and result appended. Read the outcome with GET /v3/id-verification/wallets/verifications/{request_id}/ or from the webhook, never from the URL. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
-        /// <para/>
-        /// <c>POST /v3/id-verification/wallets/vipps/</c> (<c>id_wallets.start_vipps</c>).
-        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartVippsAsync"/>.</remarks>
         public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartVippsAsync(DigitalIdWalletApiVippsWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

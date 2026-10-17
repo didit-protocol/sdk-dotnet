@@ -53,14 +53,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get AML ongoing monitoring job
         /// </summary>
-        /// <remarks>
-        /// Status, outcome counters and per-record results of a monitoring toggle job started from <c>POST /v3/users/aml-monitoring/</c> or <c>POST /v3/businesses/aml-monitoring/</c>. Poll every couple of seconds while <c>status</c> is <c>PENDING</c> or <c>PROCESSING</c>; <c>results</c> is complete once it is <c>COMPLETED</c>.
-        /// <para/>
-        /// <c>GET /v3/aml-monitoring/jobs/{job_id}/</c> (<c>aml_monitoring.retrieve_job</c>).
-        /// </remarks>
-        /// <param name="jobId">The <c>job_id</c> returned by the toggle endpoint.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="AmlMonitoringResource.RetrieveJobAsync"/>.</remarks>
         public Task<DiditResponse<AmlMonitoringRetrieveJobResponse>> RetrieveJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/aml-monitoring/jobs/" + PathParameter.Encode(jobId, "jobId") + "/")

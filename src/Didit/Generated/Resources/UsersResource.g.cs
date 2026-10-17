@@ -267,16 +267,7 @@ namespace Didit.Resources
         /// <summary>
         /// Batch delete users
         /// </summary>
-        /// <remarks>
-        /// Permanently delete users — the user records are removed permanently. For everyday blocking prefer [Update User Status](#patch-/v3/users/-vendor_data-/update-status/) with <c>BLOCKED</c>. Select users with <c>vendor_data_list</c>, with <c>didit_internal_id_list</c>, or with both at once; or pass <c>delete_all: true</c>. The Console's <c>filter_*</c> batch params are rejected with a <c>400</c> rather than ignored, so a narrowed intent can never turn into a full wipe.
-        /// <para/>
-        /// Biometric templates: every image-free biometric template retained for these users after session deletion (see <c>/v3/biometric-templates/</c>) is purged before the user is deleted, so the person stops matching in duplicate detection and Face Search. If a template cannot be purged because a biometric store is unavailable, the call returns <c>503</c>, no user in the request is deleted, and repeating the request finishes the job.
-        /// <para/>
-        /// <c>POST /v3/users/delete/</c> (<c>users.batch_delete</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.BatchDeleteAsync"/>.</remarks>
         public Task<DiditResponse<UsersBatchDeleteResponse>> BatchDeleteAsync(UsersBatchDeleteParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -297,14 +288,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create user
         /// </summary>
-        /// <remarks>
-        /// Pre-create a [user](/entities/users) by <c>vendor_data</c> *without* a verification session. <c>vendor_data</c> must be unique among non-deleted users for the application (exact match; conflicts return 400). Not idempotent.
-        /// <para/>
-        /// <c>POST /v3/users/create/</c> (<c>users.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<UserDetailItem>> CreateAsync(UsersCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -325,30 +309,7 @@ namespace Didit.Resources
         /// <summary>
         /// Download the full user history PDF report
         /// </summary>
-        /// <remarks>
-        /// Render and download one compliance-ready PDF containing the full verification history of the user identified by <c>vendor_data</c>. It is the same document the Console produces from User detail → Actions → Download PDF, so periodic compliance exports no longer need a person clicking in the Console.
-        /// <para/>
-        /// What the report contains. A cover page with the profile summary (name, date of birth, issuing states, approved emails and phones), the latest status of every feature, the session counters and an index of the sessions included — followed by the standard report of every included session, in chronological order (oldest first). Each session report is the same document <c>GET /v3/session/{sessionId}/generate-pdf/</c> returns for that session.
-        /// <para/>
-        /// Eligible sessions. Only User Verification (KYC) sessions in <c>Approved</c>, <c>Declined</c>, <c>In Review</c> or <c>Kyc Expired</c> are included; sessions in any other status are skipped. If the user has no session in one of those statuses the endpoint returns <c>403</c> — see below.
-        /// <para/>
-        /// Cap. The report is capped at the 20 most recent reportable sessions. When a user has more, the newest 20 are included and the cover page states how many older sessions were left out. Use <c>GET /v3/sessions/?vendor_data=…</c> for the complete list as JSON.
-        /// <para/>
-        /// Branding. If your application has white-label customization, the cover and every session report are rendered with your logo and privacy-policy URL; otherwise they carry Didit branding. Reports are rendered in English — there is no language parameter.
-        /// <para/>
-        /// No caching. Every call re-renders the PDF from the current data, so a report generated after a manual review reflects the reviewer's decision. Two calls for the same user can produce byte-different files — archive the downloaded file if you need an immutable copy.
-        /// <para/>
-        /// Latency. Rendering is synchronous and downloads every stored image of every included session, so a user with many media-heavy sessions can take tens of seconds. Use a generous client read timeout (120 s recommended) and stream the body to disk. Generation stops at a server-side time budget instead of running until your client gives up: if that budget is reached, the response is still a valid PDF containing the most recent sessions, and the cover states how many were omitted.
-        /// <para/>
-        /// Scope. The user is resolved inside the application that owns the API key. A key can never export a user of another application — such a user does not exist for it and the endpoint returns <c>404</c>.
-        /// <para/>
-        /// Trailing slash. The canonical route ends with a trailing slash (<c>…/generate-pdf/</c>). A request without it is served directly with the same response — there is no <c>301</c> redirect, so no client has to follow redirects and <c>curl</c> does not need <c>-L</c>. Use the slashed URL as in the samples.
-        /// <para/>
-        /// <c>GET /v3/users/{vendor_data}/generate-pdf/</c> (<c>users.generate_pdf</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the user — a free-form string (NOT a UUID). This is the same value you passed as <c>vendor_data</c> when creating the user's sessions, matched exactly as sent. URL-encode it; a value containing <c>/</c> cannot be addressed by this route.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.GeneratePdfAsync"/>.</remarks>
         public Task<DiditResponse<BinaryResponse>> GeneratePdfAsync(string vendorData, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/users/" + PathParameter.Encode(vendorData, "vendorData") + "/generate-pdf/")
@@ -363,14 +324,7 @@ namespace Didit.Resources
         /// <summary>
         /// List users
         /// </summary>
-        /// <remarks>
-        /// List [users](/entities/users) Didit assembles from KYC sessions sharing the same <c>vendor_data</c> (free-form string, NOT a UUID), plus users created via the API. Paginated, ordered by <c>last_session_at</c> desc. This endpoint does not support filtering or search parameters — fetch pages and filter client-side.
-        /// <para/>
-        /// <c>GET /v3/users/</c> (<c>users.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<UserListItem>>> ListAsync(UsersListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/users/")
@@ -387,15 +341,7 @@ namespace Didit.Resources
         /// <summary>
         /// List networks for a user
         /// </summary>
-        /// <remarks>
-        /// List the networks a vendor user belongs to.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/users/{vendor_user_uuid}/networks/</c> (<c>users.list_networks</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="vendorUserUuid">Vendor user UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.ListNetworksAsync"/>.</remarks>
         public Task<DiditResponse<UsersListNetworksResponse>> ListNetworksAsync(string vendorUserUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/users/" + PathParameter.Encode(vendorUserUuid, "vendorUserUuid") + "/networks/")
@@ -410,14 +356,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get user
         /// </summary>
-        /// <remarks>
-        /// Fetch one [user](/entities/users) by <c>vendor_data</c> (exact match). Adds <c>metadata</c>, <c>comments</c>, and <c>updated_at</c> to the list view, and switches <c>tags</c> to the detailed tag-link shape.
-        /// <para/>
-        /// <c>GET /v3/users/{vendor_data}/</c> (<c>users.retrieve</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the user — a free-form string (NOT a UUID). This is the same value you passed as <c>vendor_data</c> when creating the session that first introduced this user, matched exactly as sent.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<UserDetailItem>> RetrieveAsync(string vendorData, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/users/" + PathParameter.Encode(vendorData, "vendorData") + "/")
@@ -432,15 +371,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get AML ongoing monitoring job
         /// </summary>
-        /// <remarks>
-        /// Progress and per-outcome counters of a monitoring toggle job. Poll every couple of seconds while status is PENDING or PROCESSING.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/vendor-users/toggle-ongoing-monitoring/{job_id}/</c> (<c>users.retrieve_ongoing_monitoring_job</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="jobId">Monitoring job UUID returned by the toggle endpoint.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.RetrieveOngoingMonitoringJobAsync"/>.</remarks>
         public Task<DiditResponse<UsersRetrieveOngoingMonitoringJobResponse>> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/vendor-users/toggle-ongoing-monitoring/" + PathParameter.Encode(jobId, "jobId") + "/")
@@ -455,16 +386,7 @@ namespace Didit.Resources
         /// <summary>
         /// Enable or disable AML ongoing monitoring for users
         /// </summary>
-        /// <remarks>
-        /// Turns AML ongoing monitoring on or off for the selected users, with the same semantics as the Business Console. Exactly one monitored AML screening is kept per user, so a profile that verified several times is monitored and billed once; disabling turns monitoring off across all of the profile's screenings. Users without any AML screening are screened first (billed as a regular AML screening) when they have the full name, date of birth and country needed; otherwise they are reported as <c>skipped_no_identity_data</c>.
-        /// <para/>
-        /// Set <c>estimate_only: true</c> to preview counts and costs without writing anything. Selections of 20 profiles or fewer resolve inline and return <c>200</c> with the completed job; larger selections return <c>202</c> and run in the background - poll [Get AML monitoring job](#get-/v3/aml-monitoring/jobs/-job_id-/) with the returned <c>job_id</c>. Enabling is refused with <c>403</c> when the organization balance does not cover the estimate. Identifiers that match nothing are listed in <c>unmatched</c> and never fail the request: a selection that matches nothing completes as an empty job (<c>total</c> 0), the same convention as the batch delete endpoints.
-        /// <para/>
-        /// <c>POST /v3/users/aml-monitoring/</c> (<c>users.set_aml_monitoring</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.SetAmlMonitoringAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> SetAmlMonitoringAsync(UsersSetAmlMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -485,15 +407,7 @@ namespace Didit.Resources
         /// <summary>
         /// Toggle AML ongoing monitoring for users
         /// </summary>
-        /// <remarks>
-        /// Enables or disables AML ongoing monitoring at the user level. Exactly one monitored AML screening is kept per user; users without any AML screening (for example imported users) get one created and screened first, billed as a regular AML screening. Set estimate_only to preview counts and costs without writing. Batches of 20 or fewer resolve inline (200, COMPLETED); larger batches return 202 and run asynchronously.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/vendor-users/toggle-ongoing-monitoring/</c> (<c>users.set_ongoing_monitoring</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.SetOngoingMonitoringAsync"/>.</remarks>
         public Task<DiditResponse<JsonElement>> SetOngoingMonitoringAsync(UsersSetOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -514,15 +428,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update user
         /// </summary>
-        /// <remarks>
-        /// Partial update of a user: <c>display_name</c>, <c>full_name</c>, <c>date_of_birth</c>, <c>status</c>, <c>metadata</c>, <c>approved_emails</c>/<c>approved_phones</c>/<c>issuing_states</c>. <c>metadata</c> fully replaces. Note: unlike [Update User Status](#patch-/v3/users/-vendor_data-/update-status/), changing <c>status</c> here does NOT record a status-change activity and does NOT sync the system blocklist — use the dedicated update-status endpoint for <c>BLOCKED</c>/unblock flows.
-        /// <para/>
-        /// <c>PATCH /v3/users/{vendor_data}/</c> (<c>users.update</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the user (free-form string, NOT a UUID).</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<UserDetailItem>> UpdateAsync(string vendorData, UsersUpdateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Patch, "/v3/users/" + PathParameter.Encode(vendorData, "vendorData") + "/")
@@ -541,15 +447,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update user status
         /// </summary>
-        /// <remarks>
-        /// Flip only the lifecycle <c>status</c> of a user — <c>ACTIVE</c>/<c>FLAGGED</c>/<c>BLOCKED</c> (NOT session statuses). <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Each change is recorded as a <c>STATUS_CHANGED</c> activity on the user.
-        /// <para/>
-        /// <c>PATCH /v3/users/{vendor_data}/update-status/</c> (<c>users.update_status</c>).
-        /// </remarks>
-        /// <param name="vendorData">Your unique identifier for the user.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.UpdateStatusAsync"/>.</remarks>
         public Task<DiditResponse<UserDetailItem>> UpdateStatusAsync(string vendorData, UsersUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -570,16 +468,7 @@ namespace Didit.Resources
         /// <summary>
         /// Upload user face
         /// </summary>
-        /// <remarks>
-        /// Attach a trusted imported face image to an existing User profile. Use this after creating or retrieving a User by <c>vendor_data</c> and reading its <c>didit_internal_id</c>. The uploaded face is stored on the User profile and indexed for duplicate detection and face search. It is not added to a face blocklist.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/vendor-users/by-id/{didit_internal_id}/faces/upload/</c> (<c>users.upload_face</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="diditInternalId">Didit's internal User UUID, returned as <c>didit_internal_id</c> by <c>GET /v3/users/{vendor_data}/</c> and <c>POST /v3/users/create/</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.UploadFaceAsync"/>.</remarks>
         public Task<DiditResponse<UsersUploadFaceResponse>> UploadFaceAsync(string diditInternalId, UsersUploadFaceParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

@@ -118,14 +118,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create webhook destination
         /// </summary>
-        /// <remarks>
-        /// Create a webhook destination. The response includes the auto-generated <c>secret_shared_key</c> HMAC signing secret (also readable later via <c>GET /v3/webhook/destinations/{destination_uuid}/</c>). Always send <c>subscribed_events</c> with at least one event (no wildcards): an explicit empty list is rejected with 400, and omitting the field creates a destination subscribed to nothing, which never receives a webhook. The <c>(application, url)</c> pair must be unique among non-deleted destinations.
-        /// <para/>
-        /// <c>POST /v3/webhook/destinations/</c> (<c>webhooks.destinations.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<WebhooksDestinationsCreateResponse>> CreateAsync(WebhooksDestinationsCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -146,14 +139,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete webhook destination
         /// </summary>
-        /// <remarks>
-        /// Delete a webhook destination. Future events stop being pushed to its URL. Past delivery records are not affected and stay queryable from the Business Console, so deleting a destination is not a way to remove your delivery history. Calling again returns 404.
-        /// <para/>
-        /// <c>DELETE /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.delete</c>).
-        /// </remarks>
-        /// <param name="destinationUuid">UUID of the destination to delete.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string destinationUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/")
@@ -168,13 +154,7 @@ namespace Didit.Resources
         /// <summary>
         /// List webhook destinations
         /// </summary>
-        /// <remarks>
-        /// List all webhook destinations (unpaginated array, oldest first). Each row includes URL, subscribed events, and delivery health metrics. The signing secret is NOT included in the list — fetch a single destination (<c>GET /v3/webhook/destinations/{destination_uuid}/</c>) to read <c>secret_shared_key</c>.
-        /// <para/>
-        /// <c>GET /v3/webhook/destinations/</c> (<c>webhooks.destinations.list</c>).
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<IReadOnlyList<WebhooksDestinationsListResponse>>> ListAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/webhook/destinations/")
@@ -189,14 +169,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get webhook destination
         /// </summary>
-        /// <remarks>
-        /// Retrieve one webhook destination with its <c>secret_shared_key</c> signing secret and delivery health summary. API-key callers always receive the secret in full; Console users without <c>read:webhooks</c> see an empty string.
-        /// <para/>
-        /// <c>GET /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.retrieve</c>).
-        /// </remarks>
-        /// <param name="destinationUuid">UUID of the destination (the <c>uuid</c> returned from create / list).</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<WebhooksDestinationsRetrieveResponse>> RetrieveAsync(string destinationUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/")
@@ -211,15 +184,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update webhook destination
         /// </summary>
-        /// <remarks>
-        /// Update a webhook destination. <c>subscribed_events</c> is REPLACED wholesale, not merged — fetch first, append, resend. Secret is not rotated.
-        /// <para/>
-        /// <c>PATCH /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.update</c>).
-        /// </remarks>
-        /// <param name="destinationUuid">UUID of the destination to update.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<WebhooksDestinationsUpdateResponse>> UpdateAsync(string destinationUuid, WebhooksDestinationsUpdateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

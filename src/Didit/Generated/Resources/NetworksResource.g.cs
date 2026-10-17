@@ -189,15 +189,7 @@ namespace Didit.Resources
         /// <summary>
         /// Download a network evidence report
         /// </summary>
-        /// <remarks>
-        /// Download a PDF of the current organization network, its observed account connections, signal references and review status. Requires read:networks. Global intelligence and private analyst notes are not included. Each account and signal list is capped at 500 entries and the report states when it is incomplete. The request does not change network status. Errors are returned as JSON.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/report/</c> (<c>networks.download_report</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.DownloadReportAsync"/>.</remarks>
         public Task<DiditResponse<BinaryResponse>> DownloadReportAsync(string networkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/report/")
@@ -212,15 +204,7 @@ namespace Didit.Resources
         /// <summary>
         /// List networks
         /// </summary>
-        /// <remarks>
-        /// List fraud networks detected within this application's organization, newest activity first by default. By default dismissed networks are excluded; pass status to include them. Sandbox applications never have networks - clustering excludes sandbox data entirely.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/</c> (<c>networks.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<NetworkListItem>>> ListAsync(NetworksListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/")
@@ -247,15 +231,7 @@ namespace Didit.Resources
         /// <summary>
         /// List network members
         /// </summary>
-        /// <remarks>
-        /// List the subjects (vendor users, vendor businesses, or transaction parties) that belong to this network.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/members/</c> (<c>networks.list_members</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.ListMembersAsync"/>.</remarks>
         public Task<DiditResponse<NetworksListMembersResponse>> ListMembersAsync(string networkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/members/")
@@ -270,15 +246,7 @@ namespace Didit.Resources
         /// <summary>
         /// List network signals
         /// </summary>
-        /// <remarks>
-        /// List the signals (shared device, IP, face, document number, phone, email, or address values) that link this network's members.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/signals/</c> (<c>networks.list_signals</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.ListSignalsAsync"/>.</remarks>
         public Task<DiditResponse<NetworksListSignalsResponse>> ListSignalsAsync(string networkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/signals/")
@@ -293,15 +261,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get network
         /// </summary>
-        /// <remarks>
-        /// Retrieve a single network's full detail, including stats, fraud tags, and risk signals.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/</c> (<c>networks.retrieve</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<NetworkDetail>> RetrieveAsync(string networkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/")
@@ -316,16 +276,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get network graph
         /// </summary>
-        /// <remarks>
-        /// Retrieve the network as a graph of subject nodes (vendor users, vendor businesses, transaction parties) and signal nodes (the shared device/IP/face/document/phone/email/address values linking them), with edges representing memberships.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/graph/</c> (<c>networks.retrieve_graph</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.RetrieveGraphAsync"/>.</remarks>
         public Task<DiditResponse<NetworkGraph>> RetrieveGraphAsync(string networkUuid, NetworksRetrieveGraphParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/graph/")
@@ -343,15 +294,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get network map
         /// </summary>
-        /// <remarks>
-        /// Geographic points where this network's members' addresses/locations converge, sourced from the sessions, business sessions, and transactions backing its memberships.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/map/</c> (<c>networks.retrieve_map</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.RetrieveMapAsync"/>.</remarks>
         public Task<DiditResponse<NetworkMap>> RetrieveMapAsync(string networkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/map/")
@@ -366,15 +309,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get network timeline
         /// </summary>
-        /// <remarks>
-        /// Chronological events for this network: detection, each signal's observation, and lifecycle status changes.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/timeline/</c> (<c>networks.retrieve_timeline</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="networkUuid">Network UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.RetrieveTimelineAsync"/>.</remarks>
         public Task<DiditResponse<NetworksRetrieveTimelineResponse>> RetrieveTimelineAsync(string networkUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/networks/" + PathParameter.Encode(networkUuid, "networkUuid") + "/timeline/")

@@ -119,14 +119,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create questionnaire
         /// </summary>
-        /// <remarks>
-        /// Create a simple linear questionnaire. Send <c>form_elements</c> in display order; branching and repeatable groups require the Console. Defaults to <c>published</c> v1.
-        /// <para/>
-        /// <c>POST /v3/questionnaires/</c> (<c>questionnaires.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="QuestionnairesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<QuestionnaireDetail>> CreateAsync(SimpleQuestionnaireRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -147,14 +140,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete questionnaire
         /// </summary>
-        /// <remarks>
-        /// Permanently delete one questionnaire version (no undo). Stored questionnaire responses linked to this version are deleted with it, and sessions referencing it lose the link; other versions in the same group are not deleted. Workflows that referenced it keep running but the questionnaire step can no longer load it.
-        /// <para/>
-        /// <c>DELETE /v3/questionnaires/{questionnaire_uuid}/</c> (<c>questionnaires.delete</c>).
-        /// </remarks>
-        /// <param name="questionnaireUuid">Per-version UUID of the questionnaire to delete.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="QuestionnairesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string questionnaireUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/questionnaires/" + PathParameter.Encode(questionnaireUuid, "questionnaireUuid") + "/")
@@ -169,14 +155,7 @@ namespace Didit.Resources
         /// <summary>
         /// List questionnaires
         /// </summary>
-        /// <remarks>
-        /// List your questionnaires, newest first, in a limit/offset pagination envelope (<c>{count, next, previous, results}</c>, default page size 50). Each row is one version; <c>questionnaire_group_id</c> is the stable group ID resolved to the latest <c>published</c> version.
-        /// <para/>
-        /// <c>GET /v3/questionnaires/</c> (<c>questionnaires.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="QuestionnairesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<QuestionnaireListItem>>> ListAsync(QuestionnairesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/questionnaires/")
@@ -193,14 +172,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get questionnaire
         /// </summary>
-        /// <remarks>
-        /// Fetch full questionnaire detail for one version by <c>questionnaire_uuid</c>: title, <c>languages</c>, canonical <c>graph</c>, derived <c>sections</c>, and version metadata.
-        /// <para/>
-        /// <c>GET /v3/questionnaires/{questionnaire_uuid}/</c> (<c>questionnaires.retrieve</c>).
-        /// </remarks>
-        /// <param name="questionnaireUuid">Per-version UUID of the questionnaire (the <c>uuid</c> value returned by the list endpoint, also returned as <c>questionnaire_id</c> on detail endpoints).</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="QuestionnairesResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<QuestionnaireDetail>> RetrieveAsync(string questionnaireUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/questionnaires/" + PathParameter.Encode(questionnaireUuid, "questionnaireUuid") + "/")
@@ -215,15 +187,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update questionnaire
         /// </summary>
-        /// <remarks>
-        /// Update a questionnaire. Versioning depends on the <c>status</c> field you send and the current state of the version: (1) no <c>status</c> on a published version → the published version is updated in place (same <c>questionnaire_id</c>, same <c>version</c>); (2) no <c>status</c> on a draft → the draft is updated and immediately published; (3) <c>status: "published"</c> on a published version → a NEW published version is created under the same <c>questionnaire_group_id</c> (new <c>questionnaire_id</c>, <c>version</c> + 1) and returned, and any existing draft in the group is deleted; (4) <c>status: "draft"</c> keeps a draft as a draft (autosave) but is rejected with 400 on a published version (<c>"Cannot revert a published version to draft."</c>).
-        /// <para/>
-        /// <c>PATCH /v3/questionnaires/{questionnaire_uuid}/</c> (<c>questionnaires.update</c>).
-        /// </remarks>
-        /// <param name="questionnaireUuid">Per-version UUID of the questionnaire to update.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="QuestionnairesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<QuestionnaireDetail>> UpdateAsync(string questionnaireUuid, SimpleQuestionnaireUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

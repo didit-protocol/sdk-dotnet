@@ -70,14 +70,7 @@ namespace Didit.Resources
         /// <summary>
         /// Screen a wallet address
         /// </summary>
-        /// <remarks>
-        /// Run on-demand AML screening for a single crypto wallet/address without creating a transaction. Resolves your application's configured blockchain analytics provider, screens the address synchronously, and returns the normalised risk result. LIGHTNING is available only with an Elliptic or Chainalysis BYOK connection added through Marketplace. Nothing is written to the transactions table. One AML monitoring usage is billed per successful screening (sandbox applications are not billed).
-        /// <para/>
-        /// <c>POST /v3/wallet-screening/</c> (<c>wallet_screening.screen</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WalletScreeningResource.ScreenAsync"/>.</remarks>
         public Task<DiditResponse<WalletScreeningResult>> ScreenAsync(WalletScreeningScreenParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -98,14 +91,7 @@ namespace Didit.Resources
         /// <summary>
         /// Render a wallet-screening result as a PDF
         /// </summary>
-        /// <remarks>
-        /// Stateless companion to <c>POST /v3/wallet-screening/</c>: repost the exact JSON body that endpoint returned — including the <c>report_signature</c> it added — and get back a Didit-branded PDF of the same result. No provider is called and nothing is billed or persisted; this only re-renders a result Didit already produced. The signature ties the PDF to an unmodified result: editing <c>risk_score</c>, <c>severity</c>, <c>sanctions_hit</c>, or any other signed field before reposting fails with <c>400</c>.
-        /// <para/>
-        /// <c>POST /v3/wallet-screening/pdf/</c> (<c>wallet_screening.screen_pdf</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="WalletScreeningResource.ScreenPdfAsync"/>.</remarks>
         public Task<DiditResponse<BinaryResponse>> ScreenPdfAsync(WalletScreeningResult parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

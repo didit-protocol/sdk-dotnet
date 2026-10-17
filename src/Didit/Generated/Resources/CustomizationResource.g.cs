@@ -69,13 +69,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get branding customization
         /// </summary>
-        /// <remarks>
-        /// Returns the white-label branding for the application resolved from the API key: colors, fonts, border radii, logo URLs and UI/UX options. Custom domain and white-label email settings are managed only in the Business Console and are not part of this response.
-        /// <para/>
-        /// <c>GET /v3/customization/</c> (<c>customization.retrieve</c>).
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CustomizationResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<BrandingCustomization>> RetrieveAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/customization/")
@@ -90,14 +84,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update branding customization
         /// </summary>
-        /// <remarks>
-        /// Partial update of the application's white-label branding. Send <c>application/json</c> to change colors, fonts, radii and UI options, or <c>multipart/form-data</c> to upload logo images. Only the fields you include are changed. Custom domain and white-label email cannot be set through this endpoint — use the Business Console for those.
-        /// <para/>
-        /// <c>PATCH /v3/customization/</c> (<c>customization.update</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CustomizationResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<BrandingCustomization>> UpdateAsync(BrandingCustomizationUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

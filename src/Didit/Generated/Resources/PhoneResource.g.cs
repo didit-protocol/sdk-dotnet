@@ -139,28 +139,7 @@ namespace Didit.Resources
         /// <summary>
         /// Risk-score a phone number
         /// </summary>
-        /// <remarks>
-        /// Resolve a phone number and return carrier, line-type, porting, disposable-number, cross-session match, and normalized risk-intelligence signals without sending an OTP. The endpoint creates an API session and returns its id as <c>request_id</c>.
-        /// <para/>
-        /// Decision. The top-level <c>status</c> mirrors <c>phone.status</c>. It is normally <c>Approved</c>; the risk evaluation can produce <c>In Review</c> or <c>Declined</c>.
-        /// <para/>
-        /// Compatibility aliases. Live responses expose the normalized intelligence object as both <c>phone.phone_intelligence</c> and <c>phone.enrichment</c>. The values are identical. New integrations can read <c>phone.enrichment</c>. Both keys are absent when no usable intelligence data was returned.
-        /// <para/>
-        /// Billing. Live calls use Phone Risk API pricing. The request is billable once the lookup starts, even when some best-effort fields are unavailable.
-        /// <para/>
-        /// Sandbox. Sandbox keys validate the request and return deterministic approved data without sending an OTP, consuming credits, creating a session, or contributing to Networks.
-        /// <para/>
-        /// Authentication. Send your application's API key in <c>x-api-key</c>. Missing or invalid credentials return <c>403</c> - this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limit. Shared write budget of 300 requests per minute per API key across all POST/PATCH/DELETE endpoints.
-        /// <para/>
-        /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>phone_social</c> block: the online platforms this number is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the number was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>phone_social</c> unit per request on top of this endpoint's own price.
-        /// <para/>
-        /// <c>POST /v3/phone/risk/</c> (<c>phone.assess_risk</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.AssessRiskAsync"/>.</remarks>
         public Task<DiditResponse<PhoneRiskResponse>> AssessRiskAsync(PhoneRiskRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -181,34 +160,7 @@ namespace Didit.Resources
         /// <summary>
         /// Check Phone Code
         /// </summary>
-        /// <remarks>
-        /// Verify the OTP delivered by [<c>POST /v3/phone/send/</c>](/standalone-apis/phone-send) and get the final verification result plus phone intelligence: carrier name and line type, virtual (VoIP) and disposable flags, and duplicate usage of the number across your sessions.
-        /// <para/>
-        /// How the check finds the verification. Matching is by your application plus the E.164 <c>phone_number</c> — <c>request_id</c> is not an input. The most recent pending verification created within the last 5 minutes is checked. If there is none (never sent, already finalized, or older than 5 minutes) the endpoint returns <c>200</c> with <c>status: "Expired or Not Found"</c>.
-        /// <para/>
-        /// Attempt budget. Each verification allows 3 code attempts. The first two wrong codes return <c>status: "Failed"</c> with the attempts remaining and <c>phone: null</c>; the third wrong code finalizes the verification as <c>Declined</c> with a <c>VERIFICATION_CODE_ATTEMPTS_EXCEEDED</c> warning and returns the full phone report.
-        /// <para/>
-        /// Outcomes. <c>Approved</c> — correct code and no declining risk. <c>Declined</c> — terminal: the code was correct but a declining risk matched (a <c>DECLINE</c> action below, a blocklisted or high-risk number), or the attempt budget was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — nothing to check. On <c>Approved</c>/<c>Declined</c> the <c>request_id</c> equals the send's <c>request_id</c> (the session id) and <c>phone</c> carries the full report (<c>carrier</c>, <c>is_virtual</c>, <c>is_disposable</c>, <c>warnings</c>, <c>lifecycle</c>, <c>matches</c>); on <c>Failed</c> and <c>Expired or Not Found</c> the <c>request_id</c> is a one-off random UUID.
-        /// <para/>
-        /// Risk actions. <c>duplicated_phone_number_action</c>, <c>disposable_number_action</c>, and <c>voip_number_action</c> decide what happens when the corresponding risk is detected on a correct code: <c>DECLINE</c> flips the final status to <c>Declined</c>; <c>NO_ACTION</c> (default) records the risk in <c>phone.warnings</c> without affecting the status.
-        /// <para/>
-        /// Billing. Checks are free — delivery is billed on the send side (see [Phone Verification Pricing](/getting-started/phone-verification-pricing)).
-        /// <para/>
-        /// Session persistence. A finalized check updates the session created by the send (visible in the Business Console, queryable via <c>GET /v3/session/{sessionId}/decision/</c>) and fires a <c>status.updated</c> webhook.
-        /// <para/>
-        /// Sandbox. Sandbox API keys skip all processing: any well-formed code (4–8 digits, <c>123456</c> included) returns a static <c>Approved</c> payload with a simplified flat <c>phone</c> object (<c>status</c>, <c>phone_number</c>, <c>country_code</c>, <c>carrier_name</c>, <c>line_type</c>, <c>flags</c>); malformed input still returns <c>400</c>. Nothing is persisted.
-        /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limits. Shared write budget of 300 requests/min per API key, plus the upstream anti-abuse cap of 4 attempts per number per hour; exceeding either returns <c>429</c>.
-        /// <para/>
-        /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>phone_social</c> block: the online platforms this number is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the number was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>phone_social</c> unit per request on top of this endpoint's own price.
-        /// <para/>
-        /// <c>POST /v3/phone/check/</c> (<c>phone.check_code</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.CheckCodeAsync"/>.</remarks>
         public Task<DiditResponse<PhoneVerificationCheckResponse>> CheckCodeAsync(PhoneCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -229,32 +181,7 @@ namespace Didit.Resources
         /// <summary>
         /// Send Phone Code
         /// </summary>
-        /// <remarks>
-        /// Send a one-time passcode (OTP) to a phone number over WhatsApp, SMS, or another supported channel, then verify it with [<c>POST /v3/phone/check/</c>](/standalone-apis/phone-check).
-        /// <para/>
-        /// How send and check pair up. Verification state is keyed by your application plus the E.164 <c>phone_number</c> — the check call does not take <c>request_id</c>. Each new send creates a pending verification that lives for 5 minutes: call the check with the same number and the code the user received before the window closes. Calling send again for the same number while a verification is pending re-sends a code for that same verification (<c>status: "Retry"</c>, same <c>request_id</c>). At most one retry is attached this way (two sends total); a further send starts a fresh verification with a new <c>request_id</c>. The 5-minute window is measured from the first send and is not extended by retries.
-        /// <para/>
-        /// Delivery channels. <c>options.preferred_channel</c> selects the channel (<c>whatsapp</c> by default; <c>sms</c>, <c>telegram</c>, <c>voice</c>, <c>rcs</c>, <c>viber</c>, and <c>zalo</c> are also supported). When the preferred channel is unavailable for the destination country or number, delivery automatically falls back to SMS — the send still reports <c>Success</c>, and the channel actually used is reported by the check response (<c>phone.verification_method</c> and the <c>lifecycle</c> events).
-        /// <para/>
-        /// Branding. SMS codes carry your application's SMS sender name, set in the Business Console, at no extra cost. Pass <c>options.sms_sender_name</c> to sign one code with another name, or <c>options.use_white_label_customization: true</c> to fall back to your white-label public name when no sender name is set. WhatsApp codes use a fixed message and are not branded.
-        /// <para/>
-        /// Send statuses. <c>Success</c> — OTP sent for a new verification; <c>Retry</c> — OTP re-sent for the pending verification; <c>Blocked</c> — the anti-fraud layer refused to send (see <c>reason</c>, e.g. <c>repeated_attempts</c>, <c>suspicious</c>, <c>spam</c>). A <c>Blocked</c> send immediately finalizes the verification as <c>Declined</c> with a high-risk warning, so a follow-up check returns <c>Expired or Not Found</c>.
-        /// <para/>
-        /// Billing. The price depends on the destination country and the channel that actually delivers the message — see [Phone Verification Pricing](/getting-started/phone-verification-pricing). Only <c>Blocked</c> sends are guaranteed free: any other unbilled send attempt is charged at verification finalization or expiration, even if delivery was never confirmed or the delivery provider reported the message undeliverable. Checks are always free. As an anti-abuse measure, phone verification is disabled until your organization's first top-up (<c>403</c>).
-        /// <para/>
-        /// Session persistence. Every new verification is persisted as an API-type session: <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c>, the verification appears in the Business Console, and <c>status.updated</c> webhooks fire as it progresses.
-        /// <para/>
-        /// Sandbox. Sandbox API keys skip delivery and billing: after request validation (malformed input still returns <c>400</c>), the endpoint returns a static <c>Success</c> payload with a random <c>request_id</c>; no message is sent and nothing is persisted. Use code <c>123456</c> on the sandbox check.
-        /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limits. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints, plus an anti-abuse cap of 4 send attempts per phone number per hour; exceeding either returns <c>429</c>.
-        /// <para/>
-        /// <c>POST /v3/phone/send/</c> (<c>phone.send_code</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.SendCodeAsync"/>.</remarks>
         public Task<DiditResponse<PhoneVerificationSendResponse>> SendCodeAsync(PhoneSendCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

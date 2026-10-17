@@ -105,14 +105,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create a verification import job
         /// </summary>
-        /// <remarks>
-        /// Create an asynchronous import job for historical User Verification sessions, Business Verification sessions, transaction monitoring records, or workflow custom status rules. Use this to migrate from providers such as Sumsub, MetaMap, Veriff, Onfido, Persona, Trulioo, Jumio, Incode, iDenfy, or any other provider after transforming the export into Didit's canonical CSV/NDJSON format. Imports are disabled by default and must be enabled per organization by Didit.
-        /// <para/>
-        /// <c>POST /v3/session/imports/</c> (<c>sessions.imports.create</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<SessionImportJob>> CreateAsync(SessionsImportsCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -133,15 +126,7 @@ namespace Didit.Resources
         /// <summary>
         /// List verification import row errors
         /// </summary>
-        /// <remarks>
-        /// List row-level errors for a verification import job, ordered by <c>row_number</c>. Use this endpoint to produce a corrected retry file containing only failed rows.
-        /// <para/>
-        /// <c>GET /v3/session/imports/{importId}/errors/</c> (<c>sessions.imports.list_errors</c>).
-        /// </remarks>
-        /// <param name="importId">Path parameter <c>importId</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.ListErrorsAsync"/>.</remarks>
         public Task<DiditResponse<Page<SessionImportError>>> ListErrorsAsync(string importId, SessionsImportsListErrorsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/errors/")
@@ -158,14 +143,7 @@ namespace Didit.Resources
         /// <summary>
         /// Retrieve a verification import job
         /// </summary>
-        /// <remarks>
-        /// Retrieve import progress counters and terminal status for one job. Poll until <c>status</c> is <c>COMPLETED</c> or <c>FAILED</c>; <c>failed_count</c> &gt; 0 means some rows were rejected — list them via the errors endpoint.
-        /// <para/>
-        /// <c>GET /v3/session/imports/{importId}/</c> (<c>sessions.imports.retrieve</c>).
-        /// </remarks>
-        /// <param name="importId">Path parameter <c>importId</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<SessionImportJob>> RetrieveAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/")
@@ -180,14 +158,7 @@ namespace Didit.Resources
         /// <summary>
         /// Download verification import template
         /// </summary>
-        /// <remarks>
-        /// Download the canonical CSV header for verification imports. The column set is determined by <c>import_type</c>. The first column of session templates is the idempotency key <c>external_id</c>.
-        /// <para/>
-        /// <c>GET /v3/session/imports/template/</c> (<c>sessions.imports.retrieve_template</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.RetrieveTemplateAsync"/>.</remarks>
         public Task<DiditResponse<BinaryResponse>> RetrieveTemplateAsync(SessionsImportsRetrieveTemplateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/session/imports/template/")

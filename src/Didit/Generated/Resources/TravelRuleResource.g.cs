@@ -128,14 +128,7 @@ namespace Didit.Resources
         /// <summary>
         /// Mint a wallet-ownership widget session
         /// </summary>
-        /// <remarks>
-        /// Mint a hosted wallet-ownership widget URL/token. Send the customer to the returned url to prove control of a wallet (message signing, Satoshi test, screenshot, or self-declaration). The widget is web-only in this release - open the url in the system browser or a custom tab, never inside a mobile SDK webview.
-        /// <para/>
-        /// <c>POST /v3/travel-rule/widget-session/</c> (<c>travel_rule.create_widget_session</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.CreateWidgetSessionAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleWidgetSessionResponse>> CreateWidgetSessionAsync(TravelRuleWidgetSessionCreate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -156,14 +149,7 @@ namespace Didit.Resources
         /// <summary>
         /// Search the VASP directory
         /// </summary>
-        /// <remarks>
-        /// Paginated search across discoverable Didit customers with Travel Rule enabled, plus VASPs catalogued in the internal counterparty registry. Excludes your own application's profile.
-        /// <para/>
-        /// <c>GET /v3/travel-rule/vasps/</c> (<c>travel_rule.list_vasps</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ListVaspsAsync"/>.</remarks>
         public Task<DiditResponse<Page<VaspDirectoryEntry>>> ListVaspsAsync(TravelRuleListVaspsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/vasps/")
@@ -181,14 +167,7 @@ namespace Didit.Resources
         /// <summary>
         /// Register an after-deposit (sunrise) inbound transfer
         /// </summary>
-        /// <remarks>
-        /// Register Travel Rule data for a crypto deposit that already settled on-chain before any exchange took place. Creates an inbound travelRule transaction (or reuses an unclaimed deposit) and resolves the transfer against your wallet address book. A transaction.created webhook fires for newly-created transactions.
-        /// <para/>
-        /// <c>POST /v3/travel-rule/inbound/</c> (<c>travel_rule.register_inbound</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.RegisterInboundAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleInboundResponse>> RegisterInboundAsync(TravelRuleInboundRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -209,13 +188,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get Travel Rule settings
         /// </summary>
-        /// <remarks>
-        /// Read the application's Travel Rule settings and VASP profile. Auto-creates a default (disabled) settings row and an empty profile on first read.
-        /// <para/>
-        /// <c>GET /v3/travel-rule/settings/</c> (<c>travel_rule.retrieve_settings</c>).
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.RetrieveSettingsAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleSettingsDetail>> RetrieveSettingsAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/settings/")
@@ -230,14 +203,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update Travel Rule settings
         /// </summary>
-        /// <remarks>
-        /// Upsert the application's Travel Rule settings and VASP profile. Partial update — only send the fields you want to change. Setting <c>is_enabled: true</c> requires a non-blank <c>legal_name</c> (already stored or included in the same request), otherwise returns 400.
-        /// <para/>
-        /// <c>PUT /v3/travel-rule/settings/</c> (<c>travel_rule.update_settings</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.UpdateSettingsAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleSettingsDetail>> UpdateSettingsAsync(TravelRuleSettingsUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

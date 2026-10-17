@@ -137,18 +137,7 @@ namespace Didit.Resources
         /// <summary>
         /// Bulk purge retained biometric templates
         /// </summary>
-        /// <remarks>
-        /// An opted-in application keeps one separately managed, image-free face biometric template anchored to the User when a session is deleted (see <c>DELETE /v3/session/{sessionId}/delete/</c>). Templates are biometric data with a finite <c>expires_at</c>; they never contain images, session data, or identity fields, and they are purged on User deletion, privacy erasure, expiry, or an explicit purge. These endpoints accept application API keys (<c>x-api-key</c>) only; Business Console user tokens are rejected with <c>403</c>.
-        /// <para/>
-        /// Purges many templates in one call, by explicit id list or with <c>delete_all: true</c> optionally narrowed by the same filters as the list endpoint. Templates are purged one by one and each result reports <c>purged</c> or <c>already_purged</c>. If a biometric store is unavailable the call returns <c>503</c> at the first failing template: templates purged earlier in the request stay purged, the failing one moves to <c>purge_failed</c> (already excluded from matching), and repeating the request finishes the job.
-        /// <para/>
-        /// <c>delete_all: true</c> without filters purges every biometric template in the application and cannot be undone. Run the count endpoint with the same filters first.
-        /// <para/>
-        /// <c>POST /v3/biometric-templates/delete/</c> (<c>biometric_templates.batch_delete</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BiometricTemplatesResource.BatchDeleteAsync"/>.</remarks>
         public Task<DiditResponse<BiometricTemplatesBatchDeleteResponse>> BatchDeleteAsync(BiometricTemplatesBatchDeleteParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -169,16 +158,7 @@ namespace Didit.Resources
         /// <summary>
         /// Count retained biometric templates
         /// </summary>
-        /// <remarks>
-        /// An opted-in application keeps one separately managed, image-free face biometric template anchored to the User when a session is deleted (see <c>DELETE /v3/session/{sessionId}/delete/</c>). Templates are biometric data with a finite <c>expires_at</c>; they never contain images, session data, or identity fields, and they are purged on User deletion, privacy erasure, expiry, or an explicit purge. These endpoints accept application API keys (<c>x-api-key</c>) only; Business Console user tokens are rejected with <c>403</c>.
-        /// <para/>
-        /// Returns the number of templates matching the same filters as the list endpoint. Use it to check what a filtered bulk purge with <c>delete_all: true</c> would touch.
-        /// <para/>
-        /// <c>GET /v3/biometric-templates/count/</c> (<c>biometric_templates.count</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BiometricTemplatesResource.CountAsync"/>.</remarks>
         public Task<DiditResponse<BiometricTemplatesCountResponse>> CountAsync(BiometricTemplatesCountParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/biometric-templates/count/")
@@ -199,20 +179,7 @@ namespace Didit.Resources
         /// <summary>
         /// Purge a retained biometric template
         /// </summary>
-        /// <remarks>
-        /// An opted-in application keeps one separately managed, image-free face biometric template anchored to the User when a session is deleted (see <c>DELETE /v3/session/{sessionId}/delete/</c>). Templates are biometric data with a finite <c>expires_at</c>; they never contain images, session data, or identity fields, and they are purged on User deletion, privacy erasure, expiry, or an explicit purge. These endpoints accept application API keys (<c>x-api-key</c>) only; Business Console user tokens are rejected with <c>403</c>.
-        /// <para/>
-        /// Purges one template: it is removed from every kind of matching and the stored template is deleted. Irreversible and recorded on the audit trail with the acting principal.
-        /// <para/>
-        /// Retry semantics: Didit deletes the stored template first and only then marks the template purged. If a biometric store is unavailable the call returns <c>503</c>, the template moves to <c>status: purge_failed</c> and is already excluded from matching; repeat the same call to finish. Repeating a purge of an already purged template returns <c>already_purged</c>.
-        /// <para/>
-        /// Templates are also purged by <c>POST /v3/users/delete/</c> for the owning User, by any deletion of that User's sessions with <c>deletion_instruction: privacy_erasure</c>, and automatically at <c>expires_at</c>.
-        /// <para/>
-        /// <c>DELETE /v3/biometric-templates/{template_uuid}/</c> (<c>biometric_templates.delete</c>).
-        /// </remarks>
-        /// <param name="templateUuid">Template id, as returned in <c>biometric_template_uuid</c> by the session deletion endpoints, <c>biometric_template_id</c> on a Face Search match, or the list endpoint.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BiometricTemplatesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse<BiometricTemplatesDeleteResponse>> DeleteAsync(string templateUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/biometric-templates/" + PathParameter.Encode(templateUuid, "templateUuid") + "/")
@@ -227,16 +194,7 @@ namespace Didit.Resources
         /// <summary>
         /// List retained biometric templates
         /// </summary>
-        /// <remarks>
-        /// An opted-in application keeps one separately managed, image-free face biometric template anchored to the User when a session is deleted (see <c>DELETE /v3/session/{sessionId}/delete/</c>). Templates are biometric data with a finite <c>expires_at</c>; they never contain images, session data, or identity fields, and they are purged on User deletion, privacy erasure, expiry, or an explicit purge. These endpoints accept application API keys (<c>x-api-key</c>) only; Business Console user tokens are rejected with <c>403</c>.
-        /// <para/>
-        /// Returns a paginated list of the templates the application currently holds. Purged templates are not listed.
-        /// <para/>
-        /// <c>GET /v3/biometric-templates/</c> (<c>biometric_templates.list</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BiometricTemplatesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<BiometricTemplatesListResponseResults>>> ListAsync(BiometricTemplatesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/biometric-templates/")
@@ -260,16 +218,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get a retained biometric template
         /// </summary>
-        /// <remarks>
-        /// An opted-in application keeps one separately managed, image-free face biometric template anchored to the User when a session is deleted (see <c>DELETE /v3/session/{sessionId}/delete/</c>). Templates are biometric data with a finite <c>expires_at</c>; they never contain images, session data, or identity fields, and they are purged on User deletion, privacy erasure, expiry, or an explicit purge. These endpoints accept application API keys (<c>x-api-key</c>) only; Business Console user tokens are rejected with <c>403</c>.
-        /// <para/>
-        /// Returns one template. The response never includes an image, a vector, the deleted session's id, or identity data.
-        /// <para/>
-        /// <c>GET /v3/biometric-templates/{template_uuid}/</c> (<c>biometric_templates.retrieve</c>).
-        /// </remarks>
-        /// <param name="templateUuid">Template id, as returned in <c>biometric_template_uuid</c> by the session deletion endpoints, <c>biometric_template_id</c> on a Face Search match, or the list endpoint.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BiometricTemplatesResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<BiometricTemplatesRetrieveResponse>> RetrieveAsync(string templateUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/biometric-templates/" + PathParameter.Encode(templateUuid, "templateUuid") + "/")

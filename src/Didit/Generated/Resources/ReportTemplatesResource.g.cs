@@ -124,15 +124,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create report template
         /// </summary>
-        /// <remarks>
-        /// Create a reusable per-jurisdiction, per-report-type goAML header template. Rejected with 400 if any of the template-level obligatory fields (rentity_id, submission_code, currency_code_local) is missing from field_config; an invalid template cannot be saved or used to create a report. Per-filing header fields (action, submission_date, transactions) are enforced at report validate/finalize time instead.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/report-templates/</c> (<c>report_templates.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="ReportTemplatesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<ReportTemplateDetail>> CreateAsync(ReportTemplatesCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -153,15 +145,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete report template
         /// </summary>
-        /// <remarks>
-        /// Delete a report template. Reports already created from it are unaffected.
-        /// <para/>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/report-templates/{template_uuid}/</c> (<c>report_templates.delete</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="templateUuid">Report template UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="ReportTemplatesResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string templateUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/report-templates/" + PathParameter.Encode(templateUuid, "templateUuid") + "/")
@@ -176,15 +160,7 @@ namespace Didit.Resources
         /// <summary>
         /// List report templates
         /// </summary>
-        /// <remarks>
-        /// List FIU report templates for the application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/report-templates/</c> (<c>report_templates.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="ReportTemplatesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<ReportTemplateDetail>>> ListAsync(ReportTemplatesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/report-templates/")
@@ -201,15 +177,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get report template
         /// </summary>
-        /// <remarks>
-        /// Retrieve a report template.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/report-templates/{template_uuid}/</c> (<c>report_templates.retrieve</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="templateUuid">Report template UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="ReportTemplatesResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<ReportTemplateDetail>> RetrieveAsync(string templateUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/report-templates/" + PathParameter.Encode(templateUuid, "templateUuid") + "/")
@@ -224,16 +192,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update report template
         /// </summary>
-        /// <remarks>
-        /// Partially update a report template. Re-validates obligatory goAML fields on save.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/report-templates/{template_uuid}/</c> (<c>report_templates.update</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="templateUuid">Report template UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="ReportTemplatesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<ReportTemplateDetail>> UpdateAsync(string templateUuid, ReportTemplatesUpdateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Patch, "/v3/organization/{organization_id}/application/{application_id}/report-templates/" + PathParameter.Encode(templateUuid, "templateUuid") + "/")

@@ -109,15 +109,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create review team
         /// </summary>
-        /// <remarks>
-        /// Requires <c>write:cases</c> for the requested application.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/teams/</c> (<c>cases.teams.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesTeamsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<CaseReviewTeam>> CreateAsync(CaseReviewTeamCreate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -138,15 +130,7 @@ namespace Didit.Resources
         /// <summary>
         /// List review teams
         /// </summary>
-        /// <remarks>
-        /// Requires <c>list:cases</c> for the requested application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/teams/</c> (<c>cases.teams.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesTeamsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<CaseReviewTeam>>> ListAsync(CasesTeamsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/teams/")
@@ -163,15 +147,7 @@ namespace Didit.Resources
         /// <summary>
         /// Retrieve review team
         /// </summary>
-        /// <remarks>
-        /// Requires <c>read:cases</c> for the requested application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/teams/{record_uuid}/</c> (<c>cases.teams.retrieve</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesTeamsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<CaseReviewTeam>> RetrieveAsync(string recordUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/teams/" + PathParameter.Encode(recordUuid, "recordUuid") + "/")
@@ -186,16 +162,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update review team
         /// </summary>
-        /// <remarks>
-        /// Requires <c>write:cases</c> for the requested application.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/teams/{record_uuid}/</c> (<c>cases.teams.update</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesTeamsResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<CaseReviewTeam>> UpdateAsync(string recordUuid, CaseReviewTeamUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

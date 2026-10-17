@@ -179,15 +179,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create standalone report
         /// </summary>
-        /// <remarks>
-        /// Create a draft FIU report from the standalone Reports page: both case and template are required (unlike the case-scoped create, which can omit template).
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/</c> (<c>regulatory_reports.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportDetail>> CreateAsync(RegulatoryReportsCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -208,15 +200,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete report
         /// </summary>
-        /// <remarks>
-        /// Delete a draft or validated report. Finalized reports cannot be deleted (409).
-        /// <para/>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.delete</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="reportUuid">Report UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string reportUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/")
@@ -231,15 +215,7 @@ namespace Didit.Resources
         /// <summary>
         /// Finalize report
         /// </summary>
-        /// <remarks>
-        /// Re-validate, then render the goAML XML and PDF and upload both to S3. On SAR/STR/TFR reports, this also moves the case's transaction alerts from Pending SAR to SAR filed.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/finalize/</c> (<c>regulatory_reports.finalize</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="reportUuid">Report UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.FinalizeAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportDetail>> FinalizeAsync(string reportUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/finalize/")
@@ -254,15 +230,7 @@ namespace Didit.Resources
         /// <summary>
         /// List reports
         /// </summary>
-        /// <remarks>
-        /// Application-wide FIU report list, optionally filtered by status, report_type, or case.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/</c> (<c>regulatory_reports.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<RegulatoryReportDetail>>> ListAsync(RegulatoryReportsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/")
@@ -282,15 +250,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get report
         /// </summary>
-        /// <remarks>
-        /// Retrieve a regulatory report.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.retrieve</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="reportUuid">Report UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportDetail>> RetrieveAsync(string reportUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/")
@@ -305,16 +265,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get report download URL
         /// </summary>
-        /// <remarks>
-        /// Mint a presigned URL for a finalized report's goAML XML or PDF.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/download-url/</c> (<c>regulatory_reports.retrieve_download_url</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="reportUuid">Report UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.RetrieveDownloadUrlAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportsRetrieveDownloadUrlResponse>> RetrieveDownloadUrlAsync(string reportUuid, RegulatoryReportsRetrieveDownloadUrlParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/download-url/")
@@ -330,16 +281,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update report
         /// </summary>
-        /// <remarks>
-        /// Edit a draft or validated report's fields. Finalized reports cannot be edited (409).
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.update</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="reportUuid">Report UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportDetail>> UpdateAsync(string reportUuid, RegulatoryReportsUpdateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Patch, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/")
@@ -358,15 +300,7 @@ namespace Didit.Resources
         /// <summary>
         /// Validate report
         /// </summary>
-        /// <remarks>
-        /// Check the report against the obligatory goAML header fields (reporting entity ID, submission code, local currency, action taken, submission date), plus at least one attached transaction and a 2-letter jurisdiction, without generating any files. Also stores the result on the report: validation_errors and validated_at are updated, and a non-finalized report's status moves to VALIDATED (no errors) or back to DRAFT (errors).
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/validate/</c> (<c>regulatory_reports.validate</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="reportUuid">Report UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.ValidateAsync"/>.</remarks>
         public Task<DiditResponse<RegulatoryReportsValidateResponse>> ValidateAsync(string reportUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/validate/")

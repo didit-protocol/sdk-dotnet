@@ -65,26 +65,7 @@ namespace Didit.Resources
         /// <summary>
         /// Document AI (custom field extraction + tamper checks)
         /// </summary>
-        /// <remarks>
-        /// Extract the fields you define from any supporting document — payslips, proof of funds, source-of-wealth letters, tax statements, contracts, invoices — in one call. Send the file plus a <c>fields</c> definition (key, name, extraction instruction, type) and get back typed values (<c>text</c>, <c>number</c>, <c>date</c> as <c>YYYY-MM-DD</c>), an optional name-match score against the expected person or company, PDF/EXIF tamper signals, an <c>Approved</c>/<c>Declined</c>/<c>In Review</c> <c>status</c>, and a <c>warnings</c> list explaining every issue found. This is the server-to-server counterpart of the hosted Document AI workflow step (see <c>/core-technology/document-ai/overview</c>); it uses Didit's default extraction model and does not expose provider selection.
-        /// <para/>
-        /// Latency. Extraction is LLM-based: typical calls take 5–15 seconds, multi-page PDFs up to ~30 seconds. Configure a client timeout of at least 45 seconds and do not retry before the call completes.
-        /// <para/>
-        /// Request format. <c>multipart/form-data</c> only. <c>fields</c> is one JSON-encoded array string (1–30 items, at most 16 KB); bracket-style form arrays are rejected with <c>400</c>. Each item is <c>{key, name, instruction, type, required, is_full_name}</c> — <c>key</c> is the JSON key you get back (<c>^[a-z0-9_]{1,64}$</c>, unique), <c>instruction</c> tells the model what to read, <c>type</c> is <c>text</c> (default) | <c>number</c> | <c>date</c>, <c>required</c> raises <c>DOCUMENT_AI_MISSING_REQUIRED_FIELDS</c> when the value cannot be read, and at most one field may set <c>is_full_name: true</c> to mark the value compared against the expected name.
-        /// <para/>
-        /// Name matching. Pass <c>expected_first_name</c> + <c>expected_last_name</c> (person) or <c>expected_company_name</c> (+ optional <c>expected_company_country</c>) — not both. The value of the <c>is_full_name</c> field (or, when none is marked, the first text field whose key looks like a name) is compared fuzzily; <c>name_match_score</c> (0–100) and <c>name_on_document</c> are always returned when both sides exist, and a score below <c>document_ai_name_match_score_threshold</c> (default 80) adds <c>DOCUMENT_AI_NAME_MISMATCH</c>, governed by <c>document_ai_name_mismatch_action</c>.
-        /// <para/>
-        /// Decision logic. Each risk maps to a configurable action: <c>DECLINE</c> → <c>status: "Declined"</c>, <c>REVIEW</c> → <c>status: "In Review"</c>, <c>NO_ACTION</c> → informational only. Defaults mirror the workflow step: unreadable document <c>REVIEW</c>, missing required fields <c>REVIEW</c>, suspected manipulation <c>DECLINE</c>, name mismatch <c>NO_ACTION</c>, unsupported file <c>REVIEW</c>. A document that cannot be processed at all returns <c>400</c>; a readable but problematic document returns <c>200</c> with <c>Declined</c>/<c>In Review</c> — always inspect <c>document_ai.status</c> and <c>document_ai.warnings</c>, not just the HTTP code.
-        /// <para/>
-        /// Billing. Each <c>200</c> response consumes one Document AI API credit — $0.20 per document, no free tier (standalone APIs never have one). When the organization's balance cannot cover the call, the endpoint returns <c>403</c> before any processing. Sandbox API keys return a deterministic mock response and are not charged.
-        /// <para/>
-        /// Persistence. With <c>save_api_request=true</c> (default) the call is stored as an API-type session: the document, the extracted values, the field definitions and the name-match snapshot are kept, the session shows up in the Business Console, and <c>request_id</c> works with <c>GET /v3/session/{sessionId}/decision/</c>.
-        /// <para/>
-        /// <c>POST /v3/document-ai/</c> (<c>document_ai.analyze</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="DocumentAiResource.AnalyzeAsync"/>.</remarks>
         public Task<DiditResponse<DocumentAiAnalyzeResponse>> AnalyzeAsync(DocumentAiAnalyzeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

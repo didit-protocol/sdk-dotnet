@@ -208,15 +208,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create routing rule
         /// </summary>
-        /// <remarks>
-        /// Requires <c>write:cases</c> for the requested application. Set publish=false to create an unpublished draft; Publish creates its first live version. Discarding a never-published draft deletes it.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/</c> (<c>cases.routing_rules.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<CaseRoutingRule>> CreateAsync(CaseRoutingRuleCreate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -237,14 +229,7 @@ namespace Didit.Resources
         /// <summary>
         /// DELETE /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/
         /// </summary>
-        /// <remarks>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/</c> (<c>cases.routing_rules.discard_draft</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.DiscardDraftAsync"/>.</remarks>
         public Task<DiditResponse> DiscardDraftAsync(string recordUuid, RoutingPublicationPolicyDraftPreconditionRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -265,15 +250,7 @@ namespace Didit.Resources
         /// <summary>
         /// List routing rules
         /// </summary>
-        /// <remarks>
-        /// Requires <c>list:cases</c> for the requested application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/</c> (<c>cases.routing_rules.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<CaseRoutingRule>>> ListAsync(CasesRoutingRulesListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/")
@@ -290,14 +267,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/history/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/history/</c> (<c>cases.routing_rules.list_history</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.ListHistoryAsync"/>.</remarks>
         public Task<DiditResponse<Page<RoutingPublicationPolicyRevision>>> ListHistoryAsync(string recordUuid, CasesRoutingRulesListHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/" + PathParameter.Encode(recordUuid, "recordUuid") + "/history/")
@@ -315,15 +285,7 @@ namespace Didit.Resources
         /// <summary>
         /// Test case routing
         /// </summary>
-        /// <remarks>
-        /// Requires <c>read:cases</c> for the requested application. Evaluates current rules or a supplied draft against current reviewer access, availability, skills and capacity. It does not save the draft or reserve reviewer capacity.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/preview/</c> (<c>cases.routing_rules.preview</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.PreviewAsync"/>.</remarks>
         public Task<DiditResponse<CaseRoutingPreview>> PreviewAsync(CaseRoutingPreviewRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -344,14 +306,7 @@ namespace Didit.Resources
         /// <summary>
         /// POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/publish/
         /// </summary>
-        /// <remarks>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/publish/</c> (<c>cases.routing_rules.publish</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.PublishAsync"/>.</remarks>
         public Task<DiditResponse<RoutingPublicationCaseRoutingRule>> PublishAsync(string recordUuid, RoutingPublicationPolicyDraftPreconditionRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -372,15 +327,7 @@ namespace Didit.Resources
         /// <summary>
         /// Retrieve routing rule
         /// </summary>
-        /// <remarks>
-        /// Requires <c>read:cases</c> for the requested application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/</c> (<c>cases.routing_rules.retrieve</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<CaseRoutingRule>> RetrieveAsync(string recordUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/" + PathParameter.Encode(recordUuid, "recordUuid") + "/")
@@ -395,13 +342,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/</c> (<c>cases.routing_rules.retrieve_draft</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.RetrieveDraftAsync"/>.</remarks>
         public Task<DiditResponse<RoutingPublicationPolicyDraftResponse>> RetrieveDraftAsync(string recordUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/" + PathParameter.Encode(recordUuid, "recordUuid") + "/draft/")
@@ -416,14 +357,7 @@ namespace Didit.Resources
         /// <summary>
         /// PUT /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/
         /// </summary>
-        /// <remarks>
-        /// <c>PUT /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/</c> (<c>cases.routing_rules.save_draft</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.SaveDraftAsync"/>.</remarks>
         public Task<DiditResponse<RoutingPublicationPolicyDraft>> SaveDraftAsync(string recordUuid, RoutingPublicationPolicyDraftWriteRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -444,16 +378,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update routing rule
         /// </summary>
-        /// <remarks>
-        /// Requires <c>write:cases</c> for the requested application.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/</c> (<c>cases.routing_rules.update</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesRoutingRulesResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<CaseRoutingRule>> UpdateAsync(string recordUuid, CaseRoutingRuleUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

@@ -69,13 +69,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get credit balance
         /// </summary>
-        /// <remarks>
-        /// Get current pre-paid credit balance in USD (organization-wide) plus auto-refill config. Amounts are decimal strings — parse with a decimal library.
-        /// <para/>
-        /// <c>GET /v3/billing/balance/</c> (<c>billing.retrieve_balance</c>).
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BillingResource.RetrieveBalanceAsync"/>.</remarks>
         public Task<DiditResponse<BillingRetrieveBalanceResponse>> RetrieveBalanceAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/billing/balance/")
@@ -90,14 +84,7 @@ namespace Didit.Resources
         /// <summary>
         /// Top up credits
         /// </summary>
-        /// <remarks>
-        /// Add credits via a hosted Stripe Checkout session ($50 minimum); not available on annual plans. Redirect the customer to the returned <c>checkout_session_url</c>.
-        /// <para/>
-        /// <c>POST /v3/billing/top-up/</c> (<c>billing.top_up</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="BillingResource.TopUpAsync"/>.</remarks>
         public Task<DiditResponse<BillingTopUpResponse>> TopUpAsync(BillingTopUpParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

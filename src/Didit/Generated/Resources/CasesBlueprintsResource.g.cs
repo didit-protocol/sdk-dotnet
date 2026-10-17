@@ -240,15 +240,7 @@ namespace Didit.Resources
         /// <summary>
         /// Create blueprint
         /// </summary>
-        /// <remarks>
-        /// Create a case blueprint: general settings (assignment, escalation, transfer, 4-eyes pairing) plus content_config, the six sections that drive the case page. Set publish=false to create an unpublished draft; Publish creates its first live version. Discarding a never-published draft deletes it.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/</c> (<c>cases.blueprints.create</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.CreateAsync"/>.</remarks>
         public Task<DiditResponse<CaseBlueprintDetail>> CreateAsync(CasesBlueprintsCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -269,15 +261,7 @@ namespace Didit.Resources
         /// <summary>
         /// Delete blueprint
         /// </summary>
-        /// <remarks>
-        /// Delete a blueprint. Deletion always succeeds and does not touch the blueprint's cases: existing cases keep their blueprint reference and its settings continue to apply to them. A deleted blueprint no longer appears in blueprint lists and can no longer be chosen as a transfer target; if a maker blueprint is deleted while a resolution is pending 4-eyes approval, a rejected resolution leaves the case on the checker blueprint.
-        /// <para/>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/</c> (<c>cases.blueprints.delete</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Blueprint UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.DeleteAsync"/>.</remarks>
         public Task<DiditResponse> DeleteAsync(string blueprintUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/" + PathParameter.Encode(blueprintUuid, "blueprintUuid") + "/")
@@ -292,14 +276,7 @@ namespace Didit.Resources
         /// <summary>
         /// DELETE /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/
         /// </summary>
-        /// <remarks>
-        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/</c> (<c>cases.blueprints.discard_draft</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.DiscardDraftAsync"/>.</remarks>
         public Task<DiditResponse> DiscardDraftAsync(string blueprintUuid, CasePublicationPolicyDraftPreconditionRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -320,15 +297,7 @@ namespace Didit.Resources
         /// <summary>
         /// Install blueprint presets
         /// </summary>
-        /// <remarks>
-        /// Copy one or more presets into the application as editable blueprints. Idempotent per preset_key; omit preset_keys to install every preset not yet installed.
-        /// <para/>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/presets/install/</c> (<c>cases.blueprints.install_presets</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.InstallPresetsAsync"/>.</remarks>
         public Task<DiditResponse<CasesBlueprintsInstallPresetsResponse>> InstallPresetsAsync(CasesBlueprintsInstallPresetsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/presets/install/")
@@ -347,15 +316,7 @@ namespace Didit.Resources
         /// <summary>
         /// List blueprints
         /// </summary>
-        /// <remarks>
-        /// List case blueprints for the application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/</c> (<c>cases.blueprints.list</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.ListAsync"/>.</remarks>
         public Task<DiditResponse<Page<CaseBlueprintListItem>>> ListAsync(CasesBlueprintsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/")
@@ -372,14 +333,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/history/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/history/</c> (<c>cases.blueprints.list_history</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.ListHistoryAsync"/>.</remarks>
         public Task<DiditResponse<Page<CasePublicationPolicyRevision>>> ListHistoryAsync(string blueprintUuid, CasesBlueprintsListHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/" + PathParameter.Encode(blueprintUuid, "blueprintUuid") + "/history/")
@@ -397,14 +351,7 @@ namespace Didit.Resources
         /// <summary>
         /// List blueprint presets
         /// </summary>
-        /// <remarks>
-        /// List the four built-in presets (Screening hit, AML investigation, Suspicious activity, KYC review) with their content_config and whether each is already installed on this application.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/presets/</c> (<c>cases.blueprints.list_presets</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.ListPresetsAsync"/>.</remarks>
         public Task<DiditResponse<CasesBlueprintsListPresetsResponse>> ListPresetsAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/presets/")
@@ -419,14 +366,7 @@ namespace Didit.Resources
         /// <summary>
         /// POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/publish/
         /// </summary>
-        /// <remarks>
-        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/publish/</c> (<c>cases.blueprints.publish</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.PublishAsync"/>.</remarks>
         public Task<DiditResponse<CasePublicationCaseBlueprint>> PublishAsync(string blueprintUuid, CasePublicationPolicyDraftPreconditionRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -447,15 +387,7 @@ namespace Didit.Resources
         /// <summary>
         /// Get blueprint
         /// </summary>
-        /// <remarks>
-        /// Retrieve a blueprint, including its connected creation sources (AML config, transaction rules, workflow nodes) and which blueprints escalate to it.
-        /// <para/>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/</c> (<c>cases.blueprints.retrieve</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Blueprint UUID.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.RetrieveAsync"/>.</remarks>
         public Task<DiditResponse<CaseBlueprintDetail>> RetrieveAsync(string blueprintUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/" + PathParameter.Encode(blueprintUuid, "blueprintUuid") + "/")
@@ -470,13 +402,7 @@ namespace Didit.Resources
         /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/
         /// </summary>
-        /// <remarks>
-        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/</c> (<c>cases.blueprints.retrieve_draft</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.RetrieveDraftAsync"/>.</remarks>
         public Task<DiditResponse<CasePublicationPolicyDraftResponse>> RetrieveDraftAsync(string blueprintUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/" + PathParameter.Encode(blueprintUuid, "blueprintUuid") + "/draft/")
@@ -491,14 +417,7 @@ namespace Didit.Resources
         /// <summary>
         /// PUT /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/
         /// </summary>
-        /// <remarks>
-        /// <c>PUT /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/</c> (<c>cases.blueprints.save_draft</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.SaveDraftAsync"/>.</remarks>
         public Task<DiditResponse<CasePublicationPolicyDraft>> SaveDraftAsync(string blueprintUuid, CasePublicationPolicyDraftWriteRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -519,16 +438,7 @@ namespace Didit.Resources
         /// <summary>
         /// Update blueprint
         /// </summary>
-        /// <remarks>
-        /// Partially update a blueprint's general settings or content_config.
-        /// <para/>
-        /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/</c> (<c>cases.blueprints.update</c>).
-        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
-        /// </remarks>
-        /// <param name="blueprintUuid">Blueprint UUID.</param>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.UpdateAsync"/>.</remarks>
         public Task<DiditResponse<CaseBlueprintDetail>> UpdateAsync(string blueprintUuid, CasesBlueprintsUpdateParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Patch, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/" + PathParameter.Encode(blueprintUuid, "blueprintUuid") + "/")

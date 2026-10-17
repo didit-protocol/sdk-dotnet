@@ -137,28 +137,7 @@ namespace Didit.Resources
         /// <summary>
         /// Risk-score an email address
         /// </summary>
-        /// <remarks>
-        /// Return deliverability, disposable-address, breach, cross-session match, and normalized risk-intelligence signals without sending an OTP. The endpoint creates an API session and returns its id as <c>request_id</c>.
-        /// <para/>
-        /// Decision. The top-level <c>status</c> mirrors <c>email.status</c>. It is normally <c>Approved</c>; the risk evaluation can produce <c>In Review</c> or <c>Declined</c>.
-        /// <para/>
-        /// Compatibility aliases. Live responses expose the normalized intelligence object as both <c>email.email_intelligence</c> and <c>email.enrichment</c>. The values are identical. New integrations can read <c>email.enrichment</c>. Both keys are absent when no usable intelligence data was returned.
-        /// <para/>
-        /// Billing. Live calls use Email Risk API pricing. The request is billable once the lookup starts, even when some best-effort fields are unavailable.
-        /// <para/>
-        /// Sandbox. Sandbox keys validate the request and return deterministic approved data without sending an email, consuming credits, creating a session, or contributing to Networks.
-        /// <para/>
-        /// Authentication. Send your application's API key in <c>x-api-key</c>. Missing or invalid credentials return <c>403</c> - this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limit. Shared write budget of 300 requests per minute per API key across all POST/PATCH/DELETE endpoints.
-        /// <para/>
-        /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>email_social</c> block: the online platforms this address is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the address was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>email_social</c> unit per request on top of this endpoint's own price.
-        /// <para/>
-        /// <c>POST /v3/email/risk/</c> (<c>email.assess_risk</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="EmailResource.AssessRiskAsync"/>.</remarks>
         public Task<DiditResponse<EmailRiskResponse>> AssessRiskAsync(EmailRiskRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -179,34 +158,7 @@ namespace Didit.Resources
         /// <summary>
         /// Check Email Code
         /// </summary>
-        /// <remarks>
-        /// Verify the OTP delivered by [<c>POST /v3/email/send/</c>](/standalone-apis/email-send) and get the final verification result plus email intelligence: deliverability, breach exposure (<c>is_breached</c> and the <c>breaches</c> list from a breach-intelligence database), disposable-provider detection, and duplicate usage of the address across your sessions.
-        /// <para/>
-        /// How the check finds the verification. Matching is by your application plus the <c>email</c> address — <c>request_id</c> is not an input. The most recent pending verification created within the last 5 minutes is checked. If there is none (never sent, already finalized, undeliverable at send time, or older than 5 minutes) the endpoint returns <c>200</c> with <c>status: "Expired or Not Found"</c>.
-        /// <para/>
-        /// Attempt budget. Each verification allows 3 code attempts. The first two wrong codes return <c>status: "Failed"</c> with the attempts remaining and <c>email: null</c>; the third wrong code finalizes the verification as <c>Declined</c> with an <c>EMAIL_CODE_ATTEMPTS_EXCEEDED</c> warning and returns the full email report. Codes are compared case-insensitively (relevant for <c>alphanumeric_code</c> sends); only the most recently sent code is valid.
-        /// <para/>
-        /// Outcomes. <c>Approved</c> — correct code and no declining risk. <c>Declined</c> — terminal: the code was correct but a declining risk matched (a <c>DECLINE</c> action below, a blocklisted address, or the address found undeliverable at finalization), or the attempt budget was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — nothing to check. On <c>Approved</c>/<c>Declined</c> the <c>request_id</c> equals the send's <c>request_id</c> (the session id) and <c>email</c> carries the full report (<c>is_breached</c>, <c>breaches</c>, <c>is_disposable</c>, <c>is_undeliverable</c>, <c>warnings</c>, <c>lifecycle</c>, <c>matches</c>); on <c>Failed</c> and <c>Expired or Not Found</c> the <c>request_id</c> is a one-off random UUID.
-        /// <para/>
-        /// Risk actions. <c>duplicated_email_action</c>, <c>breached_email_action</c>, and <c>disposable_email_action</c> decide what happens when the corresponding risk is detected on a correct code: <c>DECLINE</c> flips the final status to <c>Declined</c>; <c>NO_ACTION</c> (default) records the risk in <c>email.warnings</c> without affecting the status.
-        /// <para/>
-        /// Billing. Checks are free — the credit is consumed by the successful send.
-        /// <para/>
-        /// Session persistence. A finalized check updates the session created by the send (visible in the Business Console, queryable via <c>GET /v3/session/{sessionId}/decision/</c>) and fires a <c>status.updated</c> webhook.
-        /// <para/>
-        /// Sandbox. Sandbox API keys skip all processing: any well-formed code (<c>123456</c> included) returns a static <c>Approved</c> payload with a simplified <c>email</c> object (<c>status</c>, <c>email</c>, <c>is_breached</c>, <c>is_disposable</c>, <c>is_undeliverable</c>); malformed input still returns <c>400</c>. Nothing is persisted.
-        /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limit. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints; exceeding it returns <c>429</c>.
-        /// <para/>
-        /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>email_social</c> block: the online platforms this address is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the address was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>email_social</c> unit per request on top of this endpoint's own price.
-        /// <para/>
-        /// <c>POST /v3/email/check/</c> (<c>email.check_code</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="EmailResource.CheckCodeAsync"/>.</remarks>
         public Task<DiditResponse<EmailVerificationCheckResponse>> CheckCodeAsync(EmailCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -227,30 +179,7 @@ namespace Didit.Resources
         /// <summary>
         /// Send Email Code
         /// </summary>
-        /// <remarks>
-        /// Send a one-time passcode (OTP) to an email address, then verify it with [<c>POST /v3/email/check/</c>](/standalone-apis/email-check).
-        /// <para/>
-        /// How send and check pair up. Verification state is keyed by your application plus the <c>email</c> address — the check call does not take <c>request_id</c>. Each new send creates a pending verification that lives for 5 minutes: call the check with the same address and the code the user received before the window closes. Calling send again for the same address while a verification is pending generates a fresh code for that same verification (<c>status: "Retry"</c>, same <c>request_id</c>); the previous code stops working. At most one retry is attached this way (two sends total); a further send starts a fresh verification with a new <c>request_id</c>. The 5-minute window is measured from the first send and is not extended by retries.
-        /// <para/>
-        /// Deliverability pre-check. Before anything is sent, the address goes through syntax and DNS/MX validation. Addresses that cannot receive mail return <c>200</c> with <c>status: "Undeliverable"</c> and <c>reason: "email_can_not_be_delivered"</c> — no email is sent, nothing is billed, and the verification is immediately finalized as <c>Declined</c> (a follow-up check returns <c>Expired or Not Found</c>). A downstream send failure reports the same way.
-        /// <para/>
-        /// Code format and branding. Codes are 4–8 characters (<c>options.code_size</c>, default 6), numeric by default; set <c>options.alphanumeric_code: true</c> for uppercase letters and digits (the check comparison is case-insensitive). The email template is localized via <c>options.locale</c> (54 supported languages) and can use your application's white-label branding via <c>options.use_white_label_customization</c>.
-        /// <para/>
-        /// Billing. One Email Verification API credit per successful send (<c>status: "Success"</c>), charged at send time. <c>Retry</c> and <c>Undeliverable</c> sends are free, and checks are free.
-        /// <para/>
-        /// Session persistence. Every new verification is persisted as an API-type session: <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c>, the verification appears in the Business Console, and <c>status.updated</c> webhooks fire as it progresses.
-        /// <para/>
-        /// Sandbox. Sandbox API keys skip delivery and billing: after request validation (malformed input still returns <c>400</c>), the endpoint returns a static <c>Success</c> payload with a random <c>request_id</c>; no email is sent and nothing is persisted. Use code <c>123456</c> on the sandbox check.
-        /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
-        /// <para/>
-        /// Rate limit. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints; exceeding it returns <c>429</c>.
-        /// <para/>
-        /// <c>POST /v3/email/send/</c> (<c>email.send_code</c>).
-        /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
-        /// <param name="requestOptions">Per-request overrides of the client options.</param>
-        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <remarks>Raw-response variant of <see cref="EmailResource.SendCodeAsync"/>.</remarks>
         public Task<DiditResponse<EmailVerificationSendResponse>> SendCodeAsync(EmailSendCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
