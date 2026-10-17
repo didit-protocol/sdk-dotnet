@@ -106,7 +106,23 @@ namespace Didit.Tests.Authentication
             Assert.Contains("invalid_grant", error.Message, StringComparison.Ordinal);
             Assert.DoesNotContain("rt_consumed", error.RawBody, StringComparison.Ordinal);
             Assert.Equal("invalid_grant", error.Body!.Value.GetProperty("error").GetString());
+            Assert.Equal("[redacted]", error.Body!.Value.GetProperty("echo").GetString());
             Assert.Single(Runtime());
+        }
+
+        [Fact]
+        public async Task CodeExchangeErrorsRedactTheCodeAndTheVerifier()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"error\":\"invalid_grant\",\"code\":\"code-abc\",\"detail\":\"verifier verifier-xyz does not match\"}", HttpStatusCode.BadRequest);
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<BadRequestException>(() => auth.ExchangeCodeAsync("code-abc", "verifier-xyz", "https://app.example.com/callback"));
+
+            foreach (var text in new[] { error.Message, error.RawBody!, error.Body!.Value.GetRawText() })
+            {
+                Assert.DoesNotContain("code-abc", text, StringComparison.Ordinal);
+                Assert.DoesNotContain("verifier-xyz", text, StringComparison.Ordinal);
+            }
         }
 
         [Fact]
@@ -277,6 +293,19 @@ namespace Didit.Tests.Authentication
             await Assert.ThrowsAsync<NotFoundException>(() => auth.RetrieveStepUpAsync(AccessToken, "../session"));
 
             Assert.Equal(TestIssuer.Url + "/step-up/..%2Fsession/", Runtime().Single().Uri.AbsoluteUri);
+        }
+
+        [Theory]
+        [InlineData(".")]
+        [InlineData("..")]
+        public async Task RetrieveStepUpRefusesDotSegmentIds(string id)
+        {
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<ArgumentException>(() => auth.RetrieveStepUpAsync(AccessToken, id));
+
+            Assert.Equal("stepUpId", error.ParamName);
+            Assert.Empty(_issuer.Handler.Requests);
         }
 
         [Fact]
