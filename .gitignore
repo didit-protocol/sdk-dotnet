@@ -7,3 +7,8 @@ TestResults/
 .DS_Store
 .env
 .env.*
+*.snupkg
+__pycache__/
+*.pyc
+artifacts/
+coverage/

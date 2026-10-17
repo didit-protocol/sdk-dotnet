@@ -1,0 +1,180 @@
+# Daily API spec sync (docs/DESIGN.md section 3.1).
+# Downloads the upstream OpenAPI documents; when they changed, regenerates the SDK, builds it, runs the tests on
+# net8.0 and opens or updates the pull request "chore(spec): sync API spec YYYY-MM-DD" on branch chore/spec-sync.
+# A failed regeneration (for example a new operation without SDK naming) still opens the pull request, with the
+# failure in its body, so a person can add the overlay entry on that branch.
+#
+# Pull requests opened with the default GITHUB_TOKEN do not trigger the CI workflow. Set the SPEC_SYNC_TOKEN secret
+# (a GitHub App token or fine-grained token with contents and pull-requests write) to have CI run on them.
+name: Spec sync
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: spec-sync
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  NUGET_XMLDOC_MODE: skip
+  SYNC_BRANCH: chore/spec-sync
+  BOT_IDENTITY: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+  BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  sync:
+    name: Sync the API spec
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Leave an open sync pull request alone when people have pushed to it
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open="$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[].number')"
+          if [ -n "$open" ] && git fetch --no-tags --quiet origin "+refs/heads/$SYNC_BRANCH:refs/remotes/origin/$SYNC_BRANCH"; then
+            people="$(git log --format='%ae' "HEAD..origin/$SYNC_BRANCH" | grep -v -x -F "$BOT_EMAIL" | sort -u || true)"
+            if [ -n "$people" ]; then
+              echo "::warning::Pull request #$open has commits from people; not updating $SYNC_BRANCH. Merge or close it first."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          python-version: "3.12"
+
+      - name: Download the upstream spec
+        id: sync
+        if: steps.guard.outputs.skip != 'true'
+        run: python3 codegen/spec_sync.py --write --summary "$RUNNER_TEMP/spec-sync-summary.md"
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        if: steps.sync.outputs.changed == 'true'
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Regenerate
+        id: generate
+        if: steps.sync.outputs.changed == 'true'
+        continue-on-error: true
+        run: python3 codegen/generate.py 2>&1 | tee "$RUNNER_TEMP/generate.log"
+
+      - name: Build
+        id: build
+        if: steps.sync.outputs.changed == 'true' && steps.generate.outcome == 'success'
+        continue-on-error: true
+        run: dotnet build Didit.sln -c Release 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Test (net8.0)
+        id: test
+        if: steps.sync.outputs.changed == 'true' && steps.build.outcome == 'success'
+        continue-on-error: true
+        run: dotnet test tests/Didit.Tests/Didit.Tests.csproj -c Release --no-build -f net8.0 2>&1 | tee "$RUNNER_TEMP/test.log"
+
+      - name: Compose the pull request body
+        id: body
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GENERATE: ${{ steps.generate.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          TEST: ${{ steps.test.outcome }}
+          NEEDS_NAMING: ${{ steps.sync.outputs.needs_naming }}
+        run: |
+          body="$RUNNER_TEMP/pull-request-body.md"
+          naming_failure=false
+          if [ "$GENERATE" = "failure" ]; then
+            if [ "$NEEDS_NAMING" = "true" ] || grep -q "have no SDK naming" "$RUNNER_TEMP/generate.log"; then
+              naming_failure=true
+            fi
+          fi
+
+          failure_log() {
+            if [ "$2" = "failure" ] && [ -f "$3" ]; then
+              echo "<details><summary>$1 output (last 100 lines)</summary>"
+              echo
+              echo '```text'
+              tail -n 100 "$3"
+              echo '```'
+              echo
+              echo "</details>"
+              echo
+            fi
+          }
+
+          {
+            echo "### Checks run by the sync"
+            echo
+            echo "| Step | Result |"
+            echo "|---|---|"
+            echo "| Regenerate: \`python3 codegen/generate.py\` | ${GENERATE:-skipped} |"
+            echo "| Build: \`dotnet build Didit.sln -c Release\` | ${BUILD:-skipped} |"
+            echo "| Test: \`dotnet test\` on net8.0 | ${TEST:-skipped} |"
+            echo
+            if [ "$naming_failure" = "true" ]; then
+              echo "**Needs naming.** The generator failed because a new operation has no SDK naming. Add its entry to \`openapi/overlay.json\` (see CONTRIBUTING.md), run \`python3 codegen/generate.py\`, and push the result to this branch. The daily sync does not overwrite this branch while it has commits from people."
+              echo
+            elif [ "$GENERATE" = "failure" ] || [ "$BUILD" = "failure" ] || [ "$TEST" = "failure" ]; then
+              echo "**Needs attention.** The regenerated SDK does not build or pass its tests. Push the fix to this branch. The daily sync does not overwrite this branch while it has commits from people."
+              echo
+            fi
+            failure_log "Generator" "$GENERATE" "$RUNNER_TEMP/generate.log"
+            failure_log "Build" "$BUILD" "$RUNNER_TEMP/build.log"
+            failure_log "Test" "$TEST" "$RUNNER_TEMP/test.log"
+            echo "---"
+            echo
+            cat "$RUNNER_TEMP/spec-sync-summary.md"
+          } > "$body"
+
+          if [ "$naming_failure" = "true" ]; then
+            echo "labels=needs-naming" >> "$GITHUB_OUTPUT"
+          else
+            echo "labels=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or update the pull request
+        if: steps.sync.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.SPEC_SYNC_TOKEN || github.token }}
+          branch: ${{ env.SYNC_BRANCH }}
+          delete-branch: true
+          title: "chore(spec): sync API spec ${{ steps.sync.outputs.date }}"
+          commit-message: "chore(spec): sync API spec ${{ steps.sync.outputs.date }}"
+          body-path: ${{ runner.temp }}/pull-request-body.md
+          labels: ${{ steps.body.outputs.labels }}
+          author: ${{ env.BOT_IDENTITY }}
+          committer: ${{ env.BOT_IDENTITY }}
+          add-paths: |
+            openapi
+            src/Didit/Generated
+            tests/Didit.Tests/Generated
+
+      - name: Fail the run when the regenerated SDK does not build or pass its tests
+        if: steps.sync.outputs.changed == 'true' && (steps.generate.outcome == 'failure' || steps.build.outcome == 'failure' || steps.test.outcome == 'failure')
+        run: |
+          echo "::error::Regenerate: ${{ steps.generate.outcome }}, build: ${{ steps.build.outcome }}, test: ${{ steps.test.outcome }}. The pull request was opened with the details."
+          exit 1

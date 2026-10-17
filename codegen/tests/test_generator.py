@@ -1,0 +1,142 @@
+"""Unit tests of the generator (no network, standard library only).
+
+    python3 -m unittest discover -s codegen/tests
+"""
+
+from __future__ import annotations
+
+import json
+import shutil
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "codegen"))
+
+from didit_codegen import csharp, model, names, spec  # noqa: E402
+
+
+def copy_openapi(target: Path) -> Path:
+    (target / "openapi").mkdir(parents=True)
+    for name in ("verification.json", "account.json", "overlay.json"):
+        shutil.copy(ROOT / "openapi" / name, target / "openapi" / name)
+    return target
+
+
+class NamingTests(unittest.TestCase):
+    def test_pascal_and_camel(self) -> None:
+        self.assertEqual(names.pascal("id_verification"), "IdVerification")
+        self.assertEqual(names.pascal("start_bankid_no"), "StartBankidNo")
+        self.assertEqual(names.pascal("Not Started"), "NotStarted")
+        self.assertEqual(names.pascal("PHONE_VERIFICATION_APPROVED"), "PhoneVerificationApproved")
+        self.assertEqual(names.pascal("status.updated"), "StatusUpdated")
+        self.assertEqual(names.pascal("accountId"), "AccountId")
+        self.assertEqual(names.pascal("1d"), "Value1d")
+        self.assertEqual(names.camel("session_id"), "sessionId")
+        self.assertEqual(names.camel("params"), "@params")
+        self.assertEqual(names.method_name("retrieve_decision"), "RetrieveDecisionAsync")
+        self.assertEqual(names.enum_member_name(""), "Empty")
+        self.assertEqual(names.component_name("IPRiskRequest"), "IPRiskRequest")
+
+
+class SpecTests(unittest.TestCase):
+    def test_current_spec_maps_every_operation(self) -> None:
+        loaded = spec.load(ROOT)
+        self.assertGreater(len(loaded.server_operations), 0)
+        self.assertEqual(loaded.stale_overlay, [])
+
+    def test_new_operation_without_naming_fails_with_its_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            path = root / "openapi" / "verification.json"
+            data = json.loads(path.read_text("utf-8"))
+            data["paths"]["/v3/brand-new/"] = {"get": {"operationId": "get_v3_brand_new", "responses": {"200": {"description": "ok"}}}}
+            path.write_text(json.dumps(data), "utf-8")
+            with self.assertRaises(spec.SpecError) as raised:
+                spec.load(root)
+            self.assertIn("GET /v3/brand-new/", str(raised.exception))
+            self.assertIn("get_v3_brand_new", str(raised.exception))
+            self.assertIn("overlay.json", str(raised.exception))
+
+    def test_upstream_naming_wins_over_the_overlay(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            path = root / "openapi" / "verification.json"
+            data = json.loads(path.read_text("utf-8"))
+            data["paths"]["/v3/session/"]["post"]["x-didit-sdk"] = {"resource": "sessions", "method": "start", "auth": "api_key", "server": True}
+            path.write_text(json.dumps(data), "utf-8")
+            loaded = spec.load(root)
+            op = next(o for o in loaded.operations if o.key == "POST /v3/session/")
+            self.assertEqual(op.naming.method, "start")
+            self.assertEqual(op.naming.source, "upstream")
+
+    def test_invalid_naming_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            path = root / "openapi" / "overlay.json"
+            data = json.loads(path.read_text("utf-8"))
+            data["operations"]["POST /v3/session/"]["method"] = "Create-Session"
+            path.write_text(json.dumps(data), "utf-8")
+            with self.assertRaises(spec.SpecError):
+                spec.load(root)
+
+    def test_removed_operation_is_restored_as_obsolete(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            path = root / "openapi" / "verification.json"
+            data = json.loads(path.read_text("utf-8"))
+            removed = data["paths"]["/v3/billing/balance/"].pop("get")
+            if not data["paths"]["/v3/billing/balance/"]:
+                del data["paths"]["/v3/billing/balance/"]
+            path.write_text(json.dumps(data), "utf-8")
+            overlay_path = root / "openapi" / "overlay.json"
+            overlay = json.loads(overlay_path.read_text("utf-8"))
+            naming = overlay["operations"].pop("GET /v3/billing/balance/")
+            overlay_path.write_text(json.dumps(overlay), "utf-8")
+            (root / "openapi" / "deprecated-operations.json").write_text(json.dumps({
+                "operations": {"GET /v3/billing/balance/": {"removed_on": "2026-10-17", "naming": naming, "path": "/v3/billing/balance/", "method": "get", "operation": removed}},
+                "schemas": {"verification": {}, "account": {}},
+            }), "utf-8")
+
+            built = model.build(spec.load(root))
+            op = next(o for o in built.operations if o.dotted == "billing.retrieve_balance")
+            self.assertTrue(op.deprecated)
+            files = csharp.emit(built)
+            self.assertIn("Removed from the Didit API on 2026-10-17", files["src/Didit/Generated/Resources/BillingResource.g.cs"])
+
+
+class ModelTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.model = model.build(spec.load(ROOT))
+        cls.by_name = {op.dotted: op for op in cls.model.operations}
+
+    def test_type_naming_follows_design_5_1(self) -> None:
+        create = self.by_name["sessions.create"]
+        self.assertEqual(create.body.params_type, "SessionsCreateParams")
+        self.assertEqual(create.response.type.name, "SessionsCreateResponse")
+        self.assertIn("SessionsCreateParamsContactDetails", self.model.objects)
+
+    def test_pagination_and_binary_and_application_scope(self) -> None:
+        self.assertEqual(self.by_name["sessions.list"].response.kind, "page")
+        self.assertEqual(self.by_name["sessions.generate_pdf"].response.kind, "binary")
+        cases = self.by_name["cases.list"]
+        self.assertEqual(cases.scope, "application")
+        self.assertEqual([p.name for p in cases.path_params], [])
+
+    def test_multipart_is_chosen_for_file_uploads(self) -> None:
+        verify = self.by_name["id_verification.verify"]
+        self.assertEqual(verify.body.content_type, "multipart/form-data")
+        front = next(p for p in self.model.objects["IdVerificationVerifyParams"].props if p.json_name == "front_image")
+        self.assertEqual(front.type.kind, "file")
+
+    def test_generation_is_deterministic(self) -> None:
+        first = csharp.emit(model.build(spec.load(ROOT)))
+        second = csharp.emit(model.build(spec.load(ROOT)))
+        self.assertEqual(first, second)
+
+
+if __name__ == "__main__":
+    unittest.main()
