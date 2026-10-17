@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+  generated:
+    name: Generated code is current
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Check that the committed generated code matches openapi/
+        run: python3 codegen/generate.py --check
+      - name: Codegen unit tests
+        run: |
+          if [ -d codegen/tests ]; then
+            python3 -m unittest discover -s codegen/tests -v
+          else
+            echo "codegen/tests does not exist; nothing to run."
+          fi
+
+  test:
+    name: Test (${{ matrix.os }}, ${{ matrix.tfm }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, tfm: net8.0, coverage: true }
+          - { os: ubuntu-latest, tfm: net9.0, coverage: false }
+          - { os: ubuntu-latest, tfm: net10.0, coverage: false }
+          - { os: windows-latest, tfm: net8.0, coverage: false }
+          # .NET Framework exercises the netstandard2.0 build of the library.
+          - { os: windows-latest, tfm: net472, coverage: false }
+          - { os: macos-latest, tfm: net8.0, coverage: false }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Build
+        run: dotnet build Didit.sln -c Release
+      - name: Test
+        env:
+          TFM: ${{ matrix.tfm }}
+          COVERAGE: ${{ matrix.coverage }}
+        run: |
+          args=(tests/Didit.Tests/Didit.Tests.csproj -c Release --no-build -f "$TFM"
+            --logger "trx" --results-directory TestResults)
+          if [ "$COVERAGE" = "true" ]; then
+            args+=(--collect:"XPlat Code Coverage")
+          fi
+          dotnet test "${args[@]}"
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.tfm }}
+          path: TestResults/
+          if-no-files-found: warn
+          retention-days: 14
+
+  examples:
+    name: Build examples
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Build every project under examples/
+        run: |
+          mapfile -t projects < <(find examples -name '*.csproj' 2>/dev/null | sort)
+          if [ "${#projects[@]}" -eq 0 ]; then
+            echo "No example projects yet."
+            exit 0
+          fi
+          for project in "${projects[@]}"; do
+            echo "::group::$project"
+            dotnet build "$project" -c Release
+            echo "::endgroup::"
+          done
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: dotnet format --verify-no-changes
+        run: dotnet format Didit.sln --verify-no-changes --exclude src/Didit/Generated tests/Didit.Tests/Generated
+
+  pack:
+    name: Pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Pack (never pushed from CI)
+        run: |
+          dotnet pack src/Didit/Didit.csproj -c Release -o artifacts
+          dotnet pack src/Didit.Extensions.DependencyInjection/Didit.Extensions.DependencyInjection.csproj -c Release -o artifacts
+      - name: List packages
+        run: ls -l artifacts
+      - name: Upload packages
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuget-packages
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          if-no-files-found: error
+          retention-days: 14
