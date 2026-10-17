@@ -12,6 +12,28 @@ Status: in development, not released.
 
 dotnet CLI, xUnit, nullable enabled, warnings as errors, targets net8.0 and netstandard2.0.
 
+## Commands
+
+- Prerequisites: .NET SDK 8 or later (CI builds with the .NET 10 SDK and tests on the 8, 9 and 10 runtimes, plus .NET Framework 4.7.2 on Windows) and Python 3.10 or later for the generator (standard library only).
+- Generate: `python3 codegen/generate.py`. Stale check (CI): `python3 codegen/generate.py --check`.
+- Generator and spec sync tests: `python3 -m unittest discover -s codegen/tests`.
+- Install and build: `dotnet build Didit.sln -c Release` (restores NuGet packages; the build is the type check: nullable reference types, warnings as errors, .NET analyzers).
+- Test: `dotnet test tests/Didit.Tests/Didit.Tests.csproj -c Release -f net8.0` (also `net9.0`, `net10.0`; `net472` on Windows).
+- Lint: `dotnet format Didit.sln --verify-no-changes --exclude src/Didit/Generated tests/Didit.Tests/Generated`.
+- Pack (never publish): `dotnet pack Didit.sln -c Release -o artifacts`.
+- Live smoke tests (opt-in): `DIDIT_SANDBOX_API_KEY=... dotnet test tests/Didit.SmokeTests`.
+- Spec sync (the daily workflow runs it): `python3 codegen/spec_sync.py --write --summary spec-sync-summary.md`.
+
+## Layout
+
+- `codegen/`: the generator (`generate.py`, `didit_codegen/`), `spec_sync.py` and their tests. Reads only `openapi/`.
+- `src/Didit/Generated/`: generated models, resources, the raw-response tree and the System.Text.Json context. Never edit by hand.
+- `src/Didit/` (everything else): the hand-written core: client and options, HTTP pipeline (retries, timeouts, errors, origin pinning, logging), `Optional<T>`, open enums, pagination, files, `Webhooks/` and `Authentication/`.
+- `src/Didit.Extensions.DependencyInjection/`: `services.AddDidit(...)`.
+- `tests/Didit.Tests/`: core, webhook (every vector in `openapi/webhook-vectors.json`), Authentication, dependency injection and contract tests; `Generated/` holds one generated test per server operation.
+- `tests/Didit.SmokeTests/`: live sandbox tests, skipped unless `DIDIT_SANDBOX_API_KEY` is set.
+- `examples/`: runnable examples, including ASP.NET Core webhook receivers.
+
 ## Rules
 
 - Generated code is never edited by hand. Change the generator in `codegen/` or `openapi/overlay.json`, then regenerate; CI fails when the committed generated code is stale.
