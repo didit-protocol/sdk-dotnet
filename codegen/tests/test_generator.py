@@ -179,6 +179,23 @@ class ModelTests(unittest.TestCase):
         front = next(p for p in self.model.objects["IdVerificationVerifyParams"].props if p.json_name == "front_image")
         self.assertEqual(front.type.kind, "file")
 
+    def test_json_bodies_whose_multipart_form_carries_files_accept_both(self) -> None:
+        # The JSON body has no file field, so the files live only in the multipart form.
+        for dotted, files, required in (
+            ("sessions.imports.create", {"file"}, set()),
+            ("database_validation.validate", {"selfie"}, {"issuing_state"}),
+            ("customization.update", {"image_square", "image_rectangular", "image_favicon"}, set()),
+        ):
+            op = self.by_name[dotted]
+            self.assertEqual(op.body.content_type, "multipart/form-data", dotted)
+            self.assertTrue(op.body.json_without_files, dotted)
+            props = self.model.objects[op.params_type].props
+            self.assertEqual({p.json_name for p in props if p.type.kind == "file"}, files, dotted)
+            self.assertEqual({p.json_name for p in props if p.required}, required, dotted)
+        self.assertIn("source_file_url", {p.json_name for p in self.model.objects["SessionsImportsCreateParams"].props})
+        self.assertIn("color_primary", {p.json_name for p in self.model.objects["CustomizationUpdateParams"].props})
+        self.assertFalse(self.by_name["id_verification.verify"].body.json_without_files)
+
     def test_generation_is_deterministic(self) -> None:
         first = csharp.emit(model.build(spec.load(ROOT)))
         second = csharp.emit(model.build(spec.load(ROOT)))
