@@ -72,6 +72,11 @@ namespace Didit.Internal
                     throw Malformed($"The token {what} is not a JSON object.");
                 }
 
+                if (!AuthJson.IsValidUnicode(document.RootElement))
+                {
+                    throw Malformed($"The token {what} contains a string that is not valid Unicode.");
+                }
+
                 return document.RootElement.Clone();
             }
             catch (JsonException)
