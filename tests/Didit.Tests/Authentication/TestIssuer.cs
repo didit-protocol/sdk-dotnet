@@ -45,21 +45,37 @@ namespace Didit.Tests.Authentication
         public Func<RecordedRequest, HttpResponseMessage> Runtime { get; set; } =
             _ => StubHttpHandler.Json("{\"detail\":\"not found\"}", HttpStatusCode.NotFound);
 
-        public string DiscoveryJson => new JsonObject
+        public string? TokenEndpoint { get; set; } = Url + "/token/";
+
+        /// <summary>The discovery document, shaped like service-didit-auth's <c>issuer.discovery()</c>.</summary>
+        public string DiscoveryJson
         {
-            ["issuer"] = Url,
-            ["authorization_endpoint"] = Url + "/authorize/",
-            ["token_endpoint"] = Url + "/token/",
-            ["jwks_uri"] = Url + "/.well-known/jwks.json",
-            ["userinfo_endpoint"] = Url + "/userinfo/",
-            ["end_session_endpoint"] = Url + "/logout/",
-            ["response_types_supported"] = new JsonArray("code"),
-            ["grant_types_supported"] = new JsonArray("authorization_code", "refresh_token"),
-            ["code_challenge_methods_supported"] = new JsonArray("S256"),
-            ["id_token_signing_alg_values_supported"] = new JsonArray("ES256"),
-            ["scopes_supported"] = new JsonArray("openid", "email", "profile", "offline_access"),
-            ["x_future_field"] = "kept",
-        }.ToJsonString();
+            get
+            {
+                var document = new JsonObject
+                {
+                    ["issuer"] = Url,
+                    ["authorization_endpoint"] = Url + "/sign-in/",
+                    ["jwks_uri"] = Url + "/.well-known/jwks.json",
+                    ["response_types_supported"] = new JsonArray("code"),
+                    ["response_modes_supported"] = new JsonArray("query"),
+                    ["grant_types_supported"] = new JsonArray("authorization_code", "refresh_token"),
+                    ["subject_types_supported"] = new JsonArray("public"),
+                    ["id_token_signing_alg_values_supported"] = new JsonArray("ES256"),
+                    ["token_endpoint_auth_methods_supported"] = new JsonArray("none"),
+                    ["code_challenge_methods_supported"] = new JsonArray("S256"),
+                    ["scopes_supported"] = new JsonArray("openid", "email", "phone", "profile", "offline_access"),
+                    ["claims_supported"] = new JsonArray("iss", "aud", "sub", "sid", "vendor_data", "amr", "org", "verified", "act"),
+                    ["x_future_field"] = "kept",
+                };
+                if (TokenEndpoint is not null)
+                {
+                    document["token_endpoint"] = TokenEndpoint;
+                }
+
+                return document.ToJsonString();
+            }
+        }
 
         public Didit.Authentication Create(TimeSpan? clockSkew = null)
         {
@@ -75,39 +91,46 @@ namespace Didit.Tests.Authentication
         /// <summary>Publishes an extra key in the JWKS (key rotation).</summary>
         public void Publish(string kid, ECDsa key) => _published.Add((kid, key));
 
+        /// <summary>Access token claims shaped like service-didit-auth's <c>issuer.session_tokens()</c>.</summary>
         public JsonObject AccessClaims() => new()
         {
             ["iss"] = Url,
-            ["sub"] = "user_8f2b6c",
             ["aud"] = ClientId,
-            ["client_id"] = ClientId,
+            ["sub"] = "0b5c1f7e-3d2a-4e8b-9a61-5f4c2d7e8a90",
+            ["sid"] = "a7e2c9d4-1b3f-4a5e-8c6d-2f9b0e1a3c57",
+            ["jti"] = "Jx8bU2nqVt0rWl5m",
             ["iat"] = Now.ToUnixTimeSeconds(),
-            ["nbf"] = Now.ToUnixTimeSeconds(),
             ["exp"] = Now.ToUnixTimeSeconds() + 300,
-            ["jti"] = "at_01J9Z6",
-            ["sid"] = "sess_7d1e",
-            ["scope"] = "openid email offline_access",
             ["vendor_data"] = "customer-42",
-            ["amr"] = new JsonArray("pwd", "otp"),
-            ["org"] = new JsonObject { ["id"] = "org_3a9c", ["role"] = "admin" },
-            ["verified"] = true,
+            ["org"] = new JsonObject { ["id"] = "4d1e8f2a-6b7c-4c3d-9e0f-1a2b3c4d5e6f", ["role"] = "admin" },
+            ["verified"] = new JsonObject { ["level"] = "full_id", ["over_18"] = true, ["given_name"] = "Ada", ["country"] = "GB" },
+            ["amr"] = new JsonArray("passkey"),
+            ["act"] = null,
+            ["client_id"] = ClientId,
+            ["x_future_claim"] = "kept",
         };
 
+        /// <summary>ID token claims: the access token's, without <c>client_id</c>, plus the profile claims.</summary>
         public JsonObject IdClaims(string nonce) => new()
         {
             ["iss"] = Url,
-            ["sub"] = "user_8f2b6c",
             ["aud"] = ClientId,
+            ["sub"] = "0b5c1f7e-3d2a-4e8b-9a61-5f4c2d7e8a90",
+            ["sid"] = "a7e2c9d4-1b3f-4a5e-8c6d-2f9b0e1a3c57",
+            ["jti"] = "Qw3eR5tY7uI9oP1a",
             ["iat"] = Now.ToUnixTimeSeconds(),
             ["exp"] = Now.ToUnixTimeSeconds() + 300,
+            ["vendor_data"] = "customer-42",
+            ["org"] = null,
+            ["verified"] = new JsonObject(),
+            ["amr"] = new JsonArray("password"),
+            ["act"] = null,
             ["auth_time"] = Now.ToUnixTimeSeconds() - 30,
-            ["nonce"] = nonce,
-            ["sid"] = "sess_7d1e",
+            ["email_verified"] = false,
             ["email"] = "ada@example.com",
-            ["email_verified"] = true,
             ["name"] = "Ada Lovelace",
             ["phone_number"] = "+34600000000",
-            ["amr"] = new JsonArray("pwd"),
+            ["nonce"] = nonce,
         };
 
         public static JsonObject Header(string alg = "ES256", string? typ = "at+jwt", string? kid = Kid)

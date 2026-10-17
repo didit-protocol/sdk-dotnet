@@ -402,6 +402,7 @@ namespace Didit
             }
         }
 
+        // The backend's str(data.get(name, "")): a missing field is empty, JSON null is "None", booleans are "True"/"False".
         private static string SimpleField(JsonElement payload, string name)
         {
             if (!payload.TryGetProperty(name, out var value))
@@ -415,6 +416,7 @@ namespace Didit
                 JsonValueKind.Number => value.GetRawText(),
                 JsonValueKind.True => "True",
                 JsonValueKind.False => "False",
+                JsonValueKind.Null => "None",
                 _ => string.Empty,
             };
         }
