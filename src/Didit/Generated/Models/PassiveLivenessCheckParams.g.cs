@@ -18,7 +18,6 @@ namespace Didit
         /// Front-facing face image (e.g. a selfie). Allowed extensions: <c>tiff</c>, <c>jpg</c>, <c>jpeg</c>, <c>png</c>, <c>webp</c>. Maximum upload size: 5 MB (larger files are rejected with <c>400</c>). Images are automatically compressed to ~0.5 MB before processing, so very high resolutions do not improve accuracy. The image should contain a single subject — when several faces are present, the largest one is evaluated and a <c>MULTIPLE_FACES_DETECTED</c> warning is added.
         /// </summary>
         [JsonPropertyName("user_image")]
-        [JsonIgnore]
         public required FileUpload UserImage { get; set; }
 
         /// <summary>

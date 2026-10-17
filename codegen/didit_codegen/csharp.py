@@ -209,14 +209,12 @@ class Emitter:
             else:
                 lines.append(f"        public {t.nullable(prop.type, REQUEST)} {prop.cs_name} {{ get; set; }}")
             return lines
-        if is_file(prop.type):
-            # Files travel only as multipart parts, never in a JSON body.
+        if is_file(prop.type) and not prop.required:
+            # Files travel only as multipart parts, never in a JSON body. (System.Text.Json refuses [JsonIgnore] on a
+            # required member, so required files keep the default.)
+            inner = t.nullable(prop.type, REQUEST) if prop.nullable else t.base(prop.type, REQUEST)
             lines.append("        [JsonIgnore]")
-            if prop.required:
-                lines.append(f"        public required {t.base(prop.type, REQUEST)} {prop.cs_name} {{ get; set; }}")
-            else:
-                inner = t.nullable(prop.type, REQUEST) if prop.nullable else t.base(prop.type, REQUEST)
-                lines.append(f"        public Optional<{inner}> {prop.cs_name} {{ get; set; }}")
+            lines.append(f"        public Optional<{inner}> {prop.cs_name} {{ get; set; }}")
             return lines
         if prop.required:
             if prop.nullable:
