@@ -75,7 +75,7 @@ namespace Didit.Tests.DependencyInjection
             using var provider = services.BuildServiceProvider();
             await provider.GetRequiredService<DiditClient>().Sessions.ListAsync();
 
-            Assert.Contains(lines, line => line.Contains("GET /v3/sessions/ -> 200", StringComparison.Ordinal));
+            Assert.Contains(lines, line => line.IndexOf("GET /v3/sessions/ -> 200", StringComparison.Ordinal) >= 0);
         }
 
         [Fact]
