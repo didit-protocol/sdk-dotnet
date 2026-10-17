@@ -16,11 +16,11 @@ namespace Didit.Tests.Core
             var unset = new SessionsCreateParams { WorkflowId = "wf" };
             Assert.Equal("{\"workflow_id\":\"wf\"}", JsonSupport.Serialize(unset));
 
-            var set = new SessionsCreateParams { WorkflowId = "wf", VendorData = "user-1", Language = "es" };
+            var set = new SessionsCreateParams { WorkflowId = "wf", VendorData = "user-1", Language = SessionsCreateParamsLanguage.Es };
             JsonAssert.Equivalent("{\"workflow_id\":\"wf\",\"vendor_data\":\"user-1\",\"language\":\"es\"}", JsonSupport.Serialize(set));
 
-            var withNull = new SessionsDeleteParams { FaceRetentionDays = null };
-            Assert.Equal("{\"face_retention_days\":null}", JsonSupport.Serialize(withNull));
+            var withNull = new UsersUpdateParams { DisplayName = null, FullName = "Ana" };
+            JsonAssert.Equivalent("{\"display_name\":null,\"full_name\":\"Ana\"}", JsonSupport.Serialize(withNull));
         }
 
         [Fact]

@@ -29,7 +29,6 @@ namespace Didit
         private readonly IssuerMetadataCache _metadata;
         private readonly Func<DateTimeOffset> _utcNow;
         private readonly TimeSpan _clockSkew;
-        private readonly string? _clientId;
         private readonly string _baseUrl;
 
         /// <summary>Creates an instance for an issuer URL, for example <c>https://acme.auth.didit.me</c>.</summary>
@@ -58,7 +57,6 @@ namespace Didit
             Issuer = valid;
             _baseUrl = IssuerComparer.Trim(valid) + "/";
             _clockSkew = options.ClockSkew;
-            _clientId = string.IsNullOrEmpty(options.ClientId) ? null : options.ClientId;
             _utcNow = options.UtcNow ?? (() => DateTimeOffset.UtcNow);
             if (options.HttpClient is not null)
             {
@@ -169,6 +167,155 @@ namespace Didit
             return IdTokenClaims.FromPayload(jwt.Payload);
         }
 
+        /// <summary>
+        /// Exchanges an authorization code for tokens (<c>POST token/</c>, <c>grant_type=authorization_code</c>). Codes are single-use
+        /// and expire 60 seconds after sign-in; check the callback's <c>state</c> before calling this.
+        /// </summary>
+        /// <param name="code">The <c>code</c> query parameter of the callback.</param>
+        /// <param name="codeVerifier">The <see cref="PkcePair.CodeVerifier"/> created for this authorization request.</param>
+        /// <param name="redirectUri">The exact <c>redirect_uri</c> of the authorization request.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <returns>The tokens. Verify <see cref="AuthTokenResponse.IdToken"/> with <see cref="VerifyIdTokenAsync"/> before trusting it.</returns>
+        /// <exception cref="BadRequestException">The code is invalid, used, expired, or does not match the verifier or redirect URI (<c>invalid_grant</c>).</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached; the request is not retried.</exception>
+        public async Task<AuthTokenResponse> ExchangeCodeAsync(string code, string codeVerifier, string redirectUri, CancellationToken cancellationToken = default)
+        {
+            RequireText(code, nameof(code));
+            RequireText(codeVerifier, nameof(codeVerifier));
+            RequireText(redirectUri, nameof(redirectUri));
+            var form = new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                new KeyValuePair<string, string>("code", code),
+                new KeyValuePair<string, string>("code_verifier", codeVerifier),
+                new KeyValuePair<string, string>("redirect_uri", redirectUri),
+            };
+            return await PostTokenAsync(form, code, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Rotates a refresh token for new access, ID and refresh tokens (<c>POST token/</c>, <c>grant_type=refresh_token</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Refresh tokens are single-use. <b>Reusing a consumed refresh token revokes the session</b> and everything issued from it,
+        /// so serialise refreshes for one session (for example with a per-session lock) and store the new
+        /// <see cref="AuthTokenResponse.RefreshToken"/> before using it. Two concurrent refreshes with the same token sign the person out.
+        /// </para>
+        /// <para>The request is never retried, for the same reason.</para>
+        /// </remarks>
+        /// <param name="refreshToken">The current refresh token.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="BadRequestException">The refresh token is unknown, used or its session ended (<c>invalid_grant</c>).</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached.</exception>
+        public async Task<AuthTokenResponse> RefreshAsync(string refreshToken, CancellationToken cancellationToken = default)
+        {
+            RequireText(refreshToken, nameof(refreshToken));
+            var form = new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("refresh_token", refreshToken),
+            };
+            return await PostTokenAsync(form, refreshToken, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reads the session behind an access token (<c>GET session/</c>). Unlike <see cref="VerifyAccessTokenAsync"/> this asks the
+        /// issuer, so it is the instant check: it fails as soon as the session is revoked, expired, idle or the token was replaced by a refresh.
+        /// </summary>
+        /// <param name="accessToken">A person's access token (agent tokens are refused).</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="AuthenticationException">The token or its session is no longer valid (401 <c>invalid_token</c>).</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached.</exception>
+        public async Task<AuthSession> GetSessionAsync(string accessToken, CancellationToken cancellationToken = default)
+        {
+            RequireText(accessToken, nameof(accessToken));
+            var response = await _transport.SendAsync(HttpMethod.Get, RuntimeUrl("session/"), null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            return AuthSession.FromJson(AuthJson.Parse(response.Body, "session response"));
+        }
+
+        /// <summary>Revokes the session behind an access token (<c>DELETE session/</c>): signs the person out everywhere that session is used.</summary>
+        /// <param name="accessToken">An access token of the session to revoke.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="AuthenticationException">The token or its session is already invalid (401 <c>invalid_token</c>).</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached.</exception>
+        public async Task RevokeSessionAsync(string accessToken, CancellationToken cancellationToken = default)
+        {
+            RequireText(accessToken, nameof(accessToken));
+            await _transport.SendAsync(HttpMethod.Delete, RuntimeUrl("session/"), null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asks whether a sensitive action needs a step-up verification (<c>POST step-up/</c>). When
+        /// <see cref="AuthStepUp.Required"/> is <c>true</c>, send the person to <see cref="AuthStepUp.VerificationUrl"/>; they come
+        /// back to <paramref name="returnTo"/> with <c>step_up=&lt;id&gt;</c>. Then read <see cref="RetrieveStepUpAsync"/> and act only
+        /// when its status is <see cref="AuthStepUpStatus.Approved"/>.
+        /// </summary>
+        /// <param name="accessToken">The person's access token.</param>
+        /// <param name="action"><c>payout</c>, <c>bank</c> or <c>contact</c>.</param>
+        /// <param name="returnTo">Where the person returns after verifying; must be one of the application's registered redirect URIs.</param>
+        /// <param name="amount">The payout amount as a decimal string with at most two decimals, for example <c>"250.00"</c>; required for <c>payout</c>.</param>
+        /// <param name="currency">ISO 4217 code of <paramref name="amount"/>, for example <c>EUR</c>; defaults to the payout rule's currency.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="BadRequestException">Invalid fields, or <paramref name="returnTo"/> is not registered.</exception>
+        /// <exception cref="AuthenticationException">The access token or its session is no longer valid.</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer, for example when verification is unavailable (step-ups never fail open).</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached; the request is not retried.</exception>
+        public async Task<AuthStepUp> CreateStepUpAsync(
+            string accessToken,
+            string action,
+            string returnTo,
+            string? amount = null,
+            string? currency = null,
+            CancellationToken cancellationToken = default)
+        {
+            RequireText(accessToken, nameof(accessToken));
+            RequireText(action, nameof(action));
+            RequireText(returnTo, nameof(returnTo));
+            var body = WriteJson(writer =>
+            {
+                writer.WriteString("action", action);
+                if (amount is not null)
+                {
+                    writer.WriteString("amount", amount);
+                }
+
+                if (currency is not null)
+                {
+                    writer.WriteString("currency", currency);
+                }
+
+                writer.WriteString("return_to", returnTo);
+            });
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("step-up/"), () => JsonContent(body), accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
+        }
+
+        /// <summary>
+        /// Reads a step-up's current status (<c>GET step-up/{id}/</c>) with an access token of the session that created it.
+        /// Proceed with the action only when <see cref="AuthStepUp.Status"/> is <see cref="AuthStepUpStatus.Approved"/>; the
+        /// <c>status</c> query parameter on the return URL is only a hint and must never be trusted.
+        /// </summary>
+        /// <param name="accessToken">An access token of the session that created the step-up.</param>
+        /// <param name="stepUpId">The <c>step_up</c> query parameter of the return URL, or <see cref="AuthStepUp.Id"/>.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="NotFoundException">No such step-up for this session.</exception>
+        /// <exception cref="AuthenticationException">The access token or its session is no longer valid.</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached.</exception>
+        public async Task<AuthStepUp> RetrieveStepUpAsync(string accessToken, string stepUpId, CancellationToken cancellationToken = default)
+        {
+            RequireText(accessToken, nameof(accessToken));
+            RequireText(stepUpId, nameof(stepUpId));
+            var url = RuntimeUrl("step-up/" + Uri.EscapeDataString(stepUpId) + "/");
+            var response = await _transport.SendAsync(HttpMethod.Get, url, null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
+        }
+
         /// <summary>Disposes the <see cref="HttpClient"/> this instance created. A client passed in the options is left alone.</summary>
         public void Dispose()
         {
@@ -209,6 +356,55 @@ namespace Didit
         }
 
         private static TokenVerificationException Fail(string reason, string message) => new(reason, message);
+
+        private static void RequireText(string? value, string parameterName)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(parameterName);
+            }
+
+            if (value.Length == 0)
+            {
+                throw new ArgumentException("The value must not be empty.", parameterName);
+            }
+        }
+
+        private static byte[] WriteJson(Action<Utf8JsonWriter> write)
+        {
+            using var stream = new System.IO.MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                writer.WriteStartObject();
+                write(writer);
+                writer.WriteEndObject();
+            }
+
+            return stream.ToArray();
+        }
+
+        private static ByteArrayContent JsonContent(byte[] body)
+        {
+            var content = new ByteArrayContent(body);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+            return content;
+        }
+
+        private Uri RuntimeUrl(string path) => new(_baseUrl + path);
+
+        private async Task<AuthTokenResponse> PostTokenAsync(KeyValuePair<string, string>[] form, string secret, CancellationToken cancellationToken)
+        {
+            var discovery = await _metadata.GetDiscoveryAsync(cancellationToken).ConfigureAwait(false);
+            var endpoint = discovery.TokenEndpoint ?? RuntimeUrl("token/");
+            var response = await _transport.SendAsync(HttpMethod.Post, endpoint, () => new FormUrlEncodedContent(form), null, secret, cancellationToken).ConfigureAwait(false);
+            var tokens = AuthTokenResponse.FromJson(AuthJson.Parse(response.Body, "token response"));
+            if (tokens.AccessToken.Length == 0)
+            {
+                throw new DiditException("The token response has no access_token.");
+            }
+
+            return tokens;
+        }
 
         private static HttpClient CreateHttpClient()
         {

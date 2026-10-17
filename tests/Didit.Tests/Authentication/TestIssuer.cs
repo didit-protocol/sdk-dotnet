@@ -61,9 +61,9 @@ namespace Didit.Tests.Authentication
             ["x_future_field"] = "kept",
         }.ToJsonString();
 
-        public Didit.Authentication Create(TimeSpan? clockSkew = null, string? clientId = null)
+        public Didit.Authentication Create(TimeSpan? clockSkew = null)
         {
-            var options = new AuthenticationOptions { HttpClient = _httpClient, UtcNow = () => Now, ClientId = clientId };
+            var options = new AuthenticationOptions { HttpClient = _httpClient, UtcNow = () => Now };
             if (clockSkew is { } skew)
             {
                 options.ClockSkew = skew;
