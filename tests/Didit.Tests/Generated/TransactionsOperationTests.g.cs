@@ -76,7 +76,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
-            Assert.Equal(1, result.Results.Count);
+            Assert.Single(result.Results);
             Assert.Equal(1L, result.Count);
         }
 
@@ -244,7 +244,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
-            Assert.Equal(1, result.Results.Count);
+            Assert.Single(result.Results);
             Assert.Equal(1L, result.Count);
         }
 
@@ -265,7 +265,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
-            Assert.Equal(1, result.Results.Count);
+            Assert.Single(result.Results);
             Assert.Equal(1L, result.Count);
         }
 

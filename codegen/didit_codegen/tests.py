@@ -151,6 +151,14 @@ def query_pairs(obj: ObjectDef | None, args: dict[str, Any], op: Operation) -> l
     return pairs
 
 
+def count_assert(count: int, expr: str) -> str:
+    if count == 0:
+        return f"Assert.Empty({expr});"
+    if count == 1:
+        return f"Assert.Single({expr});"
+    return f"Assert.Equal({count}, {expr}.Count);"
+
+
 def sample_response(model: Model, ref: TypeRef | None, depth: int = 0) -> Any:
     """A response body synthesised from the schema, when the spec has no example."""
     if ref is None:
@@ -335,7 +343,7 @@ class TestEmitter:
         if response.kind == "page":
             results = example.get("results") if isinstance(example, dict) else None
             count = len(results) if isinstance(results, list) else 0
-            asserts.append(f"Assert.Equal({count}, result.Results.Count);")
+            asserts.append(count_assert(count, "result.Results"))
             if isinstance(example, dict) and isinstance(example.get("count"), int):
                 asserts.append(f"Assert.Equal({example['count']}L, result.Count);")
             return setup, asserts
@@ -348,7 +356,7 @@ class TestEmitter:
                 asserts.append(f"Assert.Equal(JsonValueKind.{kind}, result.ValueKind);")
             return setup, asserts
         if ref.kind == "list" and isinstance(example, list):
-            asserts.append(f"Assert.Equal({len(example)}, result.Count);")
+            asserts.append(count_assert(len(example), "result"))
             return setup, asserts
         if ref.kind == "named" and ref.name in self.model.objects and isinstance(example, dict):
             asserts.append("Assert.NotNull(result);")
