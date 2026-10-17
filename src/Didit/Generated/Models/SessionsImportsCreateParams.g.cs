@@ -39,7 +39,15 @@ namespace Didit
         /// Alternative to file upload. Must be an HTTPS URL resolving to a public address (private/loopback networks are rejected). Mutually exclusive with <c>file</c>.
         /// </summary>
         [JsonPropertyName("source_file_url")]
-        public required string SourceFileUrl { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> SourceFileUrl { get; set; }
+
+        /// <summary>
+        /// Canonical CSV or NDJSON file. Use NDJSON for large imports. Maximum upload size 25 MB (use <c>source_file_url</c> for bigger files). Mutually exclusive with <c>source_file_url</c>.
+        /// </summary>
+        [JsonPropertyName("file")]
+        [JsonIgnore]
+        public Optional<FileUpload> File { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

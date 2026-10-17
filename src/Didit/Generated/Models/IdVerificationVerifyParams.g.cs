@@ -18,6 +18,7 @@ namespace Didit
         /// Front side of the identity document. Allowed extensions: <c>tiff</c>, <c>jpg</c>, <c>jpeg</c>, <c>png</c>, <c>webp</c>, <c>pdf</c>. Maximum upload size: 10 MB (larger files are rejected with <c>400</c>). PDFs are rendered to an image before OCR; encrypted PDFs require <c>front_image_password</c>. Images are automatically compressed to ~0.5 MB and EXIF orientation is applied. Upload the full, uncropped capture with all four corners of the document visible.
         /// </summary>
         [JsonPropertyName("front_image")]
+        [JsonIgnore]
         public required FileUpload FrontImage { get; set; }
 
         /// <summary>
@@ -31,7 +32,7 @@ namespace Didit
         /// Back side of the document — send it whenever the document has one (many ID cards carry the MRZ or a barcode on the back; omitting it simply leaves the MRZ and back-side fields empty in the response — this endpoint does not raise a missing-MRZ warning). Same format and size limits as <c>front_image</c>. When omitted, <c>back_image</c> and back-side fields are <c>null</c> in the response.
         /// </summary>
         [JsonPropertyName("back_image")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [JsonIgnore]
         public Optional<FileUpload> BackImage { get; set; }
 
         /// <summary>

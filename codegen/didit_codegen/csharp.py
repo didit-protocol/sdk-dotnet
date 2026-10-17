@@ -306,8 +306,18 @@ class Emitter:
         for key in sorted(node.children):
             yield from self.walk(node.children[key])
 
+    def sends_deprecated_fields(self, op: Operation) -> bool:
+        """Whether the request code reads deprecated properties (multipart fields are copied one by one)."""
+        if op.body is None or op.body.content_type == "application/json":
+            return False
+        obj = self.model.objects.get(op.body.params_type or op.body.type.name or "")
+        return obj is not None and any(p.deprecated and p.location == "body" for p in obj.props)
+
     def resource_file(self, node: ResourceNode) -> str:
-        out = [HEADER, "using System;", "using System.Collections.Generic;", "using System.Linq;", "using System.Text.Json;", "using System.Threading;", "using System.Threading.Tasks;", "using Didit.Internal;", "", "namespace Didit.Resources", "{"]
+        header = HEADER
+        if any(self.sends_deprecated_fields(op) for op in node.operations):
+            header += "#pragma warning disable CS0618 // Deprecated fields are still sent when set.\n"
+        out = [header, "using System;", "using System.Collections.Generic;", "using System.Linq;", "using System.Text.Json;", "using System.Threading;", "using System.Threading.Tasks;", "using Didit.Internal;", "", "namespace Didit.Resources", "{"]
         dotted = ".".join(node.segments)
         out.append(f"    /// <summary>The <c>{dotted}</c> resource.</summary>")
         out.append(f"    public sealed partial class {node.type_name}")
@@ -415,6 +425,8 @@ class Emitter:
         if remarks:
             remarks_lines.append(f"{indent}/// <para/>")
         remarks_lines.append(f"{indent}/// <c>{xml_escape(op.http_method)} {xml_escape(op.path)}</c> (<c>{op.dotted}</c>).")
+        if op.body is not None and op.body.json_without_files:
+            remarks_lines.append(f"{indent}/// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.")
         if op.idempotency_key:
             remarks_lines.append(f"{indent}/// Accepts an idempotency key: set <see cref=\"RequestOptions.IdempotencyKey\"/>.")
         if op.scope == "application":
@@ -581,12 +593,25 @@ class Emitter:
             lines.append(f"{indent}if ({holder} is not null)")
             lines.append(f"{indent}{{")
             inner_indent = indent + "    "
+        outer_indent = inner_indent
+        if body.json_without_files:
+            files = [p for p in obj.props if p.location == "body" and is_file(p.type)]
+            condition = " || ".join(f"{holder}.{p.cs_name}.IsSet" for p in files)
+            lines.append(f"{outer_indent}if ({condition})")
+            lines.append(f"{outer_indent}{{")
+            inner_indent = outer_indent + "    "
         lines.append(f"{inner_indent}var form = new MultipartRequestBody();")
         for prop in obj.props:
             if prop.location != "body":
                 continue
             lines += self.multipart_prop(holder, prop, obj.role, inner_indent)
         lines.append(f"{inner_indent}request.Body = form;")
+        if body.json_without_files:
+            lines.append(f"{outer_indent}}}")
+            lines.append(f"{outer_indent}else")
+            lines.append(f"{outer_indent}{{")
+            lines.append(f"{outer_indent}    request.Body = JsonRequestBody.Create({holder});")
+            lines.append(f"{outer_indent}}}")
         if not required:
             lines.append(f"{indent}}}")
         return lines

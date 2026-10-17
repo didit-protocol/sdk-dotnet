@@ -45,11 +45,12 @@ namespace Didit.Resources
         /// Partial update of the application's white-label branding. Send <c>application/json</c> to change colors, fonts, radii and UI options, or <c>multipart/form-data</c> to upload logo images. Only the fields you include are changed. Custom domain and white-label email cannot be set through this endpoint — use the Business Console for those.
         /// <para/>
         /// <c>PATCH /v3/customization/</c> (<c>customization.update</c>).
+        /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<BrandingCustomization> UpdateAsync(BrandingCustomizationUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<BrandingCustomization> UpdateAsync(CustomizationUpdateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -85,7 +86,7 @@ namespace Didit.Resources
         /// Update branding customization
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="CustomizationResource.UpdateAsync"/>.</remarks>
-        public Task<DiditResponse<BrandingCustomization>> UpdateAsync(BrandingCustomizationUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<BrandingCustomization>> UpdateAsync(CustomizationUpdateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -98,7 +99,131 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            request.Body = JsonRequestBody.Create(parameters);
+            if (parameters.ImageSquare.IsSet || parameters.ImageRectangular.IsSet || parameters.ImageFavicon.IsSet)
+            {
+                var form = new MultipartRequestBody();
+                if (parameters.ColorPrimary.IsSet)
+                {
+                    form.Add("color_primary", parameters.ColorPrimary.Value);
+                }
+                if (parameters.ColorSecondary.IsSet)
+                {
+                    form.Add("color_secondary", parameters.ColorSecondary.Value);
+                }
+                if (parameters.ColorBackground.IsSet)
+                {
+                    form.Add("color_background", parameters.ColorBackground.Value);
+                }
+                if (parameters.ColorPanel.IsSet)
+                {
+                    form.Add("color_panel", parameters.ColorPanel.Value);
+                }
+                if (parameters.ColorPanel10.IsSet)
+                {
+                    form.Add("color_panel_10", parameters.ColorPanel10.Value);
+                }
+                if (parameters.ColorOnPanel1.IsSet)
+                {
+                    form.Add("color_on_panel_1", parameters.ColorOnPanel1.Value);
+                }
+                if (parameters.ColorOnPanel2.IsSet)
+                {
+                    form.Add("color_on_panel_2", parameters.ColorOnPanel2.Value);
+                }
+                if (parameters.ColorOnBackground.IsSet)
+                {
+                    form.Add("color_on_background", parameters.ColorOnBackground.Value);
+                }
+                if (parameters.ColorButton1.IsSet)
+                {
+                    form.Add("color_button_1", parameters.ColorButton1.Value);
+                }
+                if (parameters.ColorButton2.IsSet)
+                {
+                    form.Add("color_button_2", parameters.ColorButton2.Value);
+                }
+                if (parameters.ColorButtonText1.IsSet)
+                {
+                    form.Add("color_button_text_1", parameters.ColorButtonText1.Value);
+                }
+                if (parameters.ColorButtonText2.IsSet)
+                {
+                    form.Add("color_button_text_2", parameters.ColorButtonText2.Value);
+                }
+                if (parameters.ColorPillText.IsSet)
+                {
+                    form.Add("color_pill_text", parameters.ColorPillText.Value);
+                }
+                if (parameters.BorderRadiusPanel.IsSet)
+                {
+                    form.Add("border_radius_panel", parameters.BorderRadiusPanel.Value);
+                }
+                if (parameters.BorderRadiusButtons.IsSet)
+                {
+                    form.Add("border_radius_buttons", parameters.BorderRadiusButtons.Value);
+                }
+                if (parameters.FontFamily.IsSet)
+                {
+                    form.Add("font_family", parameters.FontFamily.Value);
+                }
+                if (parameters.FontWeight.IsSet)
+                {
+                    form.Add("font_weight", parameters.FontWeight.Value);
+                }
+                if (parameters.AppPublicName.IsSet)
+                {
+                    form.Add("app_public_name", parameters.AppPublicName.Value);
+                }
+                if (parameters.PrivacyPolicyUrl.IsSet)
+                {
+                    form.Add("privacy_policy_url", parameters.PrivacyPolicyUrl.Value);
+                }
+                if (parameters.SkipWelcomeScreen.IsSet)
+                {
+                    form.Add("skip_welcome_screen", parameters.SkipWelcomeScreen.Value);
+                }
+                if (parameters.DisableLoginWithDidit.IsSet)
+                {
+                    form.Add("disable_login_with_didit", parameters.DisableLoginWithDidit.Value);
+                }
+                if (parameters.HideProgressBar.IsSet)
+                {
+                    form.Add("hide_progress_bar", parameters.HideProgressBar.Value);
+                }
+                if (parameters.CallbackSeconds.IsSet)
+                {
+                    form.Add("callback_seconds", parameters.CallbackSeconds.Value);
+                }
+                if (parameters.DeleteLogoSquare.IsSet)
+                {
+                    form.Add("delete_logo_square", parameters.DeleteLogoSquare.Value);
+                }
+                if (parameters.DeleteLogoRectangular.IsSet)
+                {
+                    form.Add("delete_logo_rectangular", parameters.DeleteLogoRectangular.Value);
+                }
+                if (parameters.DeleteFavicon.IsSet)
+                {
+                    form.Add("delete_favicon", parameters.DeleteFavicon.Value);
+                }
+                if (parameters.ImageSquare.IsSet)
+                {
+                    form.Add("image_square", parameters.ImageSquare.Value);
+                }
+                if (parameters.ImageRectangular.IsSet)
+                {
+                    form.Add("image_rectangular", parameters.ImageRectangular.Value);
+                }
+                if (parameters.ImageFavicon.IsSet)
+                {
+                    form.Add("image_favicon", parameters.ImageFavicon.Value);
+                }
+                request.Body = form;
+            }
+            else
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
             return _pipeline.SendJsonAsync<BrandingCustomization>(request, requestOptions, cancellationToken);
         }
     }

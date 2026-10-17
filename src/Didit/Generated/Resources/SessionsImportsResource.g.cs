@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Create an asynchronous import job for historical User Verification sessions, Business Verification sessions, transaction monitoring records, or workflow custom status rules. Use this to migrate from providers such as Sumsub, MetaMap, Veriff, Onfido, Persona, Trulioo, Jumio, Incode, iDenfy, or any other provider after transforming the export into Didit's canonical CSV/NDJSON format. Imports are disabled by default and must be enabled per organization by Didit.
         /// <para/>
         /// <c>POST /v3/session/imports/</c> (<c>sessions.imports.create</c>).
+        /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -119,7 +120,35 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            request.Body = JsonRequestBody.Create(parameters);
+            if (parameters.File.IsSet)
+            {
+                var form = new MultipartRequestBody();
+                if (parameters.ImportType.IsSet)
+                {
+                    form.Add("import_type", parameters.ImportType.Value.Value);
+                }
+                if (parameters.WorkflowId.IsSet)
+                {
+                    form.Add("workflow_id", parameters.WorkflowId.Value);
+                }
+                if (parameters.SourceFormat.IsSet)
+                {
+                    form.Add("source_format", parameters.SourceFormat.Value.Value);
+                }
+                if (parameters.SourceFileUrl.IsSet)
+                {
+                    form.Add("source_file_url", parameters.SourceFileUrl.Value);
+                }
+                if (parameters.File.IsSet)
+                {
+                    form.Add("file", parameters.File.Value);
+                }
+                request.Body = form;
+            }
+            else
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
             return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
         }
 

@@ -18,6 +18,7 @@ namespace Didit
         /// The document to read. Allowed extensions: <c>tiff</c>, <c>jpg</c>, <c>jpeg</c>, <c>png</c>, <c>pdf</c>, <c>webp</c>, <c>zip</c>. Maximum upload size: 30 MB (larger files are rejected with <c>400</c>). Multi-page PDFs are supported (expect higher latency); encrypted PDFs are rejected with <c>400</c>. Images are automatically compressed before processing.
         /// </summary>
         [JsonPropertyName("document")]
+        [JsonIgnore]
         public required FileUpload Document { get; set; }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Didit
     /// <summary>
     /// Partial branding update body. Provide only the fields you want to change. Hex colors accept <c>#RRGGBB</c> or <c>#RRGGBBAA</c>. Custom domain and white-label email are not accepted here.
     /// </summary>
-    public sealed record BrandingCustomizationUpdate
+    public sealed record CustomizationUpdateParams
     {
         /// <summary>
         /// Headers / primary text color.
@@ -195,6 +195,27 @@ namespace Didit
         [JsonPropertyName("delete_favicon")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<bool> DeleteFavicon { get; set; }
+
+        /// <summary>
+        /// Square logo (1:1 aspect ratio). Max 1 MB. Allowed: <c>png</c>, <c>jpg</c>, <c>jpeg</c>, <c>webp</c>.
+        /// </summary>
+        [JsonPropertyName("image_square")]
+        [JsonIgnore]
+        public Optional<FileUpload> ImageSquare { get; set; }
+
+        /// <summary>
+        /// Rectangular logo (2:1 aspect ratio). Max 1 MB. Allowed: <c>png</c>, <c>jpg</c>, <c>jpeg</c>, <c>webp</c>.
+        /// </summary>
+        [JsonPropertyName("image_rectangular")]
+        [JsonIgnore]
+        public Optional<FileUpload> ImageRectangular { get; set; }
+
+        /// <summary>
+        /// Favicon image. Max 500 KB.
+        /// </summary>
+        [JsonPropertyName("image_favicon")]
+        [JsonIgnore]
+        public Optional<FileUpload> ImageFavicon { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

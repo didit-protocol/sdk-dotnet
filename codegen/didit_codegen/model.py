@@ -660,7 +660,7 @@ class ModelBuilder:
             for json_name, prop in (part.get("properties") or {}).items()
             if _has_binary(doc, prop)
         ]
-        if any(name in common for name in files):
+        if not files or any(name in common for name in files):
             return None
         description = doc.resolve(json_schema).get("description") or doc.resolve(multipart_schema).get("description")
         name = self._unique(params_name)

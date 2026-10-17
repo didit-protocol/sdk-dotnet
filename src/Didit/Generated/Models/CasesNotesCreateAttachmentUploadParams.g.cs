@@ -18,6 +18,7 @@ namespace Didit
         /// The &lt;c&gt;file&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("file")]
+        [JsonIgnore]
         public required FileUpload File { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
