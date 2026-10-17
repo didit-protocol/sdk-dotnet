@@ -106,6 +106,53 @@ class SpecTests(unittest.TestCase):
             files = csharp.emit(built)
             self.assertIn("Removed from the Didit API on 2026-10-17", files["src/Didit/Generated/Resources/BillingResource.g.cs"])
 
+    def test_moved_operation_keeps_its_method_on_the_new_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            path = root / "openapi" / "verification.json"
+            data = json.loads(path.read_text("utf-8"))
+            moved = data["paths"].pop("/v3/billing/balance/")
+            data["paths"]["/v3/billing/balance-v2/"] = moved
+            path.write_text(json.dumps(data), "utf-8")
+            overlay_path = root / "openapi" / "overlay.json"
+            overlay = json.loads(overlay_path.read_text("utf-8"))
+            naming = overlay["operations"].pop("GET /v3/billing/balance/")
+            overlay["operations"]["GET /v3/billing/balance-v2/"] = naming
+            overlay_path.write_text(json.dumps(overlay), "utf-8")
+            (root / "openapi" / "deprecated-operations.json").write_text(json.dumps({
+                "operations": {"GET /v3/billing/balance/": {"removed_on": "2026-10-17", "naming": naming, "path": "/v3/billing/balance/", "method": "get", "operation": moved["get"]}},
+                "schemas": {"verification": {}, "account": {}},
+            }), "utf-8")
+
+            built = model.build(spec.load(root))
+            ops = [o for o in built.operations if o.dotted == "billing.retrieve_balance"]
+            self.assertEqual(len(ops), 1)
+            self.assertEqual(ops[0].path, "/v3/billing/balance-v2/")
+            self.assertFalse(ops[0].deprecated)
+
+    def test_renamed_operation_keeps_an_obsolete_alias(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            overlay = json.loads((root / "openapi" / "overlay.json").read_text("utf-8"))
+            current = overlay["operations"]["GET /v3/billing/balance/"]
+            old = {**current, "method": "get_balance"}
+            (root / "openapi" / "deprecated-operations.json").write_text(json.dumps({
+                "operations": {"GET /v3/billing/balance/ (renamed from billing.get_balance)": {
+                    "removed_on": "2026-10-17", "naming": old, "path": "/v3/billing/balance/", "method": "get", "renamed_to": current,
+                }},
+                "schemas": {"verification": {}, "account": {}},
+            }), "utf-8")
+
+            built = model.build(spec.load(root))
+            live = next(o for o in built.operations if o.dotted == "billing.retrieve_balance")
+            alias = next(o for o in built.operations if o.dotted == "billing.get_balance")
+            self.assertFalse(live.deprecated)
+            self.assertTrue(alias.deprecated)
+            self.assertEqual((alias.http_method, alias.path), (live.http_method, live.path))
+            resource = csharp.emit(built)["src/Didit/Generated/Resources/BillingResource.g.cs"]
+            self.assertIn("Renamed to Billing.RetrieveBalanceAsync on 2026-10-17", resource)
+            self.assertIn("GetBalanceAsync(", resource)
+
 
 class ModelTests(unittest.TestCase):
     @classmethod
