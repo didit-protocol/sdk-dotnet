@@ -87,9 +87,6 @@ namespace Didit.Internal
         public void Add(string name, DateTimeOffset? value) =>
             Add(name, value?.ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", CultureInfo.InvariantCulture));
 
-        public void Add<T>(string name, T? value)
-            where T : struct, IStringEnum => Add(name, value?.Value);
-
         public void Add(string name, IEnumerable<string>? values)
         {
             if (values is null)
@@ -100,20 +97,6 @@ namespace Didit.Internal
             foreach (var value in values)
             {
                 Add(name, value);
-            }
-        }
-
-        public void Add<T>(string name, IEnumerable<T>? values)
-            where T : struct, IStringEnum
-        {
-            if (values is null)
-            {
-                return;
-            }
-
-            foreach (var value in values)
-            {
-                Add(name, value.Value);
             }
         }
 
@@ -179,6 +162,8 @@ namespace Didit.Internal
     {
         private readonly List<(string Name, string? Text, FileUpload? File)> _parts = new();
 
+        public IReadOnlyList<(string Name, string? Text, FileUpload? File)> Parts => _parts;
+
         public void Add(string name, string? value)
         {
             if (value is not null)
@@ -187,80 +172,20 @@ namespace Didit.Internal
             }
         }
 
-        public void Add(string name, Optional<string?> value)
-        {
-            if (value.IsSet)
-            {
-                Add(name, value.Value);
-            }
-        }
-
         public void Add(string name, long? value) => Add(name, value?.ToString(CultureInfo.InvariantCulture));
-
-        public void Add(string name, Optional<long?> value)
-        {
-            if (value.IsSet)
-            {
-                Add(name, value.Value);
-            }
-        }
 
         public void Add(string name, double? value) => Add(name, value?.ToString("R", CultureInfo.InvariantCulture));
 
-        public void Add(string name, Optional<double?> value)
-        {
-            if (value.IsSet)
-            {
-                Add(name, value.Value);
-            }
-        }
-
         public void Add(string name, bool? value) => Add(name, value is null ? null : value.Value ? "true" : "false");
-
-        public void Add(string name, Optional<bool?> value)
-        {
-            if (value.IsSet)
-            {
-                Add(name, value.Value);
-            }
-        }
 
         public void Add(string name, DateTimeOffset? value) =>
             Add(name, value?.ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", CultureInfo.InvariantCulture));
-
-        public void Add(string name, Optional<DateTimeOffset?> value)
-        {
-            if (value.IsSet)
-            {
-                Add(name, value.Value);
-            }
-        }
-
-        public void AddEnum<T>(string name, T? value)
-            where T : struct, IStringEnum => Add(name, value?.Value);
-
-        public void AddEnum<T>(string name, Optional<T?> value)
-            where T : struct, IStringEnum
-        {
-            if (value.IsSet)
-            {
-                AddEnum(name, value.Value);
-            }
-        }
 
         public void Add(string name, FileUpload? file)
         {
             if (file is not null)
             {
                 _parts.Add((name, null, file));
-            }
-        }
-
-        public void Add(string name, Optional<FileUpload?> file)
-        {
-            if (file.IsSet)
-            {
-                Add(name, file.Value);
             }
         }
 
@@ -278,23 +203,17 @@ namespace Didit.Internal
             }
         }
 
-        public void AddEach(string name, Optional<IReadOnlyList<string>?> values)
+        /// <summary>Repeats the file field once per file.</summary>
+        public void AddEach(string name, IEnumerable<FileUpload>? files)
         {
-            if (values.IsSet)
+            if (files is null)
             {
-                AddEach(name, values.Value);
+                return;
             }
-        }
 
-        public void AddEachEnum<T>(string name, IEnumerable<T>? values)
-            where T : struct, IStringEnum => AddEach(name, values?.Select(v => v.Value));
-
-        public void AddEachEnum<T>(string name, Optional<IReadOnlyList<T>?> values)
-            where T : struct, IStringEnum
-        {
-            if (values.IsSet)
+            foreach (var file in files)
             {
-                AddEachEnum(name, values.Value);
+                Add(name, file);
             }
         }
 
@@ -307,11 +226,31 @@ namespace Didit.Internal
             }
         }
 
-        public void AddJson<T>(string name, Optional<T> value)
+        /// <summary>A free-form value: strings and scalars as text, anything else as JSON text.</summary>
+        public void AddAny(string name, object? value)
         {
-            if (value.IsSet)
+            switch (value)
             {
-                AddJson(name, value.Value);
+                case null:
+                    return;
+                case string text:
+                    Add(name, text);
+                    return;
+                case bool flag:
+                    Add(name, flag);
+                    return;
+                case IFormattable formattable when value is int or long or short or byte or uint or ulong or ushort or sbyte or double or float or decimal:
+                    Add(name, formattable.ToString(null, CultureInfo.InvariantCulture));
+                    return;
+                case FileUpload file:
+                    Add(name, file);
+                    return;
+                case IStringEnum enumValue:
+                    Add(name, enumValue.Value);
+                    return;
+                default:
+                    Add(name, JsonSupport.Serialize(value));
+                    return;
             }
         }
 
@@ -336,6 +275,18 @@ namespace Didit.Internal
         }
 
         private static string Quote(string value) => "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+    }
+
+    /// <summary>HTTP methods, including PATCH which .NET Standard 2.0 does not define.</summary>
+    internal static class HttpMethods
+    {
+        public static readonly HttpMethod Get = HttpMethod.Get;
+        public static readonly HttpMethod Post = HttpMethod.Post;
+        public static readonly HttpMethod Put = HttpMethod.Put;
+        public static readonly HttpMethod Delete = HttpMethod.Delete;
+        public static readonly HttpMethod Head = HttpMethod.Head;
+        public static readonly HttpMethod Options = HttpMethod.Options;
+        public static readonly HttpMethod Patch = new("PATCH");
     }
 
     /// <summary>Fills path parameters.</summary>

@@ -98,17 +98,14 @@ namespace Didit
                 return false;
             }
 
-            try
+            var valid = IssuerComparer.Validate(issuer, out var issuerError);
+            if (valid is null)
             {
-                issuer = IssuerComparer.Normalize(issuer, nameof(key));
-            }
-            catch (ArgumentException ex)
-            {
-                error = "The publishable key does not carry a valid issuer URL: " + ex.Message;
+                error = "The publishable key does not carry a valid issuer URL. " + issuerError;
                 return false;
             }
 
-            publishableKey = new PublishableKey(text, issuer, isLive);
+            publishableKey = new PublishableKey(text, valid, isLive);
             error = string.Empty;
             return true;
         }

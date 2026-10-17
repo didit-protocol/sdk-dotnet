@@ -12,32 +12,37 @@ namespace Didit.Internal
             issuer.Length > 0 && issuer[issuer.Length - 1] == '/' ? issuer.Substring(0, issuer.Length - 1) : issuer;
 
         /// <summary>
-        /// Validates and normalises an issuer URL: absolute <c>https</c> (plain <c>http</c> only for loopback hosts), no query or
-        /// fragment, surrounding whitespace removed.
+        /// Validates an issuer URL: absolute <c>https</c> (plain <c>http</c> only for loopback hosts) with no query, fragment or
+        /// user info. Returns the trimmed URL, or <c>null</c> and the reason.
         /// </summary>
-        public static string Normalize(string? issuer, string parameterName)
+        public static string? Validate(string? issuer, out string error)
         {
+            error = string.Empty;
             if (string.IsNullOrWhiteSpace(issuer))
             {
-                throw new ArgumentException("The issuer must be a non-empty URL.", parameterName);
+                error = "The issuer must be a non-empty URL.";
+                return null;
             }
 
             var text = issuer!.Trim();
             if (!Uri.TryCreate(text, UriKind.Absolute, out var uri))
             {
-                throw new ArgumentException($"The issuer '{text}' is not an absolute URL.", parameterName);
+                error = $"The issuer '{text}' is not an absolute URL.";
+                return null;
             }
 
             var secure = string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase);
             var loopbackHttp = string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase) && uri.IsLoopback;
             if (!secure && !loopbackHttp)
             {
-                throw new ArgumentException($"The issuer '{text}' must use https.", parameterName);
+                error = $"The issuer '{text}' must use https.";
+                return null;
             }
 
             if (uri.Query.Length > 0 || uri.Fragment.Length > 0 || uri.UserInfo.Length > 0)
             {
-                throw new ArgumentException($"The issuer '{text}' must not have a query, fragment or user info.", parameterName);
+                error = $"The issuer '{text}' must not have a query, fragment or user info.";
+                return null;
             }
 
             return text;
