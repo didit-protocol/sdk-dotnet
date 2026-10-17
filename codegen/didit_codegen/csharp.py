@@ -171,10 +171,9 @@ class Emitter:
             out += self.property(obj, prop)
         if not first:
             out.append("")
-        accessor = "set" if obj.role == REQUEST else "init"
         out.append("        /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>")
         out.append("        [JsonExtensionData]")
-        out.append(f"        public IDictionary<string, JsonElement>? AdditionalProperties {{ get; {accessor}; }}")
+        out.append("        public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }")
         out.append("    }")
         out.append("}")
         return "\n".join(out) + "\n"

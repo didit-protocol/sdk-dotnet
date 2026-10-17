@@ -70,6 +70,6 @@ namespace Didit
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
-        public IDictionary<string, JsonElement>? AdditionalProperties { get; init; }
+        public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
     }
 }
