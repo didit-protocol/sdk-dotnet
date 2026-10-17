@@ -10,11 +10,14 @@ namespace Didit.Internal
 {
     /// <summary>
     /// Lazily fetched, thread-safe cache of the issuer's discovery document and JWKS. Entries live for the response's
-    /// <c>Cache-Control: max-age</c> (5 minutes when absent). An unknown <c>kid</c> forces at most one JWKS refetch per minute.
+    /// <c>Cache-Control: max-age</c> (5 minutes when absent, at least 1 minute even for <c>no-store</c>, <c>no-cache</c> or
+    /// <c>max-age=0</c>, so tokens cannot make the SDK fetch the JWKS for every verification). An unknown <c>kid</c> forces at
+    /// most one JWKS refetch per minute.
     /// </summary>
     internal sealed class IssuerMetadataCache : IDisposable
     {
         internal static readonly TimeSpan DefaultLifetime = TimeSpan.FromMinutes(5);
+        internal static readonly TimeSpan MinLifetime = TimeSpan.FromMinutes(1);
         internal static readonly TimeSpan MaxLifetime = TimeSpan.FromDays(1);
         internal static readonly TimeSpan UnknownKeyRefetchInterval = TimeSpan.FromMinutes(1);
 
@@ -142,12 +145,12 @@ namespace Didit.Internal
 
             if (cacheControl.NoStore || cacheControl.NoCache)
             {
-                return TimeSpan.Zero;
+                return MinLifetime;
             }
 
             if (cacheControl.MaxAge is { } maxAge)
             {
-                return maxAge < TimeSpan.Zero ? TimeSpan.Zero : (maxAge > MaxLifetime ? MaxLifetime : maxAge);
+                return maxAge < MinLifetime ? MinLifetime : (maxAge > MaxLifetime ? MaxLifetime : maxAge);
             }
 
             return DefaultLifetime;
