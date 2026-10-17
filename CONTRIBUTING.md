@@ -24,7 +24,7 @@ The files in `openapi/`:
 | `webhook-vectors.json` | Upstream copy of the backend's webhook signing vectors. Never edit by hand. |
 | `SOURCE.json` | URL, SHA-256 and fetch time of each upstream file, written by the spec sync. |
 | `overlay.json` | SDK naming for operations whose upstream definition has no `x-didit-sdk` yet. Edited in this repository. |
-| `deprecated-operations.json` | Present only while removed operations are deprecated; written by the spec sync. |
+| `deprecated-operations.json` | Present only while removed or renamed operations are deprecated; written by the spec sync. |
 
 ## Regenerating
 
@@ -95,6 +95,8 @@ Its body lists added, removed and changed operations and schemas, the breaking c
 
 - **`needs-naming` label**: a new operation has no SDK naming. Add the overlay entry (above), regenerate, and push to `chore/spec-sync`. The sync does not overwrite that branch while it has commits from people.
 - **Removed operations** are never deleted silently. The spec sync copies them, with the schemas they reference, into `openapi/deprecated-operations.json`; the generator keeps their SDK methods, marked `[Obsolete]`, until the next minor release. Delete the entries in that release.
+- **Renamed operations** (upstream `x-didit-sdk` with a new resource or method) keep their old method as an `[Obsolete]` alias of the same endpoint until the next minor release: the spec sync records the old name in `openapi/deprecated-operations.json` (key suffix ` (renamed from <resource>.<method>)`). Delete the entry in that release.
+- **Moved endpoints**: when an operation's path changes, give the new path the old naming (upstream or in `overlay.json`). The method keeps its name and calls the new path; a deprecated copy of the old path with the same name is ignored by the generator, and the spec sync reports the pair under "Moved" instead of deprecating it.
 - **Release impact**: `chore` commits do not trigger a release. When a sync adds or changes public SDK surface, set the squash commit title to `feat(spec): sync API spec YYYY-MM-DD` (or `fix(spec):`, with `!` when it is breaking) when merging.
 
 Preview a sync locally without writing anything with `python3 codegen/spec_sync.py`.

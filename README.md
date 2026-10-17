@@ -171,6 +171,8 @@ var result = await client.IdVerification.VerifyAsync(new IdVerificationVerifyPar
 });
 ```
 
+A few operations accept JSON or a multipart upload (`Sessions.Imports.CreateAsync` with `File` or `SourceFileUrl`, `DatabaseValidation.ValidateAsync` with `Selfie`, `Customization.UpdateAsync` with the logo images). They are sent as multipart when a file is set and as JSON otherwise.
+
 Reports come back as `BinaryResponse` with `Content` (bytes), `ContentType`, `FileName`, `OpenRead()` and `SaveToAsync(path)`:
 
 ```csharp
@@ -323,7 +325,8 @@ Choices DESIGN.md leaves to each language, made the .NET way:
 - Raw responses: `client.WithRawResponse`, the C# form of `with_raw_response`.
 - Pagination: `Page<T>` implements `IAsyncEnumerable<T>`; `AsPagesAsync()` walks pages.
 - Webhooks: the static `DiditWebhooks` class, usable without a client. Canonical JSON is computed from the raw JSON text, so integers above 2^53 keep their exact value.
-- Authentication verifies ES256 with the BCL's `ECDsa`, so the package needs no JWT library (DESIGN.md allows `Microsoft.IdentityModel.Tokens`; it is not needed).
+- Authentication verifies ES256 with the BCL's `ECDsa`, so the package needs no JWT library (DESIGN.md allows `Microsoft.IdentityModel.Tokens`; it is not needed). `VerifyAccessTokenAsync(token)` skips the audience check; an empty `audience` string is refused rather than treated as "no audience". The discovery document and JWKS are kept for at least one minute, even when the issuer sends `no-store`.
+- Path parameters are percent-encoded, and `.` or `..` is refused with an `ArgumentException` (URL resolution would turn it into another endpoint).
 - Debug logging is a delegate (`DiditClientOptions.Logger`); the dependency injection package routes it to `ILogger<DiditClient>`.
 
 ## Versioning
