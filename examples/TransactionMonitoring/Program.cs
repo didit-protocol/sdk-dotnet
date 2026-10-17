@@ -43,7 +43,7 @@ Console.WriteLine($"Wallet risk score {wallet.RiskScore}, status {wallet.Status}
 
 // Travel Rule: your settings and the VASP directory.
 var settings = await client.TravelRule.RetrieveSettingsAsync();
-Console.WriteLine($"Travel Rule enabled: {settings.Enabled}");
+Console.WriteLine($"Travel Rule enabled: {settings.IsEnabled} ({settings.Jurisdiction})");
 var vasps = await client.TravelRule.ListVaspsAsync(new TravelRuleListVaspsParams { Limit = 5 });
 foreach (var vasp in vasps.Results)
 {
