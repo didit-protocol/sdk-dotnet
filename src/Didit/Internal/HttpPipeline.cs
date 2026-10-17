@@ -114,11 +114,7 @@ namespace Didit.Internal
                     response = await _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, timeoutSource.Token).ConfigureAwait(false);
                     try
                     {
-#if NET8_0_OR_GREATER
-                        body = await response.Content.ReadAsByteArrayAsync(timeoutSource.Token).ConfigureAwait(false);
-#else
-                        body = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
+                        body = await ResponseBody.ReadAsync(response, timeoutSource.Token).ConfigureAwait(false);
                     }
                     catch
                     {
