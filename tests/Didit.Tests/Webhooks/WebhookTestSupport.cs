@@ -22,16 +22,21 @@ namespace Didit.Tests.Webhooks
 
         public static string Hmac(string secret, string message)
         {
+#if NET5_0_OR_GREATER
             var mac = HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(message));
+#else
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+            var mac = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
+#endif
             return string.Concat(mac.Select(b => b.ToString("x2", CultureInfo.InvariantCulture)));
         }
 
         public static string Text(long value) => value.ToString(CultureInfo.InvariantCulture);
 
-        /// <summary>A minimal session body with the given timestamp; <paramref name="extra"/> is appended inside the object.</summary>
-        public static string SessionBody(long timestamp = Timestamp, string extra = "") =>
-            "{\"event_id\":\"evt-1\",\"session_id\":\"s-1\",\"status\":\"Approved\",\"timestamp\":" + Text(timestamp)
-            + ",\"webhook_type\":\"status.updated\"" + extra + "}";
+        /// <summary>A minimal session body with the given timestamp and status.</summary>
+        public static string SessionBody(long timestamp = Timestamp, string status = "Approved") =>
+            "{\"event_id\":\"evt-1\",\"session_id\":\"s-1\",\"status\":\"" + status + "\",\"timestamp\":" + Text(timestamp)
+            + ",\"webhook_type\":\"status.updated\"}";
 
         /// <summary>The headers Didit sends for <paramref name="body"/>, signed with <paramref name="secret"/>.</summary>
         public static Dictionary<string, string> SignedHeaders(string body, string secret = Secret)
@@ -111,15 +116,44 @@ namespace Didit.Tests.Webhooks
     }
 
     /// <summary>One entry of <c>openapi/webhook-vectors.json</c>.</summary>
-    internal sealed record WebhookVector(
-        string Name,
-        string Body,
-        string CanonicalV2,
-        IReadOnlyDictionary<string, string> Headers,
-        string Secret,
-        string? PreviousSecret,
-        long Now,
-        string Expect);
+    internal sealed class WebhookVector
+    {
+        public WebhookVector(
+            string name,
+            string body,
+            string canonicalV2,
+            IReadOnlyDictionary<string, string> headers,
+            string secret,
+            string? previousSecret,
+            long now,
+            string expect)
+        {
+            Name = name;
+            Body = body;
+            CanonicalV2 = canonicalV2;
+            Headers = headers;
+            Secret = secret;
+            PreviousSecret = previousSecret;
+            Now = now;
+            Expect = expect;
+        }
+
+        public string Name { get; }
+
+        public string Body { get; }
+
+        public string CanonicalV2 { get; }
+
+        public IReadOnlyDictionary<string, string> Headers { get; }
+
+        public string Secret { get; }
+
+        public string? PreviousSecret { get; }
+
+        public long Now { get; }
+
+        public string Expect { get; }
+    }
 
     /// <summary>The shared signature vectors, produced by running the backend's own signing functions.</summary>
     internal static class WebhookVectors

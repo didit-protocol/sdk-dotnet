@@ -375,7 +375,7 @@ namespace Didit.Tests.Webhooks
         {
             var body = SessionBody();
             var headers = SignedHeaders(body);
-            var tampered = body.Replace("Approved", "Declined", StringComparison.Ordinal);
+            var tampered = SessionBody(status: "Declined");
 
             Assert.Equal(WebhookVerificationReason.InvalidSignature, Reason(() => VerifyAt(tampered, headers)));
         }

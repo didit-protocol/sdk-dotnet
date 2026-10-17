@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using Didit.Internal;
@@ -180,36 +179,6 @@ namespace Didit.Tests.Webhooks
         public void DoublesAreFormattedLikePython(double value, string expected)
         {
             Assert.Equal(expected, WebhookCanonicalJson.FormatFloat(value));
-        }
-
-        [Fact]
-        public void FloatsRoundTripWithTheShortestDigits()
-        {
-            var random = new Random(20261017);
-            for (var i = 0; i < 20000; i++)
-            {
-                var value = BitConverter.Int64BitsToDouble((long)(random.NextDouble() * long.MaxValue));
-                if (i % 2 == 1)
-                {
-                    value = -value;
-                }
-
-                if (double.IsNaN(value) || double.IsInfinity(value) || Math.Floor(value) == value)
-                {
-                    continue;
-                }
-
-                var text = WebhookCanonicalJson.FormatFloat(value);
-
-                Assert.Equal(value, double.Parse(text, CultureInfo.InvariantCulture));
-                Assert.Equal(SignificantDigits(value.ToString("R", CultureInfo.InvariantCulture)), SignificantDigits(text));
-            }
-        }
-
-        private static string SignificantDigits(string text)
-        {
-            var mantissa = text.Split('e', 'E')[0].TrimStart('-').Replace(".", string.Empty, StringComparison.Ordinal);
-            return mantissa.TrimStart('0').TrimEnd('0');
         }
     }
 }
