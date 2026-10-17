@@ -60,6 +60,10 @@ def cs_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("\\/", "/")
 
 
+def is_file(ref: TypeRef) -> bool:
+    return ref.kind == "file" or (ref.kind == "list" and ref.item is not None and ref.item.kind == "file")
+
+
 def obsolete_message(op: Operation) -> str:
     removed_on = op.raw.op.get("x-didit-removed-on")
     if removed_on:
@@ -200,6 +204,15 @@ class Emitter:
                 lines.append(f"        public required {t.base(prop.type, REQUEST)} {prop.cs_name} {{ get; set; }}")
             else:
                 lines.append(f"        public {t.nullable(prop.type, REQUEST)} {prop.cs_name} {{ get; set; }}")
+            return lines
+        if is_file(prop.type):
+            # Files travel only as multipart parts, never in a JSON body.
+            lines.append("        [JsonIgnore]")
+            if prop.required:
+                lines.append(f"        public required {t.base(prop.type, REQUEST)} {prop.cs_name} {{ get; set; }}")
+            else:
+                inner = t.nullable(prop.type, REQUEST) if prop.nullable else t.base(prop.type, REQUEST)
+                lines.append(f"        public Optional<{inner}> {prop.cs_name} {{ get; set; }}")
             return lines
         if prop.required:
             if prop.nullable:

@@ -390,7 +390,7 @@ class ModelBuilder:
         for json_name, prop_schema in (schema.get("properties") or {}).items():
             self._add_prop(doc, obj, json_name, prop_schema, json_name in required)
 
-    def _build_merged(self, doc: Document, parts: list[Any], name: str, role: str, all_required: bool, origin: str, description: str | None) -> None:
+    def _build_merged(self, doc: Document, parts: list[Any], name: str, role: str, all_required: bool, origin: str, description: str | None, required: set[str] | None = None) -> None:
         obj = ObjectDef(name, description, role, origin)
         self.objects[name] = obj
         collected: dict[str, list[dict[str, Any]]] = {}
@@ -403,10 +403,8 @@ class ModelBuilder:
                     collected.setdefault(json_name, []).append(prop_schema)
                 if obj.description is None and schema.get("description"):
                     obj.description = schema.get("description")
-        if all_required:
-            required = set().union(*required_sets) if required_sets else set()
-        else:
-            required = set()
+        if required is None:
+            required = set().union(*required_sets) if all_required and required_sets else set()
         for json_name, schemas in collected.items():
             self._add_prop(doc, obj, json_name, self._merge_prop_schemas(doc, schemas), json_name in required)
 
@@ -644,6 +642,33 @@ class ModelBuilder:
             body_type = self.resolve(doc, schema, params_name, REQUEST)
             params_type = body_type.name if body_type.kind == "named" and body_type.name in self.objects else None
         return Body(content_type, body_type, required, params_type, _first_example(media), doc.resolve(schema))
+
+    def _dual_body(self, raw: RawOperation, params_name: str, required: bool, json_media: dict[str, Any], multipart_media: dict[str, Any]) -> Body | None:
+        """One Params type for an operation whose JSON body cannot carry the files its multipart body accepts.
+
+        The type holds the fields of both forms; a field is required only when both forms require it. The request is
+        multipart when a file is set and JSON otherwise. Returns None when a file is required (the body is then
+        multipart only).
+        """
+        doc = raw.doc
+        json_schema = json_media.get("schema") or {}
+        multipart_schema = multipart_media.get("schema") or {}
+        common = self._required_names(doc, json_schema) & self._required_names(doc, multipart_schema)
+        files = [
+            json_name
+            for part in self._flatten(doc, multipart_schema)
+            for json_name, prop in (part.get("properties") or {}).items()
+            if _has_binary(doc, prop)
+        ]
+        if any(name in common for name in files):
+            return None
+        description = doc.resolve(json_schema).get("description") or doc.resolve(multipart_schema).get("description")
+        name = self._unique(params_name)
+        self._build_merged(doc, [json_schema, multipart_schema], name, REQUEST, all_required=False, origin=params_name, description=description, required=common)
+        return Body("multipart/form-data", TypeRef("named", name=name), required, name, _first_example(json_media), doc.resolve(multipart_schema), json_without_files=True)
+
+    def _required_names(self, doc: Document, schema: Any) -> set[str]:
+        return {name for part in self._flatten(doc, schema) for name in part.get("required") or []}
 
     def _response(self, raw: RawOperation, base_name: str, query_params: list[Param]) -> Response:
         doc = raw.doc
