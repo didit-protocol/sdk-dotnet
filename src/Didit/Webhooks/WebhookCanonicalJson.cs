@@ -275,15 +275,12 @@ namespace Didit.Internal
 
         private static double ParseDouble(string token)
         {
-            try
-            {
-                return double.Parse(token, NumberStyles.Float, CultureInfo.InvariantCulture);
-            }
-            catch (OverflowException)
-            {
-                // .NET Framework throws where Python and .NET Core return an infinity.
-                return token.Length > 0 && token[0] == '-' ? double.NegativeInfinity : double.PositiveInfinity;
-            }
+#if NETCOREAPP3_0_OR_GREATER
+            // Correctly rounded since .NET Core 3.0; out-of-range values become infinities, as in Python.
+            return double.Parse(token, NumberStyles.Float, CultureInfo.InvariantCulture);
+#else
+            return WebhookFloat.Parse(token);
+#endif
         }
 
         // The shortest decimal digits that round-trip to the value (Python repr), as value = 0.<digits> * 10^point.
@@ -293,39 +290,9 @@ namespace Didit.Internal
             // "R" is the shortest round-trip form since .NET Core 3.0.
             ParseDigits(value.ToString("R", CultureInfo.InvariantCulture), out digits, out point);
 #else
-            // This build may run on .NET Framework, where "R" is not always the shortest form (or does not round-trip),
-            // so find the smallest precision that round-trips and prefer "R" only when it is at least as short.
-            string? best = null;
-            for (var precision = 1; precision <= 17; precision++)
-            {
-                var candidate = value.ToString("E" + (precision - 1).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-                if (RoundTrips(candidate, value))
-                {
-                    best = candidate;
-                    break;
-                }
-            }
-
-            var roundTrip = value.ToString("R", CultureInfo.InvariantCulture);
-            ParseDigits(roundTrip, out var roundTripDigits, out var roundTripPoint);
-            if (best is not null)
-            {
-                ParseDigits(best, out digits, out point);
-                if (roundTripDigits.Length > digits.Length || !RoundTrips(roundTrip, value))
-                {
-                    return;
-                }
-            }
-
-            digits = roundTripDigits;
-            point = roundTripPoint;
+            WebhookFloat.ShortestDigits(value, out digits, out point);
 #endif
         }
-
-#if !NETCOREAPP3_0_OR_GREATER
-        private static bool RoundTrips(string text, double value) =>
-            double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) && parsed == value;
-#endif
 
         // Splits a positive formatted double ("123.45", "1.5E-07", "1.000E+005") into significant digits and point position.
         private static void ParseDigits(string text, out string digits, out int point)

@@ -62,8 +62,10 @@ namespace Didit.Internal
                 exponent += exponentNegative ? -written : written;
             }
 
-            var mantissa = BigInteger.Parse(digits.Length == 0 ? "0" : digits.ToString(), NumberStyles.None, CultureInfo.InvariantCulture);
-            var magnitude = mantissa.IsZero ? 0.0 : ToDouble(mantissa, exponent, digits.Length);
+            var significant = digits.ToString().TrimStart('0');
+            var magnitude = significant.Length == 0
+                ? 0.0
+                : ToDouble(BigInteger.Parse(significant, NumberStyles.None, CultureInfo.InvariantCulture), exponent, significant.Length);
             return negative ? -magnitude : magnitude;
         }
 
@@ -163,15 +165,16 @@ namespace Didit.Internal
             return comparison > 0 || (comparison == 0 && (digit & 1) == 1);
         }
 
-        // The double nearest to mantissa * 10^exponent (mantissa positive, with digitCount decimal digits).
+        // The double nearest to mantissa * 10^exponent, where the mantissa is positive with digitCount significant digits.
         private static double ToDouble(BigInteger mantissa, long exponent, int digitCount)
         {
-            if (digitCount + exponent > 310)
+            // 10^(digitCount - 1 + exponent) <= value < 10^(digitCount + exponent).
+            if (digitCount - 1 + exponent > 308)
             {
                 return double.PositiveInfinity;
             }
 
-            if (digitCount + exponent < -330)
+            if (digitCount + exponent < -324)
             {
                 return 0.0;
             }
