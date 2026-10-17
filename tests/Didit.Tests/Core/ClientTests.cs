@@ -113,6 +113,20 @@ namespace Didit.Tests.Core
         }
 
         [Fact]
+        public async Task An_api_key_in_default_headers_never_reaches_the_account_api()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(400, "{\"detail\":\"bad token " + TestClients.AccountToken + "\"}");
+            using var client = TestClients.Create(handler, o => o.DefaultHeaders["x-api-key"] = "leaked_key");
+
+            var error = await Assert.ThrowsAsync<BadRequestException>(() => client.Account.Organizations.ListAsync());
+
+            Assert.Null(handler.Requests[0].Header("x-api-key"));
+            Assert.DoesNotContain(TestClients.AccountToken, error.Message);
+            Assert.DoesNotContain(TestClients.AccountToken, error.RawBody);
+        }
+
+        [Fact]
         public async Task Account_token_operation_without_token_fails_before_sending()
         {
             var handler = new MockHttpHandler();

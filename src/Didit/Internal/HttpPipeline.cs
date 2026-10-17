@@ -151,7 +151,7 @@ namespace Didit.Internal
                         continue;
                     }
 
-                    throw new ApiConnectionException($"Connection error: {request.Method} {logPath}: {ErrorFactory.Redact(ex.Message, settings.ApiKey)}", ex);
+                    throw new ApiConnectionException($"Connection error: {request.Method} {logPath}: {ErrorFactory.Redact(ErrorFactory.Redact(ex.Message, settings.ApiKey), settings.AccountToken)}", ex);
                 }
 
                 using (response)
@@ -172,7 +172,7 @@ namespace Didit.Internal
                         continue;
                     }
 
-                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, requestId, settings.ApiKey);
+                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, requestId, settings.ApiKey, settings.AccountToken);
                 }
             }
         }
@@ -361,6 +361,8 @@ namespace Didit.Internal
                     SetHeader(message, "Idempotency-Key", requestOptions!.IdempotencyKey!);
                 }
 
+                // A key in DefaultHeaders or RequestOptions.Headers is never sent to another API.
+                message.Headers.Remove("x-api-key");
                 switch (request.Auth)
                 {
                     case AuthKind.ApiKey:

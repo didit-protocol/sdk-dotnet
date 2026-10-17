@@ -15,7 +15,7 @@ namespace Didit.Internal
             byte[] body,
             IReadOnlyDictionary<string, IReadOnlyList<string>> headers,
             string? requestId,
-            string? apiKey)
+            params string?[] secrets)
         {
             string? rawBody = body.Length == 0 ? null : Encoding.UTF8.GetString(body);
             JsonElement? json = null;
@@ -33,8 +33,11 @@ namespace Didit.Internal
 
             var detail = DescribeBody(json, rawBody);
             var message = $"{status} {reason ?? StatusName(status)}" + (detail is null ? string.Empty : ": " + detail) + (requestId is null ? string.Empty : $" (request id {requestId})");
-            message = Redact(message, apiKey);
-            rawBody = rawBody is null ? null : Redact(rawBody, apiKey);
+            foreach (var secret in secrets)
+            {
+                message = Redact(message, secret);
+                rawBody = rawBody is null ? null : Redact(rawBody, secret);
+            }
 
             return status switch
             {

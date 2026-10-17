@@ -43,17 +43,17 @@ When upstream adds an operation without `x-didit-sdk`, `python3 codegen/generate
 Add an entry under `"operations"` in `openapi/overlay.json`:
 
 ```json
-"POST /v3/session/{sessionId}/imports/": {
+"POST /v3/organization/{organization_id}/application/{application_id}/cases/teams/": {
  "auth": "api_key",
  "method": "create",
- "resource": "sessions.imports",
+ "resource": "cases.teams",
  "scope": "application",
  "server": true
 }
 ```
 
 - Key: `"<METHOD> <path>"` for `verification.json`, `"account <METHOD> <path>"` for `account.json`, with the path exactly as in the spec.
-- `resource`: dot path of snake_case resource names; each segment becomes a nested accessor (`client.Sessions.Imports`).
+- `resource`: dot path of snake_case resource names; each segment becomes a nested accessor (`client.Cases.Teams`).
 - `method`: snake_case method name; `create` becomes `CreateAsync`.
 - `auth`: `api_key`, `account_token`, `none`, `device_token` or `public`.
 - `server`: `false` for operations that use an end-user or device token; server SDKs do not expose them.
