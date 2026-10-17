@@ -54,7 +54,7 @@ namespace Didit.Internal
                     return cached.Value;
                 }
 
-                var response = await _transport.SendAsync(HttpMethod.Get, _discoveryUrl, null, null, null, cancellationToken).ConfigureAwait(false);
+                var response = await _transport.SendAsync(HttpMethod.Get, _discoveryUrl, null, null, Array.Empty<string?>(), cancellationToken).ConfigureAwait(false);
                 var document = OpenIdConfiguration.FromJson(AuthJson.Parse(response.Body, "discovery document"));
                 if (!IssuerComparer.Matches(document.Issuer, _issuer))
                 {
@@ -159,7 +159,7 @@ namespace Didit.Internal
         private async Task<Entry<IReadOnlyList<SigningKey>>> FetchKeysAsync(CancellationToken cancellationToken)
         {
             var discovery = await GetDiscoveryAsync(cancellationToken).ConfigureAwait(false);
-            var response = await _transport.SendAsync(HttpMethod.Get, discovery.JwksUri!, null, null, null, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Get, discovery.JwksUri!, null, null, Array.Empty<string?>(), cancellationToken).ConfigureAwait(false);
             var keys = SigningKey.ParseSet(AuthJson.Parse(response.Body, "JWKS"));
             var entry = new Entry<IReadOnlyList<SigningKey>>(keys, _utcNow() + Lifetime(response.CacheControl));
             Volatile.Write(ref _keys, entry);

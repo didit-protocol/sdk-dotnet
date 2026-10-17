@@ -197,7 +197,7 @@ namespace Didit
                 new KeyValuePair<string, string>("code_verifier", codeVerifier),
                 new KeyValuePair<string, string>("redirect_uri", redirectUri),
             };
-            return await PostTokenAsync(form, code, cancellationToken).ConfigureAwait(false);
+            return await PostTokenAsync(form, new[] { code, codeVerifier }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace Didit
                 new KeyValuePair<string, string>("grant_type", "refresh_token"),
                 new KeyValuePair<string, string>("refresh_token", refreshToken),
             };
-            return await PostTokenAsync(form, refreshToken, cancellationToken).ConfigureAwait(false);
+            return await PostTokenAsync(form, new[] { refreshToken }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Didit
         public async Task<AuthSession> GetSessionAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             RequireText(accessToken, nameof(accessToken));
-            var response = await _transport.SendAsync(HttpMethod.Get, RuntimeUrl("session/"), null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Get, RuntimeUrl("session/"), null, accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
             return AuthSession.FromJson(AuthJson.Parse(response.Body, "session response"));
         }
 
@@ -252,7 +252,7 @@ namespace Didit
         public async Task RevokeSessionAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             RequireText(accessToken, nameof(accessToken));
-            await _transport.SendAsync(HttpMethod.Delete, RuntimeUrl("session/"), null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            await _transport.SendAsync(HttpMethod.Delete, RuntimeUrl("session/"), null, accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace Didit
 
                 writer.WriteString("return_to", returnTo);
             });
-            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("step-up/"), () => JsonContent(body), accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("step-up/"), () => JsonContent(body), accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
             return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
         }
 
@@ -318,7 +318,7 @@ namespace Didit
             RequireText(accessToken, nameof(accessToken));
             RequireText(stepUpId, nameof(stepUpId));
             var url = RuntimeUrl("step-up/" + Uri.EscapeDataString(stepUpId) + "/");
-            var response = await _transport.SendAsync(HttpMethod.Get, url, null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Get, url, null, accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
             return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
         }
 
@@ -421,11 +421,11 @@ namespace Didit
 
         private Uri RuntimeUrl(string path) => new(_baseUrl + path);
 
-        private async Task<AuthTokenResponse> PostTokenAsync(KeyValuePair<string, string>[] form, string secret, CancellationToken cancellationToken)
+        private async Task<AuthTokenResponse> PostTokenAsync(KeyValuePair<string, string>[] form, string?[] secrets, CancellationToken cancellationToken)
         {
             var discovery = await _metadata.GetDiscoveryAsync(cancellationToken).ConfigureAwait(false);
             var endpoint = discovery.TokenEndpoint ?? RuntimeUrl("token/");
-            var response = await _transport.SendAsync(HttpMethod.Post, endpoint, () => new FormUrlEncodedContent(form), null, secret, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, endpoint, () => new FormUrlEncodedContent(form), null, secrets, cancellationToken).ConfigureAwait(false);
             var tokens = AuthTokenResponse.FromJson(AuthJson.Parse(response.Body, "token response"));
             if (tokens.AccessToken.Length == 0)
             {
