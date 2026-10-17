@@ -1,0 +1,128 @@
+# Publishes Didit and Didit.Extensions.DependencyInjection to nuget.org when a GitHub release is published.
+# Nothing is published without Alex's explicit approval, and not before the 2026-11-01 Didit release (CLAUDE.md).
+# The publish job runs in the "nuget" environment, whose required reviewers gate the upload, and authenticates with
+# NuGet trusted publishing (GitHub OIDC exchanged for a short-lived API key); no long-lived NuGet key is stored.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+  build:
+    name: Build, test and pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Check that the release tag matches the version in Directory.Build.props
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="$(dotnet msbuild src/Didit/Didit.csproj -getProperty:Version)"
+          version="${version//[[:space:]]/}"
+          if [ -z "$version" ] || [ "$TAG" != "v$version" ]; then
+            echo "::error::Release tag '$TAG' does not match <Version>$version</Version> in Directory.Build.props (expected tag v$version)."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Build
+        run: dotnet build Didit.sln -c Release
+      - name: Test (net8.0)
+        run: dotnet test tests/Didit.Tests/Didit.Tests.csproj -c Release --no-build -f net8.0
+      - name: Pack
+        run: dotnet pack Didit.sln -c Release --no-build -o artifacts
+      - name: Check the packages
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          ls -l artifacts
+          for id in Didit Didit.Extensions.DependencyInjection; do
+            for ext in nupkg snupkg; do
+              test -f "artifacts/$id.$VERSION.$ext" || { echo "::error::artifacts/$id.$VERSION.$ext is missing"; exit 1; }
+            done
+          done
+      - name: Upload packages
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuget-packages
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish to nuget.org
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: nuget
+      url: https://www.nuget.org/packages/Didit
+    permissions:
+      contents: write # attach the packages to the GitHub release
+      id-token: write # NuGet trusted publishing
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages
+          path: artifacts
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 8.0.x
+      - name: Log in to nuget.org (trusted publishing)
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ secrets.NUGET_USER }}
+      - name: Push packages and symbols
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          source=https://api.nuget.org/v3/index.json
+          for id in Didit Didit.Extensions.DependencyInjection; do
+            dotnet nuget push "artifacts/$id.$VERSION.nupkg" --api-key "$NUGET_API_KEY" --source "$source" --no-symbols --skip-duplicate
+            dotnet nuget push "artifacts/$id.$VERSION.snupkg" --api-key "$NUGET_API_KEY" --source "$source" --skip-duplicate
+          done
+      - name: Attach the packages to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
+            "artifacts/Didit.$VERSION.nupkg" "artifacts/Didit.$VERSION.snupkg" \
+            "artifacts/Didit.Extensions.DependencyInjection.$VERSION.nupkg" "artifacts/Didit.Extensions.DependencyInjection.$VERSION.snupkg"
