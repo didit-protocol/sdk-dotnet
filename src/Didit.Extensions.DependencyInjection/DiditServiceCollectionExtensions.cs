@@ -16,6 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>The name of the <see cref="HttpClient"/> the client is created with (configure it through the returned builder).</summary>
         public const string HttpClientName = "Didit";
 
+        private static readonly Action<ILogger, string, Exception?> LogLine =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "DiditRequest"), "{DiditLine}");
+
         /// <summary>
         /// Registers a singleton <see cref="DiditClient"/> whose <see cref="HttpClient"/> comes from <see cref="IHttpClientFactory"/>.
         /// Options not set by <paramref name="configure"/> fall back to the <c>DIDIT_*</c> environment variables. Debug lines go to
@@ -89,7 +92,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     MaxRetries = configured.MaxRetries,
                     DefaultHeaders = configured.DefaultHeaders,
                     HttpClient = httpClient,
-                    Logger = configured.Logger ?? (logger is not null && logger.IsEnabled(LogLevel.Debug) ? line => logger.LogDebug("{DiditLine}", line) : null),
+                    Logger = configured.Logger ?? (logger is not null && logger.IsEnabled(LogLevel.Debug) ? line => LogLine(logger, line, null) : null),
                 };
                 return new DiditClient(options);
             });
