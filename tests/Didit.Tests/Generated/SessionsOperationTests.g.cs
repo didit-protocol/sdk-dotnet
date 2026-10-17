@@ -131,7 +131,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"session_id\": \"11111111-2222-3333-4444-555555555555\", \"session_kind\": \"user\", \"shared_from_session\": \"99999999-8888-7777-6666-555555555555\", \"session_number\": 43762, \"session_url\": null, \"status\": \"In Review\", \"workflow_id\": \"9f9b1234-aaaa-bbbb-cccc-1234567890ab\", \"vendor_data\": \"user-1\", \"created_at\": \"2026-05-17T08:42:11Z\", \"expires_at\": \"2026-05-24T08:42:11Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Sessions.ImportSharedAsync(new SessionsImportSharedParams { ShareToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", TrustReview = true, WorkflowId = "11111111-2222-3333-4444-555555555555", VendorData = "user-1" });
+            var result = await client.Sessions.ImportSharedAsync(new SessionsImportSharedParams { ShareToken = "sample-token", TrustReview = true, WorkflowId = "11111111-2222-3333-4444-555555555555", VendorData = "user-1" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -141,7 +141,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"share_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\", \"trust_review\": true, \"workflow_id\": \"11111111-2222-3333-4444-555555555555\", \"vendor_data\": \"user-1\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"share_token\": \"sample-token\", \"trust_review\": true, \"workflow_id\": \"11111111-2222-3333-4444-555555555555\", \"vendor_data\": \"user-1\"}", request.BodyText);
             Assert.Equal(JsonValueKind.Object, result.ValueKind);
         }
 
@@ -391,7 +391,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"share_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uX2lkIjoiMjBiYjNjM2ItNjE0Ni00MzlmLTg0YTQtYmQzMGQwMGFjNmEyIiwiZnJvbV9hcHBsaWNhdGlvbl9pZCI6ImRiZDIwZTM0LTQyZTktNGYyYy1iYTkxLWNmMDc2MjAxNmY2NCIsImZvcl9hcHBsaWNhdGlvbl9pZCI6ImE1ZjNiY2EyLTQ2ZTItNDExZS05MGVmLWE1ODA5MDBhNTdlZSIsImlhdCI6MTc1MzYzMDY2NiwiZXhwIjoxNzUzNjM0MjY2fQ.JJ9pNE_hqZsOtbR0XYZIWw4JzidjdEl279iUrsIkhGE\", \"for_application_id\": \"a5f3bca2-46e2-411e-90ef-a580900a57ee\", \"session_kind\": \"user\"}");
+            handler.Enqueue(200, "{\"share_token\": \"sample-token\", \"for_application_id\": \"a5f3bca2-46e2-411e-90ef-a580900a57ee\", \"session_kind\": \"user\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.ShareAsync("sessionId-1", new SessionsShareParams { ForApplicationId = "11111111-2222-3333-4444-555555555555", TtlInSeconds = 3600L });
 
@@ -405,7 +405,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"for_application_id\": \"11111111-2222-3333-4444-555555555555\", \"ttl_in_seconds\": 3600}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("a5f3bca2-46e2-411e-90ef-a580900a57ee", result.ForApplicationId);
+            Assert.Equal("sample-token", result.ShareToken);
         }
 
         [Fact]

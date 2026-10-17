@@ -18,9 +18,11 @@ from .model import REQUEST, RESPONSE, Model, ObjectDef, Operation, Prop, TypeRef
 
 ORG = "org-test"
 APP = "app-test"
-API_KEY = "test_api_key_0123456789"
+API_KEY = "test-api-key"
 ACCOUNT_TOKEN = "test_account_token"
 MAX_DEPTH = 4
+# Spec examples carry JWTs; the generated tests use this placeholder so the secret scan (.gitleaks.toml) passes on them.
+TOKEN_PLACEHOLDER = "sample-token"
 
 
 def lit(value: str) -> str:
@@ -30,6 +32,21 @@ def lit(value: str) -> str:
 
 def escape(value: str) -> str:
     return quote(value, safe="-_.~")
+
+
+def is_token(value: Any) -> bool:
+    """A JWT, or the truncated start of one, in a spec example."""
+    return isinstance(value, str) and value.startswith("eyJ")
+
+
+def scrub_tokens(value: Any) -> Any:
+    if is_token(value):
+        return TOKEN_PLACEHOLDER
+    if isinstance(value, dict):
+        return {k: scrub_tokens(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [scrub_tokens(v) for v in value]
+    return value
 
 
 class ValueFactory:
@@ -50,7 +67,7 @@ class ValueFactory:
             return "2026-01-02"
         example = schema.get("example")
         if isinstance(example, str) and 0 < len(example) <= 80 and "\n" not in example:
-            return example
+            return TOKEN_PLACEHOLDER if is_token(example) else example
         return f"sample-{prop_name}"
 
     def value(self, ref: TypeRef, prop_name: str, schema: dict[str, Any] | None, depth: int) -> tuple[str, Any] | None:
@@ -329,7 +346,7 @@ class TestEmitter:
                 [f"handler.Enqueue({status}, new byte[] {{ 37, 80, 68, 70 }}, {lit(content_type)}, new Dictionary<string, string> {{ [\"Content-Disposition\"] = \"attachment; filename=\\\"report.bin\\\"\" }});"],
                 ["Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);", f"Assert.Equal({lit(content_type)}, result.ContentType);", "Assert.Equal(\"report.bin\", result.FileName);"],
             )
-        example = response.example
+        example = scrub_tokens(response.example)
         source = "example"
         if example is None:
             source = "schema"

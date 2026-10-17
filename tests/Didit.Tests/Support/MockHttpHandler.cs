@@ -129,7 +129,7 @@ namespace Didit.Tests.Support
     /// <summary>Clients wired to a <see cref="MockHttpHandler"/>.</summary>
     public static class TestClients
     {
-        public const string ApiKey = "test_api_key_0123456789";
+        public const string ApiKey = "test-api-key";
         public const string OrganizationId = "org-test";
         public const string ApplicationId = "app-test";
         public const string AccountToken = "test_account_token";

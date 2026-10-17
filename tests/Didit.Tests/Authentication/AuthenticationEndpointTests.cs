@@ -218,7 +218,7 @@ namespace Didit.Tests.Authentication
         public async Task CreateStepUpPostsJson()
         {
             _issuer.Runtime = _ => StubHttpHandler.Json(
-                "{\"id\":\"9f8e7d6c-5b4a-4321-8fed-cba987654321\",\"rule\":\"payout\",\"method\":\"selfie\",\"status\":\"pending\",\"level\":null," +
+                "{\"id\":\"00000000-0000-4000-8000-000000000001\",\"rule\":\"payout\",\"method\":\"selfie\",\"status\":\"pending\",\"level\":null," +
                 "\"amount\":\"250.00\",\"currency\":\"EUR\",\"created_at\":\"2026-10-17T12:00:00Z\",\"completed_at\":null," +
                 "\"expires_at\":\"2026-10-17T12:30:00Z\",\"required\":true,\"verification_url\":\"https://acme.auth.didit.me/verify/?verification=abc\"," +
                 "\"expires_in\":1800}",
@@ -235,7 +235,7 @@ namespace Didit.Tests.Authentication
             Assert.Equal("{\"action\":\"payout\",\"amount\":\"250.00\",\"currency\":\"EUR\",\"return_to\":\"https://app.example.com/payouts\"}", request.Body);
 
             Assert.True(stepUp.Required);
-            Assert.Equal("9f8e7d6c-5b4a-4321-8fed-cba987654321", stepUp.Id);
+            Assert.Equal("00000000-0000-4000-8000-000000000001", stepUp.Id);
             Assert.Equal("payout", stepUp.Rule);
             Assert.Equal("selfie", stepUp.Method);
             Assert.Equal(AuthStepUpStatus.Pending, stepUp.Status);
@@ -267,16 +267,16 @@ namespace Didit.Tests.Authentication
         public async Task RetrieveStepUpReadsTheStatus()
         {
             _issuer.Runtime = _ => StubHttpHandler.Json(
-                "{\"id\":\"9f8e7d6c-5b4a-4321-8fed-cba987654321\",\"rule\":\"payout\",\"method\":\"selfie\",\"status\":\"approved\"," +
+                "{\"id\":\"00000000-0000-4000-8000-000000000001\",\"rule\":\"payout\",\"method\":\"selfie\",\"status\":\"approved\"," +
                 "\"level\":\"liveness_face_match\",\"amount\":\"250.00\",\"currency\":\"EUR\",\"created_at\":\"2026-10-17T12:00:00Z\"," +
                 "\"completed_at\":\"2026-10-17T12:04:00Z\",\"expires_at\":\"2026-10-17T12:30:00Z\"}");
             using var auth = _issuer.Create();
 
-            var stepUp = await auth.RetrieveStepUpAsync(AccessToken, "9f8e7d6c-5b4a-4321-8fed-cba987654321");
+            var stepUp = await auth.RetrieveStepUpAsync(AccessToken, "00000000-0000-4000-8000-000000000001");
 
             var request = Runtime().Single();
             Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal(new Uri(TestIssuer.Url + "/step-up/9f8e7d6c-5b4a-4321-8fed-cba987654321/"), request.Uri);
+            Assert.Equal(new Uri(TestIssuer.Url + "/step-up/00000000-0000-4000-8000-000000000001/"), request.Uri);
             Assert.Equal("Bearer " + AccessToken, request.Headers["Authorization"]);
             Assert.True(stepUp.IsApproved);
             Assert.True(stepUp.Required);

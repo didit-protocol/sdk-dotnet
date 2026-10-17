@@ -13,8 +13,8 @@ namespace Didit.Tests.Webhooks
     /// <summary>Signing helpers and a fixed clock for the webhook tests. Every secret here is synthetic.</summary>
     internal static class WebhookTestSupport
     {
-        public const string Secret = "whsec_unit_test_3b7e1c9a5d2f4e6081a7c3b9d5e2f7a1";
-        public const string OtherSecret = "whsec_unit_test_other_0f1e2d3c4b5a69788796a5b4c3d2e1f0";
+        public const string Secret = "whsec_test_unit_3b7e1c9a5d2f4e6081a7c3b9d5e2f7a1";
+        public const string OtherSecret = "whsec_test_unit_other_0f1e2d3c4b5a69788796a5b4c3d2e1f0";
         public const long Timestamp = 1760702400;
         public const long Now = Timestamp + 10;
 
