@@ -202,7 +202,7 @@ class TestEmitter:
         files: dict[str, str] = {}
         for root, ops in sorted(by_root.items()):
             class_name = names.pascal(root) + "OperationTests"
-            body = [HEADER, "using System;", "using System.Collections.Generic;", "using System.Linq;", "using System.Text.Json;", "using System.Threading.Tasks;", "using Didit.Tests.Support;", "using Xunit;", "", "namespace Didit.Tests.Generated", "{"]
+            body = [HEADER + "#pragma warning disable CS0618 // Deprecated operations and fields are still tested.\n", "using System;", "using System.Collections.Generic;", "using System.Linq;", "using System.Text.Json;", "using System.Threading.Tasks;", "using Didit.Tests.Support;", "using Xunit;", "", "namespace Didit.Tests.Generated", "{"]
             body.append(f"    public sealed class {class_name}")
             body.append("    {")
             first = True

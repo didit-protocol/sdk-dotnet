@@ -23,7 +23,7 @@ namespace Didit.Tests.Core
             var extra = actual.Except(expected.Keys).OrderBy(x => x, StringComparer.Ordinal).ToList();
             Assert.True(missing.Count == 0, "Operations without an SDK method:\n" + string.Join("\n", missing.Select(m => $"{m} ({expected[m]})")));
             Assert.True(extra.Count == 0, "SDK methods without a server operation:\n" + string.Join("\n", extra));
-            Assert.Equal(257, expected.Count);
+            Assert.True(expected.Count >= 257, $"{expected.Count} operations");
         }
 
         [Fact]
@@ -75,15 +75,40 @@ namespace Didit.Tests.Core
                             continue;
                         }
 
+                        Add(result, naming, key);
+                    }
+                }
+            }
+
+            // Operations removed upstream keep their method, marked obsolete, for one minor version (DESIGN.md 3.1).
+            var deprecatedPath = Path.Combine(AppContext.BaseDirectory, "openapi", "deprecated-operations.json");
+            if (File.Exists(deprecatedPath))
+            {
+                using var deprecated = JsonDocument.Parse(File.ReadAllText(deprecatedPath));
+                if (deprecated.RootElement.TryGetProperty("operations", out var operations))
+                {
+                    foreach (var entry in operations.EnumerateObject())
+                    {
+                        var naming = entry.Value.GetProperty("naming");
                         var resource = string.Join(".", naming.GetProperty("resource").GetString()!.Split('.').Select(Pascal));
                         var name = $"{resource}.{Pascal(naming.GetProperty("method").GetString()!)}Async";
-                        Assert.False(result.ContainsKey(name), $"Two operations map to {name}");
-                        result[name] = key;
+                        if (!result.ContainsKey(name) && naming.GetProperty("server").GetBoolean())
+                        {
+                            result[name] = entry.Name + " (removed upstream, obsolete)";
+                        }
                     }
                 }
             }
 
             return result;
+        }
+
+        private static void Add(Dictionary<string, string> result, JsonElement naming, string key)
+        {
+            var resource = string.Join(".", naming.GetProperty("resource").GetString()!.Split('.').Select(Pascal));
+            var name = $"{resource}.{Pascal(naming.GetProperty("method").GetString()!)}Async";
+            Assert.False(result.ContainsKey(name), $"Two operations map to {name}");
+            result[name] = key;
         }
 
         private static HashSet<string> SdkMethods(Type root, string suffix)

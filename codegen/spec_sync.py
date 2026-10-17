@@ -455,13 +455,14 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
     for key in sorted(new_ops.keys() - old_ops.keys()):
         op = new_ops[key]
         naming = naming_of(op, overlay_ops)
-        if naming is None and key in deprecated["operations"]:
-            naming = deprecated["operations"][key].get("naming")
-            if isinstance(naming, dict):
-                overlay_ops[key] = naming
-                report.overlay_notes.append(f"Restored `{key}` from `{DEPRECATED_FILE}`: the operation is back upstream.")
         if key in deprecated["operations"]:
-            del deprecated["operations"][key]
+            record = deprecated["operations"].pop(key)
+            note = f"`{key}` is back upstream: deleted from `{DEPRECATED_FILE}`"
+            if naming is None and isinstance(record.get("naming"), dict):
+                naming = copy.deepcopy(record["naming"])
+                overlay_ops[key] = naming
+                note += " and its naming restored to `overlay.json`"
+            report.overlay_notes.append(note + ".")
         report.added.append((key, label(naming)))
         if naming is None:
             summary = op.op.get("summary") or ""

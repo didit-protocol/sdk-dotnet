@@ -60,6 +60,13 @@ def cs_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("\\/", "/")
 
 
+def obsolete_message(op: Operation) -> str:
+    removed_on = op.raw.op.get("x-didit-removed-on")
+    if removed_on:
+        return f"Removed from the Didit API on {removed_on}. This method is deleted in the next minor release."
+    return "Deprecated by the Didit API."
+
+
 # ---- types --------------------------------------------------------------------------------------------------------
 
 
@@ -413,7 +420,7 @@ class Emitter:
         lines.append(f"{indent}/// <param name=\"requestOptions\">Per-request overrides of the client options.</param>")
         lines.append(f"{indent}/// <param name=\"cancellationToken\">Cancels the request.</param>")
         if op.deprecated:
-            lines.append(f"{indent}[Obsolete(\"Deprecated by the API.\")]")
+            lines.append(f"{indent}[Obsolete({cs_string(obsolete_message(op))})]")
         return lines
 
     def method(self, op: Operation, raw: bool) -> list[str]:
@@ -426,7 +433,7 @@ class Emitter:
             lines = summary(doc_text(op.summary), indent, f"{op.http_method} {op.path}")
             lines.append(f"{indent}/// <remarks>Raw-response variant of <see cref=\"{node_type}.{name}\"/>.</remarks>")
             if op.deprecated:
-                lines.append(f"{indent}[Obsolete(\"Deprecated by the API.\")]")
+                lines.append(f"{indent}[Obsolete({cs_string(obsolete_message(op))})]")
         else:
             lines = self.method_docs(op)
         if not raw:

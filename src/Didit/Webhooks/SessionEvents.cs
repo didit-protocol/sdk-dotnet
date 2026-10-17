@@ -24,7 +24,7 @@ namespace Didit
             WorkflowVersion = WebhookJson.GetInt64(payload, "workflow_version");
             VendorData = WebhookJson.GetString(payload, "vendor_data");
             Metadata = WebhookJson.GetElement(payload, "metadata");
-            Decision = SessionKind == "business" ? null : WebhookEventFactory.ReadDecision(payload);
+            Decision = WebhookEventFactory.ReadDecision(payload);
             ResubmitInfo = WebhookJson.GetElement(payload, "resubmit_info");
         }
 
@@ -53,10 +53,9 @@ namespace Didit
         public JsonElement? Metadata { get; init; }
 
         /// <summary>
-        /// The decision (<c>decision</c>), sent once the session is approved, declined, in review or abandoned. Its shape
-        /// follows the destination's webhook version; <c>v3</c> matches <c>GET /v3/session/{id}/decision/</c>. <c>null</c>
-        /// when absent or unreadable, and for business sessions, whose decision has another shape: read it from
-        /// <see cref="DiditEvent.Payload"/>.
+        /// The decision (<c>decision</c>), sent once the session is approved, declined, in review or abandoned. With webhook
+        /// version <c>v3</c> it has the shape of <c>GET /v3/session/{id}/decision/</c>; older versions send fewer fields.
+        /// <c>null</c> when absent or unreadable; the raw value is always in <see cref="DiditEvent.Payload"/>.
         /// </summary>
         public SessionsRetrieveDecisionResponse? Decision { get; init; }
 
