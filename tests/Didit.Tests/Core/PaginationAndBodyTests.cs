@@ -160,6 +160,79 @@ namespace Didit.Tests.Core
         }
 
         [Fact]
+        public async Task Operations_with_a_json_and_a_multipart_body_send_multipart_only_when_a_file_is_set()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, "{}");
+            handler.Enqueue(200, "{}");
+            handler.Enqueue(201, "{\"uuid\":\"job-1\"}");
+            handler.Enqueue(201, "{\"uuid\":\"job-2\"}");
+            using var client = TestClients.Create(handler);
+
+            await client.Customization.UpdateAsync(new CustomizationUpdateParams { ColorPrimary = "#123456", PrivacyPolicyUrl = null });
+            await client.Customization.UpdateAsync(new CustomizationUpdateParams
+            {
+                ColorPrimary = "#123456",
+                SkipWelcomeScreen = true,
+                ImageSquare = FileUpload.FromBytes(new byte[] { 0x89, 0x50 }, "logo.png"),
+            });
+            await client.Sessions.Imports.CreateAsync(new SessionsImportsCreateParams { SourceFileUrl = "https://example.com/import.csv" });
+            await client.Sessions.Imports.CreateAsync(new SessionsImportsCreateParams
+            {
+                ImportType = SessionsImportsCreateParamsImportType.UserVerification,
+                File = FileUpload.FromBytes(Encoding.UTF8.GetBytes("vendor_data\nuser-1\n"), "import.csv"),
+            });
+
+            var json = handler.Requests[0];
+            Assert.Equal("PATCH", json.Method);
+            Assert.StartsWith("application/json", json.ContentType);
+            JsonAssert.Equivalent("{\"color_primary\":\"#123456\",\"privacy_policy_url\":null}", json.BodyText);
+
+            var logo = handler.Requests[1];
+            Assert.StartsWith("multipart/form-data", logo.ContentType);
+            Assert.Contains("name=\"image_square\"; filename=\"logo.png\"", logo.BodyText);
+            Assert.Contains("Content-Type: image/png", logo.BodyText);
+            Assert.Contains("name=\"color_primary\"", logo.BodyText);
+            Assert.Contains("name=\"skip_welcome_screen\"", logo.BodyText);
+
+            var byUrl = handler.Requests[2];
+            Assert.StartsWith("application/json", byUrl.ContentType);
+            JsonAssert.Equivalent("{\"source_file_url\":\"https://example.com/import.csv\"}", byUrl.BodyText);
+
+            var byFile = handler.Requests[3];
+            Assert.StartsWith("multipart/form-data", byFile.ContentType);
+            Assert.Contains("name=\"file\"; filename=\"import.csv\"", byFile.BodyText);
+            Assert.Contains("Content-Type: text/csv", byFile.BodyText);
+            Assert.Contains("vendor_data\nuser-1\n", byFile.BodyText);
+            Assert.Contains("name=\"import_type\"", byFile.BodyText);
+            Assert.DoesNotContain("source_file_url", byFile.BodyText);
+        }
+
+        [Fact]
+        public async Task Database_validation_uploads_a_selfie_with_its_fields()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, "{}");
+            using var client = TestClients.Create(handler);
+
+            await client.DatabaseValidation.ValidateAsync(new DatabaseValidationValidateParams
+            {
+                IssuingState = "ARG",
+                Services = new[] { "arg_renaper" },
+                DocumentNumber = "12345678",
+                Selfie = FileUpload.FromBytes(new byte[] { 0xFF, 0xD8 }, "selfie.jpg"),
+            });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.Contains("name=\"selfie\"; filename=\"selfie.jpg\"", request.BodyText);
+            Assert.Contains("name=\"issuing_state\"", request.BodyText);
+            Assert.Contains("name=\"services\"", request.BodyText);
+            Assert.Contains("arg_renaper", request.BodyText);
+            Assert.Contains("name=\"document_number\"", request.BodyText);
+        }
+
+        [Fact]
         public void File_uploads_guess_content_types()
         {
             Assert.Equal("image/jpeg", FileUpload.FromBytes(new byte[1], "a.JPG").ContentType);
