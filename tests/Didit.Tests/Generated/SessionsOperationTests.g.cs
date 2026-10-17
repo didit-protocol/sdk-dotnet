@@ -152,7 +152,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"uuid\": \"3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"ndjson\", \"source_filename\": \"sessions.ndjson\", \"total_rows\": 0, \"processed_rows\": 0, \"checkpoint_row\": 0, \"created_count\": 0, \"updated_count\": 0, \"skipped_count\": 0, \"failed_count\": 0, \"total_media_bytes\": 0, \"last_error\": null, \"created_at\": \"2026-05-17T08:42:11Z\", \"updated_at\": \"2026-05-17T08:42:11Z\", \"started_at\": null, \"completed_at\": null}");
             using var client = TestClients.Create(handler);
-            var result = await client.Sessions.Imports.CreateAsync(new SessionsImportsCreateParams { ImportType = new SessionsImportsCreateParamsImportType("user_verification"), WorkflowId = "11111111-2222-3333-4444-555555555555", SourceFormat = new SessionsImportsCreateParamsSourceFormat("csv"), SourceFileUrl = "https://example.com/callback" });
+            var result = await client.Sessions.Imports.CreateAsync(new SessionsImportsCreateParams { ImportType = new SessionsImportsCreateParamsImportType("user_verification"), WorkflowId = "11111111-2222-3333-4444-555555555555", SourceFormat = new SessionsImportsCreateParamsSourceFormat("csv"), SourceFileUrl = "https://example.com/callback", File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -161,8 +161,12 @@ namespace Didit.Tests.Generated
             Assert.Equal("", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
-            Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"import_type\": \"user_verification\", \"workflow_id\": \"11111111-2222-3333-4444-555555555555\", \"source_format\": \"csv\", \"source_file_url\": \"https://example.com/callback\"}", request.BodyText);
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.Contains("name=\"import_type\"", request.BodyText);
+            Assert.Contains("name=\"workflow_id\"", request.BodyText);
+            Assert.Contains("name=\"source_format\"", request.BodyText);
+            Assert.Contains("name=\"source_file_url\"", request.BodyText);
+            Assert.Contains("name=\"file\"", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b", result.Uuid);
             Assert.Equal(0L, result.TotalRows);

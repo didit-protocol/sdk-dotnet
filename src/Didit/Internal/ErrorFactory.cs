@@ -18,12 +18,18 @@ namespace Didit.Internal
             params string?[] secrets)
         {
             string? rawBody = body.Length == 0 ? null : Encoding.UTF8.GetString(body);
+            foreach (var secret in secrets)
+            {
+                rawBody = rawBody is null ? null : Redact(rawBody, secret);
+            }
+
+            // Parsed from the redacted text, so a credential the server echoes back is not kept in Body either.
             JsonElement? json = null;
             if (rawBody is not null)
             {
                 try
                 {
-                    using var document = JsonDocument.Parse(body);
+                    using var document = JsonDocument.Parse(rawBody);
                     json = document.RootElement.Clone();
                 }
                 catch (JsonException)
@@ -36,7 +42,6 @@ namespace Didit.Internal
             foreach (var secret in secrets)
             {
                 message = Redact(message, secret);
-                rawBody = rawBody is null ? null : Redact(rawBody, secret);
             }
 
             return status switch
@@ -59,9 +64,9 @@ namespace Didit.Internal
             {
                 foreach (var name in new[] { "detail", "error", "message", "error_description" })
                 {
-                    if (element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String)
+                    if (element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && TryGetString(value, out var text))
                     {
-                        return Truncate(value.GetString());
+                        return Truncate(text);
                     }
                 }
 
@@ -69,6 +74,21 @@ namespace Didit.Internal
             }
 
             return Truncate(rawBody);
+        }
+
+        // GetString throws on a lone escaped surrogate; the raw text is described instead.
+        private static bool TryGetString(JsonElement value, out string? text)
+        {
+            try
+            {
+                text = value.GetString();
+                return true;
+            }
+            catch (InvalidOperationException ex) when (ex is not ObjectDisposedException)
+            {
+                text = null;
+                return false;
+            }
         }
 
         private static string? Truncate(string? text)

@@ -469,6 +469,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<object?> Metadata { get; set; }
 
+        /// <summary>
+        /// Selfie image (<c>jpg</c>, <c>jpeg</c>, <c>png</c>, <c>webp</c>; max 2 MB — images are compressed to ~1.5 MB before upload to the registry) for biometric validation services, e.g. Argentina RENAPER (<c>arg_renaper</c>) and Panama SIB (<c>pan_cedula_sib</c>, <c>pan_cedula_sib_plus</c>). Required whenever a selected service lists it as a required field. Only available via <c>multipart/form-data</c>.
+        /// </summary>
+        [JsonPropertyName("selfie")]
+        [JsonIgnore]
+        public Optional<FileUpload> Selfie { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

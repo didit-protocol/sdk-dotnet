@@ -306,6 +306,48 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("Naming change `GET /v3/widgets/`: overlay `widgets.list`, upstream `widgets.list_all`", self.section(summary, "Overlay"))
         self.assertIn("SDK naming of `GET /v3/widgets/` changes from `widgets.list` to `widgets.list_all`", self.section(summary, "Breaking"))
 
+    def test_renamed_operation_keeps_an_obsolete_alias(self) -> None:
+        verification = base_verification()
+        verification["paths"]["/v3/widgets/"]["get"]["x-didit-sdk"] = {"resource": "widgets", "method": "list_all", "auth": "api_key", "server": True}
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        deprecated = json.loads((self.openapi / "deprecated-operations.json").read_text("utf-8"))
+        record = deprecated["operations"]["GET /v3/widgets/ (renamed from widgets.list)"]
+        self.assertEqual(record["naming"], {"resource": "widgets", "method": "list", "auth": "api_key", "server": True})
+        self.assertEqual(record["renamed_to"]["method"], "list_all")
+        self.assertEqual((record["path"], record["method"], record["removed_on"]), ("/v3/widgets/", "get", "2026-10-17"))
+        self.assertNotIn("operation", record, "the alias calls the live operation")
+        self.assertIn(("GET /v3/widgets/ (renamed from widgets.list)", "widgets.list"), report.deprecated)
+        self.assertIn("the old method stays as an `[Obsolete]` alias", self.section(summary, "Breaking"))
+        self.assertIn("renamed from widgets.list", self.section(summary, "Deprecated SDK methods"))
+
+        # Renamed back: the first alias is no longer needed, the name it replaced gets one.
+        verification = base_verification()
+        verification["paths"]["/v3/widgets/"]["get"]["x-didit-sdk"] = dict(base_overlay()["operations"]["GET /v3/widgets/"])
+        self.publish(verification)
+        _, summary = self.sync()
+        deprecated = json.loads((self.openapi / "deprecated-operations.json").read_text("utf-8"))
+        self.assertNotIn("GET /v3/widgets/ (renamed from widgets.list)", deprecated["operations"])
+        self.assertIn("GET /v3/widgets/ (renamed from widgets.list_all)", deprecated["operations"])
+
+    def test_moved_operation_keeps_its_method_on_the_new_path(self) -> None:
+        verification = base_verification()
+        moved = verification["paths"].pop("/v3/gadgets/{gadget_id}/")
+        moved["delete"]["x-didit-sdk"] = dict(base_overlay()["operations"]["DELETE /v3/gadgets/{gadget_id}/"])
+        verification["paths"]["/v3/parts/{gadget_id}/"] = moved
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        self.assertEqual(report.moved, [("DELETE /v3/gadgets/{gadget_id}/", "DELETE /v3/parts/{gadget_id}/", "gadgets.delete")])
+        self.assertEqual(report.deprecated, [])
+        self.assertFalse((self.openapi / "deprecated-operations.json").exists())
+        self.assertNotIn("DELETE /v3/gadgets/{gadget_id}/", self.overlay_ops())
+        self.assertIn("`DELETE /v3/gadgets/{gadget_id}/` to `DELETE /v3/parts/{gadget_id}/`: gadgets.delete", self.section(summary, "Operations"))
+        self.assertIn("None.", self.section(summary, "Breaking"))
+
     def test_breaking_section(self) -> None:
         verification = base_verification()
         schemas = verification["components"]["schemas"]

@@ -171,6 +171,8 @@ var result = await client.IdVerification.VerifyAsync(new IdVerificationVerifyPar
 });
 ```
 
+A few operations accept JSON or a multipart upload (`Sessions.Imports.CreateAsync` with `File` or `SourceFileUrl`, `DatabaseValidation.ValidateAsync` with `Selfie`, `Customization.UpdateAsync` with the logo images). They are sent as multipart when a file is set and as JSON otherwise.
+
 Reports come back as `BinaryResponse` with `Content` (bytes), `ContentType`, `FileName`, `OpenRead()` and `SaveToAsync(path)`:
 
 ```csharp
@@ -275,7 +277,7 @@ var idClaims = await auth.VerifyIdTokenAsync(tokens.IdToken!, nonce, audience: "
 var refreshed = await auth.RefreshAsync(tokens.RefreshToken!); // serialise refreshes per session: a reused refresh token revokes it
 ```
 
-Step-up verification before a sensitive action: `CreateStepUpAsync(accessToken, action, returnTo, amount, currency)` and `RetrieveStepUpAsync(accessToken, id)`; act only when the status is `approved`. See [examples/AuthenticationApi](examples/AuthenticationApi).
+Step-up verification before a sensitive action: `CreateStepUpAsync(accessToken, action, amount: ..., currency: ..., returnTo: ...)` and `RetrieveStepUpAsync(accessToken, id)`; act only when the status is `approved`. Pass `returnTo`: the issuer currently requires it. See [examples/AuthenticationApi](examples/AuthenticationApi).
 
 ## Account management
 
@@ -323,13 +325,14 @@ Choices DESIGN.md leaves to each language, made the .NET way:
 - Raw responses: `client.WithRawResponse`, the C# form of `with_raw_response`.
 - Pagination: `Page<T>` implements `IAsyncEnumerable<T>`; `AsPagesAsync()` walks pages.
 - Webhooks: the static `DiditWebhooks` class, usable without a client. Canonical JSON is computed from the raw JSON text, so integers above 2^53 keep their exact value.
-- Authentication verifies ES256 with the BCL's `ECDsa`, so the package needs no JWT library (DESIGN.md allows `Microsoft.IdentityModel.Tokens`; it is not needed).
+- Authentication verifies ES256 with the BCL's `ECDsa`, so the package needs no JWT library (DESIGN.md allows `Microsoft.IdentityModel.Tokens`; it is not needed). `VerifyAccessTokenAsync(token)` skips the audience check; an empty `audience` string is refused rather than treated as "no audience". The discovery document and JWKS are kept for at least one minute, even when the issuer sends `no-store`.
+- Path parameters are percent-encoded, and `.` or `..` is refused with an `ArgumentException` (URL resolution would turn it into another endpoint).
 - Debug logging is a delegate (`DiditClientOptions.Logger`); the dependency injection package routes it to `ILogger<DiditClient>`.
 
 ## Versioning
 
 Semantic versioning. Until 1.0.0, breaking changes bump the minor version. Releases are cut by release-please from conventional commits, and `CHANGELOG.md` is generated.
-The SDK is regenerated from the OpenAPI documents published at docs.didit.me; a removed API operation stays in the SDK, marked `[Obsolete]`, for one minor version.
+The SDK is regenerated from the OpenAPI documents published at docs.didit.me; a removed or renamed API operation keeps its method, marked `[Obsolete]`, for one minor version.
 
 ## Contributing and security
 

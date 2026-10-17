@@ -106,6 +106,53 @@ class SpecTests(unittest.TestCase):
             files = csharp.emit(built)
             self.assertIn("Removed from the Didit API on 2026-10-17", files["src/Didit/Generated/Resources/BillingResource.g.cs"])
 
+    def test_moved_operation_keeps_its_method_on_the_new_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            path = root / "openapi" / "verification.json"
+            data = json.loads(path.read_text("utf-8"))
+            moved = data["paths"].pop("/v3/billing/balance/")
+            data["paths"]["/v3/billing/balance-v2/"] = moved
+            path.write_text(json.dumps(data), "utf-8")
+            overlay_path = root / "openapi" / "overlay.json"
+            overlay = json.loads(overlay_path.read_text("utf-8"))
+            naming = overlay["operations"].pop("GET /v3/billing/balance/")
+            overlay["operations"]["GET /v3/billing/balance-v2/"] = naming
+            overlay_path.write_text(json.dumps(overlay), "utf-8")
+            (root / "openapi" / "deprecated-operations.json").write_text(json.dumps({
+                "operations": {"GET /v3/billing/balance/": {"removed_on": "2026-10-17", "naming": naming, "path": "/v3/billing/balance/", "method": "get", "operation": moved["get"]}},
+                "schemas": {"verification": {}, "account": {}},
+            }), "utf-8")
+
+            built = model.build(spec.load(root))
+            ops = [o for o in built.operations if o.dotted == "billing.retrieve_balance"]
+            self.assertEqual(len(ops), 1)
+            self.assertEqual(ops[0].path, "/v3/billing/balance-v2/")
+            self.assertFalse(ops[0].deprecated)
+
+    def test_renamed_operation_keeps_an_obsolete_alias(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = copy_openapi(Path(tmp))
+            overlay = json.loads((root / "openapi" / "overlay.json").read_text("utf-8"))
+            current = overlay["operations"]["GET /v3/billing/balance/"]
+            old = {**current, "method": "get_balance"}
+            (root / "openapi" / "deprecated-operations.json").write_text(json.dumps({
+                "operations": {"GET /v3/billing/balance/ (renamed from billing.get_balance)": {
+                    "removed_on": "2026-10-17", "naming": old, "path": "/v3/billing/balance/", "method": "get", "renamed_to": current,
+                }},
+                "schemas": {"verification": {}, "account": {}},
+            }), "utf-8")
+
+            built = model.build(spec.load(root))
+            live = next(o for o in built.operations if o.dotted == "billing.retrieve_balance")
+            alias = next(o for o in built.operations if o.dotted == "billing.get_balance")
+            self.assertFalse(live.deprecated)
+            self.assertTrue(alias.deprecated)
+            self.assertEqual((alias.http_method, alias.path), (live.http_method, live.path))
+            resource = csharp.emit(built)["src/Didit/Generated/Resources/BillingResource.g.cs"]
+            self.assertIn("Renamed to Billing.RetrieveBalanceAsync on 2026-10-17", resource)
+            self.assertIn("GetBalanceAsync(", resource)
+
 
 class ModelTests(unittest.TestCase):
     @classmethod
@@ -131,6 +178,23 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(verify.body.content_type, "multipart/form-data")
         front = next(p for p in self.model.objects["IdVerificationVerifyParams"].props if p.json_name == "front_image")
         self.assertEqual(front.type.kind, "file")
+
+    def test_json_bodies_whose_multipart_form_carries_files_accept_both(self) -> None:
+        # The JSON body has no file field, so the files live only in the multipart form.
+        for dotted, files, required in (
+            ("sessions.imports.create", {"file"}, set()),
+            ("database_validation.validate", {"selfie"}, {"issuing_state"}),
+            ("customization.update", {"image_square", "image_rectangular", "image_favicon"}, set()),
+        ):
+            op = self.by_name[dotted]
+            self.assertEqual(op.body.content_type, "multipart/form-data", dotted)
+            self.assertTrue(op.body.json_without_files, dotted)
+            props = self.model.objects[op.params_type].props
+            self.assertEqual({p.json_name for p in props if p.type.kind == "file"}, files, dotted)
+            self.assertEqual({p.json_name for p in props if p.required}, required, dotted)
+        self.assertIn("source_file_url", {p.json_name for p in self.model.objects["SessionsImportsCreateParams"].props})
+        self.assertIn("color_primary", {p.json_name for p in self.model.objects["CustomizationUpdateParams"].props})
+        self.assertFalse(self.by_name["id_verification.verify"].body.json_without_files)
 
     def test_generation_is_deterministic(self) -> None:
         first = csharp.emit(model.build(spec.load(ROOT)))

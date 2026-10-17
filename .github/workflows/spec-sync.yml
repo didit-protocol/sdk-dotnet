@@ -39,9 +39,12 @@ jobs:
       run:
         shell: bash
     steps:
+      # No credentials in .git/config: the steps below build and test code generated from upstream input.
+      # create-pull-request authenticates with its own token.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Leave an open sync pull request alone when people have pushed to it
         id: guard
@@ -49,8 +52,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           open="$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[].number')"
-          if [ -n "$open" ] && git fetch --no-tags --quiet origin "+refs/heads/$SYNC_BRANCH:refs/remotes/origin/$SYNC_BRANCH"; then
-            people="$(git log --format='%ae' "HEAD..origin/$SYNC_BRANCH" | grep -v -x -F "$BOT_EMAIL" | sort -u || true)"
+          if [ -n "$open" ]; then
+            people="$(gh api "repos/$GITHUB_REPOSITORY/compare/$GITHUB_SHA...$SYNC_BRANCH" --jq '.commits[].commit.author.email' | grep -v -x -F "$BOT_EMAIL" | sort -u || true)"
             if [ -n "$people" ]; then
               echo "::warning::Pull request #$open has commits from people; not updating $SYNC_BRANCH. Merge or close it first."
               echo "skip=true" >> "$GITHUB_OUTPUT"

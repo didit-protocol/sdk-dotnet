@@ -75,7 +75,7 @@ app.MapPost("/payouts", async (HttpRequest request, string amount, string? stepU
     var accessToken = BearerToken(request)!;
     if (stepUpId is null)
     {
-        var stepUp = await auth.CreateStepUpAsync(accessToken, "payout", "https://example.com/payouts/confirm", amount, "EUR");
+        var stepUp = await auth.CreateStepUpAsync(accessToken, "payout", amount: amount, currency: "EUR", returnTo: "https://example.com/payouts/confirm");
         return stepUp.Required
             ? Results.Json(new { step_up_id = stepUp.Id, verification_url = stepUp.VerificationUrl }, statusCode: StatusCodes.Status403Forbidden)
             : Results.Ok(new { paid = amount });

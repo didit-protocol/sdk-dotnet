@@ -49,14 +49,14 @@ namespace Didit.Internal
         /// <param name="url">Absolute URL.</param>
         /// <param name="createContent">Creates the request body for each attempt, or <c>null</c> for none.</param>
         /// <param name="bearerToken">Sent as <c>Authorization: Bearer</c> when not <c>null</c>.</param>
-        /// <param name="secret">Removed from every error message (the access, refresh or authorization code).</param>
+        /// <param name="secrets">Removed from every error (the access token, refresh token, authorization code or code verifier).</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<AuthHttpResponse> SendAsync(
             HttpMethod method,
             Uri url,
             Func<HttpContent>? createContent,
             string? bearerToken,
-            string? secret,
+            string?[] secrets,
             CancellationToken cancellationToken)
         {
             var maxAttempts = method == HttpMethod.Get ? 2 : 1;
@@ -89,12 +89,7 @@ namespace Didit.Internal
                     response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeoutSource.Token).ConfigureAwait(false);
                     try
                     {
-#if NET8_0_OR_GREATER
-                        body = await response.Content.ReadAsByteArrayAsync(timeoutSource.Token).ConfigureAwait(false);
-#else
-                        // .NET Framework handlers may return a response without content.
-                        body = response.Content is null ? Array.Empty<byte>() : await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
+                        body = await ResponseBody.ReadAsync(response, timeoutSource.Token).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -117,7 +112,7 @@ namespace Didit.Internal
                         continue;
                     }
 
-                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {ErrorFactory.Redact(ex.Message, secret)}", ex);
+                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {Redact(ex.Message, secrets)}", ex);
                 }
 
                 using (response)
@@ -129,9 +124,19 @@ namespace Didit.Internal
                         return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
                     }
 
-                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secret);
+                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets);
                 }
             }
+        }
+
+        private static string Redact(string text, string?[] secrets)
+        {
+            foreach (var secret in secrets)
+            {
+                text = ErrorFactory.Redact(text, secret);
+            }
+
+            return text;
         }
 
         private static string? FindRequestId(Dictionary<string, IReadOnlyList<string>> headers)

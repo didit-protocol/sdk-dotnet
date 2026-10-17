@@ -299,9 +299,20 @@ namespace Didit.Internal
                 throw new ArgumentException($"The path parameter '{name}' must be a non-empty string.", name);
             }
 
+            if (IsDotSegment(value!))
+            {
+                throw new ArgumentException($"The path parameter '{name}' must not be '.' or '..': the URL would point at a different endpoint.", name);
+            }
+
             return Uri.EscapeDataString(value!);
         }
 
         public static string Encode(long value, string name) => value.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// <c>.</c> and <c>..</c> survive percent-encoding unchanged and URL resolution removes them (RFC 3986 section
+        /// 5.2.4), so <c>/cases/{id}/notes/..</c> would reach <c>/cases/{id}/</c>.
+        /// </summary>
+        public static bool IsDotSegment(string value) => value == "." || value == "..";
     }
 }

@@ -114,11 +114,7 @@ namespace Didit.Internal
                     response = await _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, timeoutSource.Token).ConfigureAwait(false);
                     try
                     {
-#if NET8_0_OR_GREATER
-                        body = await response.Content.ReadAsByteArrayAsync(timeoutSource.Token).ConfigureAwait(false);
-#else
-                        body = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
+                        body = await ResponseBody.ReadAsync(response, timeoutSource.Token).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -306,6 +302,11 @@ namespace Didit.Internal
             {
                 throw new ConfigurationException(
                     "This operation is application-scoped. Set DiditClientOptions.OrganizationId and ApplicationId (or the DIDIT_ORGANIZATION_ID and DIDIT_APPLICATION_ID environment variables).");
+            }
+
+            if (request.ApplicationScoped && (PathParameter.IsDotSegment(settings.OrganizationId!) || PathParameter.IsDotSegment(settings.ApplicationId!)))
+            {
+                throw new ConfigurationException("DiditClientOptions.OrganizationId and ApplicationId must not be '.' or '..'.");
             }
 
             return settings;

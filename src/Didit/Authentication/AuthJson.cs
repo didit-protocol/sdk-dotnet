@@ -24,6 +24,11 @@ namespace Didit.Internal
                     throw new DiditException($"The {what} is not a JSON object.");
                 }
 
+                if (!IsValidUnicode(document.RootElement))
+                {
+                    throw new DiditException($"The {what} contains a string that is not valid Unicode.");
+                }
+
                 return document.RootElement.Clone();
             }
             catch (JsonException ex)
@@ -159,6 +164,56 @@ namespace Didit.Internal
             }
 
             return GetStringList(element, name);
+        }
+
+        /// <summary>
+        /// Whether every string and property name decodes. The parser accepts a lone escaped surrogate (<c>"\ud800"</c>) and
+        /// <see cref="JsonElement.GetString"/> then throws <see cref="InvalidOperationException"/>, so documents are checked once
+        /// when parsed and the readers above never throw.
+        /// </summary>
+        public static bool IsValidUnicode(JsonElement element)
+        {
+            try
+            {
+                return Check(element);
+            }
+            catch (InvalidOperationException ex) when (ex is not ObjectDisposedException)
+            {
+                return false;
+            }
+
+            static bool Check(JsonElement value)
+            {
+                switch (value.ValueKind)
+                {
+                    case JsonValueKind.String:
+                        _ = value.GetString();
+                        return true;
+                    case JsonValueKind.Object:
+                        foreach (var property in value.EnumerateObject())
+                        {
+                            _ = property.Name;
+                            if (!Check(property.Value))
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    case JsonValueKind.Array:
+                        foreach (var item in value.EnumerateArray())
+                        {
+                            if (!Check(item))
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    default:
+                        return true;
+                }
+            }
         }
 
         private static JsonElement CreateEmptyObject()

@@ -104,18 +104,31 @@ namespace Didit.Tests.Authentication
             Assert.Equal(2, _issuer.Handler.Count(JwksPath));
         }
 
-        [Fact]
-        public async Task NoStoreIsNotCached()
+        [Theory]
+        [InlineData("no-store")]
+        [InlineData("no-cache")]
+        [InlineData("max-age=0")]
+        public async Task UncacheableResponsesAreKeptForOneMinute(string cacheControl)
         {
-            _issuer.JwksCacheControl = "no-store";
+            // Otherwise every verification, including a flood of tokens with unknown key ids, would fetch the JWKS.
+            _issuer.JwksCacheControl = cacheControl;
             using var auth = _issuer.Create();
-            var token = _issuer.Sign(_issuer.AccessClaims());
+            var token = _issuer.Sign(_issuer.AccessClaims().With("exp", _issuer.Now.AddHours(1).ToUnixTimeSeconds()));
+            var unknownKid = _issuer.Sign(_issuer.AccessClaims(), TestIssuer.Header(kid: "rotated-away"));
 
             await auth.VerifyAccessTokenAsync(token);
             await auth.VerifyAccessTokenAsync(token);
+            for (var i = 0; i < 5; i++)
+            {
+                await Assert.ThrowsAsync<TokenVerificationException>(() => auth.VerifyAccessTokenAsync(unknownKid));
+            }
 
             Assert.Equal(1, _issuer.Handler.Count(DiscoveryPath));
             Assert.Equal(2, _issuer.Handler.Count(JwksPath));
+
+            _issuer.Now = _issuer.Now.AddSeconds(61);
+            await auth.VerifyAccessTokenAsync(token);
+            Assert.Equal(3, _issuer.Handler.Count(JwksPath));
         }
 
         [Fact]
@@ -123,7 +136,9 @@ namespace Didit.Tests.Authentication
         {
             Assert.Equal(TimeSpan.FromMinutes(5), IssuerMetadataCache.Lifetime(null));
             Assert.Equal(TimeSpan.FromSeconds(120), IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("public, max-age=120")));
-            Assert.Equal(TimeSpan.Zero, IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("no-cache")));
+            Assert.Equal(TimeSpan.FromMinutes(1), IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("no-cache")));
+            Assert.Equal(TimeSpan.FromMinutes(1), IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("no-store")));
+            Assert.Equal(TimeSpan.FromMinutes(1), IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("max-age=10")));
             Assert.Equal(TimeSpan.FromMinutes(5), IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("public")));
             Assert.Equal(TimeSpan.FromDays(1), IssuerMetadataCache.Lifetime(CacheControlHeaderValue.Parse("max-age=99999999")));
         }

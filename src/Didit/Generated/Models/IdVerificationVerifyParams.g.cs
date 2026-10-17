@@ -31,7 +31,7 @@ namespace Didit
         /// Back side of the document — send it whenever the document has one (many ID cards carry the MRZ or a barcode on the back; omitting it simply leaves the MRZ and back-side fields empty in the response — this endpoint does not raise a missing-MRZ warning). Same format and size limits as <c>front_image</c>. When omitted, <c>back_image</c> and back-side fields are <c>null</c> in the response.
         /// </summary>
         [JsonPropertyName("back_image")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [JsonIgnore]
         public Optional<FileUpload> BackImage { get; set; }
 
         /// <summary>

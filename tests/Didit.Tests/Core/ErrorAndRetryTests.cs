@@ -66,6 +66,32 @@ namespace Didit.Tests.Core
         }
 
         [Fact]
+        public async Task An_api_key_echoed_in_a_json_error_body_is_redacted_from_the_parsed_body_too()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(401, "{\"detail\":\"Invalid key\",\"key\":\"" + TestClients.ApiKey + "\"}");
+            using var client = TestClients.Create(handler);
+
+            var error = await Assert.ThrowsAsync<AuthenticationException>(() => client.Sessions.CreateAsync(new SessionsCreateParams { WorkflowId = "wf" }));
+
+            Assert.Equal("[redacted]", error.Body!.Value.GetProperty("key").GetString());
+            Assert.DoesNotContain(TestClients.ApiKey, error.Body!.Value.GetRawText());
+            Assert.Contains("Invalid key", error.Message);
+        }
+
+        [Fact]
+        public async Task An_error_body_with_a_lone_surrogate_still_raises_the_status_exception()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(400, "{\"detail\":\"bad \\ud800 value\"}");
+            using var client = TestClients.Create(handler);
+
+            var error = await Assert.ThrowsAsync<BadRequestException>(() => client.Sessions.CreateAsync(new SessionsCreateParams { WorkflowId = "wf" }));
+
+            Assert.Contains("detail", error.Message);
+        }
+
+        [Fact]
         public async Task Field_errors_are_described_from_the_json_body()
         {
             var handler = new MockHttpHandler();

@@ -17,7 +17,7 @@ namespace Didit
     /// </summary>
     /// <remarks>
     /// Thread-safe and reusable: create one instance per issuer and share it. The discovery document and the JWKS are fetched on
-    /// first use and cached for the issuer's <c>Cache-Control: max-age</c>.
+    /// first use and cached for the issuer's <c>Cache-Control: max-age</c> (at least one minute).
     /// </remarks>
     public sealed class Authentication : IDisposable
     {
@@ -113,7 +113,7 @@ namespace Didit
         /// (5 minutes). Call <see cref="GetSessionAsync"/> before sensitive actions for an instant revocation check.
         /// </remarks>
         /// <param name="token">The compact JWT, without the <c>Bearer</c> prefix.</param>
-        /// <param name="audience">When given, <c>aud</c> must contain it.</param>
+        /// <param name="audience">When given, <c>aud</c> must contain it. <c>null</c> skips the check; an empty string is refused.</param>
         /// <param name="cancellationToken">Cancels a discovery or JWKS fetch.</param>
         /// <exception cref="TokenVerificationException">The token is not valid; <see cref="TokenVerificationException.Reason"/> says why.</exception>
         /// <exception cref="ApiStatusException">The discovery document or JWKS could not be fetched.</exception>
@@ -125,7 +125,13 @@ namespace Didit
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var jwt = await VerifyAsync(token, idToken: false, string.IsNullOrEmpty(audience) ? null : audience, cancellationToken).ConfigureAwait(false);
+            if (audience is not null && audience.Length == 0)
+            {
+                // An empty value usually means a missing configuration entry: fail closed instead of skipping the check.
+                throw new ArgumentException("The audience must not be empty; pass null to skip the audience check.", nameof(audience));
+            }
+
+            var jwt = await VerifyAsync(token, idToken: false, audience, cancellationToken).ConfigureAwait(false);
             return AccessTokenClaims.FromPayload(jwt.Payload);
         }
 
@@ -191,7 +197,7 @@ namespace Didit
                 new KeyValuePair<string, string>("code_verifier", codeVerifier),
                 new KeyValuePair<string, string>("redirect_uri", redirectUri),
             };
-            return await PostTokenAsync(form, code, cancellationToken).ConfigureAwait(false);
+            return await PostTokenAsync(form, new[] { code, codeVerifier }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -218,7 +224,7 @@ namespace Didit
                 new KeyValuePair<string, string>("grant_type", "refresh_token"),
                 new KeyValuePair<string, string>("refresh_token", refreshToken),
             };
-            return await PostTokenAsync(form, refreshToken, cancellationToken).ConfigureAwait(false);
+            return await PostTokenAsync(form, new[] { refreshToken }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -233,7 +239,7 @@ namespace Didit
         public async Task<AuthSession> GetSessionAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             RequireText(accessToken, nameof(accessToken));
-            var response = await _transport.SendAsync(HttpMethod.Get, RuntimeUrl("session/"), null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Get, RuntimeUrl("session/"), null, accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
             return AuthSession.FromJson(AuthJson.Parse(response.Body, "session response"));
         }
 
@@ -246,7 +252,7 @@ namespace Didit
         public async Task RevokeSessionAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             RequireText(accessToken, nameof(accessToken));
-            await _transport.SendAsync(HttpMethod.Delete, RuntimeUrl("session/"), null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            await _transport.SendAsync(HttpMethod.Delete, RuntimeUrl("session/"), null, accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -255,27 +261,30 @@ namespace Didit
         /// back to <paramref name="returnTo"/> with <c>step_up=&lt;id&gt;</c>. Then read <see cref="RetrieveStepUpAsync"/> and act only
         /// when its status is <see cref="AuthStepUpStatus.Approved"/>.
         /// </summary>
+        /// <remarks>Pass the optional values by name: <c>CreateStepUpAsync(token, "payout", amount: "250.00", currency: "EUR", returnTo: url)</c>.</remarks>
         /// <param name="accessToken">The person's access token.</param>
         /// <param name="action"><c>payout</c>, <c>bank</c> or <c>contact</c>.</param>
-        /// <param name="returnTo">Where the person returns after verifying; must be one of the application's registered redirect URIs.</param>
         /// <param name="amount">The payout amount as a decimal string with at most two decimals, for example <c>"250.00"</c>; required for <c>payout</c>.</param>
         /// <param name="currency">ISO 4217 code of <paramref name="amount"/>, for example <c>EUR</c>; defaults to the payout rule's currency.</param>
+        /// <param name="returnTo">
+        /// Where the person returns after verifying; must be one of the application's registered redirect URIs. Optional in the SDK
+        /// contract, but the issuer currently answers <c>400</c> without it.
+        /// </param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        /// <exception cref="BadRequestException">Invalid fields, or <paramref name="returnTo"/> is not registered.</exception>
+        /// <exception cref="BadRequestException">Invalid or missing fields, or <paramref name="returnTo"/> is not registered.</exception>
         /// <exception cref="AuthenticationException">The access token or its session is no longer valid.</exception>
         /// <exception cref="ApiStatusException">Another non-2xx answer, for example when verification is unavailable (step-ups never fail open).</exception>
         /// <exception cref="ApiConnectionException">The issuer could not be reached; the request is not retried.</exception>
         public async Task<AuthStepUp> CreateStepUpAsync(
             string accessToken,
             string action,
-            string returnTo,
             string? amount = null,
             string? currency = null,
+            string? returnTo = null,
             CancellationToken cancellationToken = default)
         {
             RequireText(accessToken, nameof(accessToken));
             RequireText(action, nameof(action));
-            RequireText(returnTo, nameof(returnTo));
             var body = WriteJson(writer =>
             {
                 writer.WriteString("action", action);
@@ -289,9 +298,12 @@ namespace Didit
                     writer.WriteString("currency", currency);
                 }
 
-                writer.WriteString("return_to", returnTo);
+                if (returnTo is not null)
+                {
+                    writer.WriteString("return_to", returnTo);
+                }
             });
-            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("step-up/"), () => JsonContent(body), accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("step-up/"), () => JsonContent(body), accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
             return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
         }
 
@@ -311,8 +323,14 @@ namespace Didit
         {
             RequireText(accessToken, nameof(accessToken));
             RequireText(stepUpId, nameof(stepUpId));
+            if (PathParameter.IsDotSegment(stepUpId))
+            {
+                // The id comes from the return URL: "step-up/../" would send the access token to another endpoint.
+                throw new ArgumentException("The step-up id must not be '.' or '..'.", nameof(stepUpId));
+            }
+
             var url = RuntimeUrl("step-up/" + Uri.EscapeDataString(stepUpId) + "/");
-            var response = await _transport.SendAsync(HttpMethod.Get, url, null, accessToken, accessToken, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Get, url, null, accessToken, new[] { accessToken }, cancellationToken).ConfigureAwait(false);
             return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
         }
 
@@ -415,11 +433,11 @@ namespace Didit
 
         private Uri RuntimeUrl(string path) => new(_baseUrl + path);
 
-        private async Task<AuthTokenResponse> PostTokenAsync(KeyValuePair<string, string>[] form, string secret, CancellationToken cancellationToken)
+        private async Task<AuthTokenResponse> PostTokenAsync(KeyValuePair<string, string>[] form, string?[] secrets, CancellationToken cancellationToken)
         {
             var discovery = await _metadata.GetDiscoveryAsync(cancellationToken).ConfigureAwait(false);
             var endpoint = discovery.TokenEndpoint ?? RuntimeUrl("token/");
-            var response = await _transport.SendAsync(HttpMethod.Post, endpoint, () => new FormUrlEncodedContent(form), null, secret, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, endpoint, () => new FormUrlEncodedContent(form), null, secrets, cancellationToken).ConfigureAwait(false);
             var tokens = AuthTokenResponse.FromJson(AuthJson.Parse(response.Body, "token response"));
             if (tokens.AccessToken.Length == 0)
             {

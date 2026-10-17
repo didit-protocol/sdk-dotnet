@@ -60,8 +60,16 @@ def cs_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("\\/", "/")
 
 
+def is_file(ref: TypeRef) -> bool:
+    return ref.kind == "file" or (ref.kind == "list" and ref.item is not None and ref.item.kind == "file")
+
+
 def obsolete_message(op: Operation) -> str:
     removed_on = op.raw.op.get("x-didit-removed-on")
+    renamed_to = op.raw.op.get("x-didit-renamed-to")
+    if isinstance(renamed_to, dict) and renamed_to.get("resource") and renamed_to.get("method"):
+        target = ".".join(names.pascal(segment) for segment in str(renamed_to["resource"]).split(".")) + "." + names.method_name(str(renamed_to["method"]))
+        return f"Renamed to {target} on {removed_on}. This alias is deleted in the next minor release."
     if removed_on:
         return f"Removed from the Didit API on {removed_on}. This method is deleted in the next minor release."
     return "Deprecated by the Didit API."
@@ -201,6 +209,13 @@ class Emitter:
             else:
                 lines.append(f"        public {t.nullable(prop.type, REQUEST)} {prop.cs_name} {{ get; set; }}")
             return lines
+        if is_file(prop.type) and not prop.required:
+            # Files travel only as multipart parts, never in a JSON body. (System.Text.Json refuses [JsonIgnore] on a
+            # required member, so required files keep the default.)
+            inner = t.nullable(prop.type, REQUEST) if prop.nullable else t.base(prop.type, REQUEST)
+            lines.append("        [JsonIgnore]")
+            lines.append(f"        public Optional<{inner}> {prop.cs_name} {{ get; set; }}")
+            return lines
         if prop.required:
             if prop.nullable:
                 lines.append("        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]")
@@ -293,8 +308,18 @@ class Emitter:
         for key in sorted(node.children):
             yield from self.walk(node.children[key])
 
+    def sends_deprecated_fields(self, op: Operation) -> bool:
+        """Whether the request code reads deprecated properties (multipart fields are copied one by one)."""
+        if op.body is None or op.body.content_type == "application/json":
+            return False
+        obj = self.model.objects.get(op.body.params_type or op.body.type.name or "")
+        return obj is not None and any(p.deprecated and p.location == "body" for p in obj.props)
+
     def resource_file(self, node: ResourceNode) -> str:
-        out = [HEADER, "using System;", "using System.Collections.Generic;", "using System.Linq;", "using System.Text.Json;", "using System.Threading;", "using System.Threading.Tasks;", "using Didit.Internal;", "", "namespace Didit.Resources", "{"]
+        header = HEADER
+        if any(self.sends_deprecated_fields(op) for op in node.operations):
+            header += "#pragma warning disable CS0618 // Deprecated fields are still sent when set.\n"
+        out = [header, "using System;", "using System.Collections.Generic;", "using System.Linq;", "using System.Text.Json;", "using System.Threading;", "using System.Threading.Tasks;", "using Didit.Internal;", "", "namespace Didit.Resources", "{"]
         dotted = ".".join(node.segments)
         out.append(f"    /// <summary>The <c>{dotted}</c> resource.</summary>")
         out.append(f"    public sealed partial class {node.type_name}")
@@ -402,6 +427,8 @@ class Emitter:
         if remarks:
             remarks_lines.append(f"{indent}/// <para/>")
         remarks_lines.append(f"{indent}/// <c>{xml_escape(op.http_method)} {xml_escape(op.path)}</c> (<c>{op.dotted}</c>).")
+        if op.body is not None and op.body.json_without_files:
+            remarks_lines.append(f"{indent}/// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.")
         if op.idempotency_key:
             remarks_lines.append(f"{indent}/// Accepts an idempotency key: set <see cref=\"RequestOptions.IdempotencyKey\"/>.")
         if op.scope == "application":
@@ -568,12 +595,25 @@ class Emitter:
             lines.append(f"{indent}if ({holder} is not null)")
             lines.append(f"{indent}{{")
             inner_indent = indent + "    "
+        outer_indent = inner_indent
+        if body.json_without_files:
+            files = [p for p in obj.props if p.location == "body" and is_file(p.type)]
+            condition = " || ".join(f"{holder}.{p.cs_name}.IsSet" for p in files)
+            lines.append(f"{outer_indent}if ({condition})")
+            lines.append(f"{outer_indent}{{")
+            inner_indent = outer_indent + "    "
         lines.append(f"{inner_indent}var form = new MultipartRequestBody();")
         for prop in obj.props:
             if prop.location != "body":
                 continue
             lines += self.multipart_prop(holder, prop, obj.role, inner_indent)
         lines.append(f"{inner_indent}request.Body = form;")
+        if body.json_without_files:
+            lines.append(f"{outer_indent}}}")
+            lines.append(f"{outer_indent}else")
+            lines.append(f"{outer_indent}{{")
+            lines.append(f"{outer_indent}    request.Body = JsonRequestBody.Create({holder});")
+            lines.append(f"{outer_indent}}}")
         if not required:
             lines.append(f"{indent}}}")
         return lines
