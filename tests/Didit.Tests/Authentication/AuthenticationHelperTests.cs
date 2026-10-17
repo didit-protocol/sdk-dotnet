@@ -77,7 +77,7 @@ namespace Didit.Tests.Authentication
         [InlineData("")]
         [InlineData("aHR0cHM6Ly9hY21lLmF1dGguZGlkaXQubWU")]
         [InlineData("pk_aHR0cHM6Ly9hY21lLmF1dGguZGlkaXQubWU")]
-        [InlineData("sk_live_aHR0cHM6Ly9hY21lLmF1dGguZGlkaXQubWU")]
+        [InlineData("sk_aHR0cHM6Ly9hY21lLmF1dGguZGlkaXQubWU")]
         [InlineData("PK_LIVE_aHR0cHM6Ly9hY21lLmF1dGguZGlkaXQubWU")]
         public void RejectsAnInvalidPrefix(string value)
         {

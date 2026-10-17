@@ -105,7 +105,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\", \"refresh_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\", \"expires_in\": 86400, \"message\": \"Login successful\"}");
+            handler.Enqueue(200, "{\"access_token\": \"sample-token\", \"refresh_token\": \"sample-token\", \"expires_in\": 86400, \"message\": \"Login successful\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.LoginAsync(new LoginRequest { Email = "user@example.com", Password = "MyStr0ng!Pass" });
 
@@ -119,7 +119,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"email\": \"user@example.com\", \"password\": \"MyStr0ng!Pass\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...", result.AccessToken);
+            Assert.Equal("sample-token", result.AccessToken);
             Assert.Equal(86400L, result.ExpiresIn);
         }
 
@@ -191,7 +191,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\", \"refresh_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\", \"expires_in\": 86400, \"organization\": {\"uuid\": \"a1b2c3d4-5678-90ab-cdef-111111111111\", \"name\": \"developer\"}, \"application\": {\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"developer\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"05mHcOWL8GathLZlz8oIDawYj9qFAcoSHtz-75PAkuo\"}}");
+            handler.Enqueue(200, "{\"access_token\": \"sample-token\", \"refresh_token\": \"sample-token\", \"expires_in\": 86400, \"organization\": {\"uuid\": \"a1b2c3d4-5678-90ab-cdef-111111111111\", \"name\": \"developer\"}, \"application\": {\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"developer\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"05mHcOWL8GathLZlz8oIDawYj9qFAcoSHtz-75PAkuo\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.VerifyEmailAsync(new VerifyEmailRequest { Email = "user@example.com", Code = "A3K9F2" });
 
@@ -205,7 +205,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"email\": \"user@example.com\", \"code\": \"A3K9F2\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...", result.AccessToken);
+            Assert.Equal("sample-token", result.AccessToken);
             Assert.Equal(86400L, result.ExpiresIn);
         }
     }

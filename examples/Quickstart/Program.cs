@@ -39,7 +39,7 @@ foreach (var check in decision.IdVerifications ?? Array.Empty<SessionsRetrieveDe
 }
 
 // 3. Verify a webhook. In your server, pass the raw request body and its headers (see examples/WebhookMinimalApi).
-var secret = Environment.GetEnvironmentVariable("DIDIT_WEBHOOK_SECRET") ?? "whsec_example";
+var secret = Environment.GetEnvironmentVariable("DIDIT_WEBHOOK_SECRET") ?? "whsec_test_quickstart_example";
 var (body, headers) = SampleDelivery(session.SessionId!, secret);
 var evt = DiditWebhooks.Verify(body, headers, secret);
 switch (evt)
