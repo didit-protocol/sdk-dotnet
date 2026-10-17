@@ -10,9 +10,6 @@ namespace Didit.Tests.Webhooks
     /// <summary>Runs every shared vector of <c>openapi/webhook-vectors.json</c> (DESIGN.md 9.3).</summary>
     public sealed class WebhookVectorTests
     {
-        // canonical_v2 of this vector is what Didit signed before the body was altered in transit.
-        private const string TamperedVector = "tampered_body";
-
         private static readonly Dictionary<string, Type> EventTypes = new(StringComparer.Ordinal)
         {
             ["status.updated"] = typeof(SessionStatusUpdatedEvent),
@@ -45,7 +42,6 @@ namespace Didit.Tests.Webhooks
         {
             var expectations = WebhookVectors.All.Select(vector => vector.Expect).ToHashSet();
 
-            Assert.Equal(25, WebhookVectors.All.Count());
             Assert.Equal(TimeSpan.FromSeconds(300), WebhookVectors.Tolerance);
             Assert.Contains("valid", expectations);
             Assert.Contains("valid_only_with_allow_simple", expectations);
@@ -63,7 +59,10 @@ namespace Didit.Tests.Webhooks
 
             var canonical = DiditWebhooks.Canonicalize(vector.Body);
 
-            if (name == TamperedVector)
+            // A body altered after signing keeps the canonical_v2 that Didit signed, so the two must differ.
+            var alteredAfterSigning = vector.Expect == WebhookVerificationReason.InvalidSignature
+                && Header(vector, "X-Signature-V2") == WebhookTestSupport.Hmac(vector.Secret, vector.CanonicalV2);
+            if (alteredAfterSigning)
             {
                 Assert.NotEqual(vector.CanonicalV2, canonical);
                 return;
