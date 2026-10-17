@@ -198,6 +198,8 @@ var session = response.Data;
 - `tolerance` defaults to 5 minutes.
 - `DiditWebhooks.VerifyParsed(JsonElement payload, ...)` is for frameworks that only expose the parsed JSON; it checks `X-Signature-V2`.
 - `X-Signature-Simple` is deprecated and counts only with `allowSimple: true`; even then the event says `IsBodyAuthenticated == false`, so re-fetch the record from the API before acting on it.
+- Didit retries failed deliveries: use `EventId` to ignore duplicates, and answer quickly.
+- The KYB registry search callback (`kyb.registry_search.resolved`) is delivered unsigned today, so `Verify` rejects it with `missing_signature`; re-fetch the business session from the API instead.
 
 Events: `SessionStatusUpdatedEvent`, `SessionDataUpdatedEvent`, `UserStatusUpdatedEvent`, `UserDataUpdatedEvent`, `BusinessStatusUpdatedEvent`, `BusinessDataUpdatedEvent`, `ActivityCreatedEvent`, `TransactionCreatedEvent`, `TransactionStatusUpdatedEvent`, `TravelRuleStatusUpdatedEvent`, `WorkflowComplianceChangedEvent`, `KybRegistrySearchResolvedEvent`, and `UnknownEvent` for any other type. Every event has `EventId`, `WebhookType`, `Timestamp`, `CreatedAt`, `ApplicationId`, `Environment` and the raw `Payload`.
 
