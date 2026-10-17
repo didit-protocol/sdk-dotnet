@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -106,12 +107,14 @@ namespace Didit.Tests.Authentication
         public async Task RejectsHs256SignedWithThePublicKey()
         {
             using var auth = _issuer.Create();
+            var point = _issuer.Key.ExportParameters(false).Q;
             var jwkBytes = Encoding.UTF8.GetBytes(TestIssuer.Jwk(TestIssuer.Kid, _issuer.Key));
-            var spkiBytes = _issuer.Key.ExportSubjectPublicKeyInfo();
+            var pointBytes = new byte[] { 0x04 }.Concat(point.X!).Concat(point.Y!).ToArray();
 
-            foreach (var secret in new[] { jwkBytes, spkiBytes })
+            foreach (var secret in new[] { jwkBytes, pointBytes })
             {
-                var token = TestIssuer.SignWith(TestIssuer.Header(alg: "HS256"), _issuer.AccessClaims(), data => HMACSHA256.HashData(secret, data));
+                using var hmac = new HMACSHA256(secret);
+                var token = TestIssuer.SignWith(TestIssuer.Header(alg: "HS256"), _issuer.AccessClaims(), hmac.ComputeHash);
                 await AssertRejected(auth, token, TokenVerificationReason.UnsupportedAlgorithm);
             }
         }
@@ -308,7 +311,7 @@ namespace Didit.Tests.Authentication
         public async Task RejectsADerEncodedSignature()
         {
             using var auth = _issuer.Create();
-            var token = TestIssuer.SignWith(TestIssuer.Header(), _issuer.AccessClaims(), data => _issuer.Key.SignData(data, HashAlgorithmName.SHA256, DSASignatureFormat.Rfc3279DerSequence));
+            var token = TestIssuer.SignWith(TestIssuer.Header(), _issuer.AccessClaims(), data => ToDer(_issuer.Key.SignData(data, HashAlgorithmName.SHA256)));
 
             await AssertRejected(auth, token, TokenVerificationReason.InvalidSignature);
         }
@@ -453,6 +456,21 @@ namespace Didit.Tests.Authentication
 
             Assert.IsAssignableFrom<DiditException>(error);
             Assert.Equal("expired", error.Reason);
+        }
+
+        // The same signature as an ASN.1 DER SEQUENCE of two INTEGERs, which JWS does not use.
+        private static byte[] ToDer(byte[] p1363)
+        {
+            static byte[] Integer(byte[] value)
+            {
+                var trimmed = value.SkipWhile((b, i) => b == 0 && i < value.Length - 1).ToArray();
+                var body = (trimmed[0] & 0x80) != 0 ? new byte[] { 0 }.Concat(trimmed).ToArray() : trimmed;
+                return new byte[] { 0x02, (byte)body.Length }.Concat(body).ToArray();
+            }
+
+            var r = Integer(p1363.Take(32).ToArray());
+            var s = Integer(p1363.Skip(32).ToArray());
+            return new byte[] { 0x30, (byte)(r.Length + s.Length) }.Concat(r).Concat(s).ToArray();
         }
 
         private static async Task AssertRejected(Didit.Authentication auth, string token, string reason, string? audience = null)

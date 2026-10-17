@@ -81,7 +81,7 @@ namespace Didit.Tests.Authentication
             string? contentType = null;
             if (request.Content is not null)
             {
-                body = await request.Content.ReadAsStringAsync(cancellationToken);
+                body = await request.Content.ReadAsStringAsync();
                 contentType = request.Content.Headers.ContentType?.MediaType;
             }
 
