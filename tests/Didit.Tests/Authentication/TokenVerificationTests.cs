@@ -355,6 +355,42 @@ namespace Didit.Tests.Authentication
             await AssertRejected(auth, header + "." + notJson + ".AA", TokenVerificationReason.Malformed);
         }
 
+        [Theory]
+        [InlineData("{\"alg\":\"\\ud800\"}", "{}")]
+        [InlineData("{\"alg\":\"ES256\",\"typ\":\"at+jwt\",\"kid\":\"\\udfff\"}", "{}")]
+        [InlineData("{\"alg\":\"ES256\",\"typ\":\"\\ud800x\",\"kid\":\"key-1\"}", "{}")]
+        [InlineData("{\"alg\":\"ES256\",\"typ\":\"at+jwt\",\"kid\":\"key-1\",\"\\ud800\":1}", "{}")]
+        [InlineData("{\"alg\":\"ES256\",\"typ\":\"at+jwt\",\"kid\":\"key-1\"}", "{\"sub\":\"\\ud800\"}")]
+        [InlineData("{\"alg\":\"ES256\",\"typ\":\"at+jwt\",\"kid\":\"key-1\"}", "{\"verified\":{\"name\":[\"\\udc00\"]}}")]
+        public async Task RejectsStringsThatAreNotValidUnicode(string header, string payload)
+        {
+            // JSON accepts a lone escaped surrogate; reading it must be a rejection, never an InvalidOperationException.
+            using var auth = _issuer.Create();
+            var token = TestIssuer.B64(Encoding.UTF8.GetBytes(header)) + "." + TestIssuer.B64(Encoding.UTF8.GetBytes(payload)) + ".AA";
+
+            await AssertRejected(auth, token, TokenVerificationReason.Malformed);
+            Assert.Empty(_issuer.Handler.Requests);
+        }
+
+        [Fact]
+        public async Task RejectsInvalidUtf8InAPart()
+        {
+            using var auth = _issuer.Create();
+            var header = TestIssuer.B64(Encoding.UTF8.GetBytes("{\"alg\":\"ES256\",\"kid\":\"").Concat(new byte[] { 0xC3, 0x28 }).Concat(Encoding.UTF8.GetBytes("\"}")).ToArray());
+
+            await AssertRejected(auth, header + "." + TestIssuer.B64(Encoding.UTF8.GetBytes("{}")) + ".AA", TokenVerificationReason.Malformed);
+        }
+
+        [Fact]
+        public async Task AnEmptyAudienceIsRefusedInsteadOfSkippingTheCheck()
+        {
+            using var auth = _issuer.Create();
+            var token = _issuer.Sign(_issuer.AccessClaims());
+
+            var error = await Assert.ThrowsAsync<ArgumentException>(() => auth.VerifyAccessTokenAsync(token, string.Empty));
+            Assert.Equal("audience", error.ParamName);
+        }
+
         [Fact]
         public async Task RejectsCriticalHeaderExtensions()
         {
