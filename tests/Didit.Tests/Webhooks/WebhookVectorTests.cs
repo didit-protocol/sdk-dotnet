@@ -15,8 +15,14 @@ namespace Didit.Tests.Webhooks
             ["status.updated"] = typeof(SessionStatusUpdatedEvent),
             ["data.updated"] = typeof(SessionDataUpdatedEvent),
             ["user.status.updated"] = typeof(UserStatusUpdatedEvent),
+            ["user.data.updated"] = typeof(UserDataUpdatedEvent),
+            ["business.status.updated"] = typeof(BusinessStatusUpdatedEvent),
+            ["business.data.updated"] = typeof(BusinessDataUpdatedEvent),
+            ["activity.created"] = typeof(ActivityCreatedEvent),
+            ["transaction.created"] = typeof(TransactionCreatedEvent),
             ["transaction.status.updated"] = typeof(TransactionStatusUpdatedEvent),
             ["travel_rule.status.updated"] = typeof(TravelRuleStatusUpdatedEvent),
+            ["workflow.compliance_changed"] = typeof(WorkflowComplianceChangedEvent),
         };
 
         public static TheoryData<string> AllVectors => Names(_ => true);
@@ -187,41 +193,50 @@ namespace Didit.Tests.Webhooks
             var body = document.RootElement;
             var webhookType = body.GetProperty("webhook_type").GetString()!;
 
-            Assert.IsType(EventTypes[webhookType], verified);
-            Assert.Equal(body.GetProperty("event_id").GetString(), verified.EventId);
+            Assert.IsType(EventTypes.TryGetValue(webhookType, out var type) ? type : typeof(UnknownEvent), verified);
+            Assert.Equal(Text(body, "event_id"), verified.EventId);
             Assert.Equal(webhookType, verified.WebhookType);
             Assert.Equal(body.GetProperty("timestamp").GetInt64(), verified.Timestamp);
             Assert.Equal(body.GetProperty("created_at").GetInt64(), verified.CreatedAt);
-            Assert.Equal(body.GetProperty("application_id").GetString(), verified.ApplicationId);
-            Assert.Equal(WebhookEnvironment.Live, verified.Environment);
+            Assert.Equal(Text(body, "application_id"), verified.ApplicationId);
+            Assert.Equal(Text(body, "environment"), verified.Environment);
             Assert.Equal(DiditWebhooks.Canonicalize(body), DiditWebhooks.Canonicalize(verified.Payload));
 
             switch (verified)
             {
                 case SessionEvent session:
-                    Assert.Equal(body.GetProperty("session_id").GetString(), session.SessionId);
-                    Assert.Equal(body.GetProperty("status").GetString(), session.Status);
+                    Assert.Equal(Text(body, "session_id"), session.SessionId);
+                    Assert.Equal(Text(body, "status"), session.Status);
+                    Assert.Equal(Text(body, "vendor_data"), session.VendorData);
+                    Assert.Equal(Text(body, "workflow_id"), session.WorkflowId);
                     break;
                 case TransactionEvent transaction:
-                    Assert.Equal(body.GetProperty("transaction_id").GetString(), transaction.TransactionId);
-                    Assert.Equal(body.GetProperty("txn_id").GetString(), transaction.TxnId);
-                    Assert.Equal("1500.00", transaction.Amount);
-                    Assert.Equal(12.5, transaction.Score);
+                    Assert.Equal(Text(body, "transaction_id"), transaction.TransactionId);
+                    Assert.Equal(Text(body, "txn_id"), transaction.TxnId);
+                    Assert.Equal(Text(body, "status"), transaction.Status);
+                    Assert.Equal(Text(body, "amount"), transaction.Amount);
+                    Assert.Equal(body.GetProperty("score").GetDouble(), transaction.Score);
+                    Assert.Equal(Text(body, "currency"), transaction.Currency);
                     break;
                 case UserEvent user:
-                    Assert.Equal(body.GetProperty("vendor_user_id").GetString(), user.VendorUserId);
-                    Assert.Equal(body.GetProperty("vendor_data").GetString(), user.VendorData);
+                    Assert.Equal(Text(body, "vendor_user_id"), user.VendorUserId);
+                    Assert.Equal(Text(body, "vendor_data"), user.VendorData);
+                    Assert.Equal(Text(body, "status"), user.Status);
+                    break;
+                case BusinessEvent business:
+                    Assert.Equal(Text(body, "vendor_business_id"), business.VendorBusinessId);
+                    Assert.Equal(Text(body, "status"), business.Status);
                     break;
                 case TravelRuleStatusUpdatedEvent travelRule:
-                    Assert.Equal(body.GetProperty("transaction_id").GetString(), travelRule.TransactionId);
-                    Assert.Equal("COMPLETED", travelRule.TravelRuleStatus);
-                    Assert.Equal("TRP", travelRule.Rail);
-                    Assert.Equal("inbound", travelRule.Direction);
-                    break;
-                default:
-                    Assert.Fail("Unexpected event type " + verified.GetType().Name);
+                    Assert.Equal(Text(body, "transaction_id"), travelRule.TransactionId);
+                    Assert.Equal(Text(body, "travel_rule_status"), travelRule.TravelRuleStatus);
+                    Assert.Equal(Text(body, "rail"), travelRule.Rail);
+                    Assert.Equal(Text(body, "direction"), travelRule.Direction);
                     break;
             }
         }
+
+        private static string? Text(JsonElement body, string name) =>
+            body.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     }
 }
