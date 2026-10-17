@@ -114,7 +114,7 @@ namespace Didit.Tests.Authentication
             _issuer.JwksCacheControl = cacheControl;
             using var auth = _issuer.Create();
             var token = _issuer.Sign(_issuer.AccessClaims().With("exp", _issuer.Now.AddHours(1).ToUnixTimeSeconds()));
-            var unknownKid = _issuer.Sign(_issuer.AccessClaims(), keyId: "rotated-away");
+            var unknownKid = _issuer.Sign(_issuer.AccessClaims(), TestIssuer.Header(kid: "rotated-away"));
 
             await auth.VerifyAccessTokenAsync(token);
             await auth.VerifyAccessTokenAsync(token);
