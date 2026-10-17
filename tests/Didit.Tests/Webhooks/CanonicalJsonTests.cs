@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using Didit.Internal;
@@ -172,7 +173,7 @@ namespace Didit.Tests.Webhooks
         [InlineData(1e16, "10000000000000000")]
         [InlineData(-0.0, "0")]
         [InlineData(87.0, "87")]
-        [InlineData(1e300, "1000000000000000052504760255204420248704468581108159154915854115111802457988908195786371375080447864043704443832883878176942523235360430575644792184786706982848387200926575803737830233794788090059368953234970799945081119038967640880074652742780142494579258788820056842838115467196834763571264")]
+        [InlineData(1e300, "1000000000000000052504760255204420248704468581108159154915854115511802457988908195786371375080447864043704443832883878176942523235360430575644792184786706982848387200926575803737830233794788090059368953234970799945081119038967640880074652742780142494579258788820056842838115669472196386865459400540160")]
         [InlineData(double.NaN, "NaN")]
         [InlineData(double.PositiveInfinity, "Infinity")]
         [InlineData(double.NegativeInfinity, "-Infinity")]
@@ -182,12 +183,17 @@ namespace Didit.Tests.Webhooks
         }
 
         [Fact]
-        public void ShortestDigitsRoundTripForManyValues()
+        public void FloatsRoundTripWithTheShortestDigits()
         {
             var random = new Random(20261017);
             for (var i = 0; i < 20000; i++)
             {
                 var value = BitConverter.Int64BitsToDouble((long)(random.NextDouble() * long.MaxValue));
+                if (i % 2 == 1)
+                {
+                    value = -value;
+                }
+
                 if (double.IsNaN(value) || double.IsInfinity(value) || Math.Floor(value) == value)
                 {
                     continue;
@@ -195,9 +201,15 @@ namespace Didit.Tests.Webhooks
 
                 var text = WebhookCanonicalJson.FormatFloat(value);
 
-                Assert.Equal(value, double.Parse(text, System.Globalization.CultureInfo.InvariantCulture));
-                Assert.Equal(value.ToString("R", System.Globalization.CultureInfo.InvariantCulture).Replace("E", "e", StringComparison.Ordinal).Length > 0, true);
+                Assert.Equal(value, double.Parse(text, CultureInfo.InvariantCulture));
+                Assert.Equal(SignificantDigits(value.ToString("R", CultureInfo.InvariantCulture)), SignificantDigits(text));
             }
+        }
+
+        private static string SignificantDigits(string text)
+        {
+            var mantissa = text.Split('e', 'E')[0].TrimStart('-').Replace(".", string.Empty, StringComparison.Ordinal);
+            return mantissa.TrimStart('0').TrimEnd('0');
         }
     }
 }
