@@ -332,7 +332,7 @@ Choices DESIGN.md leaves to each language, made the .NET way:
 ## Versioning
 
 Semantic versioning. Until 1.0.0, breaking changes bump the minor version. Releases are cut by release-please from conventional commits, and `CHANGELOG.md` is generated.
-The SDK is regenerated from the OpenAPI documents published at docs.didit.me; a removed API operation stays in the SDK, marked `[Obsolete]`, for one minor version.
+The SDK is regenerated from the OpenAPI documents published at docs.didit.me; a removed or renamed API operation keeps its method, marked `[Obsolete]`, for one minor version.
 
 ## Contributing and security
 
