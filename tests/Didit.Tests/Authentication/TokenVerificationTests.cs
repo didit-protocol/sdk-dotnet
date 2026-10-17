@@ -152,6 +152,18 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
+        public async Task HeaderValuesInMessagesAreShortAndPrintable()
+        {
+            using var auth = _issuer.Create();
+            var token = _issuer.Sign(_issuer.AccessClaims(), TestIssuer.Header(alg: "x\r\nINJECTED" + new string('A', 500)));
+
+            var error = await Assert.ThrowsAsync<TokenVerificationException>(() => auth.VerifyAccessTokenAsync(token));
+
+            Assert.DoesNotContain("\n", error.Message, StringComparison.Ordinal);
+            Assert.True(error.Message.Length < 200);
+        }
+
+        [Fact]
         public async Task RejectsAMissingAlgorithm()
         {
             using var auth = _issuer.Create();

@@ -357,6 +357,29 @@ namespace Didit
 
         private static TokenVerificationException Fail(string reason, string message) => new(reason, message);
 
+        // Token values end up in logs: keep them short and printable.
+        private static string Shown(string? value)
+        {
+            if (value is null)
+            {
+                return string.Empty;
+            }
+
+            var builder = new StringBuilder(Math.Min(value.Length, 64));
+            foreach (var c in value)
+            {
+                if (builder.Length == 64)
+                {
+                    builder.Append("...");
+                    break;
+                }
+
+                builder.Append(c >= 0x20 && c < 0x7f ? c : '?');
+            }
+
+            return builder.ToString();
+        }
+
         private static void RequireText(string? value, string parameterName)
         {
             if (value is null)
@@ -433,7 +456,7 @@ namespace Didit
             // The algorithm is pinned: the header never chooses how the token is checked.
             if (!header.TryGetProperty("alg", out var alg) || alg.ValueKind != JsonValueKind.String || alg.GetString() != "ES256")
             {
-                var shown = alg.ValueKind == JsonValueKind.String ? alg.GetString() : "missing";
+                var shown = alg.ValueKind == JsonValueKind.String ? Shown(alg.GetString()) : "missing";
                 throw Fail(TokenVerificationReason.UnsupportedAlgorithm, $"The token algorithm '{shown}' is not allowed; Didit tokens use ES256.");
             }
 
@@ -454,7 +477,7 @@ namespace Didit
             {
                 throw Fail(TokenVerificationReason.UnknownKey, jwt.KeyId is null
                     ? "The issuer's JWKS has no ES256 key."
-                    : $"The issuer's JWKS has no key '{jwt.KeyId}'.");
+                    : $"The issuer's JWKS has no key '{Shown(jwt.KeyId)}'.");
             }
 
             var verified = false;
@@ -493,12 +516,12 @@ namespace Didit
             {
                 if (typ is not null && !IsType(typ, "JWT"))
                 {
-                    throw Fail(TokenVerificationReason.InvalidType, $"The token type '{typ}' is not an ID token.");
+                    throw Fail(TokenVerificationReason.InvalidType, $"The token type '{Shown(typ)}' is not an ID token.");
                 }
             }
             else if (typ is null || !IsType(typ, "at+jwt"))
             {
-                throw Fail(TokenVerificationReason.InvalidType, $"The token type '{typ ?? "missing"}' is not an access token (at+jwt).");
+                throw Fail(TokenVerificationReason.InvalidType, $"The token type '{(typ is null ? "missing" : Shown(typ))}' is not an access token (at+jwt).");
             }
         }
 
@@ -512,7 +535,7 @@ namespace Didit
             var issuer = AuthJson.GetString(payload, "iss");
             if (!IssuerComparer.Matches(issuer, Issuer))
             {
-                throw Fail(TokenVerificationReason.InvalidIssuer, $"The token issuer '{issuer ?? "missing"}' is not '{Issuer}'.");
+                throw Fail(TokenVerificationReason.InvalidIssuer, $"The token issuer '{(issuer is null ? "missing" : Shown(issuer))}' is not '{Issuer}'.");
             }
 
             if (audience is not null)
