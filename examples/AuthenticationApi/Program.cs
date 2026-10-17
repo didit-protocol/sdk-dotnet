@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Didit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 var issuer = Environment.GetEnvironmentVariable("DIDIT_AUTH_ISSUER");
 var auth = string.IsNullOrEmpty(issuer)
