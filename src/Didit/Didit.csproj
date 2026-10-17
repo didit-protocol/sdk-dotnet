@@ -17,18 +17,13 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <!-- TEMP-INTEGRATION: modules built in parallel, folded in at integration. -->
-  <ItemGroup>
-    <Compile Remove="Authentication/**;Webhooks/**" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
     <InternalsVisibleTo Include="Didit.Tests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
   </ItemGroup>
 

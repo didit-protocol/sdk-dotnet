@@ -35,9 +35,4 @@
     <None Include="../../openapi/*.json" LinkBase="openapi" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- TEMP-INTEGRATION: modules built in parallel, folded in at integration. -->
-  <ItemGroup>
-    <Compile Remove="Authentication/**;Webhooks/**" />
-  </ItemGroup>
-
 </Project>

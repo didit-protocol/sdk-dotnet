@@ -266,8 +266,9 @@ Server-side login with PKCE:
 var pkce = Authentication.CreatePkce();
 var state = Authentication.CreateState();
 var nonce = Authentication.CreateNonce();
-// redirect to the issuer's authorize URL with pkce.Challenge, "S256", state and nonce ...
-var tokens = await auth.ExchangeCodeAsync(code, pkce.Verifier, redirectUri);
+var authorize = (await auth.GetDiscoveryDocumentAsync()).AuthorizationEndpoint;
+// redirect to authorize with response_type=code, redirect_uri, code_challenge=pkce.CodeChallenge, code_challenge_method=S256, state and nonce
+var tokens = await auth.ExchangeCodeAsync(code, pkce.CodeVerifier, redirectUri);
 var idClaims = await auth.VerifyIdTokenAsync(tokens.IdToken!, nonce, audience: "your-application-id");
 var refreshed = await auth.RefreshAsync(tokens.RefreshToken!); // serialise refreshes per session: a reused refresh token revokes it
 ```

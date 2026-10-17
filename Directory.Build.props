@@ -18,6 +18,6 @@
     <RepositoryUrl>https://github.com/didit-protocol/sdk-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <!-- Managed by release-please (see release-please-config.json). -->
-    <Version>0.1.0</Version>
+    <Version>0.1.0</Version> <!-- x-release-please-version -->
   </PropertyGroup>
 </Project>
