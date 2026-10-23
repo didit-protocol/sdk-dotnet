@@ -57,7 +57,7 @@ namespace Didit
         /// version <c>v3</c> it has the shape of <c>GET /v3/session/{id}/decision/</c>; older versions send fewer fields.
         /// <c>null</c> when absent or unreadable; the raw value is always in <see cref="DiditEvent.Payload"/>.
         /// </summary>
-        public SessionsRetrieveDecisionResponse? Decision { get; init; }
+        public SessionDecision? Decision { get; init; }
 
         /// <summary>What the user must resubmit (<c>resubmit_info</c>), sent when the status is <c>Resubmitted</c>.</summary>
         public JsonElement? ResubmitInfo { get; init; }
