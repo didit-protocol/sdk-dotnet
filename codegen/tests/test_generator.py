@@ -18,10 +18,26 @@ sys.path.insert(0, str(ROOT / "codegen"))
 from didit_codegen import csharp, model, names, spec  # noqa: E402
 
 
+OVERLAID_OPERATIONS = ("GET /v3/billing/balance/", "POST /v3/session/")
+
+
 def copy_openapi(target: Path) -> Path:
     (target / "openapi").mkdir(parents=True)
     for name in ("verification.json", "account.json", "overlay.json"):
         shutil.copy(ROOT / "openapi" / name, target / "openapi" / name)
+    # The tests below start from operations named through the overlay. Once upstream carries x-didit-sdk the
+    # sync deletes an overlay entry (docs/DESIGN.md section 3), so move the naming back here.
+    spec_path = target / "openapi" / "verification.json"
+    overlay_path = target / "openapi" / "overlay.json"
+    document = json.loads(spec_path.read_text("utf-8"))
+    overlay = json.loads(overlay_path.read_text("utf-8"))
+    for key in OVERLAID_OPERATIONS:
+        if key in overlay["operations"]:
+            continue
+        verb, path = key.split(" ", 1)
+        overlay["operations"][key] = document["paths"][path][verb.lower()].pop("x-didit-sdk")
+    spec_path.write_text(json.dumps(document), "utf-8")
+    overlay_path.write_text(json.dumps(overlay), "utf-8")
     return target
 
 
@@ -184,7 +200,11 @@ class ModelTests(unittest.TestCase):
         for dotted, files, required in (
             ("sessions.imports.create", {"file"}, set()),
             ("database_validation.validate", {"selfie"}, {"issuing_state"}),
-            ("customization.update", {"image_square", "image_rectangular", "image_favicon"}, set()),
+            (
+                "customization.update",
+                {"image_square", "image_rectangular", "image_rectangular_dark", "image_favicon"},
+                set(),
+            ),
         ):
             op = self.by_name[dotted]
             self.assertEqual(op.body.content_type, "multipart/form-data", dotted)
