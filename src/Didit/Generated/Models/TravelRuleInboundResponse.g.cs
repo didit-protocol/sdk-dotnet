@@ -21,19 +21,19 @@ namespace Didit
         public string? TransactionId { get; init; }
 
         /// <summary>
-        /// Didit-generated txn_id for the sunrise transaction.
+        /// txn_id of the inbound transaction: Didit-generated when Didit created the transaction, or your own when an unclaimed deposit was reused.
         /// </summary>
         [JsonPropertyName("txn_id")]
         public string? TxnId { get; init; }
 
         /// <summary>
-        /// true when a new transaction was minted (HTTP 201); false when an existing unclaimed deposit was reused (HTTP 200).
+        /// true when this call registered the transfer (HTTP 201); false when a transfer for the same txid and wallet_address already existed (HTTP 200).
         /// </summary>
         [JsonPropertyName("created")]
         public bool? Created { get; init; }
 
         /// <summary>
-        /// Full transfer object returned by the ownership-confirmation and finish/cancel endpoints. originator_data/beneficiary_data are omitted while PII is masked (see description).
+        /// Full transfer object returned by the ownership-confirmation and finish/cancel endpoints. While an inbound transfer's wallet ownership is unconfirmed, the counterparty's <c>originator_data</c> and <c>beneficiary_data</c> come back masked (the first letter of each word is kept; the wallet, chain and VASP routing stay readable) and <c>data_masked</c> is true.
         /// </summary>
         [JsonPropertyName("travel_rule")]
         public TravelRuleTransferDetail? TravelRule { get; init; }

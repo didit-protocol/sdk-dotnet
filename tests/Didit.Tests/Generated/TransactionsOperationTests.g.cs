@@ -20,7 +20,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"environment\": \"live\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"zone_id\": \"Europe/Madrid\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"direction\": \"OUTBOUND\", \"status\": \"APPROVED\", \"source\": \"LIVE\", \"amount\": \"1500\", \"currency\": \"EUR\", \"currency_type\": \"fiat\", \"amount_in_default_currency\": \"1620.45\", \"default_currency_code\": \"USD\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"payment_txn_id\": null, \"score\": 0, \"severity\": null, \"decision_reason_code\": null, \"decision_reason_label\": null, \"vendor_data\": \"user-12345\", \"metadata\": {\"subject\": {\"entity_type\": \"individual\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"address\": {}, \"institution_details\": {}, \"device_context\": {}}, \"counterparty\": {}}, \"props\": {}, \"tags\": [], \"parties\": [{\"uuid\": \"b1111111-2222-4333-8444-555555555555\", \"role\": \"APPLICANT\", \"entity_type\": \"individual\", \"kind\": \"USER\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"first_name\": null, \"last_name\": null, \"country_code\": null, \"dob\": null, \"address\": {}, \"institution_info\": {}, \"device\": {}, \"external_party_snapshot\": null}], \"payment_methods\": [], \"documents\": [], \"activities\": [{\"uuid\": \"d4e5f6a7-8901-4bcd-9ef0-123456789abc\", \"activity_type\": \"TRANSACTION_CREATED\", \"source\": \"TRANSACTION\", \"status\": \"APPROVED\", \"title\": \"withdrawal\", \"description\": \"Transaction recorded.\", \"metadata\": {}, \"occurred_at\": \"2026-05-17T08:42:11Z\"}], \"alerts\": [], \"rule_runs\": [], \"provider_results\": [], \"travel_rule\": null, \"network_snapshot\": null, \"remediation\": null, \"cost_breakdown\": null}");
+            handler.Enqueue(201, "{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"environment\": \"live\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"zone_id\": \"Europe/Madrid\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"direction\": \"OUTBOUND\", \"status\": \"APPROVED\", \"source\": \"LIVE\", \"amount\": \"1500\", \"currency\": \"EUR\", \"currency_type\": \"fiat\", \"amount_in_default_currency\": \"1620.45\", \"default_currency_code\": \"USD\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"payment_txn_id\": null, \"score\": 0, \"severity\": null, \"decision_reason_code\": null, \"decision_reason_label\": null, \"vendor_data\": \"user-12345\", \"metadata\": {\"subject\": {\"entity_type\": \"individual\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"address\": {}, \"institution_details\": {}, \"device_context\": {}}, \"counterparty\": {}}, \"props\": {}, \"tags\": [], \"parties\": [{\"uuid\": \"b1111111-2222-4333-8444-555555555555\", \"role\": \"APPLICANT\", \"entity_type\": \"individual\", \"kind\": \"USER\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"first_name\": null, \"last_name\": null, \"country_code\": null, \"dob\": null, \"address\": {}, \"institution_info\": {}, \"device\": {}, \"external_party_snapshot\": null}], \"payment_methods\": [], \"documents\": [], \"activities\": [{\"uuid\": \"d4e5f6a7-8901-4bcd-9ef0-123456789abc\", \"activity_type\": \"TRANSACTION_CREATED\", \"source\": \"TRANSACTION\", \"status\": \"APPROVED\", \"title\": \"withdrawal\", \"description\": \"Transaction recorded.\", \"metadata\": {}, \"occurred_at\": \"2026-05-17T08:42:11Z\"}], \"alerts\": [], \"rule_runs\": [], \"provider_results\": [], \"travel_rule\": null, \"network_snapshot\": null, \"remediation\": null, \"action_required\": null, \"cost_breakdown\": null}");
             using var client = TestClients.Create(handler);
             var result = await client.Transactions.CreateAsync(new TransactionsCreateParams { TransactionId = "your-txn-2026-05-17-001", TransactionAt = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), TimeZone = "sample-time_zone", TransactionCategory = new TransactionsCreateParamsTransactionCategory("finance"), TransactionDetails = new TransactionsCreateParamsTransactionDetails { Direction = new TransactionsCreateParamsTransactionDetailsDirection("inbound"), Amount = 1.5, Currency = "EUR" }, Subject = new TransactionsCreateParamsSubject { VendorData = "user-12345", FullName = "Maria Garcia" }, IncludeCryptoScreening = true });
 
@@ -61,19 +61,40 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Transactions_GeneratePdf()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, new byte[] { 37, 80, 68, 70 }, "application/pdf", new Dictionary<string, string> { ["Content-Disposition"] = "attachment; filename=\"report.bin\"" });
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.GeneratePdfAsync("transaction_uuid-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/transactions/transaction_uuid-1/pdf/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);
+            Assert.Equal("application/pdf", result.ContentType);
+            Assert.Equal("report.bin", result.FileName);
+        }
+
+        [Fact]
         public async Task Transactions_List()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"total_transactions\": 1, \"results\": [{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"status\": \"IN_REVIEW\", \"direction\": \"OUTBOUND\", \"amount\": \"1500\", \"currency\": \"EUR\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"created_at\": \"2026-05-17T08:42:11Z\", \"score\": 78, \"severity\": \"HIGH\", \"decision_reason_code\": \"WALLET_HIGH_RISK\", \"decision_reason_label\": \"Destination wallet flagged as high risk\", \"tags\": [{\"uuid\": \"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\", \"name\": \"Manual review\", \"color\": \"#F59E0B\", \"description\": null, \"source\": \"custom\"}], \"subject_name\": \"Maria Garcia\", \"subject_vendor_data\": \"user-12345\", \"counterparty_name\": null, \"counterparty_vendor_data\": null, \"counterparty_country\": null, \"subject_country\": null, \"assigned_to_name\": \"Alex Reviewer\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"total_transactions\": 1, \"results\": [{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"status\": \"IN_REVIEW\", \"direction\": \"OUTBOUND\", \"amount\": \"1500\", \"currency\": \"EUR\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"created_at\": \"2026-05-17T08:42:11Z\", \"score\": 78, \"severity\": \"HIGH\", \"decision_reason_code\": \"WALLET_HIGH_RISK\", \"decision_reason_label\": \"Destination wallet flagged as high risk\", \"tags\": [{\"uuid\": \"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\", \"name\": \"Manual review\", \"color\": \"#F59E0B\", \"description\": null, \"source\": \"custom\"}], \"subject_name\": \"Maria Garcia\", \"subject_vendor_data\": \"user-12345\", \"counterparty_name\": null, \"counterparty_vendor_data\": null, \"counterparty_country\": null, \"subject_country\": null, \"assigned_to_name\": \"Alex Reviewer\", \"travel_rule_status\": null, \"travel_rule\": null}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Transactions.ListAsync(new TransactionsListParams { Limit = 1L, Offset = 1L });
+            var result = await client.Transactions.ListAsync(new TransactionsListParams { Limit = 1L, Offset = 1L, TravelRuleStatus = "sample-travel_rule_status" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("GET", request.Method);
             Assert.Equal("verification.didit.me", request.Uri.Host);
             Assert.Equal("/v3/transactions/", request.Path);
-            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal("?limit=1&offset=1&travel_rule_status=sample-travel_rule_status", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
@@ -122,11 +143,75 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Transactions_ListRelated()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"abcdef99-3456-4890-abcd-ef1234567890\", \"transaction_number\": 4087, \"txn_id\": \"your-txn-2026-10-02-017\", \"transaction_type\": \"finance\", \"action_type\": \"deposit\", \"status\": \"APPROVED\", \"source\": \"LIVE\", \"direction\": \"INBOUND\", \"amount\": \"250\", \"currency\": \"EUR\", \"currency_type\": \"fiat\", \"preferred_currency_amount\": \"270.08\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Card top-up\", \"txn_date\": \"2026-10-02T14:10:00Z\", \"created_at\": \"2026-10-02T14:10:03.512244Z\", \"score\": 12, \"severity\": \"LOW\", \"decision_reason_code\": null, \"decision_reason_label\": null, \"tags\": [], \"subject_name\": \"Maria Garcia\", \"subject_vendor_data\": \"user-12345\", \"subject_type\": \"user\", \"subject_uuid\": \"e1111111-2222-4333-8444-555555555555\", \"counterparty_name\": null, \"counterparty_vendor_data\": null, \"counterparty_country\": null, \"subject_country\": \"ESP\", \"assigned_to_name\": null, \"travel_rule_status\": null, \"application_id\": \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\", \"application_name\": \"Production app\", \"organization_id\": \"11111111-2222-3333-4444-555555555555\", \"organization_name\": \"Example Org\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.ListRelatedAsync("transaction_id-1", new TransactionsListRelatedParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/transactions/transaction_id-1/related/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Transactions_Notes_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"uuid\": \"c1111111-2222-4333-8444-555555555555\", \"note\": \"Customer confirmed the withdrawal by phone.\", \"actor_email\": null, \"actor_name\": null, \"metadata\": {\"mentioned_emails\": [\"analyst@example.com\"]}, \"created_at\": \"2026-10-16T10:05:12.481203Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.Notes.CreateAsync("transaction_id-1", new TransactionsNotesCreateParams { Note = "sample-note", MentionedEmails = new string[] { "user@example.com" } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/transactions/transaction_id-1/notes/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"note\": \"sample-note\", \"mentioned_emails\": [\"user@example.com\"]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("c1111111-2222-4333-8444-555555555555", result.Uuid);
+        }
+
+        [Fact]
+        public async Task Transactions_Notes_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 3, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"c1111111-2222-4333-8444-555555555555\", \"note\": \"Customer confirmed the withdrawal by phone.\", \"actor_email\": null, \"actor_name\": null, \"metadata\": {\"mentioned_emails\": [\"analyst@example.com\"]}, \"created_at\": \"2026-10-16T10:05:12.481203Z\"}, {\"uuid\": \"c2222222-3333-4444-8555-666666666666\", \"note\": \"Status changed from IN_REVIEW to APPROVED. Reason: Source of funds verified\", \"actor_email\": \"reviewer@example.com\", \"actor_name\": \"Alex Reviewer\", \"metadata\": {\"type\": \"status_change\", \"previous_status\": \"IN_REVIEW\", \"new_status\": \"APPROVED\", \"reason_code\": \"SOF_VERIFIED\", \"reason_label\": \"Source of funds verified\"}, \"created_at\": \"2026-10-15T17:22:40.103911Z\"}, {\"uuid\": \"c3333333-4444-4555-8666-777777777777\", \"note\": \"Large withdrawal to a new wallet: check the source of funds.\", \"actor_email\": null, \"actor_name\": \"Rule Engine\", \"metadata\": {\"rule_uuid\": \"d1111111-2222-4333-8444-555555555555\", \"source\": \"rule_action\"}, \"created_at\": \"2026-10-15T08:42:12.004518Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.Notes.ListAsync("transaction_id-1", new TransactionsNotesListParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/transactions/transaction_id-1/notes/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(3, result.Results.Count);
+            Assert.Equal(3L, result.Count);
+        }
+
+        [Fact]
         public async Task Transactions_Retrieve()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"environment\": \"live\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"zone_id\": \"Europe/Madrid\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"direction\": \"OUTBOUND\", \"status\": \"IN_REVIEW\", \"source\": \"LIVE\", \"amount\": \"1500\", \"currency\": \"EUR\", \"currency_type\": \"fiat\", \"amount_in_default_currency\": \"1620.45\", \"default_currency_code\": \"USD\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"payment_txn_id\": null, \"score\": 78, \"severity\": \"HIGH\", \"decision_reason_code\": \"WALLET_HIGH_RISK\", \"decision_reason_label\": \"Destination wallet flagged as high risk\", \"vendor_data\": \"user-12345\", \"metadata\": {\"subject\": {\"entity_type\": \"individual\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"address\": {}, \"institution_details\": {}, \"device_context\": {}}, \"counterparty\": {}}, \"props\": {\"order_id\": \"ord-9988\"}, \"tags\": [], \"parties\": [{\"uuid\": \"b1111111-2222-4333-8444-555555555555\", \"role\": \"APPLICANT\", \"entity_type\": \"individual\", \"kind\": \"USER\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"first_name\": null, \"last_name\": null, \"country_code\": null, \"dob\": null, \"address\": {}, \"institution_info\": {}, \"device\": {}, \"external_party_snapshot\": null}], \"payment_methods\": [], \"documents\": [], \"activities\": [], \"alerts\": [{\"uuid\": \"a7b8c9d0-1234-4abc-9def-567890abcdef\", \"title\": \"Destination wallet flagged as high risk\", \"description\": \"Provider risk score exceeded the configured threshold.\", \"severity\": \"HIGH\", \"status\": \"OPEN\", \"source\": \"RULE\", \"metadata\": {}, \"created_at\": \"2026-05-17T08:42:12Z\", \"due_at\": null}], \"rule_runs\": [], \"provider_results\": [], \"travel_rule\": null, \"network_snapshot\": null, \"remediation\": null, \"cost_breakdown\": null}");
+            handler.Enqueue(200, "{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"environment\": \"live\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"zone_id\": \"Europe/Madrid\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"direction\": \"OUTBOUND\", \"status\": \"IN_REVIEW\", \"source\": \"LIVE\", \"amount\": \"1500\", \"currency\": \"EUR\", \"currency_type\": \"fiat\", \"amount_in_default_currency\": \"1620.45\", \"default_currency_code\": \"USD\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"payment_txn_id\": null, \"score\": 78, \"severity\": \"HIGH\", \"decision_reason_code\": \"WALLET_HIGH_RISK\", \"decision_reason_label\": \"Destination wallet flagged as high risk\", \"vendor_data\": \"user-12345\", \"metadata\": {\"subject\": {\"entity_type\": \"individual\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"address\": {}, \"institution_details\": {}, \"device_context\": {}}, \"counterparty\": {}}, \"props\": {\"order_id\": \"ord-9988\"}, \"tags\": [], \"parties\": [{\"uuid\": \"b1111111-2222-4333-8444-555555555555\", \"role\": \"APPLICANT\", \"entity_type\": \"individual\", \"kind\": \"USER\", \"vendor_data\": \"user-12345\", \"full_name\": \"Maria Garcia\", \"first_name\": null, \"last_name\": null, \"country_code\": null, \"dob\": null, \"address\": {}, \"institution_info\": {}, \"device\": {}, \"external_party_snapshot\": null}], \"payment_methods\": [], \"documents\": [], \"activities\": [], \"alerts\": [{\"uuid\": \"a7b8c9d0-1234-4abc-9def-567890abcdef\", \"title\": \"Destination wallet flagged as high risk\", \"description\": \"Provider risk score exceeded the configured threshold.\", \"severity\": \"HIGH\", \"status\": \"OPEN\", \"source\": \"RULE\", \"metadata\": {}, \"created_at\": \"2026-05-17T08:42:12Z\", \"due_at\": null}], \"rule_runs\": [], \"provider_results\": [], \"travel_rule\": null, \"network_snapshot\": null, \"remediation\": null, \"action_required\": null, \"cost_breakdown\": null}");
             using var client = TestClients.Create(handler);
             var result = await client.Transactions.RetrieveAsync("transaction_id-1");
 
@@ -342,9 +427,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"created_at\": \"2026-01-02T03:04:05Z\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\", \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [], \"mismatched_names\": []}, \"reason\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\"}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [\"sample\"], \"mismatched_names\": [\"sample\"]}, \"data_match\": {\"matched\": true, \"mismatched_fields\": [\"name\"], \"fields\": {\"key\": {\"result\": \"matched\", \"strictness\": \"NONE\"}}}, \"mismatched_fields\": [\"sample\"], \"data_unmasked\": {\"at\": \"2026-01-02T03:04:05Z\", \"reason\": \"ownership_confirmed\", \"actor\": \"sample\"}, \"data_masked\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"delivery\": {\"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"INTERNAL\", \"attempts\": 1, \"last_error\": \"sample\", \"next_attempt_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\"}, \"discovery\": [{\"step\": \"internal_address_book\", \"outcome\": \"match\", \"reason\": \"sample\", \"vasp\": \"sample\", \"rail\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\"}], \"reason\": \"sample\", \"next_actions\": [{\"action\": \"select_counterparty_vasp\", \"url\": \"sample\"}], \"chain_details\": {\"chain\": \"sample\", \"shape\": \"utxo\", \"originator\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"beneficiary\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"utxo\": {\"inputs\": [{}], \"outputs\": [{}], \"change_output_indexes\": [1], \"beneficiary_output_index\": 1}, \"lightning\": {\"key\": \"value\"}, \"warnings\": [\"declared_originator_not_an_input\"], \"not_applicable_reason\": \"LIGHTNING_NO_PAYEE_IDENTIFIER\"}}");
             using var client = TestClients.Create(handler);
-            var result = await client.Transactions.TravelRule.ConfirmOwnershipAsync("transaction_id-1", new TravelRuleOwnershipConfirmRequest { Confirmed = true });
+            var result = await client.Transactions.TravelRule.ConfirmOwnershipAsync("transaction_id-1", new TravelRuleOwnershipConfirmRequest { Confirmed = true, WalletAddress = "sample-wallet_address" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -354,9 +439,72 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"confirmed\": true}", request.BodyText);
+            JsonAssert.Equivalent("{\"confirmed\": true, \"wallet_address\": \"sample-wallet_address\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("sample", result.Uuid);
+        }
+
+        [Fact]
+        public async Task Transactions_TravelRule_CreateMessage()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(201, "{\"id\": \"sample\", \"kind\": \"MESSAGE\", \"direction\": \"INBOUND\", \"author\": \"sample\", \"body\": \"sample\", \"requested_documents\": [\"sample\"], \"reply_to\": \"sample\", \"fulfilled_at\": \"2026-01-02T03:04:05Z\", \"attachment\": {\"uuid\": \"sample\", \"label\": \"sample\", \"note\": \"sample\", \"uploaded_by\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"files\": [{\"uuid\": \"sample\", \"file_url\": \"sample\", \"original_filename\": \"sample\", \"file_size\": 1}]}, \"created_at\": \"2026-01-02T03:04:05Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.TravelRule.CreateMessageAsync("transaction_id-1", new TravelRuleMessageCreateRequest { Kind = new TravelRuleMessageCreateRequestKind("MESSAGE"), Body = "sample-body", RequestedDocuments = new string[] { "sample-requested_documents" }, ReplyTo = "11111111-2222-3333-4444-555555555555" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/transactions/transaction_id-1/travel-rule/messages/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Id);
+        }
+
+        [Fact]
+        public async Task Transactions_TravelRule_ListMessages()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "[{\"id\": \"sample\", \"kind\": \"MESSAGE\", \"direction\": \"INBOUND\", \"author\": \"sample\", \"body\": \"sample\", \"requested_documents\": [\"sample\"], \"reply_to\": \"sample\", \"fulfilled_at\": \"2026-01-02T03:04:05Z\", \"attachment\": {\"uuid\": \"sample\", \"label\": \"sample\", \"note\": \"sample\", \"uploaded_by\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"files\": [{}]}, \"created_at\": \"2026-01-02T03:04:05Z\"}]");
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.TravelRule.ListMessagesAsync("transaction_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/transactions/transaction_id-1/travel-rule/messages/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result);
+        }
+
+        [Fact]
+        public async Task Transactions_TravelRule_TriggerTestVaspInbound()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(201, "{\"transaction_id\": \"sample\", \"txn_id\": \"sample\", \"scenario\": \"sample\", \"travel_rule_status\": \"sample\", \"detail\": \"sample\", \"test_vasp\": true, \"travel_rule\": {\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\", \"name_match\": {}, \"reason\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1, \"dd_score_breakdown\": {\"key\": {}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\"}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [\"sample\"], \"mismatched_names\": [\"sample\"]}, \"data_match\": {\"matched\": true, \"mismatched_fields\": [\"name\"], \"fields\": {\"key\": {}}}, \"mismatched_fields\": [\"sample\"], \"data_unmasked\": {\"at\": \"2026-01-02T03:04:05Z\", \"reason\": \"ownership_confirmed\", \"actor\": \"sample\"}, \"data_masked\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"delivery\": {\"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"INTERNAL\", \"attempts\": 1, \"last_error\": \"sample\", \"next_attempt_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\"}, \"discovery\": [{\"step\": \"internal_address_book\", \"outcome\": \"match\", \"reason\": \"sample\", \"vasp\": \"sample\", \"rail\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\"}], \"reason\": \"sample\", \"next_actions\": [{\"action\": \"select_counterparty_vasp\", \"url\": \"sample\"}], \"chain_details\": {\"chain\": \"sample\", \"shape\": \"utxo\", \"originator\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"beneficiary\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"utxo\": {\"inputs\": [], \"outputs\": [], \"change_output_indexes\": [], \"beneficiary_output_index\": 1}, \"lightning\": {\"key\": \"value\"}, \"warnings\": [\"declared_originator_not_an_input\"], \"not_applicable_reason\": \"LIGHTNING_NO_PAYEE_IDENTIFIER\"}}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Transactions.TravelRule.TriggerTestVaspInboundAsync(new TravelRuleTestVaspInboundRequest { BeneficiaryWalletAddress = "sample-beneficiary_wallet_address", Scenario = new TravelRuleTestVaspInboundRequestScenario("accept"), Chain = "sample-chain", Amount = "sample-amount", Currency = "sample-currency", Reference = "sample-reference" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/test-vasp/inbound/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"beneficiary_wallet_address\": \"sample-beneficiary_wallet_address\", \"scenario\": \"accept\", \"chain\": \"sample-chain\", \"amount\": \"sample-amount\", \"currency\": \"sample-currency\", \"reference\": \"sample-reference\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.TransactionId);
         }
 
         [Fact]
@@ -364,9 +512,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"created_at\": \"2026-01-02T03:04:05Z\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\", \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [], \"mismatched_names\": []}, \"reason\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\"}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [\"sample\"], \"mismatched_names\": [\"sample\"]}, \"data_match\": {\"matched\": true, \"mismatched_fields\": [\"name\"], \"fields\": {\"key\": {\"result\": \"matched\", \"strictness\": \"NONE\"}}}, \"mismatched_fields\": [\"sample\"], \"data_unmasked\": {\"at\": \"2026-01-02T03:04:05Z\", \"reason\": \"ownership_confirmed\", \"actor\": \"sample\"}, \"data_masked\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"delivery\": {\"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"INTERNAL\", \"attempts\": 1, \"last_error\": \"sample\", \"next_attempt_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\"}, \"discovery\": [{\"step\": \"internal_address_book\", \"outcome\": \"match\", \"reason\": \"sample\", \"vasp\": \"sample\", \"rail\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\"}], \"reason\": \"sample\", \"next_actions\": [{\"action\": \"select_counterparty_vasp\", \"url\": \"sample\"}], \"chain_details\": {\"chain\": \"sample\", \"shape\": \"utxo\", \"originator\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"beneficiary\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"utxo\": {\"inputs\": [{}], \"outputs\": [{}], \"change_output_indexes\": [1], \"beneficiary_output_index\": 1}, \"lightning\": {\"key\": \"value\"}, \"warnings\": [\"declared_originator_not_an_input\"], \"not_applicable_reason\": \"LIGHTNING_NO_PAYEE_IDENTIFIER\"}}");
             using var client = TestClients.Create(handler);
-            var result = await client.Transactions.TravelRule.UpdateTransferAsync("transaction_id-1", new TravelRuleTransferPatchRequest { PaymentTxnId = "sample-payment_txn_id", Action = new TravelRuleTransferPatchRequestAction("cancel") });
+            var result = await client.Transactions.TravelRule.UpdateTransferAsync("transaction_id-1", new TravelRuleTransferPatchRequest { PaymentTxnId = "sample-payment_txn_id", Action = new TravelRuleTransferPatchRequestAction("cancel"), ComplianceEmail = "user@example.com", WalletAddress = "sample-wallet_address", Memo = "sample-memo" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -376,7 +524,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"payment_txn_id\": \"sample-payment_txn_id\", \"action\": \"cancel\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"payment_txn_id\": \"sample-payment_txn_id\", \"action\": \"cancel\", \"compliance_email\": \"user@example.com\", \"wallet_address\": \"sample-wallet_address\", \"memo\": \"sample-memo\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("sample", result.Uuid);
         }

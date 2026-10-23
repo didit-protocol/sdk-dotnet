@@ -42,7 +42,7 @@ namespace Didit.Resources
         /// Top up credits
         /// </summary>
         /// <remarks>
-        /// Add credits via a hosted Stripe Checkout session ($50 minimum); not available on annual plans. Redirect the customer to the returned <c>checkout_session_url</c>.
+        /// Add credits via a hosted checkout session ($50 minimum); not available on annual plans. Redirect the customer to the returned <c>checkout_session_url</c>.
         /// <para/>
         /// <c>POST /v3/billing/top-up/</c> (<c>billing.top_up</c>).
         /// </remarks>

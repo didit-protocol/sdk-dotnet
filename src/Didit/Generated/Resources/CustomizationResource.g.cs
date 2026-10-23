@@ -99,7 +99,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            if (parameters.ImageSquare.IsSet || parameters.ImageRectangular.IsSet || parameters.ImageFavicon.IsSet)
+            if (parameters.ImageSquare.IsSet || parameters.ImageRectangular.IsSet || parameters.ImageRectangularDark.IsSet || parameters.ImageFavicon.IsSet)
             {
                 var form = new MultipartRequestBody();
                 if (parameters.ColorPrimary.IsSet)
@@ -202,6 +202,10 @@ namespace Didit.Resources
                 {
                     form.Add("delete_logo_rectangular", parameters.DeleteLogoRectangular.Value);
                 }
+                if (parameters.DeleteLogoRectangularDark.IsSet)
+                {
+                    form.Add("delete_logo_rectangular_dark", parameters.DeleteLogoRectangularDark.Value);
+                }
                 if (parameters.DeleteFavicon.IsSet)
                 {
                     form.Add("delete_favicon", parameters.DeleteFavicon.Value);
@@ -213,6 +217,10 @@ namespace Didit.Resources
                 if (parameters.ImageRectangular.IsSet)
                 {
                     form.Add("image_rectangular", parameters.ImageRectangular.Value);
+                }
+                if (parameters.ImageRectangularDark.IsSet)
+                {
+                    form.Add("image_rectangular_dark", parameters.ImageRectangularDark.Value);
                 }
                 if (parameters.ImageFavicon.IsSet)
                 {

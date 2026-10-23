@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of TravelRuleTransferDetailRail.
+    /// The rail the transfer was routed over, or null when no rail was selected (for example below the threshold, a self-hosted counterparty wallet, an after-deposit registration, or no reachable counterparty). INTERNAL means both sides are Didit applications; EMAIL means the counterparty was reached by an emailed pickup link. TEST_VASP means the Didit Test VASP answered a sandbox application's transfer. Over GTR, VERIFYVASP and SYGNA, Didit reads the counterparty's answer from the network's response or by polling it every 5 minutes. TRUST only sends, so a TRUST transfer stays AWAITING_COUNTERPARTY until it expires. A network rail is used only when you have connected your own membership for that network. It is chosen after the transaction create returns, so it is null in that response.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(TravelRuleTransferDetailRail.EnumJsonConverter))]
@@ -32,8 +32,20 @@ namespace Didit
         /// <summary><c>GTR</c></summary>
         public static TravelRuleTransferDetailRail Gtr { get; } = new("GTR");
 
+        /// <summary><c>TRUST</c></summary>
+        public static TravelRuleTransferDetailRail Trust { get; } = new("TRUST");
+
+        /// <summary><c>VERIFYVASP</c></summary>
+        public static TravelRuleTransferDetailRail Verifyvasp { get; } = new("VERIFYVASP");
+
+        /// <summary><c>SYGNA</c></summary>
+        public static TravelRuleTransferDetailRail Sygna { get; } = new("SYGNA");
+
         /// <summary><c>EMAIL</c></summary>
         public static TravelRuleTransferDetailRail Email { get; } = new("EMAIL");
+
+        /// <summary><c>TEST_VASP</c></summary>
+        public static TravelRuleTransferDetailRail TestVasp { get; } = new("TEST_VASP");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

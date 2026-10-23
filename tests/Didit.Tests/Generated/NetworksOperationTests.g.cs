@@ -16,6 +16,29 @@ namespace Didit.Tests.Generated
     public sealed class NetworksOperationTests
     {
         [Fact]
+        public async Task Networks_AddTag()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"uuid\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"network_id\": \"N-0042\", \"name\": null, \"status\": \"in_review\", \"risk\": {\"score\": 82, \"band\": \"high\", \"bar\": 0.82}, \"pattern_types\": [\"exact_same_device\", \"same_email\"], \"signal_types\": [\"device\", \"email\"], \"member_counts\": {\"total\": 3, \"users\": 3, \"businesses\": 0, \"transaction_parties\": 0}, \"member_status\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"not_completed\": 1}, \"signal_coverage\": {\"device\": {\"signals\": 1, \"subjects\": 3, \"coverage\": 1.0}, \"email\": {\"signals\": 1, \"subjects\": 2, \"coverage\": 0.6667}}, \"first_activity_at\": \"2026-10-01T09:12:44Z\", \"last_activity_at\": \"2026-10-12T16:03:10Z\", \"stats\": {\"members\": {\"total\": 3, \"users\": 3, \"businesses\": 0, \"transaction_parties\": 0}, \"member_status\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"not_completed\": 1}, \"signals\": {\"total\": 2, \"by_type\": {\"device\": {\"signals\": 1, \"subjects\": 3, \"coverage\": 1.0}, \"email\": {\"signals\": 1, \"subjects\": 2, \"coverage\": 0.6667}}}}, \"fraud_tags\": [], \"risk_signals\": {\"residential_proxy_reuse\": {\"detected\": false, \"signal_count\": 0, \"max_subject_count\": 0}, \"email_intelligence\": {\"enriched_signal_count\": 1, \"high_risk_count\": 0, \"social_profile_count\": 0}, \"phone_intelligence\": {\"enriched_signal_count\": 0, \"high_risk_count\": 0}}, \"reviewed_at\": \"2026-10-12T16:30:00Z\", \"reviewed_by\": \"reviewer@example.com\", \"review_reason\": \"Shared device across three new accounts.\", \"notes_count\": 0, \"sharing_mode\": \"global\", \"cross_org_available\": true, \"cross_org_unavailable_reason\": null, \"tags\": [{\"uuid\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\", \"name\": \"SUSPICIOUS\", \"color\": \"#6366F1\", \"source\": \"custom\", \"added_by\": null, \"added_at\": \"2026-10-13T08:15:00Z\"}], \"outcomes\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"total\": 3}, \"patterns\": [{\"type\": \"background\", \"score\": 0.8125, \"members\": 3, \"reason\": null, \"computed_at\": \"2026-10-13T08:00:00Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Networks.AddTagAsync("network_uuid-1", new NetworkTagRequest { TagUuid = "11111111-2222-3333-4444-555555555555" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/networks/network_uuid-1/tags/add/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"tag_uuid\": \"11111111-2222-3333-4444-555555555555\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3fa85f64-5717-4562-b3fc-2c963f66afa6", result.Uuid);
+            Assert.Equal(0L, result.NotesCount);
+        }
+
+        [Fact]
         public async Task Networks_DownloadReport()
         {
             var handler = new MockHttpHandler();
@@ -43,13 +66,13 @@ namespace Didit.Tests.Generated
             // Response body from the spec's schema.
             handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"sample\", \"network_id\": \"sample\", \"name\": \"sample\", \"status\": \"active\", \"risk\": {\"score\": 1, \"band\": \"low\", \"bar\": 1.5}, \"pattern_types\": [\"exact_same_device\"], \"signal_types\": [\"ip_address\"], \"member_counts\": {\"key\": \"value\"}, \"member_status\": {\"key\": \"value\"}, \"signal_coverage\": {\"key\": \"value\"}, \"first_activity_at\": \"2026-01-02T03:04:05Z\", \"last_activity_at\": \"2026-01-02T03:04:05Z\"}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Networks.ListAsync(new NetworksListParams { Status = "sample-status", SignalType = "sample-signal_type", PatternType = "sample-pattern_type", RiskBand = "sample-risk_band", MinSize = 1L, MaxSize = 1L, DateFrom = "2026-01-02", DateTo = "2026-01-02", Q = "sample-q", Ordering = "sample-ordering", Limit = 1L, Offset = 1L });
+            var result = await client.Networks.ListAsync(new NetworksListParams { Status = "sample-status", Scope = new NetworksListParamsScope("identity"), SignalType = "sample-signal_type", PatternType = "sample-pattern_type", RiskBand = "sample-risk_band", MinSize = 1L, MaxSize = 1L, Assignee = "sample-assignee", Priority = "sample-priority", RiskMin = 1L, HasCase = true, DateFrom = "2026-01-02", DateTo = "2026-01-02", Q = "sample-q", Ordering = "sample-ordering", Limit = 1L, Offset = 1L, Summary = true });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("GET", request.Method);
             Assert.Equal("verification.didit.me", request.Uri.Host);
             Assert.Equal("/v3/organization/org-test/application/app-test/networks/", request.Path);
-            Assert.Equal("?status=sample-status&signal_type=sample-signal_type&pattern_type=sample-pattern_type&risk_band=sample-risk_band&min_size=1&max_size=1&date_from=2026-01-02&date_to=2026-01-02&q=sample-q&ordering=sample-ordering&limit=1&offset=1", request.Query);
+            Assert.Equal("?status=sample-status&scope=identity&signal_type=sample-signal_type&pattern_type=sample-pattern_type&risk_band=sample-risk_band&min_size=1&max_size=1&assignee=sample-assignee&priority=sample-priority&risk_min=1&has_case=true&date_from=2026-01-02&date_to=2026-01-02&q=sample-q&ordering=sample-ordering&limit=1&offset=1&summary=true", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
@@ -159,11 +182,34 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Networks_RemoveTag()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"uuid\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"network_id\": \"N-0042\", \"name\": null, \"status\": \"in_review\", \"risk\": {\"score\": 82, \"band\": \"high\", \"bar\": 0.82}, \"pattern_types\": [\"exact_same_device\", \"same_email\"], \"signal_types\": [\"device\", \"email\"], \"member_counts\": {\"total\": 3, \"users\": 3, \"businesses\": 0, \"transaction_parties\": 0}, \"member_status\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"not_completed\": 1}, \"signal_coverage\": {\"device\": {\"signals\": 1, \"subjects\": 3, \"coverage\": 1.0}, \"email\": {\"signals\": 1, \"subjects\": 2, \"coverage\": 0.6667}}, \"first_activity_at\": \"2026-10-01T09:12:44Z\", \"last_activity_at\": \"2026-10-12T16:03:10Z\", \"stats\": {\"members\": {\"total\": 3, \"users\": 3, \"businesses\": 0, \"transaction_parties\": 0}, \"member_status\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"not_completed\": 1}, \"signals\": {\"total\": 2, \"by_type\": {\"device\": {\"signals\": 1, \"subjects\": 3, \"coverage\": 1.0}, \"email\": {\"signals\": 1, \"subjects\": 2, \"coverage\": 0.6667}}}}, \"fraud_tags\": [], \"risk_signals\": {\"residential_proxy_reuse\": {\"detected\": false, \"signal_count\": 0, \"max_subject_count\": 0}, \"email_intelligence\": {\"enriched_signal_count\": 1, \"high_risk_count\": 0, \"social_profile_count\": 0}, \"phone_intelligence\": {\"enriched_signal_count\": 0, \"high_risk_count\": 0}}, \"reviewed_at\": \"2026-10-12T16:30:00Z\", \"reviewed_by\": \"reviewer@example.com\", \"review_reason\": \"Shared device across three new accounts.\", \"notes_count\": 0, \"sharing_mode\": \"global\", \"cross_org_available\": true, \"cross_org_unavailable_reason\": null, \"tags\": [], \"outcomes\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"total\": 3}, \"patterns\": [{\"type\": \"background\", \"score\": 0.8125, \"members\": 3, \"reason\": null, \"computed_at\": \"2026-10-13T08:00:00Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Networks.RemoveTagAsync("network_uuid-1", new NetworkTagRequest { TagUuid = "11111111-2222-3333-4444-555555555555" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/networks/network_uuid-1/tags/remove/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"tag_uuid\": \"11111111-2222-3333-4444-555555555555\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3fa85f64-5717-4562-b3fc-2c963f66afa6", result.Uuid);
+            Assert.Equal(0L, result.NotesCount);
+        }
+
+        [Fact]
         public async Task Networks_Retrieve()
         {
             var handler = new MockHttpHandler();
-            // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"network_id\": \"sample\", \"name\": \"sample\", \"status\": \"active\", \"risk\": {\"score\": 1, \"band\": \"low\", \"bar\": 1.5}, \"pattern_types\": [\"exact_same_device\"], \"signal_types\": [\"ip_address\"], \"member_counts\": {\"key\": \"value\"}, \"member_status\": {\"key\": \"value\"}, \"signal_coverage\": {\"key\": \"value\"}, \"first_activity_at\": \"2026-01-02T03:04:05Z\", \"last_activity_at\": \"2026-01-02T03:04:05Z\", \"stats\": {\"key\": \"value\"}, \"fraud_tags\": [{\"key\": \"value\"}], \"risk_signals\": {\"key\": \"value\"}, \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_by\": \"sample\", \"review_reason\": \"sample\", \"notes_count\": 1}");
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"uuid\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"network_id\": \"N-0042\", \"name\": null, \"status\": \"in_review\", \"risk\": {\"score\": 82, \"band\": \"high\", \"bar\": 0.82}, \"pattern_types\": [\"exact_same_device\", \"same_email\"], \"signal_types\": [\"device\", \"email\"], \"member_counts\": {\"total\": 3, \"users\": 3, \"businesses\": 0, \"transaction_parties\": 0}, \"member_status\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"not_completed\": 1}, \"signal_coverage\": {\"device\": {\"signals\": 1, \"subjects\": 3, \"coverage\": 1.0}, \"email\": {\"signals\": 1, \"subjects\": 2, \"coverage\": 0.6667}}, \"first_activity_at\": \"2026-10-01T09:12:44Z\", \"last_activity_at\": \"2026-10-12T16:03:10Z\", \"stats\": {\"members\": {\"total\": 3, \"users\": 3, \"businesses\": 0, \"transaction_parties\": 0}, \"member_status\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"not_completed\": 1}, \"signals\": {\"total\": 2, \"by_type\": {\"device\": {\"signals\": 1, \"subjects\": 3, \"coverage\": 1.0}, \"email\": {\"signals\": 1, \"subjects\": 2, \"coverage\": 0.6667}}}}, \"fraud_tags\": [], \"risk_signals\": {\"residential_proxy_reuse\": {\"detected\": false, \"signal_count\": 0, \"max_subject_count\": 0}, \"email_intelligence\": {\"enriched_signal_count\": 1, \"high_risk_count\": 0, \"social_profile_count\": 0}, \"phone_intelligence\": {\"enriched_signal_count\": 0, \"high_risk_count\": 0}}, \"reviewed_at\": \"2026-10-12T16:30:00Z\", \"reviewed_by\": \"reviewer@example.com\", \"review_reason\": \"Shared device across three new accounts.\", \"notes_count\": 0, \"sharing_mode\": \"global\", \"cross_org_available\": true, \"cross_org_unavailable_reason\": null, \"tags\": [{\"uuid\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\", \"name\": \"SUSPICIOUS\", \"color\": \"#6366F1\", \"source\": \"custom\", \"added_by\": null, \"added_at\": \"2026-10-13T08:15:00Z\"}], \"outcomes\": {\"approved\": 1, \"declined\": 1, \"in_review\": 0, \"total\": 3}, \"patterns\": [{\"type\": \"background\", \"score\": 0.8125, \"members\": 3, \"reason\": null, \"computed_at\": \"2026-10-13T08:00:00Z\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Networks.RetrieveAsync("network_uuid-1");
 
@@ -176,8 +222,8 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
             Assert.NotNull(result);
-            Assert.Equal("sample", result.Uuid);
-            Assert.Equal(1L, result.NotesCount);
+            Assert.Equal("3fa85f64-5717-4562-b3fc-2c963f66afa6", result.Uuid);
+            Assert.Equal(0L, result.NotesCount);
         }
 
         [Fact]
@@ -226,16 +272,16 @@ namespace Didit.Tests.Generated
         public async Task Networks_RetrieveTimeline()
         {
             var handler = new MockHttpHandler();
-            // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"results\": [{\"event_type\": \"sample\", \"occurred_at\": \"2026-01-02T03:04:05Z\", \"label\": \"sample\", \"metadata\": {\"key\": \"value\"}}]}");
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"results\": [{\"event_type\": \"network_detected\", \"occurred_at\": \"2026-10-01T09:12:44Z\", \"label\": \"Network detected\", \"metadata\": {\"network_id\": \"N-0042\"}}, {\"event_type\": \"signal_observed\", \"occurred_at\": \"2026-10-12T16:03:10Z\", \"label\": \"device observed\", \"metadata\": {\"signal_type\": \"device\", \"subject_count\": 3, \"is_hub\": false}}, {\"event_type\": \"network_in_review\", \"occurred_at\": \"2026-10-12T16:30:00Z\", \"label\": \"Network in_review\", \"metadata\": {\"reason\": \"Shared device across three new accounts.\"}}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Networks.RetrieveTimelineAsync("network_uuid-1");
+            var result = await client.Networks.RetrieveTimelineAsync("network_uuid-1", new NetworksRetrieveTimelineParams { Contract = new NetworksRetrieveTimelineParamsContract("2"), Limit = 1L, Cursor = "sample-cursor", EventType = new NetworksRetrieveTimelineParamsEventType[] { new NetworksRetrieveTimelineParamsEventType("network_detected") } });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("GET", request.Method);
             Assert.Equal("verification.didit.me", request.Uri.Host);
             Assert.Equal("/v3/organization/org-test/application/app-test/networks/network_uuid-1/timeline/", request.Path);
-            Assert.Equal("", request.Query);
+            Assert.Equal("?contract=2&limit=1&cursor=sample-cursor&event_type=network_detected", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);

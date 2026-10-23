@@ -15,28 +15,70 @@ namespace Didit
     public sealed record SessionsPreviewResubmissionResponse
     {
         /// <summary>
-        /// The &lt;c&gt;recipient&lt;/c&gt; field.
+        /// The address the email goes to. An empty string when no address is known for the person: then no email can be sent and <c>preview_token</c> is empty too. Pass it as <c>email_address</c> when you confirm.
         /// </summary>
         [JsonPropertyName("recipient")]
         public string? Recipient { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;sender&lt;/c&gt; field.
+        /// Where <c>recipient</c> comes from. <c>request</c>: the <c>email_address</c> you passed. <c>email_verification</c>: the address the person verified in an email verification step of the flow. <c>contact_details</c>: the address given in <c>contact_details</c> when the session was created. An empty string when there is no address.
+        /// </summary>
+        [JsonPropertyName("recipient_source")]
+        public SessionsPreviewResubmissionResponseRecipientSource? RecipientSource { get; init; }
+
+        /// <summary>
+        /// The <c>From</c> header the email goes out with.
         /// </summary>
         [JsonPropertyName("sender")]
         public string? Sender { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;subject&lt;/c&gt; field.
+        /// The display name part of <c>sender</c>.
+        /// </summary>
+        [JsonPropertyName("sender_name")]
+        public string? SenderName { get; init; }
+
+        /// <summary>
+        /// The address part of <c>sender</c>.
+        /// </summary>
+        [JsonPropertyName("sender_email")]
+        public string? SenderEmail { get; init; }
+
+        /// <summary>
+        /// <c>customer</c>: the email goes out from your application's verified sender domain (white label). <c>didit</c>: it goes out from Didit's own sender.
+        /// </summary>
+        [JsonPropertyName("sender_kind")]
+        public SessionsPreviewResubmissionResponseSenderKind? SenderKind { get; init; }
+
+        /// <summary>
+        /// The subject line exactly as it is sent.
         /// </summary>
         [JsonPropertyName("subject")]
         public string? Subject { get; init; }
 
         /// <summary>
-        /// Rendered email. Inline image attachments use data URLs for preview.
+        /// The email's HTML exactly as it is sent, with its logo embedded as a data URL. Render it in a sandboxed frame, never directly in your application DOM.
         /// </summary>
         [JsonPropertyName("html")]
         public string? Html { get; init; }
+
+        /// <summary>
+        /// The language the email is written in. English (<c>en</c>) when the <c>email_language</c> you asked for is not offered.
+        /// </summary>
+        [JsonPropertyName("language")]
+        public string? Language { get; init; }
+
+        /// <summary>
+        /// Whether confirming the change with <c>send_email: true</c> sends this email. <c>false</c> when <c>not_sent_reason</c> is set.
+        /// </summary>
+        [JsonPropertyName("will_be_sent")]
+        public bool? WillBeSent { get; init; }
+
+        /// <summary>
+        /// Why confirming would send no email, or <c>null</c> when it will be sent. <c>no_user_action</c>: every selected step runs without the person, so the resubmission finishes on its own and no email goes out. <c>no_recipient</c>: no address is known for the person and you passed none. <c>sandbox</c>: a sandbox session whose recipient has not opted into sandbox email delivery, so the send is only simulated.
+        /// </summary>
+        [JsonPropertyName("not_sent_reason")]
+        public SessionsPreviewResubmissionResponseNotSentReason? NotSentReason { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;nodes_to_resubmit&lt;/c&gt; field.
@@ -51,7 +93,7 @@ namespace Didit
         public bool? RequiresUserAction { get; init; }
 
         /// <summary>
-        /// Signed confirmation receipt, valid for 15 minutes. Pass it as email_preview_token when confirming the same message.
+        /// Signed receipt for this exact email, valid for 15 minutes. Pass it as <c>email_preview_token</c> to [Update Session Status](/sessions-api/update-status). An empty string when there is no recipient.
         /// </summary>
         [JsonPropertyName("preview_token")]
         public string? PreviewToken { get; init; }

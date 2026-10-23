@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Full transfer object returned by the ownership-confirmation and finish/cancel endpoints. originator_data/beneficiary_data are omitted while PII is masked (see description).
+    /// Full transfer object returned by the ownership-confirmation and finish/cancel endpoints. While an inbound transfer's wallet ownership is unconfirmed, the counterparty's <c>originator_data</c> and <c>beneficiary_data</c> come back masked (the first letter of each word is kept; the wallet, chain and VASP routing stay readable) and <c>data_masked</c> is true.
     /// </summary>
     public sealed record TravelRuleTransferDetail
     {
@@ -33,7 +33,7 @@ namespace Didit
         public TravelRuleTransferDetailDirection? Direction { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;rail&lt;/c&gt; field.
+        /// The rail the transfer was routed over, or null when no rail was selected (for example below the threshold, a self-hosted counterparty wallet, an after-deposit registration, or no reachable counterparty). INTERNAL means both sides are Didit applications; EMAIL means the counterparty was reached by an emailed pickup link. TEST_VASP means the Didit Test VASP answered a sandbox application's transfer. Over GTR, VERIFYVASP and SYGNA, Didit reads the counterparty's answer from the network's response or by polling it every 5 minutes. TRUST only sends, so a TRUST transfer stays AWAITING_COUNTERPARTY until it expires. A network rail is used only when you have connected your own membership for that network. It is chosen after the transaction create returns, so it is null in that response.
         /// </summary>
         [JsonPropertyName("rail")]
         public TravelRuleTransferDetailRail? Rail { get; init; }
@@ -81,22 +81,82 @@ namespace Didit
         public TravelRuleTransferDetailCounterpartyVasp? CounterpartyVasp { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;originator_data&lt;/c&gt; field.
+        /// Originator party. For an inbound transfer the counterparty's values are masked until ownership is confirmed.
         /// </summary>
         [JsonPropertyName("originator_data")]
         public JsonElement? OriginatorData { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;beneficiary_data&lt;/c&gt; field.
+        /// Beneficiary party. For an inbound transfer the counterparty's values are masked until ownership is confirmed.
         /// </summary>
         [JsonPropertyName("beneficiary_data")]
         public JsonElement? BeneficiaryData { get; init; }
+
+        /// <summary>
+        /// The name comparison that decided the transfer, or null until one ran. While the parties are masked, and on the other customer's copy of an INTERNAL exchange, <c>transfer_name</c>, <c>compared_name</c>, <c>matched_names</c> and <c>mismatched_names</c> are hidden. <c>score</c> and <c>matched</c> can disagree: <c>matched</c> follows the strictness, <c>score</c> is the similarity of the two full names.
+        /// </summary>
+        [JsonPropertyName("name_match")]
+        public TravelRuleNameMatch? NameMatch { get; init; }
+
+        /// <summary>
+        /// Field-by-field comparison of the transfer's party data with what the other side knows about the wallet holder. It names fields and results, never values, so it stays readable while the counterparty's data is masked. Null until a comparison ran.
+        /// </summary>
+        [JsonPropertyName("data_match")]
+        public TravelRuleDataMatch? DataMatch { get; init; }
+
+        /// <summary>
+        /// Shortcut for <c>data_match.mismatched_fields</c>. Empty when nothing differs.
+        /// </summary>
+        [JsonPropertyName("mismatched_fields")]
+        public IReadOnlyList<string>? MismatchedFields { get; init; }
+
+        /// <summary>
+        /// Audit record of the moment the counterparty's data was unmasked. Null while the data is still masked, and for outbound transfers.
+        /// </summary>
+        [JsonPropertyName("data_unmasked")]
+        public TravelRuleDataUnmasked? DataUnmasked { get; init; }
+
+        /// <summary>
+        /// True while the counterparty's personal data is masked in this response.
+        /// </summary>
+        [JsonPropertyName("data_masked")]
+        public bool? DataMasked { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;created_at&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
+
+        /// <summary>
+        /// Where the latest message this transfer owes the other side stands. Null when the transfer never owed one (for example below <c>threshold_amount</c>, a declared self-hosted wallet, or a sunrise registration).
+        /// </summary>
+        [JsonPropertyName("delivery")]
+        public TravelRuleDelivery? Delivery { get; init; }
+
+        /// <summary>
+        /// How Didit looked for the counterparty, one entry per step that ran. Empty when no discovery ran, for example on an inbound transfer.
+        /// </summary>
+        [JsonPropertyName("discovery")]
+        public IReadOnlyList<TravelRuleDiscoveryStep>? Discovery { get; init; }
+
+        /// <summary>
+        /// Why a <c>COUNTERPARTY_VASP_NOT_FOUND</c> or <c>COUNTERPARTY_VASP_NOT_REACHABLE</c> transfer is stuck; <c>""</c> for any other status. A failed delivery decides it first, on <c>COUNTERPARTY_VASP_NOT_REACHABLE</c> only: <c>email_undeliverable</c> (the mail provider refused the compliance email and no address is left to try: when it was sent, on a reminder, or as a permanent bounce reported later) or <c>delivery_failed</c> (the rail that was delivering failed for good: a network rail refused the message or ran out of retries, a <c>TRP</c> identity host did not answer, or the counterparty's <c>TRP</c> host did not accept the inquiry). Otherwise the <c>discovery</c> trace decides it: <c>awaiting_end_user</c> (no step named a counterparty Didit can reach), <c>directory_match_no_route</c> (a step named a directory VASP that has no route), <c>picked_member_without_proven_wallet</c> (the end user picked a Didit customer that has not proven control of the wallet), or <c>no_directory_match</c> when the trace gives no other reason. A resend moves the transfer on, so the reason clears. See [Why a transfer is stuck](/transaction-monitoring/travel-rule#why-a-transfer-is-stuck).
+        /// </summary>
+        [JsonPropertyName("reason")]
+        public string? Reason { get; init; }
+
+        /// <summary>
+        /// What moves the transfer on; <c>[]</c> for any status but <c>COUNTERPARTY_VASP_NOT_FOUND</c> or <c>COUNTERPARTY_VASP_NOT_REACHABLE</c>. <c>email_undeliverable</c> offers <c>update_compliance_email</c>, then <c>resend</c>. <c>delivery_failed</c> offers <c>resend</c>. A discovery reason offers <c>select_counterparty_vasp</c>, <c>declare_self_hosted</c>, <c>add_vasp_hint</c> and <c>resend</c>.
+        /// </summary>
+        [JsonPropertyName("next_actions")]
+        public IReadOnlyList<TravelRuleNextAction>? NextActions { get; init; }
+
+        /// <summary>
+        /// How the transfer's chain names its two wallets, when that is more than one address paying another. Empty (<c>{}</c>) for an account-chain transfer (EVM, Solana, Tron), where the two addresses are the wallets. Matching, routing and the address book read the wallets from here first.
+        /// </summary>
+        [JsonPropertyName("chain_details")]
+        public TravelRuleChainDetails? ChainDetails { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

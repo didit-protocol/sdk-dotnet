@@ -41,7 +41,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<KybListShareholdersResponse> ListShareholdersAsync(KybListShareholdersParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<KybListShareholdersResponse> ListShareholdersAsync(KYBRegistryCandidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListShareholdersAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -66,7 +66,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<KybListUbosResponse> ListUbosAsync(KybListUbosParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<KybListUbosResponse> ListUbosAsync(KYBRegistryCandidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListUbosAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -81,6 +81,10 @@ namespace Didit.Resources
         /// Search billing. Successful searches using a paid company-data source cost USD 0.50 per request, regardless of candidate count. Empty results, failures and results served only by other sources are not charged. The applicable price is reserved before searching; insufficient balance returns 403 with code <c>insufficient_credits</c>. Contract rates apply where agreed, and an unconfigured contract search rate returns 403. Sandbox searches are free. Repeating a successful search can incur another charge; callback delivery does not add a charge. Profile retrieval is billed separately. This search fee also applies to v2. Candidates always come back with <c>fetch_status: "pending"</c>: the full company data is only fetched (and billed) on select.
         /// <para/>
         /// <c>kyb_response_id</c> is ephemeral. It is a per-search handle, not a stable company id. Select promptly after searching and re-search to get a fresh handle instead of storing it.
+        /// <para/>
+        /// <c>tier</c> picks the provider chain. <c>tier</c> names the registry tier the search runs on: <c>basic</c> (the default, the Lite chain), <c>shareholders</c> or <c>ubo</c>. The search uses the provider chain that serves that tier, and it is not always the same chain the Lite search reads, so an empty Lite search is not proof that the registry does not hold the company — search again at the tier you need. A country that does not offer the tier you name is searched at the highest tier it offers up to that one. Retrieve the candidate from the endpoint that sells that tier: <c>POST /v3/kyb/select/</c> (Lite), <c>POST /v3/kyb/shareholders/</c> or <c>POST /v3/kyb/ubo/</c>.
+        /// <para/>
+        /// Authentication. <c>POST /v3/kyb/search/</c> (and <c>/v2/</c>) takes your application's API key in the <c>x-api-key</c> header. The hosted <c>POST /v1/kyb/search/</c> is the session-authenticated route a hosted verification flow calls: it answers <c>403</c> to an API key and takes no <c>tier</c> — the workflow's KYB registry configuration picks the chain.
         /// <para/>
         /// Two modes.
         /// - *Synchronous (default):* the API polls the registry until the search resolves and returns the final candidate list (<c>search_resolved: true</c>).
@@ -118,7 +122,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<KybSelectResponse> SelectAsync(KybSelectParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<KybSelectResponse> SelectAsync(KYBRegistryCandidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.SelectAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -139,7 +143,7 @@ namespace Didit.Resources
         /// KYB registry company with shareholders (standalone)
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="KybResource.ListShareholdersAsync"/>.</remarks>
-        public Task<DiditResponse<KybListShareholdersResponse>> ListShareholdersAsync(KybListShareholdersParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<KybListShareholdersResponse>> ListShareholdersAsync(KYBRegistryCandidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -160,7 +164,7 @@ namespace Didit.Resources
         /// KYB registry company with ultimate beneficial owners (standalone)
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="KybResource.ListUbosAsync"/>.</remarks>
-        public Task<DiditResponse<KybListUbosResponse>> ListUbosAsync(KybListUbosParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<KybListUbosResponse>> ListUbosAsync(KYBRegistryCandidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -202,7 +206,7 @@ namespace Didit.Resources
         /// KYB registry company select — Lite tier (standalone)
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="KybResource.SelectAsync"/>.</remarks>
-        public Task<DiditResponse<KybSelectResponse>> SelectAsync(KybSelectParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<KybSelectResponse>> SelectAsync(KYBRegistryCandidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {

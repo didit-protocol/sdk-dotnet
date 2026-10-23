@@ -33,7 +33,7 @@ namespace Didit
         public string? ClientId { get; init; }
 
         /// <summary>
-        /// Long-lived secret (also called <c>client_secret</c>). Use as the <c>x-api-key</c> header for every call to <c>https://verification.didit.me/v3/...</c> (sessions, workflows, AML, etc.). Treat as a credential; never expose client-side.
+        /// Long-lived secret (also called <c>client_secret</c>). Use as the <c>x-api-key</c> header for every call to <c>https://verification.didit.me/v3/...</c> (sessions, workflows, AML, etc.). Treat as a credential; never expose client-side. New keys start with <c>sk_live_</c> (live application) or <c>sk_test_</c> (sandbox application), followed by 43 URL-safe characters (letters, digits, <c>-</c> and <c>_</c>). Keys created before this format have no prefix and keep working unchanged.
         /// </summary>
         [JsonPropertyName("api_key")]
         public string? ApiKey { get; init; }
@@ -73,6 +73,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
+
+        /// <summary>
+        /// The application's products. Always all three, in this order: <c>identity</c>, <c>transactions</c>, <c>authentication</c>. A new application has <c>identity</c> enabled with every module on, and <c>transactions</c> and <c>authentication</c> disabled. Read-only: a <c>products</c> key in a create or update body is ignored.
+        /// </summary>
+        [JsonPropertyName("products")]
+        public IReadOnlyList<ApplicationProduct>? Products { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

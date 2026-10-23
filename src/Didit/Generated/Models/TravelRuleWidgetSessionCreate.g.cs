@@ -15,16 +15,18 @@ namespace Didit
     public sealed record TravelRuleWidgetSessionCreate
     {
         /// <summary>
-        /// The wallet address to verify.
+        /// The wallet address to verify. Optional; when empty, the address must be supplied when a proof is started.
         /// </summary>
         [JsonPropertyName("wallet_address")]
-        public required string WalletAddress { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> WalletAddress { get; set; }
 
         /// <summary>
-        /// Chain identifier for the address, e.g. "ethereum", "bitcoin", "solana".
+        /// Chain token for the address, for example <c>ETH</c>, <c>BTC</c> or <c>SOL</c>. Use the same token as in your wallet address book. Message signing and the Satoshi test are offered only for a supported chain.
         /// </summary>
         [JsonPropertyName("chain")]
-        public required string Chain { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Chain { get; set; }
 
         /// <summary>
         /// Name of the wallet holder, used for the beneficiary name match.
@@ -45,7 +47,7 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("transaction_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<string> TransactionId { get; set; }
+        public Optional<string?> TransactionId { get; set; }
 
         /// <summary>
         /// Optional. A deposit address you control; supplying it enables the SATOSHI_TEST proof method.
@@ -55,7 +57,7 @@ namespace Didit
         public Optional<string> SatoshiDepositAddress { get; set; }
 
         /// <summary>
-        /// Optional. Where the widget returns the customer after completion.
+        /// Optional. Absolute http(s) URL where the widget returns the customer after completion.
         /// </summary>
         [JsonPropertyName("callback_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

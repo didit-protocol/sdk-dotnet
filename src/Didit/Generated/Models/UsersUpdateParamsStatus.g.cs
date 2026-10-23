@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// User lifecycle status. Changing it via this generic PATCH does NOT sync the system blocklist or record a status-change activity; prefer the update-status endpoint.
+    /// User lifecycle status. A change is recorded as a <c>STATUS_CHANGED</c> activity, and <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist (moving away from <c>BLOCKED</c> removes that entry).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(UsersUpdateParamsStatus.EnumJsonConverter))]

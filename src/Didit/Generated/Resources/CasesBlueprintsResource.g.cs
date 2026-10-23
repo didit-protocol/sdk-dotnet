@@ -81,7 +81,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<CasesBlueprintsInstallPresetsResponse> InstallPresetsAsync(CasesBlueprintsInstallPresetsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CaseBlueprintPresetInstallResult> InstallPresetsAsync(CasesBlueprintsInstallPresetsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.InstallPresetsAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -298,7 +298,7 @@ namespace Didit.Resources
         /// Install blueprint presets
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.InstallPresetsAsync"/>.</remarks>
-        public Task<DiditResponse<CasesBlueprintsInstallPresetsResponse>> InstallPresetsAsync(CasesBlueprintsInstallPresetsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<CaseBlueprintPresetInstallResult>> InstallPresetsAsync(CasesBlueprintsInstallPresetsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/presets/install/")
             {
@@ -310,7 +310,7 @@ namespace Didit.Resources
             {
                 request.Body = JsonRequestBody.Create(parameters);
             }
-            return _pipeline.SendJsonAsync<CasesBlueprintsInstallPresetsResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<CaseBlueprintPresetInstallResult>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

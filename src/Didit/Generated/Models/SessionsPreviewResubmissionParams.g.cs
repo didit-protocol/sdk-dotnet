@@ -22,10 +22,11 @@ namespace Didit
         public Optional<IReadOnlyList<SessionsPreviewResubmissionParamsNodesToResubmit>> NodesToResubmit { get; set; }
 
         /// <summary>
-        /// Recipient shown in the preview. No email is sent.
+        /// Optional. Send the email to this address instead of the person's own. Without it, the recipient is the address the person verified in the flow, else the one given in <c>contact_details</c>. No email is sent by this call.
         /// </summary>
         [JsonPropertyName("email_address")]
-        public required string EmailAddress { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> EmailAddress { get; set; }
 
         /// <summary>
         /// Language for the notification email. Accepts any string at schema level; unsupported codes silently fall back to English (<c>en</c>).

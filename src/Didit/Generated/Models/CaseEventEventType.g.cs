@@ -50,6 +50,12 @@ namespace Didit
         /// <summary><c>NOTE_ADDED</c></summary>
         public static CaseEventEventType NoteAdded { get; } = new("NOTE_ADDED");
 
+        /// <summary><c>NOTE_PINNED</c></summary>
+        public static CaseEventEventType NotePinned { get; } = new("NOTE_PINNED");
+
+        /// <summary><c>NOTE_UNPINNED</c></summary>
+        public static CaseEventEventType NoteUnpinned { get; } = new("NOTE_UNPINNED");
+
         /// <summary><c>PRIORITY_CHANGED</c></summary>
         public static CaseEventEventType PriorityChanged { get; } = new("PRIORITY_CHANGED");
 
@@ -91,6 +97,21 @@ namespace Didit
 
         /// <summary><c>APPROVAL_INVALIDATED</c></summary>
         public static CaseEventEventType ApprovalInvalidated { get; } = new("APPROVAL_INVALIDATED");
+
+        /// <summary><c>CUSTOMER_REQUEST</c></summary>
+        public static CaseEventEventType CustomerRequest { get; } = new("CUSTOMER_REQUEST");
+
+        /// <summary><c>STAGE_CHANGED</c></summary>
+        public static CaseEventEventType StageChanged { get; } = new("STAGE_CHANGED");
+
+        /// <summary><c>TEAM_CHANGED</c></summary>
+        public static CaseEventEventType TeamChanged { get; } = new("TEAM_CHANGED");
+
+        /// <summary><c>CHECKER_ASSIGNED</c></summary>
+        public static CaseEventEventType CheckerAssigned { get; } = new("CHECKER_ASSIGNED");
+
+        /// <summary><c>CHECKER_UNASSIGNED</c></summary>
+        public static CaseEventEventType CheckerUnassigned { get; } = new("CHECKER_UNASSIGNED");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

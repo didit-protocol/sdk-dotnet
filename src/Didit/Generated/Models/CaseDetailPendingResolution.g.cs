@@ -27,7 +27,7 @@ namespace Didit
         public string? ResolutionNotes { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;maker_email&lt;/c&gt; field.
+        /// Email of the officer who submitted the resolution. Null when an API key submitted it: that resolution has no recorded maker, so approve and reject-approval return 403 for every caller.
         /// </summary>
         [JsonPropertyName("maker_email")]
         public string? MakerEmail { get; init; }
@@ -37,6 +37,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("maker_name")]
         public string? MakerName { get; init; }
+
+        /// <summary>
+        /// Member user uuid of the officer who submitted the resolution. Null when an API key submitted it. That member cannot be named as <c>checker</c>.
+        /// </summary>
+        [JsonPropertyName("maker_user_id")]
+        public string? MakerUserId { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;maker_blueprint_id&lt;/c&gt; field.

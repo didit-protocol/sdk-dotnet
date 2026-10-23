@@ -20,6 +20,13 @@ namespace Didit
         [JsonPropertyName("status")]
         public required BusinessesUpdateStatusParamsStatus Status { get; set; }
 
+        /// <summary>
+        /// Why the status changed. Recorded on the status-change entry of the company's Activity in the Business Console, only when the status actually changes. Webhooks do not carry it.
+        /// </summary>
+        [JsonPropertyName("reason")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string?> Reason { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

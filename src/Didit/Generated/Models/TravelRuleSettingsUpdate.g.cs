@@ -43,7 +43,7 @@ namespace Didit
         public Optional<string> Jurisdiction { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;name_matching_strictness&lt;/c&gt; field.
+        /// <c>CONTAINS</c> accepts one name whose words all appear in the other.
         /// </summary>
         [JsonPropertyName("name_matching_strictness")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -64,25 +64,53 @@ namespace Didit
         public Optional<TravelRuleSettingsUpdateTimeoutOutcome> TimeoutOutcome { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;compliance_email&lt;/c&gt; field.
+        /// Compliance contact email for your VASP profile. The Didit network lists your profile only once this address is confirmed through an emailed link (POST /v3/travel-rule/settings/compliance-email/confirmation/); changing it needs a new confirmation.
         /// </summary>
         [JsonPropertyName("compliance_email")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> ComplianceEmail { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;is_discoverable&lt;/c&gt; field.
+        /// Whether your VASP profile can be listed in the Didit network: found in GET /v3/travel-rule/vasps/ by other Didit customers and reached on the INTERNAL rail. Listing also needs a live application, Travel Rule on, a legal name and a confirmed compliance email; didit_network says which are missing. Default true.
         /// </summary>
         [JsonPropertyName("is_discoverable")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<bool> IsDiscoverable { get; set; }
 
         /// <summary>
-        /// Decimal string. Minimum transfer amount that triggers a managed exchange.
+        /// Decimal string, zero or greater, in your application's default currency. Minimum transfer amount that triggers a managed exchange.
         /// </summary>
         [JsonPropertyName("threshold_amount")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> ThresholdAmount { get; set; }
+
+        /// <summary>
+        /// See the response field of the same name.
+        /// </summary>
+        [JsonPropertyName("ownership_validation_mode")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleSettingsUpdateOwnershipValidationMode> OwnershipValidationMode { get; set; }
+
+        /// <summary>
+        /// Decimal string, 0 or more.
+        /// </summary>
+        [JsonPropertyName("simplified_validation_threshold")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> SimplifiedValidationThreshold { get; set; }
+
+        /// <summary>
+        /// Merged per entity type: an entity type you leave out keeps its current choice. A choice that cannot meet the originator obligations of your <c>jurisdiction</c> regime (EU TFR or FATF Recommendation 16), an empty list included, is refused with <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("data_sharing_fields")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleDataSharingFields> DataSharingFields { get; set; }
+
+        /// <summary>
+        /// Merged per entity type, and per field inside it. A field that entity type does not compare (for example <c>date_of_birth</c> for <c>company</c>) is refused with <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("matching_rules")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleMatchingRules> MatchingRules { get; set; }
 
         /// <summary>
         /// The &lt;c&gt;inbound_auto_accept&lt;/c&gt; field.
@@ -118,6 +146,27 @@ namespace Didit
         [JsonPropertyName("vasp_attribution_enabled")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<bool> VaspAttributionEnabled { get; set; }
+
+        /// <summary>
+        /// Opt-in sanctions and adverse-media screening of counterparty VASPs, billed per screening at the Company AML Screening price. When on, Didit screens the counterparty an outbound exchange reaches (reusing a screening younger than 30 days) and you can screen one with POST /v3/travel-rule/vasps/{vasp_id}/screening/. Default false: nothing is screened or billed.
+        /// </summary>
+        [JsonPropertyName("counterparty_screening_enabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> CounterpartyScreeningEnabled { get; set; }
+
+        /// <summary>
+        /// HOLD, REJECT, PROCEED, or empty to follow timeout_outcome. See the response field of the same name.
+        /// </summary>
+        [JsonPropertyName("sunrise_policy")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleSettingsUpdateSunrisePolicy> SunrisePolicy { get; set; }
+
+        /// <summary>
+        /// HOLD, REJECT, PROCEED, or empty to follow timeout_outcome. See the response field of the same name.
+        /// </summary>
+        [JsonPropertyName("non_responsive_policy")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleSettingsUpdateNonResponsivePolicy> NonResponsivePolicy { get; set; }
 
         /// <summary>
         /// Networks opted out of platform membership. Does not disable your connected own memberships or provision unavailable networks.

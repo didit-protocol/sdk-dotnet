@@ -20,7 +20,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"secret_shared_key\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_at\": \"2026-05-17T10:00:00Z\", \"updated_at\": \"2026-05-17T10:00:00Z\", \"summary\": {\"total_deliveries\": 0, \"failed_deliveries\": 0, \"error_rate_percentage\": 0, \"min_response_time_ms\": null, \"avg_response_time_ms\": null, \"max_response_time_ms\": null, \"last_delivery_at\": null}}");
+            handler.Enqueue(201, "{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"secret_shared_key\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"secret_last4\": \"0xnQ\", \"previous_secret_expires_at\": null, \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_by_email\": null, \"created_by_name\": null, \"created_at\": \"2026-05-17T10:00:00Z\", \"updated_at\": \"2026-05-17T10:00:00Z\", \"health_status\": \"healthy\", \"failing_streak\": 0, \"failing_since\": null, \"last_success_at\": null, \"environment\": \"live\", \"summary\": {\"total_deliveries\": 0, \"failed_deliveries\": 0, \"error_rate_percentage\": 0, \"min_response_time_ms\": null, \"avg_response_time_ms\": null, \"max_response_time_ms\": null, \"last_delivery_at\": null, \"metrics_window_days\": 30}}");
             using var client = TestClients.Create(handler);
             var result = await client.Webhooks.Destinations.CreateAsync(new WebhooksDestinationsCreateParams { Label = "sample-label", Url = "https://example.com/callback", Enabled = true, WebhookVersion = new WebhooksDestinationsCreateParamsWebhookVersion("v1"), SubscribedEvents = new WebhookEvent[] { new WebhookEvent("status.updated") } });
 
@@ -35,6 +35,7 @@ namespace Didit.Tests.Generated
             JsonAssert.Equivalent("{\"label\": \"sample-label\", \"url\": \"https://example.com/callback\", \"enabled\": true, \"webhook_version\": \"v1\", \"subscribed_events\": [\"status.updated\"]}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("11111111-2222-3333-4444-555555555555", result.Uuid);
+            Assert.Equal(0L, result.FailingStreak);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "[{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"subscribed_events_count\": 2, \"deliveries_count\": 12453, \"failed_deliveries_count\": 14, \"average_response_time_ms\": 187, \"error_rate_percentage\": 0, \"last_delivery_at\": \"2026-05-17T09:21:18Z\", \"created_at\": \"2026-01-04T08:00:00Z\", \"updated_at\": \"2026-04-22T14:09:11Z\"}, {\"uuid\": \"22222222-3333-4444-5555-666666666666\", \"label\": \"Staging mirror\", \"url\": \"https://staging.yourapp.com/webhooks/didit\", \"enabled\": false, \"webhook_version\": \"v3\", \"subscribed_events\": [\"status.updated\"], \"subscribed_events_count\": 1, \"deliveries_count\": 0, \"failed_deliveries_count\": 0, \"average_response_time_ms\": null, \"error_rate_percentage\": 0, \"last_delivery_at\": null, \"created_at\": \"2026-03-12T10:15:02Z\", \"updated_at\": \"2026-03-12T10:15:02Z\"}]");
+            handler.Enqueue(200, "[{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"subscribed_events_count\": 2, \"deliveries_count\": 12453, \"failed_deliveries_count\": 14, \"average_response_time_ms\": 187, \"error_rate_percentage\": 0, \"last_delivery_at\": \"2026-05-17T09:21:18Z\", \"metrics_window_days\": 30, \"health_status\": \"healthy\", \"failing_streak\": 0, \"failing_since\": null, \"last_success_at\": \"2026-05-17T09:21:18Z\", \"environment\": \"live\", \"daily_points\": [{\"date\": \"2026-04-18\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-19\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-20\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-21\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-22\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-23\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-24\", \"total_deliveries\": 415, \"failed_deliveries\": 9}, {\"date\": \"2026-04-25\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-26\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-27\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-28\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-29\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-04-30\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-01\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-02\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-03\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-04\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-05\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-06\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-07\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-08\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-09\", \"total_deliveries\": 415, \"failed_deliveries\": 5}, {\"date\": \"2026-05-10\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-11\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-12\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-13\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-14\", \"total_deliveries\": 415, \"failed_deliveries\": 0}, {\"date\": \"2026-05-15\", \"total_deliveries\": 416, \"failed_deliveries\": 0}, {\"date\": \"2026-05-16\", \"total_deliveries\": 416, \"failed_deliveries\": 0}, {\"date\": \"2026-05-17\", \"total_deliveries\": 416, \"failed_deliveries\": 0}], \"secret_last4\": \"0xnQ\", \"created_by_email\": null, \"created_by_name\": null, \"created_at\": \"2026-01-04T08:00:00Z\", \"updated_at\": \"2026-04-22T14:09:11Z\"}, {\"uuid\": \"22222222-3333-4444-5555-666666666666\", \"label\": \"Staging mirror\", \"url\": \"https://staging.yourapp.com/webhooks/didit\", \"enabled\": false, \"webhook_version\": \"v3\", \"subscribed_events\": [\"status.updated\"], \"subscribed_events_count\": 1, \"deliveries_count\": 0, \"failed_deliveries_count\": 0, \"average_response_time_ms\": null, \"error_rate_percentage\": 0, \"last_delivery_at\": null, \"metrics_window_days\": 30, \"health_status\": \"healthy\", \"failing_streak\": 0, \"failing_since\": null, \"last_success_at\": null, \"environment\": \"live\", \"daily_points\": [{\"date\": \"2026-04-18\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-19\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-20\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-21\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-22\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-23\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-24\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-25\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-26\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-27\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-28\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-29\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-04-30\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-01\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-02\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-03\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-04\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-05\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-06\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-07\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-08\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-09\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-10\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-11\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-12\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-13\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-14\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-15\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-16\", \"total_deliveries\": 0, \"failed_deliveries\": 0}, {\"date\": \"2026-05-17\", \"total_deliveries\": 0, \"failed_deliveries\": 0}], \"secret_last4\": \"k9Qe\", \"created_by_email\": \"reviewer@example.com\", \"created_by_name\": \"Example Reviewer\", \"created_at\": \"2026-03-12T10:15:02Z\", \"updated_at\": \"2026-03-12T10:15:02Z\"}]");
             using var client = TestClients.Create(handler);
             var result = await client.Webhooks.Destinations.ListAsync();
 
@@ -76,11 +77,54 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Webhooks_Destinations_ListDeliveries()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 3, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"66666666-7777-8888-9999-000000000003\", \"session_id\": null, \"request_url\": \"https://yourapp.com/webhooks/didit\", \"response_status\": null, \"response_time_ms\": null, \"status\": \"APPROVED\", \"webhook_type\": \"transaction.created\", \"created_at\": \"2026-10-15T09:23:02.871190Z\"}, {\"uuid\": \"66666666-7777-8888-9999-000000000002\", \"session_id\": \"22222222-3333-4444-5555-666666666666\", \"request_url\": \"https://yourapp.com/webhooks/didit\", \"response_status\": 200, \"response_time_ms\": 143, \"status\": \"In Progress\", \"webhook_type\": \"status.updated\", \"created_at\": \"2026-10-15T09:22:19.104233Z\"}, {\"uuid\": \"66666666-7777-8888-9999-000000000001\", \"session_id\": \"22222222-3333-4444-5555-666666666666\", \"request_url\": \"https://yourapp.com/webhooks/didit\", \"response_status\": 503, \"response_time_ms\": 412, \"status\": \"In Progress\", \"webhook_type\": \"status.updated\", \"created_at\": \"2026-10-15T09:21:18.412345Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.Destinations.ListDeliveriesAsync("destination_uuid-1", new WebhooksDestinationsListDeliveriesParams { Limit = 1L, Offset = 1L, DateFrom = "2026-01-02", DateTo = "2026-01-02" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhook/destinations/destination_uuid-1/deliveries/", request.Path);
+            Assert.Equal("?limit=1&offset=1&date_from=2026-01-02&date_to=2026-01-02", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(3, result.Results.Count);
+            Assert.Equal(3L, result.Count);
+        }
+
+        [Fact]
+        public async Task Webhooks_Destinations_ResendDelivery()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"uuid\": \"66666666-7777-8888-9999-000000000004\", \"session_id\": \"22222222-3333-4444-5555-666666666666\", \"request_url\": \"https://yourapp.com/webhooks/didit\", \"response_status\": 200, \"response_time_ms\": 151, \"status\": \"In Progress\", \"webhook_type\": \"status.updated\", \"created_at\": \"2026-10-16T14:05:42.330981Z\", \"request_header\": \"{\\\"Content-Type\\\": \\\"application/json\\\", \\\"X-Signature\\\": \\\"b8eb1e376517ee0cad8ba98ff7f8fd35fc72eca231000963a96a335f82328835\\\", \\\"X-Signature-V2\\\": \\\"9efd2ce9ed1303e1d05273ef9608a59363ed9789a05253db4748b3e8e50cb109\\\", \\\"X-Signature-Simple\\\": \\\"bf3a9dc04b2c20ab539203b0cd5cca2a10f630bf62d8feb6d68d82af80f64774\\\", \\\"X-Timestamp\\\": \\\"1792159542\\\", \\\"User-Agent\\\": \\\"DiditWebhook/2.0 +https://didit.me\\\"}\", \"request_body\": \"{\\\"application_id\\\":\\\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\\\",\\\"created_at\\\":1792056057,\\\"environment\\\":\\\"live\\\",\\\"event_id\\\":\\\"33333333-4444-5555-6666-777777777777\\\",\\\"sandbox_scenario\\\":null,\\\"session_id\\\":\\\"22222222-3333-4444-5555-666666666666\\\",\\\"status\\\":\\\"In Progress\\\",\\\"timestamp\\\":1792159542,\\\"vendor_data\\\":\\\"user-123\\\",\\\"webhook_type\\\":\\\"status.updated\\\",\\\"workflow_id\\\":\\\"44444444-5555-6666-7777-888888888888\\\",\\\"workflow_version\\\":3}\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.Destinations.ResendDeliveryAsync("destination_uuid-1", "delivery_uuid-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhook/destinations/destination_uuid-1/deliveries/delivery_uuid-1/resend/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("66666666-7777-8888-9999-000000000004", result.Uuid);
+            Assert.Equal(200L, result.ResponseStatus);
+        }
+
+        [Fact]
         public async Task Webhooks_Destinations_Retrieve()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"secret_shared_key\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_at\": \"2026-01-04T08:00:00Z\", \"updated_at\": \"2026-04-22T14:09:11Z\", \"summary\": {\"total_deliveries\": 12453, \"failed_deliveries\": 14, \"error_rate_percentage\": 0, \"min_response_time_ms\": 41, \"avg_response_time_ms\": 187, \"max_response_time_ms\": 2103, \"last_delivery_at\": \"2026-05-17T09:21:18Z\"}}");
+            handler.Enqueue(200, "{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"secret_shared_key\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"secret_last4\": \"0xnQ\", \"previous_secret_expires_at\": null, \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_by_email\": null, \"created_by_name\": null, \"created_at\": \"2026-01-04T08:00:00Z\", \"updated_at\": \"2026-04-22T14:09:11Z\", \"health_status\": \"healthy\", \"failing_streak\": 0, \"failing_since\": null, \"last_success_at\": \"2026-05-17T09:21:18Z\", \"environment\": \"live\", \"summary\": {\"total_deliveries\": 12453, \"failed_deliveries\": 14, \"error_rate_percentage\": 0, \"min_response_time_ms\": 41, \"avg_response_time_ms\": 187, \"max_response_time_ms\": 2103, \"last_delivery_at\": \"2026-05-17T09:21:18Z\", \"metrics_window_days\": 30}}");
             using var client = TestClients.Create(handler);
             var result = await client.Webhooks.Destinations.RetrieveAsync("destination_uuid-1");
 
@@ -94,6 +138,49 @@ namespace Didit.Tests.Generated
             Assert.Empty(request.Body);
             Assert.NotNull(result);
             Assert.Equal("11111111-2222-3333-4444-555555555555", result.Uuid);
+            Assert.Equal(0L, result.FailingStreak);
+        }
+
+        [Fact]
+        public async Task Webhooks_Destinations_RetrieveAnalytics()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"summary\": {\"total_deliveries\": 1250, \"failed_deliveries\": 12, \"min_response_time_ms\": 38, \"avg_response_time_ms\": 164, \"max_response_time_ms\": 5004, \"error_rate_percentage\": 1}, \"points\": [{\"date\": \"2026-10-14\", \"total_deliveries\": 410, \"failed_deliveries\": 0, \"min_response_time_ms\": 38, \"avg_response_time_ms\": 152, \"max_response_time_ms\": 911}, {\"date\": \"2026-10-15\", \"total_deliveries\": 395, \"failed_deliveries\": 12, \"min_response_time_ms\": 41, \"avg_response_time_ms\": 190, \"max_response_time_ms\": 5004}, {\"date\": \"2026-10-16\", \"total_deliveries\": 445, \"failed_deliveries\": 0, \"min_response_time_ms\": 40, \"avg_response_time_ms\": 151, \"max_response_time_ms\": 1220}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.Destinations.RetrieveAnalyticsAsync("destination_uuid-1", new WebhooksDestinationsRetrieveAnalyticsParams { DateFrom = "2026-01-02", DateTo = "2026-01-02" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhook/destinations/destination_uuid-1/analytics/", request.Path);
+            Assert.Equal("?date_from=2026-01-02&date_to=2026-01-02", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Webhooks_Destinations_RetrieveDelivery()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"uuid\": \"66666666-7777-8888-9999-000000000001\", \"session_id\": \"22222222-3333-4444-5555-666666666666\", \"request_url\": \"https://yourapp.com/webhooks/didit\", \"response_status\": 503, \"response_time_ms\": 412, \"status\": \"In Progress\", \"webhook_type\": \"status.updated\", \"created_at\": \"2026-10-15T09:21:18.412345Z\", \"request_header\": \"{\\\"Content-Type\\\": \\\"application/json\\\", \\\"X-Signature\\\": \\\"a5e02a03404e1337a0198e6be15d34abbd053c658a0e51e5d0e78554213ef29b\\\", \\\"X-Signature-V2\\\": \\\"927e7cb770c94ce745939bff73f04aa200015f3bc64795ba46c2aaf78a6cedc5\\\", \\\"X-Signature-Simple\\\": \\\"e37b0d4c716c72bb5ae7127b9cc455d28ab4686e9e22312b4ec2327409a73302\\\", \\\"X-Timestamp\\\": \\\"1792056078\\\", \\\"User-Agent\\\": \\\"DiditWebhook/2.0 +https://didit.me\\\"}\", \"request_body\": \"{\\\"application_id\\\":\\\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\\\",\\\"created_at\\\":1792056057,\\\"environment\\\":\\\"live\\\",\\\"event_id\\\":\\\"33333333-4444-5555-6666-777777777777\\\",\\\"sandbox_scenario\\\":null,\\\"session_id\\\":\\\"22222222-3333-4444-5555-666666666666\\\",\\\"status\\\":\\\"In Progress\\\",\\\"timestamp\\\":1792056078,\\\"vendor_data\\\":\\\"user-123\\\",\\\"webhook_type\\\":\\\"status.updated\\\",\\\"workflow_id\\\":\\\"44444444-5555-6666-7777-888888888888\\\",\\\"workflow_version\\\":3}\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.Destinations.RetrieveDeliveryAsync("destination_uuid-1", "delivery_uuid-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhook/destinations/destination_uuid-1/deliveries/delivery_uuid-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("66666666-7777-8888-9999-000000000001", result.Uuid);
+            Assert.Equal(503L, result.ResponseStatus);
         }
 
         [Fact]
@@ -101,7 +188,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": false, \"webhook_version\": \"v3\", \"secret_shared_key\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_at\": \"2026-01-04T08:00:00Z\", \"updated_at\": \"2026-05-17T11:02:55Z\", \"summary\": {\"total_deliveries\": 12453, \"failed_deliveries\": 14, \"error_rate_percentage\": 0, \"min_response_time_ms\": 41, \"avg_response_time_ms\": 187, \"max_response_time_ms\": 2103, \"last_delivery_at\": \"2026-05-17T09:21:18Z\"}}");
+            handler.Enqueue(200, "{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": false, \"webhook_version\": \"v3\", \"secret_shared_key\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"secret_last4\": \"0xnQ\", \"previous_secret_expires_at\": null, \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_by_email\": null, \"created_by_name\": null, \"created_at\": \"2026-01-04T08:00:00Z\", \"updated_at\": \"2026-05-17T11:02:55Z\", \"health_status\": \"healthy\", \"failing_streak\": 0, \"failing_since\": null, \"last_success_at\": \"2026-05-17T09:21:18Z\", \"environment\": \"live\", \"summary\": {\"total_deliveries\": 12453, \"failed_deliveries\": 14, \"error_rate_percentage\": 0, \"min_response_time_ms\": 41, \"avg_response_time_ms\": 187, \"max_response_time_ms\": 2103, \"last_delivery_at\": \"2026-05-17T09:21:18Z\", \"metrics_window_days\": 30}}");
             using var client = TestClients.Create(handler);
             var result = await client.Webhooks.Destinations.UpdateAsync("destination_uuid-1", new WebhooksDestinationsUpdateParams { Label = "sample-label", Url = "https://example.com/callback", Enabled = true, WebhookVersion = new WebhooksDestinationsUpdateParamsWebhookVersion("v1"), SubscribedEvents = new WebhookEvent[] { new WebhookEvent("status.updated") } });
 
@@ -116,6 +203,52 @@ namespace Didit.Tests.Generated
             JsonAssert.Equivalent("{\"label\": \"sample-label\", \"url\": \"https://example.com/callback\", \"enabled\": true, \"webhook_version\": \"v1\", \"subscribed_events\": [\"status.updated\"]}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("11111111-2222-3333-4444-555555555555", result.Uuid);
+            Assert.Equal(0L, result.FailingStreak);
+        }
+
+        [Fact]
+        public async Task Webhooks_RetrieveConfig()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"webhook_url\": \"https://yourapp.com/webhooks/didit\", \"webhook_version\": \"v3\", \"secret_shared_key\": \"dGhpcy1pcy10aGUtYXBwLWxldmVsLXNlY3JldC0wMDA\", \"capture_method\": \"MOBILE\", \"data_retention_months\": 24, \"face_retention_policy\": \"delete_with_session\", \"face_retention_days\": null, \"available_events\": [{\"value\": \"status.updated\", \"label\": \"Session status updated\"}, {\"value\": \"data.updated\", \"label\": \"Session data updated\"}, {\"value\": \"user.status.updated\", \"label\": \"User status updated\"}, {\"value\": \"user.data.updated\", \"label\": \"User data updated\"}, {\"value\": \"business.status.updated\", \"label\": \"Business status updated\"}, {\"value\": \"business.data.updated\", \"label\": \"Business data updated\"}, {\"value\": \"activity.created\", \"label\": \"Activity created\"}, {\"value\": \"transaction.created\", \"label\": \"Transaction created\"}, {\"value\": \"transaction.status.updated\", \"label\": \"Transaction status updated\"}, {\"value\": \"travel_rule.status.updated\", \"label\": \"Travel Rule Status Updated\"}, {\"value\": \"workflow.compliance_changed\", \"label\": \"Workflow Compliance Changed\"}], \"allowed_return_hosts\": [\"shop.example.com\"], \"endpoints\": [{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"secret_shared_key\": \"dGhpcy1pcy1hbi1leGFtcGxlLXNlY3JldC0wMDAwMDA\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_at\": \"2026-01-04T08:00:00.000000Z\", \"updated_at\": \"2026-04-22T14:09:11.523671Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.RetrieveConfigAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhook/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("https://yourapp.com/webhooks/didit", result.WebhookUrl);
+            Assert.Equal(24L, result.DataRetentionMonths);
+        }
+
+        [Fact]
+        public async Task Webhooks_UpdateConfig()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"webhook_url\": \"https://yourapp.com/webhooks/didit\", \"webhook_version\": \"v3\", \"secret_shared_key\": \"dGhpcy1pcy10aGUtYXBwLWxldmVsLXNlY3JldC0wMDA\", \"capture_method\": \"MOBILE\", \"data_retention_months\": 24, \"face_retention_policy\": \"retain_until_user_deleted\", \"face_retention_days\": 365, \"available_events\": [{\"value\": \"status.updated\", \"label\": \"Session status updated\"}, {\"value\": \"data.updated\", \"label\": \"Session data updated\"}, {\"value\": \"user.status.updated\", \"label\": \"User status updated\"}, {\"value\": \"user.data.updated\", \"label\": \"User data updated\"}, {\"value\": \"business.status.updated\", \"label\": \"Business status updated\"}, {\"value\": \"business.data.updated\", \"label\": \"Business data updated\"}, {\"value\": \"activity.created\", \"label\": \"Activity created\"}, {\"value\": \"transaction.created\", \"label\": \"Transaction created\"}, {\"value\": \"transaction.status.updated\", \"label\": \"Transaction status updated\"}, {\"value\": \"travel_rule.status.updated\", \"label\": \"Travel Rule Status Updated\"}, {\"value\": \"workflow.compliance_changed\", \"label\": \"Workflow Compliance Changed\"}], \"allowed_return_hosts\": [\"shop.example.com\"], \"endpoints\": [{\"uuid\": \"11111111-2222-3333-4444-555555555555\", \"label\": \"Production session webhooks\", \"url\": \"https://yourapp.com/webhooks/didit\", \"enabled\": true, \"webhook_version\": \"v3\", \"secret_shared_key\": \"dGhpcy1pcy1hbi1leGFtcGxlLXNlY3JldC0wMDAwMDA\", \"subscribed_events\": [\"status.updated\", \"data.updated\"], \"created_at\": \"2026-01-04T08:00:00.000000Z\", \"updated_at\": \"2026-04-22T14:09:11.523671Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.UpdateConfigAsync(new WebhooksUpdateConfigParams { WebhookUrl = "https://example.com/callback", WebhookVersion = new WebhooksUpdateConfigParamsWebhookVersion("v1"), RotateSecretKey = true, CaptureMethod = new WebhooksUpdateConfigParamsCaptureMethod("MOBILE"), DataRetentionMonths = 1L, FaceRetentionPolicy = new WebhooksUpdateConfigParamsFaceRetentionPolicy("delete_with_session"), FaceRetentionDays = 1L, AllowedReturnHosts = new string[] { "sample-allowed_return_hosts" } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhook/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"webhook_url\": \"https://example.com/callback\", \"webhook_version\": \"v1\", \"rotate_secret_key\": true, \"capture_method\": \"MOBILE\", \"data_retention_months\": 1, \"face_retention_policy\": \"delete_with_session\", \"face_retention_days\": 1, \"allowed_return_hosts\": [\"sample-allowed_return_hosts\"]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("https://yourapp.com/webhooks/didit", result.WebhookUrl);
+            Assert.Equal(24L, result.DataRetentionMonths);
         }
     }
 }

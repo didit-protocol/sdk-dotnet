@@ -77,7 +77,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> ResendOtpAsync(AccountResendOtpParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<AccountResendOtpResponse> ResendOtpAsync(AccountResendOtpParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ResendOtpAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -165,7 +165,7 @@ namespace Didit.Resources
         /// Resend the email verification code
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="AccountResource.ResendOtpAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> ResendOtpAsync(AccountResendOtpParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<AccountResendOtpResponse>> ResendOtpAsync(AccountResendOtpParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -179,7 +179,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<AccountResendOtpResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

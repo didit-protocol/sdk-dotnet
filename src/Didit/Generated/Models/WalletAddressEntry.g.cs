@@ -21,13 +21,13 @@ namespace Didit
         public string? Uuid { get; init; }
 
         /// <summary>
-        /// The wallet address. Unique per application and chain among non-deleted entries.
+        /// The wallet address; <c>""</c> for an entry imported by its hash only. Unique per application, chain and memo, comparing the address without regard to case. After you delete an entry, you can register the same address again.
         /// </summary>
         [JsonPropertyName("address")]
         public string? Address { get; init; }
 
         /// <summary>
-        /// Free-text chain identifier, e.g. "ethereum", "bitcoin".
+        /// Chain token for the address, for example <c>ETH</c> or <c>BTC</c>. When Didit routes or registers a transfer, it matches address book entries on the wallet address and, when the transfer carries a chain, on this value too, ignoring case. A transfer's chain is <c>beneficiary_data.chain</c>, filled from the transaction's crypto chain or currency symbol (for example <c>ETH</c>) when you do not send it, or the <c>chain</c> of an after-deposit registration, so use the same token everywhere. An entry with an empty chain matches any chain. A Lightning payee (a node id or a Lightning Address) registered on bitcoin is stored lowercased on <c>LIGHTNING</c>, where Lightning transfers are matched.
         /// </summary>
         [JsonPropertyName("chain")]
         public string? Chain { get; init; }
@@ -63,16 +63,28 @@ namespace Didit
         public DateTimeOffset? CreatedAt { get; init; }
 
         /// <summary>
-        /// Whether the entry was created as a self-declared ownership proof.
-        /// </summary>
-        [JsonPropertyName("self_declared")]
-        public bool? SelfDeclared { get; init; }
-
-        /// <summary>
-        /// The counterparty VASP's travel address for this wallet, if known. Lets Didit route this beneficiary's transfers over the TRP rail.
+        /// The counterparty VASP's travel address for this wallet, if known. Lets Didit route this beneficiary's transfers over the TRP rail, for the assets TRP carries (BTC, ETH, and USDC on a named network).
         /// </summary>
         [JsonPropertyName("travel_address")]
         public string? TravelAddress { get; init; }
+
+        /// <summary>
+        /// Read-only. SHA-256 of the lowercased address, in lowercase hex. An entry imported by its hash only is matched on it.
+        /// </summary>
+        [JsonPropertyName("address_hash")]
+        public string? AddressHash { get; init; }
+
+        /// <summary>
+        /// The destination tag or memo that is part of the wallet on a memo network (XRP, XLM, EOS, ATOM, HBAR); <c>""</c> for the whole address. An entry with a memo matches only transfers naming that memo; one without matches the whole address.
+        /// </summary>
+        [JsonPropertyName("memo")]
+        public string? Memo { get; init; }
+
+        /// <summary>
+        /// Your per-wallet travel address for this wallet: give it to the sending VASP so its TRP inquiry names this wallet. Empty for a wallet recorded as another VASP's, while Travel Rule is off, and before your VASP profile is saved.
+        /// </summary>
+        [JsonPropertyName("receiving_travel_address")]
+        public string? ReceivingTravelAddress { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

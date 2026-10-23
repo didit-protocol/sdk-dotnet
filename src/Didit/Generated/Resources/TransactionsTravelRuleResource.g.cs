@@ -26,11 +26,11 @@ namespace Didit.Resources
         /// Confirm or deny wallet ownership
         /// </summary>
         /// <remarks>
-        /// Called by the beneficiary's application when its INTERNAL-rail transfer is UNCONFIRMED_OWNERSHIP. Confirming marks the matching wallet address book entry as ownership-verified and runs the beneficiary name match on both sides of the transfer; denying declines both sides.
+        /// Resolve a transfer that waits on wallet ownership: call it on your own side of the transfer when it is UNCONFIRMED_OWNERSHIP, or when it is an inbound transfer in ON_HOLD. Confirming marks the matching wallet address book entry as ownership-verified (for an inbound ON_HOLD transfer with no entry, Didit creates one from beneficiary_data.wallet_address) and runs the beneficiary name match on both sides of the transfer; denying declines both sides. An inbound transfer whose deposit already settled moves on to FINISHED when the match succeeds. When the counterparty wallet was declared self-hosted (counterparty.payment_method.method_type: unhosted_wallet), confirming records that the customer verified who controls that wallet and completes the transfer (COMPLETED) in both directions, or FINISHED for an inbound deposit whose on-chain hash is already known. The wallet verified is the counterparty's: the destination of an outbound withdrawal, or the source (originator's wallet) of an inbound deposit. If it is not in your wallet address book yet, Didit adds it as ownership-verified under the counterparty's name; if the book already holds it under a different holder name, the transfer moves to COUNTERPARTY_MISMATCHED_DATA. For an inbound TRP transfer in UNCONFIRMED_OWNERSHIP, ON_HOLD or COUNTERPARTY_MISMATCHED_DATA, Didit sends your decision to the originating VASP instead: approving returns the payment address (wallet_address, or the matched entry's address) and moves the transfer to COMPLETED, and denying declines it. The same call also decides an inbound transfer that a GTR or Sygna Bridge counterparty sent and that waits for your review (<c>UNCONFIRMED_OWNERSHIP</c>, <c>ON_HOLD</c> or <c>COUNTERPARTY_MISMATCHED_DATA</c>): <c>confirmed: true</c> approves it (pass <c>wallet_address</c> when the transfer names none) and <c>confirmed: false</c> declines it, and the network is answered after the response, with retries. VerifyVASP takes its answer when it asks, so a VerifyVASP transfer that would need your review is declined at once and cannot be decided later.
         /// <para/>
         /// <c>POST /v3/transactions/{transaction_id}/travel-rule/ownership/</c> (<c>transactions.travel_rule.confirm_ownership</c>).
         /// </remarks>
-        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer (the beneficiary side's transaction).</param>
+        /// <param name="transactionId">Didit-stable UUID of the transaction your application holds for this transfer: the beneficiary side's transaction on an INTERNAL-rail transfer, or the transaction you created (outbound or inbound) when the counterparty wallet was declared self-hosted.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -41,10 +41,62 @@ namespace Didit.Resources
         }
 
         /// <summary>
-        /// Finish, cancel, or resend a Travel Rule transfer
+        /// Send a Travel Rule message or document request
         /// </summary>
         /// <remarks>
-        /// Provide <c>payment_txn_id</c> to report the on-chain hash and move an outbound COMPLETED transfer to FINISHED (its INTERNAL-rail counterpart also moves to FINISHED), <c>{"action": "cancel"}</c> to cancel a non-terminal transfer, or <c>{"action": "resend"}</c> to re-run routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA (improve the counterparty data first, e.g. add a travel_address to the destination wallet entry).
+        /// Sends a message or a document request to the counterparty VASP. Works on INTERNAL transfers (the other Didit customer sees it on its side of the pair) and EMAIL transfers (the counterparty is emailed and answers in the pickup portal). A transfer over TRP, GTR, TRUST, VerifyVASP or Sygna carries no messages, because those protocols have none. Limits: 100 messages per transfer, 5000 characters per body, 10 requested documents, 5 files of 10 MB each.
+        /// <para/>
+        /// <c>POST /v3/transactions/{transaction_id}/travel-rule/messages/</c> (<c>transactions.travel_rule.create_message</c>).
+        /// </remarks>
+        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleMessage> CreateMessageAsync(string transactionId, TravelRuleMessageCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CreateMessageAsync(transactionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List Travel Rule messages
+        /// </summary>
+        /// <remarks>
+        /// Messages and document requests exchanged with the counterparty VASP about this transfer.
+        /// <para/>
+        /// <c>GET /v3/transactions/{transaction_id}/travel-rule/messages/</c> (<c>transactions.travel_rule.list_messages</c>).
+        /// </remarks>
+        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<IReadOnlyList<TravelRuleMessage>> ListMessagesAsync(string transactionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListMessagesAsync(transactionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Trigger an inbound transfer from the Didit Test VASP (sandbox)
+        /// </summary>
+        /// <remarks>
+        /// Sandbox applications only. The Didit Test VASP sends your application an inbound Travel Rule transfer, so you can exercise the receiving side of an exchange end to end before going live. The transfer is booked and decided by the same logic a real inbound transfer from a network runs against your wallet address book, so the inbox, the decision and the wallet ownership flow behave as they do live. Nothing leaves Didit. A live application receives 400. Send the same <c>reference</c> again to get the transfer the first call booked instead of a second one.
+        /// <para/>
+        /// <c>POST /v3/travel-rule/test-vasp/inbound/</c> (<c>transactions.travel_rule.trigger_test_vasp_inbound</c>).
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleTestVaspInboundResponse> TriggerTestVaspInboundAsync(TravelRuleTestVaspInboundRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.TriggerTestVaspInboundAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Finish, cancel, resend, or update the originator wallet of a Travel Rule transfer
+        /// </summary>
+        /// <remarks>
+        /// Provide <c>payment_txn_id</c> to report the on-chain hash and move an outbound COMPLETED transfer to FINISHED (its INTERNAL-rail counterpart also moves to FINISHED), <c>{"action": "cancel"}</c> to cancel a non-terminal transfer, or <c>{"action": "resend"}</c> to route an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA again (improve the counterparty data first, e.g. add a travel_address to the destination wallet entry). resend applies to outbound transfers only. <c>{"action": "update_compliance_email", "compliance_email": "desk@example.com"}</c> replaces the compliance email of an outbound transfer in one of those three statuses, the fix for <c>reason: email_undeliverable</c>: the status does not change, and the next <c>resend</c> sends the request to that address. A resend is queued, not run inside the request: the response shows the transfer back in AWAITING_COUNTERPARTY with a <c>resend queued</c> timeline entry and a queued <c>delivery</c>, and where it went arrives as a <c>travel_rule.status.updated</c> webhook. When the transfer went over GTR, VerifyVASP or Sygna Bridge, the network learns the on-chain hash or the cancellation after the response, with retries; <c>delivery</c> shows how that message stands. <c>{"action": "update_originator_wallet", "wallet_address": "..."}</c> records the wallet the funds actually left from on an outbound transfer, for example the address a UTXO withdrawal was broadcast from rather than the main wallet you declared. It changes the record only: nothing is sent to the counterparty again and the status stays. The originator becomes <c>chain_details.originator</c> with <c>source: updated</c>, the change is added to the <c>timeline</c> with the previous and the new wallet, and the INTERNAL-rail counterpart of the transfer is updated the same way.
         /// <para/>
         /// <c>PATCH /v3/transactions/{transaction_id}/travel-rule/</c> (<c>transactions.travel_rule.update_transfer</c>).
         /// </remarks>
@@ -91,7 +143,85 @@ namespace Didit.Resources
         }
 
         /// <summary>
-        /// Finish, cancel, or resend a Travel Rule transfer
+        /// Send a Travel Rule message or document request
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.CreateMessageAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleMessage>> CreateMessageAsync(string transactionId, TravelRuleMessageCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/transactions/" + PathParameter.Encode(transactionId, "transactionId") + "/travel-rule/messages/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            var form = new MultipartRequestBody();
+            if (parameters.Kind.IsSet)
+            {
+                form.Add("kind", parameters.Kind.Value.Value);
+            }
+            if (parameters.Body.IsSet)
+            {
+                form.Add("body", parameters.Body.Value);
+            }
+            if (parameters.RequestedDocuments.IsSet)
+            {
+                form.AddEach("requested_documents", parameters.RequestedDocuments.Value);
+            }
+            if (parameters.ReplyTo.IsSet)
+            {
+                form.Add("reply_to", parameters.ReplyTo.Value);
+            }
+            if (parameters.Files.IsSet)
+            {
+                form.AddEach("files", parameters.Files.Value);
+            }
+            request.Body = form;
+            return _pipeline.SendJsonAsync<TravelRuleMessage>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List Travel Rule messages
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.ListMessagesAsync"/>.</remarks>
+        public Task<DiditResponse<IReadOnlyList<TravelRuleMessage>>> ListMessagesAsync(string transactionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/" + PathParameter.Encode(transactionId, "transactionId") + "/travel-rule/messages/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<IReadOnlyList<TravelRuleMessage>>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Trigger an inbound transfer from the Didit Test VASP (sandbox)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.TriggerTestVaspInboundAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleTestVaspInboundResponse>> TriggerTestVaspInboundAsync(TravelRuleTestVaspInboundRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/travel-rule/test-vasp/inbound/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<TravelRuleTestVaspInboundResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Finish, cancel, resend, or update the originator wallet of a Travel Rule transfer
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.UpdateTransferAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleTransferDetail>> UpdateTransferAsync(string transactionId, TravelRuleTransferPatchRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)

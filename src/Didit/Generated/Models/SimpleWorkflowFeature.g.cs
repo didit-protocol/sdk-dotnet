@@ -21,7 +21,7 @@ namespace Didit
         public required SimpleWorkflowFeatureFeature Feature { get; set; }
 
         /// <summary>
-        /// Feature-specific settings. For <c>QUESTIONNAIRE</c>, include <c>questionnaire_uuid</c> with the <c>questionnaire_id</c> returned by the questionnaire create endpoint. For <c>OCR</c>, <c>methods</c> selects which ID Verification methods each country may use (document capture, non-doc lookup against a government or other authoritative source, and digital identity wallets); omit it and every country is document capture only.
+        /// Feature-specific settings. For <c>QUESTIONNAIRE</c>, include <c>questionnaire_uuid</c> with the <c>questionnaire_id</c> returned by the questionnaire create endpoint. For <c>OCR</c>, <c>methods</c> selects which ID Verification methods each country may use (document capture, non-doc lookup against a government or other authoritative source, and digital identity wallets); omit it and every country is document capture only. For <c>SIGNATURE</c>, see [Electronic Signature settings](/management-api/workflows/feature-configs#electronic-signature): <c>signature_level</c> accepts <c>aes</c> only for now, and workflow documents and their fields are managed in the console, so through the API send documents and fields per session with <c>signature_documents_source: "session"</c>.
         /// </summary>
         [JsonPropertyName("config")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

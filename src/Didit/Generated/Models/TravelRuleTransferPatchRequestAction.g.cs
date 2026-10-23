@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// "cancel" cancels a non-terminal transfer. "resend" re-runs routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA.
+    /// "cancel" cancels a non-terminal transfer. "resend" re-runs routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA. "update_compliance_email" replaces the compliance email the request goes to, on an outbound transfer in one of those three statuses; send "resend" afterwards. "update_originator_wallet" records the wallet the funds actually left from (<c>wallet_address</c>, <c>memo</c>).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(TravelRuleTransferPatchRequestAction.EnumJsonConverter))]
@@ -28,6 +28,12 @@ namespace Didit
 
         /// <summary><c>resend</c></summary>
         public static TravelRuleTransferPatchRequestAction Resend { get; } = new("resend");
+
+        /// <summary><c>update_compliance_email</c></summary>
+        public static TravelRuleTransferPatchRequestAction UpdateComplianceEmail { get; } = new("update_compliance_email");
+
+        /// <summary><c>update_originator_wallet</c></summary>
+        public static TravelRuleTransferPatchRequestAction UpdateOriginatorWallet { get; } = new("update_originator_wallet");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

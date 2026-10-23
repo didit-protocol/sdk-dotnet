@@ -23,6 +23,26 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Get AML dataset freshness
+        /// </summary>
+        /// <remarks>
+        /// Report how current the datasets behind AML screening are, per source family (<c>sanctions</c>, <c>pep</c>, <c>warnings</c>, <c>adverse_media</c>), as audit evidence for <see href="https://docs.didit.me/core-technology/aml-screening/continuous-monitoring-aml-screening#proving-that-monitoring-ran">ongoing AML monitoring</see>. The answer is platform-wide: no session in the path, no customer data in the body, the same answer for every application.
+        /// <para/>
+        /// Always <c>200</c> for an accepted key. Check <c>availability</c> first: when it is not <c>available</c>, <c>dataset_freshness</c> is <c>null</c>. Dates are never estimated: a family whose datasets reported no date is absent from <c>sources</c>, and a family where only some datasets reported one has <c>oldest_updated_at: null</c>. Readings are taken while ongoing monitoring runs, not on each call; <c>captured_at</c> says when.
+        /// <para/>
+        /// A scoped API key needs <c>sessions: read</c>; a key limited to some workflows or to approved sessions cannot call this endpoint. Nothing is billed.
+        /// <para/>
+        /// <c>GET /v3/aml/dataset-freshness/</c> (<c>aml.retrieve_dataset_freshness</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<AmlRetrieveDatasetFreshnessResponse> RetrieveDatasetFreshnessAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveDatasetFreshnessAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// AML screening (standalone)
         /// </summary>
         /// <remarks>
@@ -63,6 +83,21 @@ namespace Didit.Resources
         internal AmlRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+        }
+
+        /// <summary>
+        /// Get AML dataset freshness
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="AmlResource.RetrieveDatasetFreshnessAsync"/>.</remarks>
+        public Task<DiditResponse<AmlRetrieveDatasetFreshnessResponse>> RetrieveDatasetFreshnessAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/aml/dataset-freshness/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<AmlRetrieveDatasetFreshnessResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

@@ -225,10 +225,10 @@ namespace Didit
         public IReadOnlyList<TransactionDetailProviderResults>? ProviderResults { get; init; }
 
         /// <summary>
-        /// Travel Rule transfer or check. Populated when <c>travel_rule_details</c> was submitted, and also when Travel Rule is enabled and the transaction was created with <c>transaction_category: travelRule</c> (Didit initiates the exchange itself, even without <c>travel_rule_details</c>). <c>null</c> when no transfer or check exists.
+        /// Travel Rule transfer or check. Populated when <c>travel_rule_details</c> was submitted, and also when Travel Rule is enabled and the transaction was created with <c>transaction_category: travelRule</c> (Didit initiates the exchange itself, even without <c>travel_rule_details</c>). <c>null</c> when no transfer or check exists. On an inbound transfer, the counterparty's <c>originator_data</c> and <c>beneficiary_data</c> stay masked (<c>data_masked: true</c>) until wallet ownership is confirmed.
         /// </summary>
         [JsonPropertyName("travel_rule")]
-        public TransactionDetailTravelRule? TravelRule { get; init; }
+        public TransactionTravelRule? TravelRule { get; init; }
 
         /// <summary>
         /// Graph snapshot of related transactions/parties used by the rules engine. Either the <c>network_snapshot</c> submitted with the transaction or the graph Didit builds from a successful AML wallet screening (which replaces a submitted one). <c>null</c> when neither exists.

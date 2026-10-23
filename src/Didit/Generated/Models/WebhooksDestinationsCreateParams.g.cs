@@ -21,7 +21,7 @@ namespace Didit
         public required string Label { get; set; }
 
         /// <summary>
-        /// HTTPS URL that will receive <c>POST</c> requests. Must be unique per application among non-deleted destinations. Use a stable, hardened endpoint — Didit retries failed deliveries on a backoff schedule.
+        /// HTTPS URL that will receive <c>POST</c> requests. Must be unique among the application's destinations. Use a stable, hardened endpoint: Didit retries failed deliveries on a backoff schedule.
         /// </summary>
         [JsonPropertyName("url")]
         public required string Url { get; set; }

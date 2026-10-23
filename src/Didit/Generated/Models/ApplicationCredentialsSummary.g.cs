@@ -33,7 +33,7 @@ namespace Didit
         public string? ClientId { get; init; }
 
         /// <summary>
-        /// Use this as <c>x-api-key</c> on every verification API call.
+        /// Use this as <c>x-api-key</c> on every verification API call. New keys start with <c>sk_live_</c> (live application) or <c>sk_test_</c> (sandbox application), followed by 43 URL-safe characters (letters, digits, <c>-</c> and <c>_</c>). Keys created before this format have no prefix and keep working unchanged.
         /// </summary>
         [JsonPropertyName("api_key")]
         public string? ApiKey { get; init; }

@@ -10,12 +10,12 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Travel Rule compliance metadata.
+    /// Travel Rule data. When Travel Rule is enabled and transaction_category is travel_rule, Didit runs the exchange itself: it ignores status, protocol, required and obligations_count, and uses originator_data, beneficiary_data and metadata. Otherwise Didit stores these values as a passive Travel Rule record. While Travel Rule is on, an outbound transfer at or above your threshold must carry what its regime requires (EU TFR or FATF Recommendation 16), checked on the sides you send: a missing field answers 400 under <c>travel_rule_details.originator_data</c> or <c>travel_rule_details.beneficiary_data</c>, for example "EU TFR requires the originator name."
     /// </summary>
     public sealed record TransactionsCreateParamsTravelRuleDetails
     {
         /// <summary>
-        /// The &lt;c&gt;status&lt;/c&gt; field.
+        /// Required whenever you send travel_rule_details. One of the Travel Rule transfer statuses (for example AWAITING_COUNTERPARTY, COMPLETED, NOT_APPLICABLE); lowercase and camelCase spellings and the legacy values UNKNOWN, COMPLIANT, PENDING_ACTION, PENDING_COUNTERPARTY, FAILED and EXEMPT are also accepted and mapped. Any other value returns 400.
         /// </summary>
         [JsonPropertyName("status")]
         public required string Status { get; set; }
@@ -42,14 +42,14 @@ namespace Didit
         public Optional<long> ObligationsCount { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;originator_data&lt;/c&gt; field.
+        /// Originator party, as flat fields or one IVMS 101 person. For your user with an approved KYC verification, Didit replaces the fields the verification holds with the verified values (see <c>metadata.originator_provenance</c>). It must be an object: anything else is a <c>400</c>. On a memo network a <c>memo</c> key names the originator wallet's memo or tag.
         /// </summary>
         [JsonPropertyName("originator_data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<object?> OriginatorData { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;beneficiary_data&lt;/c&gt; field.
+        /// Beneficiary party, as flat fields or one IVMS 101 person. An empty <c>wallet_address</c> is filled from <c>counterparty.payment_method.account_id</c>. It must be an object: anything else is a <c>400</c>. On a memo network <c>memo</c> names the beneficiary wallet's memo or tag; <c>wallet_address</c> and <c>memo</c> win over the counterparty's payment method.
         /// </summary>
         [JsonPropertyName("beneficiary_data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -61,6 +61,34 @@ namespace Didit
         [JsonPropertyName("metadata")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<object?> Metadata { get; set; }
+
+        /// <summary>
+        /// Optional, UTXO chains only (BTC, LTC, BCH, DOGE). The transaction's inputs and outputs, from which Didit infers the originator wallet and the beneficiary output when you do not declare them.
+        /// </summary>
+        [JsonPropertyName("utxo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleUtxo> Utxo { get; set; }
+
+        /// <summary>
+        /// An IVMS 101 originator block: <c>originatorPersons</c> (one <c>naturalPerson</c> or <c>legalPerson</c>; a legal person makes the party a company) and <c>accountNumber</c> (wallet addresses). Used for <c>originator_data</c> when that object is empty. A malformed block answers 400 keyed by its path, for example <c>originator.originatorPersons</c>.
+        /// </summary>
+        [JsonPropertyName("originator")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> Originator { get; set; }
+
+        /// <summary>
+        /// An IVMS 101 beneficiary block: <c>beneficiaryPersons</c> (one <c>naturalPerson</c> or <c>legalPerson</c>; a legal person makes the party a company) and <c>accountNumber</c> (wallet addresses). Used for <c>beneficiary_data</c> when that object is empty. A malformed block answers 400 keyed by its path, for example <c>beneficiary.beneficiaryPersons</c>.
+        /// </summary>
+        [JsonPropertyName("beneficiary")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> Beneficiary { get; set; }
+
+        /// <summary>
+        /// The <c>originator</c> and <c>beneficiary</c> blocks wrapped in one IVMS 101 object (<c>IVMS101</c> is accepted too). Top-level blocks win over the wrapper's.
+        /// </summary>
+        [JsonPropertyName("ivms101")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> Ivms101 { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

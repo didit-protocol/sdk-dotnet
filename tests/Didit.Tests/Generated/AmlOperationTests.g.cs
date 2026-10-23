@@ -16,6 +16,26 @@ namespace Didit.Tests.Generated
     public sealed class AmlOperationTests
     {
         [Fact]
+        public async Task Aml_RetrieveDatasetFreshness()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"dataset_freshness\": {\"captured_at\": \"2026-10-17T06:00:12.345678+00:00\", \"provider\": \"aml_data_source\", \"catalog_version\": \"20261017054500-abc\", \"sources\": {\"sanctions\": {\"last_updated_at\": \"2026-10-17T04:10:00+00:00\", \"oldest_updated_at\": \"2026-10-15T22:30:00+00:00\", \"dataset_count\": 48, \"dated_dataset_count\": 48}, \"pep\": {\"last_updated_at\": \"2026-10-16T23:05:00+00:00\", \"oldest_updated_at\": null, \"dataset_count\": 12, \"dated_dataset_count\": 11}}}, \"availability\": \"available\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Aml.RetrieveDatasetFreshnessAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/aml/dataset-freshness/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task Aml_Screen()
         {
             var handler = new MockHttpHandler();

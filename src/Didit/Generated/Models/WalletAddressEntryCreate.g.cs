@@ -15,13 +15,13 @@ namespace Didit
     public sealed record WalletAddressEntryCreate
     {
         /// <summary>
-        /// The &lt;c&gt;address&lt;/c&gt; field.
+        /// The wallet address. An XRP X-address is stored as its classic address and its tag, so it matches transfers that name either form.
         /// </summary>
         [JsonPropertyName("address")]
         public required string Address { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;chain&lt;/c&gt; field.
+        /// Chain token for the address, for example <c>ETH</c> or <c>BTC</c>. When Didit routes or registers a transfer, it matches address book entries on the wallet address and, when the transfer carries a chain, on this value too, ignoring case. A transfer's chain is <c>beneficiary_data.chain</c>, filled from the transaction's crypto chain or currency symbol (for example <c>ETH</c>) when you do not send it, or the <c>chain</c> of an after-deposit registration, so use the same token everywhere. An entry with an empty chain matches any chain.
         /// </summary>
         [JsonPropertyName("chain")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -49,18 +49,25 @@ namespace Didit
         public Optional<string> EntityType { get; set; }
 
         /// <summary>
-        /// Write-only. When true, the entry is created already ownership-verified via a SELF_DECLARATION proof.
+        /// Write-only. When true, the entry is created already ownership-verified via a SELF_DECLARATION proof. Returns 400 when <c>allow_self_declaration</c> is off in your Travel Rule settings.
         /// </summary>
         [JsonPropertyName("self_declared")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<bool> SelfDeclared { get; set; }
 
         /// <summary>
-        /// Optional. The counterparty VASP's travel address for this wallet, enabling TRP routing.
+        /// Optional. The counterparty VASP's travel address for this wallet, enabling TRP routing for the assets TRP carries (BTC, ETH, and USDC on a named network). An invalid travel address returns 400.
         /// </summary>
         [JsonPropertyName("travel_address")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> TravelAddress { get; set; }
+
+        /// <summary>
+        /// Optional. The destination tag or memo that is part of the wallet. XRP: a destination tag, a whole number from 0 to 4294967295 (a JSON number is accepted). XLM: a text memo of up to 28 bytes, a 64-bit id or a 32-byte hash in hex. EOS: up to 256 bytes. ATOM: up to 256 characters. HBAR: up to 100 bytes. Bitcoin, EVM, Solana, Tron, Litecoin, Bitcoin Cash, Dogecoin and Lightning wallets take no memo: one there is a <c>400</c>. Alias: <c>destinationTag</c> or <c>destination_tag</c>.
+        /// </summary>
+        [JsonPropertyName("memo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Memo { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

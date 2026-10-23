@@ -22,6 +22,8 @@ namespace Didit.Resources
             _raw = raw;
             Imports = new SessionsImportsResource(raw.Imports);
             Reviews = new SessionsReviewsResource(raw.Reviews);
+            Signatures = new SessionsSignaturesResource(raw.Signatures);
+            Webhooks = new SessionsWebhooksResource(raw.Webhooks);
         }
 
         /// <summary>The <c>sessions.imports</c> resource.</summary>
@@ -29,6 +31,30 @@ namespace Didit.Resources
 
         /// <summary>The <c>sessions.reviews</c> resource.</summary>
         public SessionsReviewsResource Reviews { get; }
+
+        /// <summary>The <c>sessions.signatures</c> resource.</summary>
+        public SessionsSignaturesResource Signatures { get; }
+
+        /// <summary>The <c>sessions.webhooks</c> resource.</summary>
+        public SessionsWebhooksResource Webhooks { get; }
+
+        /// <summary>
+        /// Add an image to a session
+        /// </summary>
+        /// <remarks>
+        /// Attach one extra image or PDF to the ID verification (<c>model_type=kyc</c>) or Proof of Address (<c>model_type=poa</c>) result of a finished User Verification (KYC) session, for example evidence collected outside the flow. The session must be <c>Approved</c>, <c>Declined</c>, <c>In Review</c> or <c>Kyc Expired</c> and carry the result named by <c>model_type</c>; Business Verification (KYB) sessions are not supported. Each call appends one file (to the most recent result when the step ran more than once), keeps the existing files and records a <c>FILE_ADDED</c> entry in the session activity log; the upload sends no webhook and does not change the session status. The file is compressed on upload and is returned in <c>extra_files</c> of the session decision. This endpoint is limited to 10 requests per minute per API key. A scoped API key needs <c>sessions: write</c>, and without <c>media: read</c> it receives the <c>extra_files</c> links as <c>null</c>.
+        /// <para/>
+        /// <c>PATCH /v3/session/{sessionId}/add-images/</c> (<c>sessions.add_images</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the User Verification (KYC) session to add the file to (the <c>session_id</c> returned by <c>POST /v3/session/</c>). A Business Verification (KYB) session ID returns <c>404</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsAddImagesResponse> AddImagesAsync(string sessionId, SessionsAddImagesParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.AddImagesAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
 
         /// <summary>
         /// Bulk delete KYC sessions by session_number
@@ -45,6 +71,8 @@ namespace Didit.Resources
         /// Each deleted session gets exactly the same treatment as the single-session delete endpoint: the session, every verification attempt it holds, its decision and extracted data, its related feature records (ID verification, face, liveness, face match, and so on) and all of its stored files are deleted, it disappears from every read endpoint, and previously issued media URLs stop resolving. Webhook deliveries still queued for a deleted session, and their retries, are dropped; webhooks already delivered are not affected. Blocklist entries are not removed, credits already consumed are not refunded, and the parent User entities are not deleted (use <c>POST /v3/users/delete/</c> for those); no webhook is emitted for the deletion. Deletion is permanent and irreversible.
         /// <para/>
         /// Selection semantics:
+        /// - With <c>delete_all: true</c> you can narrow the selection with the filters of <c>GET /v3/sessions/</c>, each prefixed with <c>filter_</c> (for example <c>filter_status</c>, <c>filter_workflow_id</c>, <c>filter_date_from</c>). Filters that take several values in List Sessions (<c>status</c>, <c>workflow_id</c>, <c>country</c>, <c>region</c>, <c>document_type</c>, <c>document_name</c>, <c>session_type</c>, <c>warning</c>, <c>organization_name</c>) accept a comma-separated string or an array; the others take one value. An empty value is ignored. Filters apply only together with <c>delete_all</c>, and a deletion job applies the same filters.
+        /// - An unknown <c>filter_*</c> key, or a filter value that cannot be read, rejects the whole request with <c>400</c> before anything is deleted, so a mistyped filter never widens the deletion to every session.
         /// - Entries in <c>session_numbers</c> that do not match a live KYC session in your application (unknown numbers, already-deleted sessions, or sessions owned by another application) are silently skipped: they do not appear in <c>results</c> and are not counted in a job's <c>total</c>.
         /// - Validation failures (a non-numeric entry, an empty list, neither <c>session_numbers</c> nor <c>delete_all</c> provided, or a template retention the application cannot honour) reject the whole request with <c>400</c> and delete nothing.
         /// - Sessions are deleted in groups. If a group cannot be deleted (for example because a storage service is unavailable), every session in that group is reported as <c>face_retention_outcome: failed_retryable</c> and stays in place; the other groups are unaffected. Repeat the request for those sessions. A job retries such a group by itself.
@@ -91,9 +119,31 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> BulkUpdateAmlHitStatusAsync(string sessionId, SessionsBulkUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<SessionsBulkUpdateAmlHitStatusResponse> BulkUpdateAmlHitStatusAsync(string sessionId, SessionsBulkUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.BulkUpdateAmlHitStatusAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Cancel a check override that waits for the flow to finish
+        /// </summary>
+        /// <remarks>
+        /// Cancel an override of a feature (step) status that is still <c>pending_until_flow_finishes</c>, so it never applies. The check keeps its status, the cancellation is recorded in the session's activity as <c>FEATURE_OVERRIDE_CANCELLED</c>, and no webhook is sent. The response is the override with <c>state: cancelled</c> and <c>cancel_reason: cancelled_by_reviewer</c>.
+        /// <para/>
+        /// An override that already applied or was cancelled returns <c>409</c> with the code <c>feature_override_not_pending</c>. Find override IDs with <c>GET /v3/session/{sessionId}/features/overrides/</c> or in the <c>override</c> returned by the feature status update.
+        /// <para/>
+        /// Requires the <c>write:sessions</c> privilege; a scoped API key needs write access to decisions.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/features/overrides/{overrideId}/cancel/</c> (<c>sessions.cancel_feature_override</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
+        /// <param name="overrideId">The <c>id</c> of the override to cancel.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<FeatureStatusOverride> CancelFeatureOverrideAsync(string sessionId, string overrideId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CancelFeatureOverrideAsync(sessionId, overrideId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -128,7 +178,7 @@ namespace Didit.Resources
         /// <para/>
         /// What is deleted:
         /// - The session and every verification attempt it holds, including results that a resubmission replaced: the decision, extracted data, all related feature records (ID verification, face, liveness, face match, AML, registry checks, IP analysis, and so on), its reviews and its activity log.
-        /// - All stored files owned by the session: document front/back photos (full, cropped, and privacy-blurred variants), document-capture videos, portrait crops, NFC chip portrait and signature images, face reference images, liveness videos, face-match source/target images, Proof of Address documents, and any extra uploaded files (KYC); uploaded company documents and extra files (KYB). Previously issued media URLs (<c>https://&lt;media-host&gt;/...</c>) stop resolving.
+        /// - All stored files owned by the session: document front/back photos (full, cropped, and privacy-blurred variants), document-capture videos, portrait crops, NFC chip portrait and signature images, face reference images, liveness videos, face-match source/target images, Proof of Address documents, and any extra uploaded files (KYC); uploaded company documents and extra files (KYB). Electronic Signature documents, signed PDFs, evidence PDFs and signature images (KYC and KYB): their download paths stop working. Previously issued media URLs (<c>https://&lt;media-host&gt;/...</c>) stop resolving.
         /// - The session's face data. Its face embedding is deleted too, unless you choose to keep an image-free template (see Face biometric data).
         /// - Webhook deliveries still queued for the session, and their retries. Webhooks already delivered are not affected.
         /// - For a Business Verification (KYB) session: the verifications it created for its key people (KYC) and its corporate owners (KYB), recursively, reported as <c>deleted_child_verifications</c>. A verification it only links to, such as an existing approved KYC it reused, is not deleted.
@@ -162,6 +212,24 @@ namespace Didit.Resources
         public async Task<SessionsDeleteResponse> DeleteAsync(string sessionId, SessionsDeleteParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.DeleteAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Export AML screening history as CSV
+        /// </summary>
+        /// <remarks>
+        /// Download the same ongoing-monitoring history as <c>GET /v3/session/{sessionId}/aml-screening-history/</c> as a CSV file, one line per completed re-screen, newest first, ready to hand to an auditor. The file is streamed whole (no pagination) and starts with a header line; an empty cell means unknown, dataset dates are never estimated, and a value that would start a spreadsheet formula is prefixed with an apostrophe. Works for KYC and KYB session IDs; pass <c>node_id</c> when the session ran more than one AML step. Errors are returned as JSON, not CSV. A scoped API key needs <c>decisions: read</c> and <c>media: read</c>: the response is a file, so a key without <c>media: read</c> gets <c>403</c>.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/aml-screening-history/export/</c> (<c>sessions.export_aml_screening_history</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BinaryResponse> ExportAmlScreeningHistoryAsync(string sessionId, SessionsExportAmlScreeningHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ExportAmlScreeningHistoryAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -215,7 +283,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> ImportSharedAsync(SessionsImportSharedParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<SessionDecision> ImportSharedAsync(SessionsImportSharedParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ImportSharedAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -258,6 +326,63 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List AML screening history
+        /// </summary>
+        /// <remarks>
+        /// List every completed ongoing-monitoring re-screen of a session's AML check, newest first by <c>completed_at</c>, including the runs where nothing changed: alerts, activity entries and webhooks fire only when a result moves, so this history is the evidence that a clean subject was still being screened. Works for KYC and KYB session IDs; pass <c>node_id</c> when the session ran more than one AML step. Only ongoing-monitoring re-screens are listed (the first screening is part of the session decision) and runs from before this history existed are not reconstructed, so a session without ongoing monitoring returns an empty list. <c>count</c> is exact up to 100 and capped at 100 above that, so follow <c>next</c> until it is <c>null</c>. A scoped API key needs <c>decisions: read</c>; see <see href="https://docs.didit.me/core-technology/aml-screening/continuous-monitoring-aml-screening">Continuous AML monitoring</see>.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/aml-screening-history/</c> (<c>sessions.list_aml_screening_history</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<AMLScreeningRun>> ListAmlScreeningHistoryAsync(string sessionId, SessionsListAmlScreeningHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListAmlScreeningHistoryAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List session events
+        /// </summary>
+        /// <remarks>
+        /// Read the event timeline of one verification session, newest first by <c>sent_at</c>: the screens the user saw, buttons and uploads, failed attempts, status and feature-step changes, and the workflow routing trace. Works for User Verification (KYC) and Business Verification (KYB) session IDs. Events are stored asynchronously, so a new event can take a few seconds to appear. Results are paginated with <c>limit</c> and <c>offset</c>; follow <c>next</c> until it is <c>null</c>. A scoped API key needs <c>sessions: read</c> and <c>decisions: read</c>, and without <c>media: read</c> it receives <c>file_url</c> as <c>null</c>. The routing events are described in <see href="https://docs.didit.me/sessions-api/retrieve-session">Retrieve session</see>.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/events/</c> (<c>sessions.list_events</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<SessionEvent2>> ListEventsAsync(string sessionId, SessionsListEventsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListEventsAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List a session's check overrides
+        /// </summary>
+        /// <remarks>
+        /// Every override of an individual feature (step) status on a User Verification (KYC) or Business Verification (KYB) session, newest first and not paginated: applied ones, ones waiting for the person to finish the flow (<c>pending_until_flow_finishes</c>) and cancelled ones, each with who asked, their reason, and whether it applied while the person was still in the flow (<c>forced</c>).
+        /// <para/>
+        /// <c>person_in_flow</c> tells you whether a new override with <c>defer_until_flow_finishes: true</c> would wait. <c>flow_finished_at</c> is when the person last finished the flow; it is <c>null</c> while they are still in it (a resubmission included) and when the session closed before they finished.
+        /// <para/>
+        /// Requires the <c>read:sessions</c> privilege; a scoped API key needs read access to decisions.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/features/overrides/</c> (<c>sessions.list_feature_overrides</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsListFeatureOverridesResponse> ListFeatureOverridesAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListFeatureOverridesAsync(sessionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List networks for a session
         /// </summary>
         /// <remarks>
@@ -269,9 +394,33 @@ namespace Didit.Resources
         /// <param name="sessionId">Session UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<SessionsListNetworksResponse> ListNetworksAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<EntityNetworkMembershipList> ListNetworksAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListNetworksAsync(sessionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Preview a session's decision email
+        /// </summary>
+        /// <remarks>
+        /// Render the email the person receives when you set a session to <c>Approved</c> or <c>Declined</c> with <c>send_email: true</c>, without changing the session or sending anything. The response shows the subject and HTML exactly as they are sent, the recipient, the sender, the language, and whether confirming the change sends the email at all (<c>will_be_sent</c>, <c>not_sent_reason</c>).
+        /// <para/>
+        /// The recipient is the person's own address: the one they verified in an email verification step of the flow, else the one given in <c>contact_details</c> when the session was created. The sender is your application's verified sender domain when white label applies (<c>sender_kind: customer</c>), else Didit's sender (<c>sender_kind: didit</c>).
+        /// <para/>
+        /// To send exactly what you previewed, call [Update Session Status](/sessions-api/update-status) with the same <c>new_status</c>, <c>send_email: true</c>, <c>email_address</c> set to <c>recipient</c>, <c>email_language</c> set to <c>language</c> and <c>email_preview_token</c> set to <c>preview_token</c>. The receipt expires after 15 minutes. When the recipient, language, session status, sender or email changed since the preview, the update returns <c>409</c> before anything changes; preview again and confirm with the new receipt.
+        /// <para/>
+        /// Works for User Verification (KYC) and Business Verification (KYB) sessions in <c>Approved</c>, <c>Declined</c>, <c>In Review</c>, <c>Kyc Expired</c>, <c>Abandoned</c> or <c>Resubmitted</c> status. The status check runs before body validation. Requires the <c>write:sessions</c> privilege; a scoped API key needs write access to decisions. Responses use <c>Cache-Control: no-store</c>: treat them as sensitive verification content.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/decision-email-preview/</c> (<c>sessions.preview_decision_email</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsPreviewDecisionEmailResponse> PreviewDecisionEmailAsync(string sessionId, SessionsPreviewDecisionEmailParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.PreviewDecisionEmailAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -279,11 +428,13 @@ namespace Didit.Resources
         /// Preview a resubmission email
         /// </summary>
         /// <remarks>
-        /// Render the email that would accompany a KYC or KYB resubmission without changing the session, resetting checks, extending its expiry, running checks or sending mail. Requires write:sessions and an application-scoped session in Approved, Declined, In Review, Kyc Expired or Abandoned status. The server validates the selected workflow steps and renders its fixed translated template with the applicable verified white-label sender and branding. The request cannot set a subject, message body or action URL.
+        /// Render the email that would accompany a KYC or KYB resubmission without changing the session, resetting checks, extending its expiry, running checks or sending mail. Requires the <c>write:sessions</c> privilege (a scoped API key needs write access to decisions) and a session in <c>Approved</c>, <c>Declined</c>, <c>In Review</c>, <c>Kyc Expired</c> or <c>Abandoned</c> status. The server validates the selected workflow steps and renders its fixed translated template with the applicable verified white-label sender and branding. The request cannot set a subject, message body or action URL.
         /// <para/>
-        /// The response includes the recipient, sender, subject, HTML, resolved steps and a signed preview_token. requires_user_action describes whether the selected steps include an interactive check. Email delivery remains conditional: if automatic checks finalize the verification during the subsequent resubmission, no action-request email is sent.
+        /// <c>email_address</c> is optional. Without it, the email goes to the person's own address: the one they verified in an email verification step of the flow, else the one given in <c>contact_details</c> when the session was created. An address you pass wins (<c>recipient_source: request</c>). When no address is known and you pass none, <c>recipient</c> and <c>preview_token</c> are empty strings and no email can be sent.
         /// <para/>
-        /// This preview does not reserve session state or authorize delivery. After reviewing it, call Update Session Status with new_status=Resubmitted, the same selection, recipient and language, and email_preview_token set to the returned preview_token. The receipt expires after 15 minutes. When a receipt is supplied, changed inputs, message content, sender or session state return 409 before any mutation or send. Existing integrations may omit the receipt. Regenerate the preview after a conflict. Treat the response as sensitive verification content; responses use Cache-Control: no-store. Render HTML in a sandboxed frame, never directly in your application DOM.
+        /// The response includes the recipient and where it comes from, the sender, subject, HTML, language, resolved steps, whether confirming sends the email (<c>will_be_sent</c>, <c>not_sent_reason</c>) and a signed <c>preview_token</c>. <c>requires_user_action</c> is <c>false</c> when every selected step runs without the person: the resubmission then finishes on its own and no email goes out (<c>not_sent_reason: no_user_action</c>).
+        /// <para/>
+        /// This preview does not reserve session state or authorize delivery. After reviewing it, call [Update Session Status](/sessions-api/update-status) with <c>new_status: Resubmitted</c>, the same <c>nodes_to_resubmit</c> and <c>email_language</c> you previewed, <c>send_email: true</c>, <c>email_address</c> set to <c>recipient</c> and <c>email_preview_token</c> set to <c>preview_token</c>. The receipt expires after 15 minutes. When a receipt is supplied, changed inputs, message content, sender or session state return <c>409</c> before any mutation or send. Existing integrations may omit the receipt. Regenerate the preview after a conflict. Treat the response as sensitive verification content; responses use <c>Cache-Control: no-store</c>. Render HTML in a sandboxed frame, never directly in your application DOM.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/resubmission-preview/</c> (<c>sessions.preview_resubmission</c>).
         /// </remarks>
@@ -298,12 +449,30 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Regenerate a Key People party's KYC session
+        /// </summary>
+        /// <remarks>
+        /// Give a Key People party of a Business Verification (KYB) session a new individual KYC session after its previous one was deleted, so the Key People check can finish again; send no request body. It works only when the party's KYC session was deleted (<c>kyc_session_deleted: true</c>): a party whose KYC session still exists (in any status), a party that never had one, or a company party returns <c>409</c>. Didit creates a new hosted KYC session with the workflow the deleted one ran (its latest published version) or, when that is no longer known, the workflow your Key People settings assign to the party's role, emails the link to the party when an email is on file, clears <c>is_skipped</c>, and recomputes the Key People check and the business session status. It then sends a <c>data.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> for the business session with trigger <c>console_key_people_regenerate</c>; to exempt the party instead, use <c>PATCH /v3/session/{sessionId}/kyb/parties/{partyUuid}/</c>. A scoped API key needs <c>decisions: write</c>, and without <c>sessions: write</c> it receives <c>kyc_session_url</c> as <c>null</c>.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/kyb/parties/{partyUuid}/regenerate/</c> (<c>sessions.regenerate_kyb_party</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the parent Business Verification (KYB) session.</param>
+        /// <param name="partyUuid">UUID of the Key People party (<c>key_people_checks[].submitted.parties[].uuid</c> on the business session decision). Must belong to the session referenced by <c>sessionId</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<KYBKeyPeopleParty> RegenerateKybPartyAsync(string sessionId, string partyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RegenerateKybPartyAsync(sessionId, partyUuid, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Retrieve the full decision for a verification session
         /// </summary>
         /// <remarks>
         /// Retrieve the complete decision report for a verification session — the rolled-up session <c>status</c> plus one report per verification feature the workflow executed. This is the canonical read endpoint for both User Verification (KYC) and Business Verification (KYB) sessions: the same path serves both, and the top-level <c>session_kind</c> discriminator tells you which shape you received (<c>"user"</c> or <c>"business"</c>).
         /// <para/>
-        /// Every feature report is a plural array. V3 workflows are graphs that can run the same feature more than once, so each block (<c>id_verifications</c>, <c>nfc_verifications</c>, <c>liveness_checks</c>, <c>face_matches</c>, <c>poa_verifications</c>, <c>document_ai_documents</c>, <c>phone_verifications</c>, <c>email_verifications</c>, <c>aml_screenings</c>, <c>ip_analyses</c>, <c>database_validations</c>, <c>questionnaire_responses</c>) is a JSON array whose items each carry a <c>node_id</c> identifying the workflow graph node that produced them. Read NFC as <c>response.nfc_verifications[0]</c> — never as a singular <c>nfc</c> field. A block is <c>null</c> until the workflow has run that feature at least once; features the workflow does not include never appear with data.
+        /// Every feature report is a plural array. V3 workflows are graphs that can run the same feature more than once, so each block (<c>id_verifications</c>, <c>nfc_verifications</c>, <c>liveness_checks</c>, <c>face_matches</c>, <c>poa_verifications</c>, <c>document_ai_documents</c>, <c>phone_verifications</c>, <c>email_verifications</c>, <c>aml_screenings</c>, <c>ip_analyses</c>, <c>database_validations</c>, <c>questionnaire_responses</c>) is a JSON array whose items each carry a <c>node_id</c> identifying the workflow graph node that produced them. Read NFC as <c>response.nfc_verifications[0]</c> — never as a singular <c>nfc</c> field. A block is <c>null</c> until the workflow has run that feature at least once; features the workflow does not include never appear with data. Electronic Signature results are in <c>signatures</c>, which is present only when the workflow has an Electronic Signature step.
         /// <para/>
         /// When to call. The recommended pattern is event-driven: wait for the <c>status.updated</c> webhook that fires when the session reaches a decision (<c>Approved</c>, <c>Declined</c>, <c>In Review</c>), then call this endpoint once to fetch the full report. Polling also works — the endpoint can be called at any point in the session lifecycle and returns the data produced so far — but webhook-then-fetch is cheaper and faster. Media URLs in the response (document images, videos, PDFs) are short-lived presigned links: fetch them promptly or re-request the decision to get fresh ones, and do not persist them as long-term references.
         /// <para/>
@@ -319,7 +488,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<SessionsRetrieveDecisionResponse> RetrieveDecisionAsync(string sessionId, SessionsRetrieveDecisionParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<SessionDecision> RetrieveDecisionAsync(string sessionId, SessionsRetrieveDecisionParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveDecisionAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -340,7 +509,7 @@ namespace Didit.Resources
         /// <param name="jobId">The <c>job_id</c> returned with the <c>202</c> from <c>POST /v3/sessions/delete/</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<SessionsRetrieveDeletionJobResponse> RetrieveDeletionJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<SessionDeletionJob> RetrieveDeletionJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveDeletionJobAsync(jobId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -365,6 +534,30 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Simulate a sandbox session's status
+        /// </summary>
+        /// <remarks>
+        /// Force a terminal status on a sandbox session after the fact, from your backend, without running the flow. Sandbox applications only: a live session returns <c>404</c>. Works for User Verification (KYC) and Business Verification (KYB) sessions.
+        /// <para/>
+        /// Set <c>new_status</c>, or let <c>scenario</c> or <c>risk</c> supply it. <c>risk</c> (or the first risk the scenario's magic values carry) adds that warning to the session. The change is recorded in the session's activity.
+        /// <para/>
+        /// <c>send_webhooks</c> (default <c>true</c>) sends exactly the webhooks a real status change sends. With <c>false</c> the status still changes and the console still updates live, but no webhook is logged or sent, the missed-webhook recovery never re-sends that decision, and the next status change sends webhooks as usual. The response echoes the value applied.
+        /// <para/>
+        /// Requires the <c>write:sessions</c> privilege; a scoped API key needs write access to sessions. An unknown <c>session_id</c> returns <c>404</c> and another application's session returns <c>403</c>, both before the body is read; a live session returns <c>404</c> only after the body is validated. To simulate from the hosted flow with the session's own token, use <c>POST /v3/session/{sessionId}/sandbox/simulate/</c>. See [Sandbox &amp; Test Data](/integration/sandbox-testing) for the scenario catalog.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/simulate/</c> (<c>sessions.simulate</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the sandbox verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SandboxSimulateResponse> SimulateAsync(string sessionId, SandboxSimulateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.SimulateAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update an AML hit review status
         /// </summary>
         /// <remarks>
@@ -382,9 +575,27 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> UpdateAmlHitStatusAsync(string sessionId, SessionsUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<SessionsUpdateAmlHitStatusResponse> UpdateAmlHitStatusAsync(string sessionId, SessionsUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAmlHitStatusAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Update an AML check status
+        /// </summary>
+        /// <remarks>
+        /// Set the status of a session's AML screening check as a whole (the <c>status</c> of an <c>aml_screenings[]</c> entry in the session decision), for example <c>Approved</c> after your team cleared every hit. Works for KYC and KYB session IDs; pass <c>node_id</c> (query parameter or body field) when the session ran more than one AML step, otherwise the most recent AML check is updated. When the status actually changes, an <c>AML_STATUS_UPDATED</c> activity entry is recorded and a <c>data.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> is sent; sending the current status returns <c>200</c> and changes nothing. The session status is not recomputed: use <c>PATCH /v3/session/{sessionId}/update-status/</c> for the session decision and <c>PATCH /v3/session/{sessionId}/update-aml-hit-status/</c> for single hits. A scoped API key needs <c>decisions: write</c>.
+        /// <para/>
+        /// <c>PATCH /v3/session/{sessionId}/update-aml-status/</c> (<c>sessions.update_aml_status</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsUpdateAmlStatusResponse> UpdateAmlStatusAsync(string sessionId, SessionsUpdateAmlStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.UpdateAmlStatusAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -415,16 +626,41 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Update a Document AI document
+        /// </summary>
+        /// <remarks>
+        /// Correct the fields Document AI extracted from one uploaded document, set its review status, or both, on a KYC or KYB session. <c>extracted_data</c> must be a JSON object and is merged key by key: a key you send replaces the stored value (a key sent as <c>null</c> is stored as <c>null</c>) and keys you leave out keep their values. The document status feeds the Document AI result of its workflow node in the session decision; the session status itself is not recomputed. Every successful call, including one that changes nothing, sends a <c>data.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> with trigger <c>manual_review</c>. A scoped API key needs <c>decisions: write</c>; see <see href="https://docs.didit.me/core-technology/document-ai/overview">Document AI</see>.
+        /// <para/>
+        /// <c>PATCH /v3/document-ai/{sessionId}/documents/{documentUuid}/</c> (<c>sessions.update_document_ai_data</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
+        /// <param name="documentUuid">UUID of the Document AI document (<c>document_ai_documents[].items[].uuid</c> in <c>GET /v3/session/{sessionId}/decision/</c>). It must belong to the session in the path.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsUpdateDocumentAiDataResponse> UpdateDocumentAiDataAsync(string sessionId, string documentUuid, SessionsUpdateDocumentAiDataParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.UpdateDocumentAiDataAsync(sessionId, documentUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update an individual feature (step) status
         /// </summary>
         /// <remarks>
-        /// Set the status of a single verification feature (step) within a session without changing the overall session decision. Target the feature by its workflow graph <c>nodeId</c> (use <c>default</c> for non-graph workflows where the step has no node).
+        /// Set the status of a single verification feature (step) within a session. Target the feature by its workflow graph <c>nodeId</c>. On non-graph workflows, whose steps have no node, use <c>default</c> and also pass <c>feature_type</c> to say which step you mean.
         /// <para/>
-        /// Works for both User Verification (KYC) and Business Verification (KYB) sessions and every step type — ID/OCR, Liveness, Face Match, NFC, AML, Proof of Address, Phone, Email, Database Validation, Questionnaire, and the KYB registry / documents / key-people checks.
+        /// Works for both User Verification (KYC) and Business Verification (KYB) sessions and every step type: ID/OCR, Liveness, Face Match, NFC, AML, Proof of Address, Phone, Email, Database Validation, Questionnaire, and the KYB registry / documents / key-people checks. This endpoint is not available for standalone API sessions (<c>session_type = API</c>).
         /// <para/>
-        /// <c>new_status</c> must be one of <c>Approved</c>, <c>Declined</c>, or <c>In Review</c>, and must differ from the feature's current status. A successful call fires a <c>data.updated</c> webhook and appends an activity entry (with actor attribution) to the session's review trail. This endpoint is not available for standalone API sessions (<c>session_type = API</c>).
+        /// <c>new_status</c> must be one of <c>Approved</c>, <c>Declined</c>, or <c>In Review</c>, and must differ from the feature's current status.
         /// <para/>
-        /// Authenticate with your API key (<c>x-api-key</c>) or a user authorization header — either must carry the <c>write:sessions</c> privilege.
+        /// When the override applies. Without <c>defer_until_flow_finishes</c> (or with <c>false</c>) the override applies at once, as it always did; when the person is still in the flow it is recorded as <c>forced</c>. With <c>defer_until_flow_finishes: true</c> while the person is still in the flow (the session is <c>Not Started</c>, <c>In Progress</c> or <c>Resubmitted</c> and has not finished), the override is stored as <c>pending_until_flow_finishes</c> and applies when the flow finishes, after the flow reaches its own decision. On a session whose flow already ended it applies at once either way. A waiting override is cancelled instead when the person redoes its step before finishing, when a newer override on the same check replaces it, when the session leaves the flow unfinished (abandoned, expired, or decided mid-flow), or when you cancel it with <c>POST /v3/session/{sessionId}/features/overrides/{overrideId}/cancel/</c>. List a session's overrides with <c>GET /v3/session/{sessionId}/features/overrides/</c>.
+        /// <para/>
+        /// Effect on the session. A session that already has a decision keeps it: only the check changes. When the session has no decision yet and its workflow is waiting on exactly this step, applying the override completes the step: the workflow moves on, later steps run, and a status node can set the session decision and fire <c>status.updated</c>.
+        /// <para/>
+        /// Webhooks and activity. A <c>data.updated</c> webhook fires when the override applies (at once, or when the flow finishes), never while it waits or when it is cancelled. Every override is recorded in the session's activity as <c>FEATURE_OVERRIDE_PENDING</c>, <c>FEATURE_OVERRIDE_APPLIED</c> or <c>FEATURE_OVERRIDE_CANCELLED</c>, with who made it; the request's entry carries your <c>comment</c>.
+        /// <para/>
+        /// Authenticate with your API key (<c>x-api-key</c>) or a user authorization header carrying the <c>write:sessions</c> privilege; a scoped API key needs write access to decisions.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/features/{nodeId}/update-status/</c> (<c>sessions.update_feature_status</c>).
         /// </remarks>
@@ -527,13 +763,13 @@ namespace Didit.Resources
         /// <remarks>
         /// Manually override the final decision of a KYC or KYB verification session. Set <c>new_status</c> to <c>Approved</c> or <c>Declined</c> to record a manual decision, or to <c>Resubmitted</c> to clear specific verification steps and let the user redo them through the same verification URL. The endpoint accepts both user (KYC) and business (KYB) session IDs.
         /// <para/>
-        /// Call it once a session has reached a reviewable state: the current status must be <c>Approved</c>, <c>Declined</c>, <c>In Review</c>, <c>Kyc Expired</c>, <c>Abandoned</c>, or <c>Resubmitted</c>. Sessions that are still <c>Not Started</c>, <c>In Progress</c>, or <c>Awaiting User</c>, or that ended as <c>Expired</c>, return <c>400</c>. The new status must differ from the current one, and your API key's organization needs the <c>write:sessions</c> permission. The eligible-state check runs before body validation, so an ineligible session returns the <c>Wrong Current Status</c> error even when the payload is also invalid.
+        /// Call it once a session has reached a reviewable state: the current status must be <c>Approved</c>, <c>Declined</c>, <c>In Review</c>, <c>Kyc Expired</c>, <c>Abandoned</c>, or <c>Resubmitted</c>. Sessions that are still <c>Not Started</c>, <c>In Progress</c>, or <c>Awaiting User</c>, or that ended as <c>Expired</c>, return <c>400</c>. Your API key needs the <c>write:sessions</c> permission (a scoped API key needs write access to decisions). The eligible-state check runs before body validation, so an ineligible session returns the <c>Wrong Current Status</c> error even when the payload is also invalid.
         /// <para/>
-        /// For <c>Resubmitted</c>, pass <c>nodes_to_resubmit</c> to choose which workflow steps the user must redo, or omit it to auto-select existing feature attempts in a resubmittable state (<c>Declined</c>, <c>In Review</c>, <c>Not Finished</c>, <c>Expired</c>). Never-attempted features are not auto-selected — list them explicitly in <c>nodes_to_resubmit</c>, or the request returns <c>400</c> when no recorded attempt needs resubmission. Captured data for the selected steps is deleted, the steps are reordered to match the workflow graph, the session's expiration window restarts, and the original verification URL becomes usable again. Backend-only steps (<c>AML</c>, <c>DATABASE_VALIDATION</c>, <c>IP_ANALYSIS</c>) at the head of the list run immediately without user interaction; if every resubmitted step is backend-only, the session re-finalizes within the same request. <c>KYB_REGISTRY</c> and <c>KYB_KEY_PEOPLE</c> cannot be resubmitted directly — resubmit the relevant child KYC sessions instead and the parent business session recomputes automatically.
+        /// For <c>Resubmitted</c>, pass <c>nodes_to_resubmit</c> to choose which workflow steps the user must redo, or omit it to auto-select existing feature attempts in a resubmittable state (<c>Declined</c>, <c>In Review</c>, <c>Not Finished</c>, <c>Expired</c>). Never-attempted features are not auto-selected: list them explicitly in <c>nodes_to_resubmit</c>, or the request returns <c>400</c> when no recorded attempt needs resubmission. The selected steps' previous results move to the resubmission's history (returned by Get Decision with <c>include=resubmissions</c>), the steps are reordered to match the workflow graph, the session's expiration window restarts, and the original verification URL becomes usable again. Backend-only steps (<c>AML</c>, <c>DATABASE_VALIDATION</c>, <c>IP_ANALYSIS</c>) at the head of the list run immediately without user interaction; if every resubmitted step is backend-only, the session re-finalizes within the same request. <c>KYB_REGISTRY</c> and <c>KYB_KEY_PEOPLE</c> cannot be resubmitted directly: resubmit the relevant child KYC sessions instead and the parent business session recomputes automatically.
         /// <para/>
-        /// Every successful call fires the <c>status.updated</c> [webhook](/integration/webhooks) once the change commits and appends an activity entry — with actor attribution and your <c>comment</c> — to the session's <c>reviews</c>, visible in [Get Decision](#get-/v3/session/-sessionId-/decision/) and in the console activity timeline. The user-profile aggregates linked to the session's <c>vendor_data</c> update as well. Declining disables ongoing AML monitoring for the session; re-approving re-enables it (from <c>Resubmitted</c>, <c>Declined</c>, or <c>Kyc Expired</c>) when the workflow has monitoring turned on. Approving or declining a child KYC that belongs to a KYB key-people check recomputes the parent business session's status. Set <c>send_email: true</c> (with <c>email_address</c>) to notify the user: a status notice for <c>Approved</c>/<c>Declined</c>, or a resubmission email containing the verification link and per-step reasons for <c>Resubmitted</c>.
+        /// Every call that changes the status fires the <c>status.updated</c> [webhook](/integration/webhooks) once the change commits and appends an activity entry (with actor attribution and your <c>comment</c>) to the session's <c>reviews</c>, visible in [Get Decision](#get-/v3/session/-sessionId-/decision/) and in the console activity timeline. The user-profile aggregates linked to the session's <c>vendor_data</c> update as well. Declining disables ongoing AML monitoring for the session; re-approving re-enables it (from <c>Resubmitted</c>, <c>Declined</c>, or <c>Kyc Expired</c>) when the workflow has monitoring turned on. Approving or declining a child KYC that belongs to a KYB key-people check recomputes the parent business session's status. Set <c>send_email: true</c> (with <c>email_address</c>) to notify the user: a status notice for <c>Approved</c>/<c>Declined</c>, or a resubmission email containing the verification link and per-step reasons for <c>Resubmitted</c>. To check the email first, preview it with [Preview Decision Email](/sessions-api/preview-decision-email) (<c>Approved</c>, <c>Declined</c>) or [Preview Resubmission Email](/sessions-api/preview-resubmission) (<c>Resubmitted</c>) and pass its <c>preview_token</c> as <c>email_preview_token</c>: the update then sends exactly the previewed email, or returns <c>409</c> before changing anything when the email or the session changed since the preview or the receipt is older than 15 minutes.
         /// <para/>
-        /// The operation is intentionally not repeatable with the same value: re-sending the current status returns <c>400</c> (<c>The new status is the same as the current status.</c>), so accidental double-submissions are harmless. Authentication and permission failures both return <c>403</c> — this API never responds <c>401</c>.
+        /// Repeating <c>Approved</c> or <c>Declined</c> on a session that already has that status changes nothing and returns <c>200</c>: no webhook, no activity entry and no email. Repeating <c>Resubmitted</c> returns <c>400</c> (<c>The new status is the same as the current status.</c>). Missing or invalid credentials and missing permissions return <c>403</c>; an expired scoped API key returns <c>401</c>.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/update-status/</c> (<c>sessions.update_status</c>).
         /// </remarks>
@@ -558,6 +794,8 @@ namespace Didit.Resources
             _pipeline = pipeline;
             Imports = new SessionsImportsRawResource(pipeline);
             Reviews = new SessionsReviewsRawResource(pipeline);
+            Signatures = new SessionsSignaturesRawResource(pipeline);
+            Webhooks = new SessionsWebhooksRawResource(pipeline);
         }
 
         /// <summary>The <c>sessions.imports</c> resource.</summary>
@@ -565,6 +803,40 @@ namespace Didit.Resources
 
         /// <summary>The <c>sessions.reviews</c> resource.</summary>
         public SessionsReviewsRawResource Reviews { get; }
+
+        /// <summary>The <c>sessions.signatures</c> resource.</summary>
+        public SessionsSignaturesRawResource Signatures { get; }
+
+        /// <summary>The <c>sessions.webhooks</c> resource.</summary>
+        public SessionsWebhooksRawResource Webhooks { get; }
+
+        /// <summary>
+        /// Add an image to a session
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.AddImagesAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsAddImagesResponse>> AddImagesAsync(string sessionId, SessionsAddImagesParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Patch, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/add-images/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            var form = new MultipartRequestBody();
+            form.Add("file", parameters.File);
+            form.Add("model_type", parameters.ModelType.Value);
+            if (parameters.FilePassword.IsSet)
+            {
+                form.Add("file_password", parameters.FilePassword.Value);
+            }
+            request.Body = form;
+            return _pipeline.SendJsonAsync<SessionsAddImagesResponse>(request, requestOptions, cancellationToken);
+        }
 
         /// <summary>
         /// Bulk delete KYC sessions by session_number
@@ -591,7 +863,7 @@ namespace Didit.Resources
         /// Bulk update AML hit review statuses
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.BulkUpdateAmlHitStatusAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> BulkUpdateAmlHitStatusAsync(string sessionId, SessionsBulkUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<SessionsBulkUpdateAmlHitStatusResponse>> BulkUpdateAmlHitStatusAsync(string sessionId, SessionsBulkUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -606,7 +878,22 @@ namespace Didit.Resources
             };
             request.Query.Add("node_id", parameters.NodeIdQuery);
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<SessionsBulkUpdateAmlHitStatusResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Cancel a check override that waits for the flow to finish
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.CancelFeatureOverrideAsync"/>.</remarks>
+        public Task<DiditResponse<FeatureStatusOverride>> CancelFeatureOverrideAsync(string sessionId, string overrideId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/features/overrides/" + PathParameter.Encode(overrideId, "overrideId") + "/cancel/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<FeatureStatusOverride>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -650,6 +937,22 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Export AML screening history as CSV
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ExportAmlScreeningHistoryAsync"/>.</remarks>
+        public Task<DiditResponse<BinaryResponse>> ExportAmlScreeningHistoryAsync(string sessionId, SessionsExportAmlScreeningHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/aml-screening-history/export/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters?.NodeId);
+            return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Download a PDF report for a verification session
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.GeneratePdfAsync"/>.</remarks>
@@ -668,7 +971,7 @@ namespace Didit.Resources
         /// Redeem a share token to clone a verification session into your application
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.ImportSharedAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> ImportSharedAsync(SessionsImportSharedParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<SessionDecision>> ImportSharedAsync(SessionsImportSharedParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -682,7 +985,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<SessionDecision>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -723,10 +1026,62 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List AML screening history
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ListAmlScreeningHistoryAsync"/>.</remarks>
+        public Task<DiditResponse<Page<AMLScreeningRun>>> ListAmlScreeningHistoryAsync(string sessionId, SessionsListAmlScreeningHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/aml-screening-history/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters?.NodeId);
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            request.Query.Add("ordering", parameters?.Ordering);
+            return _pipeline.SendPageAsync<AMLScreeningRun>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List session events
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ListEventsAsync"/>.</remarks>
+        public Task<DiditResponse<Page<SessionEvent2>>> ListEventsAsync(string sessionId, SessionsListEventsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/events/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            request.Query.Add("ordering", parameters?.Ordering);
+            return _pipeline.SendPageAsync<SessionEvent2>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List a session's check overrides
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ListFeatureOverridesAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsListFeatureOverridesResponse>> ListFeatureOverridesAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/features/overrides/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionsListFeatureOverridesResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// List networks for a session
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.ListNetworksAsync"/>.</remarks>
-        public Task<DiditResponse<SessionsListNetworksResponse>> ListNetworksAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<EntityNetworkMembershipList>> ListNetworksAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/sessions/" + PathParameter.Encode(sessionId, "sessionId") + "/networks/")
             {
@@ -734,7 +1089,28 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<SessionsListNetworksResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Preview a session's decision email
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.PreviewDecisionEmailAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsPreviewDecisionEmailResponse>> PreviewDecisionEmailAsync(string sessionId, SessionsPreviewDecisionEmailParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/decision-email-preview/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SessionsPreviewDecisionEmailResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -759,10 +1135,25 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Regenerate a Key People party's KYC session
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.RegenerateKybPartyAsync"/>.</remarks>
+        public Task<DiditResponse<KYBKeyPeopleParty>> RegenerateKybPartyAsync(string sessionId, string partyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/parties/" + PathParameter.Encode(partyUuid, "partyUuid") + "/regenerate/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<KYBKeyPeopleParty>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieve the full decision for a verification session
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.RetrieveDecisionAsync"/>.</remarks>
-        public Task<DiditResponse<SessionsRetrieveDecisionResponse>> RetrieveDecisionAsync(string sessionId, SessionsRetrieveDecisionParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<SessionDecision>> RetrieveDecisionAsync(string sessionId, SessionsRetrieveDecisionParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/decision/")
             {
@@ -771,14 +1162,14 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Query.Add("include", parameters?.Include?.Value);
-            return _pipeline.SendJsonAsync<SessionsRetrieveDecisionResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<SessionDecision>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
         /// Get a bulk session deletion job
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.RetrieveDeletionJobAsync"/>.</remarks>
-        public Task<DiditResponse<SessionsRetrieveDeletionJobResponse>> RetrieveDeletionJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<SessionDeletionJob>> RetrieveDeletionJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/sessions/delete/" + PathParameter.Encode(jobId, "jobId") + "/")
             {
@@ -786,7 +1177,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            return _pipeline.SendJsonAsync<SessionsRetrieveDeletionJobResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<SessionDeletionJob>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -811,10 +1202,31 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Simulate a sandbox session's status
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.SimulateAsync"/>.</remarks>
+        public Task<DiditResponse<SandboxSimulateResponse>> SimulateAsync(string sessionId, SandboxSimulateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/simulate/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SandboxSimulateResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Update an AML hit review status
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.UpdateAmlHitStatusAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> UpdateAmlHitStatusAsync(string sessionId, SessionsUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<SessionsUpdateAmlHitStatusResponse>> UpdateAmlHitStatusAsync(string sessionId, SessionsUpdateAmlHitStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -829,7 +1241,29 @@ namespace Didit.Resources
             };
             request.Query.Add("node_id", parameters.NodeIdQuery);
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<SessionsUpdateAmlHitStatusResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Update an AML check status
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.UpdateAmlStatusAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsUpdateAmlStatusResponse>> UpdateAmlStatusAsync(string sessionId, SessionsUpdateAmlStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Patch, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/update-aml-status/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters.NodeIdQuery);
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SessionsUpdateAmlStatusResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -852,6 +1286,27 @@ namespace Didit.Resources
             request.Query.Add("node_id", parameters.NodeId);
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<SessionsUpdateDataResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Update a Document AI document
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.UpdateDocumentAiDataAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsUpdateDocumentAiDataResponse>> UpdateDocumentAiDataAsync(string sessionId, string documentUuid, SessionsUpdateDocumentAiDataParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Patch, "/v3/document-ai/" + PathParameter.Encode(sessionId, "sessionId") + "/documents/" + PathParameter.Encode(documentUuid, "documentUuid") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SessionsUpdateDocumentAiDataResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

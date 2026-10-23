@@ -33,7 +33,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> CreateAsync(SimpleWorkflowRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<WorkflowDetail> CreateAsync(SimpleWorkflowRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -81,7 +81,7 @@ namespace Didit.Resources
         /// <param name="settingsUuid">Per-version UUID of the workflow (the <c>uuid</c> value returned by the list endpoint). Each version of a workflow has its own <c>settings_uuid</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> RetrieveAsync(string settingsUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<WorkflowDetail> RetrieveAsync(string settingsUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveAsync(settingsUuid, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -99,7 +99,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> UpdateAsync(string settingsUuid, SimpleWorkflowUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<WorkflowDetail> UpdateAsync(string settingsUuid, SimpleWorkflowUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAsync(settingsUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -120,7 +120,7 @@ namespace Didit.Resources
         /// Create workflow
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="WorkflowsResource.CreateAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> CreateAsync(SimpleWorkflowRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<WorkflowDetail>> CreateAsync(SimpleWorkflowRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -134,7 +134,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<WorkflowDetail>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Didit.Resources
         /// Get workflow
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="WorkflowsResource.RetrieveAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> RetrieveAsync(string settingsUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<WorkflowDetail>> RetrieveAsync(string settingsUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/workflows/" + PathParameter.Encode(settingsUuid, "settingsUuid") + "/")
             {
@@ -181,14 +181,14 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<WorkflowDetail>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
         /// Update workflow
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="WorkflowsResource.UpdateAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> UpdateAsync(string settingsUuid, SimpleWorkflowUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<WorkflowDetail>> UpdateAsync(string settingsUuid, SimpleWorkflowUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -202,7 +202,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<WorkflowDetail>(request, requestOptions, cancellationToken);
         }
     }
 }

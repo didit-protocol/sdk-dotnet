@@ -53,6 +53,69 @@ namespace Didit
         /// <summary><c>travel_rule.status.updated</c></summary>
         public static WebhookEvent TravelRuleStatusUpdated { get; } = new("travel_rule.status.updated");
 
+        /// <summary><c>workflow.compliance_changed</c></summary>
+        public static WebhookEvent WorkflowComplianceChanged { get; } = new("workflow.compliance_changed");
+
+        /// <summary><c>auth.signup</c></summary>
+        public static WebhookEvent AuthSignup { get; } = new("auth.signup");
+
+        /// <summary><c>auth.login</c></summary>
+        public static WebhookEvent AuthLogin { get; } = new("auth.login");
+
+        /// <summary><c>auth.login_failed</c></summary>
+        public static WebhookEvent AuthLoginFailed { get; } = new("auth.login_failed");
+
+        /// <summary><c>auth.password_reset_requested</c></summary>
+        public static WebhookEvent AuthPasswordResetRequested { get; } = new("auth.password_reset_requested");
+
+        /// <summary><c>auth.password_reset_completed</c></summary>
+        public static WebhookEvent AuthPasswordResetCompleted { get; } = new("auth.password_reset_completed");
+
+        /// <summary><c>auth.mfa_changed</c></summary>
+        public static WebhookEvent AuthMfaChanged { get; } = new("auth.mfa_changed");
+
+        /// <summary><c>auth.new_device</c></summary>
+        public static WebhookEvent AuthNewDevice { get; } = new("auth.new_device");
+
+        /// <summary><c>auth.account_locked</c></summary>
+        public static WebhookEvent AuthAccountLocked { get; } = new("auth.account_locked");
+
+        /// <summary><c>investigator.report.ready</c></summary>
+        public static WebhookEvent InvestigatorReportReady { get; } = new("investigator.report.ready");
+
+        /// <summary><c>investigator.decision.automated</c></summary>
+        public static WebhookEvent InvestigatorDecisionAutomated { get; } = new("investigator.decision.automated");
+
+        /// <summary><c>investigator.decision.overridden</c></summary>
+        public static WebhookEvent InvestigatorDecisionOverridden { get; } = new("investigator.decision.overridden");
+
+        /// <summary><c>investigator.decision.contested</c></summary>
+        public static WebhookEvent InvestigatorDecisionContested { get; } = new("investigator.decision.contested");
+
+        /// <summary><c>investigator.question.raised</c></summary>
+        public static WebhookEvent InvestigatorQuestionRaised { get; } = new("investigator.question.raised");
+
+        /// <summary><c>investigator.automation.paused</c></summary>
+        public static WebhookEvent InvestigatorAutomationPaused { get; } = new("investigator.automation.paused");
+
+        /// <summary><c>investigator.rfi.answered</c></summary>
+        public static WebhookEvent InvestigatorRfiAnswered { get; } = new("investigator.rfi.answered");
+
+        /// <summary><c>investigator.rfi.overdue</c></summary>
+        public static WebhookEvent InvestigatorRfiOverdue { get; } = new("investigator.rfi.overdue");
+
+        /// <summary><c>investigator.drift.detected</c></summary>
+        public static WebhookEvent InvestigatorDriftDetected { get; } = new("investigator.drift.detected");
+
+        /// <summary><c>investigator.sla.breached</c></summary>
+        public static WebhookEvent InvestigatorSlaBreached { get; } = new("investigator.sla.breached");
+
+        /// <summary><c>investigator.qa.failed</c></summary>
+        public static WebhookEvent InvestigatorQaFailed { get; } = new("investigator.qa.failed");
+
+        /// <summary><c>investigator.external.report.ready</c></summary>
+        public static WebhookEvent InvestigatorExternalReportReady { get; } = new("investigator.external.report.ready");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

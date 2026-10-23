@@ -22,6 +22,13 @@ namespace Didit
         public string? Status { get; set; }
 
         /// <summary>
+        /// <c>transactions</c> keeps networks whose members are all transaction parties; <c>identity</c> keeps every other network. Omit for both. It also narrows <c>counts.views</c> and <c>counts.facets</c>. Any other value returns 400.
+        /// </summary>
+        [JsonPropertyName("scope")]
+        [JsonIgnore]
+        public NetworksListParamsScope? Scope { get; set; }
+
+        /// <summary>
         /// Comma-separated signal types: ip_address,device,face,document_number,phone,email,address.
         /// </summary>
         [JsonPropertyName("signal_type")]
@@ -55,6 +62,34 @@ namespace Didit
         [JsonPropertyName("max_size")]
         [JsonIgnore]
         public long? MaxSize { get; set; }
+
+        /// <summary>
+        /// Comma-separated assignees: <c>unassigned</c>, member emails (matched case-insensitively), or <c>me</c> for the calling console member. A network matches any value. <c>me</c> needs a console member token: an API key gets 400 <c>{"assignee": ["\"me\" needs a user token; an API key has no assignee identity."]}</c>.
+        /// </summary>
+        [JsonPropertyName("assignee")]
+        [JsonIgnore]
+        public string? Assignee { get; set; }
+
+        /// <summary>
+        /// Comma-separated priorities: <c>low</c>, <c>medium</c>, <c>high</c>, or <c>none</c> for networks without a priority. Any other value returns 400 <c>{"priority": "Unknown priority: &lt;values&gt;."}</c>.
+        /// </summary>
+        [JsonPropertyName("priority")]
+        [JsonIgnore]
+        public string? Priority { get; set; }
+
+        /// <summary>
+        /// Minimum risk score, a whole number from 0 to 100. A value that is not a whole number returns 400 <c>{"risk_min": "Use a whole number from 0 to 100."}</c>.
+        /// </summary>
+        [JsonPropertyName("risk_min")]
+        [JsonIgnore]
+        public long? RiskMin { get; set; }
+
+        /// <summary>
+        /// <c>true</c> keeps the networks your application opened a case for, <c>false</c> the others. Any other value is ignored.
+        /// </summary>
+        [JsonPropertyName("has_case")]
+        [JsonIgnore]
+        public bool? HasCase { get; set; }
 
         /// <summary>
         /// Lower bound on last_activity_at (ISO 8601 date or datetime).
@@ -97,6 +132,13 @@ namespace Didit
         [JsonPropertyName("offset")]
         [JsonIgnore]
         public long? Offset { get; set; }
+
+        /// <summary>
+        /// <c>false</c> returns the page and its <c>count</c> only, without <c>kpis</c> and <c>counts</c>. Defaults to <c>true</c>. Any value other than <c>true</c> or <c>false</c> returns 400.
+        /// </summary>
+        [JsonPropertyName("summary")]
+        [JsonIgnore]
+        public bool? Summary { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

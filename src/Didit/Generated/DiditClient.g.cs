@@ -20,11 +20,17 @@ namespace Didit
         /// <summary>The <c>aml_monitoring</c> resource.</summary>
         public AmlMonitoringResource AmlMonitoring { get; private set; } = null!;
 
+        /// <summary>The <c>analytics</c> resource.</summary>
+        public AnalyticsResource Analytics { get; private set; } = null!;
+
         /// <summary>The <c>billing</c> resource.</summary>
         public BillingResource Billing { get; private set; } = null!;
 
         /// <summary>The <c>biometric_templates</c> resource.</summary>
         public BiometricTemplatesResource BiometricTemplates { get; private set; } = null!;
+
+        /// <summary>The <c>blocklist</c> resource.</summary>
+        public BlocklistResource Blocklist { get; private set; } = null!;
 
         /// <summary>The <c>business_sessions</c> resource.</summary>
         public BusinessSessionsResource BusinessSessions { get; private set; } = null!;
@@ -62,11 +68,20 @@ namespace Didit
         /// <summary>The <c>id_wallets</c> resource.</summary>
         public IdWalletsResource IdWallets { get; private set; } = null!;
 
+        /// <summary>The <c>investigator</c> resource.</summary>
+        public InvestigatorResource Investigator { get; private set; } = null!;
+
         /// <summary>The <c>ip</c> resource.</summary>
         public IpResource Ip { get; private set; } = null!;
 
         /// <summary>The <c>kyb</c> resource.</summary>
         public KybResource Kyb { get; private set; } = null!;
+
+        /// <summary>The <c>lists</c> resource.</summary>
+        public ListsResource Lists { get; private set; } = null!;
+
+        /// <summary>The <c>monitoring_events</c> resource.</summary>
+        public MonitoringEventsResource MonitoringEvents { get; private set; } = null!;
 
         /// <summary>The <c>networks</c> resource.</summary>
         public NetworksResource Networks { get; private set; } = null!;
@@ -123,8 +138,10 @@ namespace Didit
             AgeEstimation = new AgeEstimationResource(WithRawResponse.AgeEstimation);
             Aml = new AmlResource(WithRawResponse.Aml);
             AmlMonitoring = new AmlMonitoringResource(WithRawResponse.AmlMonitoring);
+            Analytics = new AnalyticsResource(WithRawResponse.Analytics);
             Billing = new BillingResource(WithRawResponse.Billing);
             BiometricTemplates = new BiometricTemplatesResource(WithRawResponse.BiometricTemplates);
+            Blocklist = new BlocklistResource(WithRawResponse.Blocklist);
             BusinessSessions = new BusinessSessionsResource(WithRawResponse.BusinessSessions);
             Businesses = new BusinessesResource(WithRawResponse.Businesses);
             Cases = new CasesResource(WithRawResponse.Cases);
@@ -137,8 +154,11 @@ namespace Didit
             FraudChecks = new FraudChecksResource(WithRawResponse.FraudChecks);
             IdVerification = new IdVerificationResource(WithRawResponse.IdVerification);
             IdWallets = new IdWalletsResource(WithRawResponse.IdWallets);
+            Investigator = new InvestigatorResource(WithRawResponse.Investigator);
             Ip = new IpResource(WithRawResponse.Ip);
             Kyb = new KybResource(WithRawResponse.Kyb);
+            Lists = new ListsResource(WithRawResponse.Lists);
+            MonitoringEvents = new MonitoringEventsResource(WithRawResponse.MonitoringEvents);
             Networks = new NetworksResource(WithRawResponse.Networks);
             PassiveLiveness = new PassiveLivenessResource(WithRawResponse.PassiveLiveness);
             Phone = new PhoneResource(WithRawResponse.Phone);
@@ -165,8 +185,10 @@ namespace Didit
             AgeEstimation = new AgeEstimationRawResource(pipeline);
             Aml = new AmlRawResource(pipeline);
             AmlMonitoring = new AmlMonitoringRawResource(pipeline);
+            Analytics = new AnalyticsRawResource(pipeline);
             Billing = new BillingRawResource(pipeline);
             BiometricTemplates = new BiometricTemplatesRawResource(pipeline);
+            Blocklist = new BlocklistRawResource(pipeline);
             BusinessSessions = new BusinessSessionsRawResource(pipeline);
             Businesses = new BusinessesRawResource(pipeline);
             Cases = new CasesRawResource(pipeline);
@@ -179,8 +201,11 @@ namespace Didit
             FraudChecks = new FraudChecksRawResource(pipeline);
             IdVerification = new IdVerificationRawResource(pipeline);
             IdWallets = new IdWalletsRawResource(pipeline);
+            Investigator = new InvestigatorRawResource(pipeline);
             Ip = new IpRawResource(pipeline);
             Kyb = new KybRawResource(pipeline);
+            Lists = new ListsRawResource(pipeline);
+            MonitoringEvents = new MonitoringEventsRawResource(pipeline);
             Networks = new NetworksRawResource(pipeline);
             PassiveLiveness = new PassiveLivenessRawResource(pipeline);
             Phone = new PhoneRawResource(pipeline);
@@ -209,11 +234,17 @@ namespace Didit
         /// <summary>The <c>aml_monitoring</c> resource.</summary>
         public AmlMonitoringRawResource AmlMonitoring { get; }
 
+        /// <summary>The <c>analytics</c> resource.</summary>
+        public AnalyticsRawResource Analytics { get; }
+
         /// <summary>The <c>billing</c> resource.</summary>
         public BillingRawResource Billing { get; }
 
         /// <summary>The <c>biometric_templates</c> resource.</summary>
         public BiometricTemplatesRawResource BiometricTemplates { get; }
+
+        /// <summary>The <c>blocklist</c> resource.</summary>
+        public BlocklistRawResource Blocklist { get; }
 
         /// <summary>The <c>business_sessions</c> resource.</summary>
         public BusinessSessionsRawResource BusinessSessions { get; }
@@ -251,11 +282,20 @@ namespace Didit
         /// <summary>The <c>id_wallets</c> resource.</summary>
         public IdWalletsRawResource IdWallets { get; }
 
+        /// <summary>The <c>investigator</c> resource.</summary>
+        public InvestigatorRawResource Investigator { get; }
+
         /// <summary>The <c>ip</c> resource.</summary>
         public IpRawResource Ip { get; }
 
         /// <summary>The <c>kyb</c> resource.</summary>
         public KybRawResource Kyb { get; }
+
+        /// <summary>The <c>lists</c> resource.</summary>
+        public ListsRawResource Lists { get; }
+
+        /// <summary>The <c>monitoring_events</c> resource.</summary>
+        public MonitoringEventsRawResource MonitoringEvents { get; }
 
         /// <summary>The <c>networks</c> resource.</summary>
         public NetworksRawResource Networks { get; }

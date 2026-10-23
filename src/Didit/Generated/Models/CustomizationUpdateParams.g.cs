@@ -190,6 +190,13 @@ namespace Didit
         public Optional<bool> DeleteLogoRectangular { get; set; }
 
         /// <summary>
+        /// When <c>true</c>, removes the current dark-mode logo, and <c>logo_rectangular_dark</c> then reads <c>null</c>. If the same multipart request also uploads <c>image_rectangular_dark</c>, the upload wins.
+        /// </summary>
+        [JsonPropertyName("delete_logo_rectangular_dark")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> DeleteLogoRectangularDark { get; set; }
+
+        /// <summary>
         /// When <c>true</c>, removes the current favicon.
         /// </summary>
         [JsonPropertyName("delete_favicon")]
@@ -197,18 +204,25 @@ namespace Didit
         public Optional<bool> DeleteFavicon { get; set; }
 
         /// <summary>
-        /// Square logo (1:1 aspect ratio). Max 1 MB. Allowed: <c>png</c>, <c>jpg</c>, <c>jpeg</c>, <c>webp</c>.
+        /// Square logo (1:1 aspect ratio). PNG, JPG or WebP, at least 512 px on the long side, at most 1 MB.
         /// </summary>
         [JsonPropertyName("image_square")]
         [JsonIgnore]
         public Optional<FileUpload> ImageSquare { get; set; }
 
         /// <summary>
-        /// Rectangular logo (2:1 aspect ratio). Max 1 MB. Allowed: <c>png</c>, <c>jpg</c>, <c>jpeg</c>, <c>webp</c>.
+        /// Rectangular logo (2:1 aspect ratio). PNG, JPG or WebP, at least 512 px on the long side, at most 1 MB.
         /// </summary>
         [JsonPropertyName("image_rectangular")]
         [JsonIgnore]
         public Optional<FileUpload> ImageRectangular { get; set; }
+
+        /// <summary>
+        /// Rectangular logo for dark mode (2:1 aspect ratio), shown on a dark background. PNG, JPG or WebP, at least 512 px on the long side, at most 1 MB. Returned as <c>logo_rectangular_dark</c>.
+        /// </summary>
+        [JsonPropertyName("image_rectangular_dark")]
+        [JsonIgnore]
+        public Optional<FileUpload> ImageRectangularDark { get; set; }
 
         /// <summary>
         /// Favicon image. Max 500 KB.

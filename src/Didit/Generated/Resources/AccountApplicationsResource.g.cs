@@ -44,16 +44,17 @@ namespace Didit.Resources
         /// List the organization's applications
         /// </summary>
         /// <remarks>
-        /// List every application in the organization. Use this to discover <c>app_id</c> values when recovering credentials from a new machine — follow with <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> for the API key. Requires an owner or admin Bearer token.
+        /// List the organization's applications, 50 per page by default. Use this to discover <c>app_id</c> values when recovering credentials from a new machine, then call <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> for the API key. Requires an owner or admin Bearer token.
         /// <para/>
         /// <c>GET /organizations/me/{org_id}/applications/</c> (<c>account.applications.list</c>).
         /// </remarks>
         /// <param name="orgId">UUID of the organization. Look it up with <c>GET /organizations/me/</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> ListAsync(string orgId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<Page<Application>> ListAsync(string orgId, AccountApplicationsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            var response = await _raw.ListAsync(orgId, requestOptions, cancellationToken).ConfigureAwait(false);
+            var response = await _raw.ListAsync(orgId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -79,7 +80,7 @@ namespace Didit.Resources
         /// Update Application
         /// </summary>
         /// <remarks>
-        /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. Requires owner/admin JWT.
+        /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored. Requires owner/admin JWT.
         /// <para/>
         /// <c>PATCH /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.update</c>).
         /// </remarks>
@@ -128,7 +129,7 @@ namespace Didit.Resources
         /// List the organization's applications
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="AccountApplicationsResource.ListAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> ListAsync(string orgId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<Page<Application>>> ListAsync(string orgId, AccountApplicationsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/organizations/me/" + PathParameter.Encode(orgId, "orgId") + "/applications/")
             {
@@ -136,7 +137,9 @@ namespace Didit.Resources
                 Auth = AuthKind.AccountToken,
                 ApplicationScoped = false,
             };
-            return _pipeline.SendJsonAsync<JsonElement>(request, requestOptions, cancellationToken);
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<Application>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

@@ -35,7 +35,14 @@ namespace Didit
         public Optional<string> RegistrationNumber { get; set; }
 
         /// <summary>
-        /// Name-matching strategy applied by the registry search.
+        /// Registry tier whose provider chain this search runs on. <c>basic</c> (default) searches the country's Lite chain; <c>shareholders</c> and <c>ubo</c> search that tier's ownership chain, which can be a different source, so an empty Lite search does not prove the registry lacks the company. A country that does not offer the named tier is searched at the highest tier it offers up to that one. Retrieve the candidate from the endpoint that sells the tier you searched: <c>POST /v3/kyb/select/</c> (Lite), <c>POST /v3/kyb/shareholders/</c> or <c>POST /v3/kyb/ubo/</c>.
+        /// </summary>
+        [JsonPropertyName("tier")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<KybSearchParamsTier> Tier { get; set; }
+
+        /// <summary>
+        /// Name-matching strategy applied by the registry search. <c>contains</c> is the only accepted value: no registry source behind the search offers a prefix or fuzzy mode, so <c>start_with</c> and <c>fuzzy</c> are rejected with <c>400</c> (<c>not a valid choice</c>).
         /// </summary>
         [JsonPropertyName("search_type")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

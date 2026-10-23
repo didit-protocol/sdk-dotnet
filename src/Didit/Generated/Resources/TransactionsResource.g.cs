@@ -20,9 +20,13 @@ namespace Didit.Resources
         internal TransactionsResource(TransactionsRawResource raw)
         {
             _raw = raw;
+            Notes = new TransactionsNotesResource(raw.Notes);
             Rules = new TransactionsRulesResource(raw.Rules);
             TravelRule = new TransactionsTravelRuleResource(raw.TravelRule);
         }
+
+        /// <summary>The <c>transactions.notes</c> resource.</summary>
+        public TransactionsNotesResource Notes { get; }
 
         /// <summary>The <c>transactions.rules</c> resource.</summary>
         public TransactionsRulesResource Rules { get; }
@@ -34,7 +38,7 @@ namespace Didit.Resources
         /// Create transaction
         /// </summary>
         /// <remarks>
-        /// Submit a transaction for synchronous AML/risk monitoring. The transaction is created <c>APPROVED</c>, then your rules (and crypto screening, when applicable) run inline and may flip the returned <c>status</c> to <c>IN_REVIEW</c> or <c>DECLINED</c>. <c>transaction_id</c> is your idempotency key (max 128 chars, unique per app); reusing it returns 400. A <c>transaction.created</c> webhook is dispatched on success (sandbox applications are not billed and do not emit webhooks).
+        /// Submit a transaction for synchronous AML/risk monitoring. The transaction is created <c>APPROVED</c>, then your rules (and crypto screening, when applicable) run inline and may flip the returned <c>status</c> to <c>IN_REVIEW</c> or <c>DECLINED</c>. <c>transaction_id</c> is your idempotency key (max 128 chars, unique per app); reusing it returns 400. A <c>transaction.created</c> webhook is dispatched on success for live applications. Sandbox applications are not billed and do not emit <c>transaction.created</c> or <c>transaction.status.updated</c> webhooks. Sandbox Travel Rule exchanges do emit <c>travel_rule.status.updated</c> webhooks with <c>environment: sandbox</c>. A Travel Rule transfer is stored and returned before any counterparty is contacted: <c>travel_rule.status</c> comes back <c>AWAITING_COUNTERPARTY</c> (or <c>NOT_APPLICABLE</c> below your threshold, <c>UNCONFIRMED_OWNERSHIP</c> for a declared self-hosted wallet, <c>COMPLETED</c> when the other wallet is your own verified wallet) and <c>travel_rule.protocol</c> is null. Didit then chooses the rail and sends the exchange, and every later status change of the transfer, including <c>COUNTERPARTY_VASP_NOT_FOUND</c> when no rail reaches the counterparty, arrives as a <c>travel_rule.status.updated</c> webhook. Your rules run again when the rail or the status changes.
         /// <para/>
         /// <c>POST /v3/transactions/</c> (<c>transactions.create</c>).
         /// </remarks>
@@ -61,6 +65,28 @@ namespace Didit.Resources
         public async Task<TransactionsCreateSdkTokenResponse> CreateSdkTokenAsync(TransactionsCreateSdkTokenParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateSdkTokenAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Download a transaction PDF report
+        /// </summary>
+        /// <remarks>
+        /// Render one monitored transaction as a PDF report: overview and verdict, parties and payment methods, custom properties, alerts and rule runs, screening and Travel Rule results, the network summary, the cost breakdown, up to 50 related transactions and the 20 most recent activity entries. The body is the PDF itself (<c>application/pdf</c>), not JSON.
+        /// <para/>
+        /// The report is rendered from the transaction's current data on every call, so request it again after a status change. Nothing is stored and nothing is billed. Rendering can take a few seconds, so use a generous client timeout.
+        /// <para/>
+        /// This endpoint lives on an application-scoped path: put your organization ID and the ID of the application your API key belongs to in the URL (<see href="https://docs.didit.me/getting-started/api-authentication#find-your-organization-id">find your organization ID</see>). A PDF report counts as media: a scoped API key needs <c>media: read</c> and <c>transactions: read</c>, and a key limited to some workflows or to approved sessions cannot call it.
+        /// <para/>
+        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/transactions/{transaction_uuid}/pdf/</c> (<c>transactions.generate_pdf</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="transactionUuid">Didit transaction UUID: the <c>uuid</c> returned by <c>POST /v3/transactions/</c> and <c>GET /v3/transactions/</c>. Your own <c>txn_id</c> is not accepted.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BinaryResponse> GeneratePdfAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.GeneratePdfAsync(transactionUuid, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -93,7 +119,7 @@ namespace Didit.Resources
         /// <param name="transactionUuid">Transaction UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<TransactionsListNetworksResponse> ListNetworksAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<EntityNetworkMembershipList> ListNetworksAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListNetworksAsync(transactionUuid, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -112,9 +138,31 @@ namespace Didit.Resources
         /// <param name="transactionPartyUuid">Transaction party UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<TransactionsListPartyNetworksResponse> ListPartyNetworksAsync(string transactionUuid, string transactionPartyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<EntityNetworkMembershipList> ListPartyNetworksAsync(string transactionUuid, string transactionPartyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListPartyNetworksAsync(transactionUuid, transactionPartyUuid, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List related transactions
+        /// </summary>
+        /// <remarks>
+        /// List the other transactions in your application that involve the same people or companies as this one. A transaction is related when any of its parties, in any role, has the same <c>vendor_data</c> as one of this transaction's parties. The transaction itself is never returned, and parties without <c>vendor_data</c> are ignored: when none of this transaction's parties has one, the result is always empty.
+        /// <para/>
+        /// Results use the summary shape of <c>GET /v3/transactions/</c>, newest first (<c>txn_date</c>, then <c>created_at</c>). Paginated with <c>limit</c> and <c>offset</c>; <c>count</c> is exact up to 100 and capped at 100 above that, so follow <c>next</c> until it is <c>null</c>.
+        /// <para/>
+        /// A scoped API key needs <c>transactions: read</c>; a key limited to some workflows or to approved sessions cannot call this endpoint. Send the same <c>vendor_data</c> for the same person or company on every <see href="https://docs.didit.me/transaction-monitoring/transactions#subject-and-counterparty">transaction</see> to make this list complete.
+        /// <para/>
+        /// <c>GET /v3/transactions/{transaction_id}/related/</c> (<c>transactions.list_related</c>).
+        /// </remarks>
+        /// <param name="transactionId">Didit transaction UUID: the <c>uuid</c> returned by <c>POST /v3/transactions/</c> and <c>GET /v3/transactions/</c>. Your own <c>txn_id</c> is not accepted.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<TransactionSummary>> ListRelatedAsync(string transactionId, TransactionsListRelatedParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListRelatedAsync(transactionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -144,9 +192,13 @@ namespace Didit.Resources
         internal TransactionsRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Notes = new TransactionsNotesRawResource(pipeline);
             Rules = new TransactionsRulesRawResource(pipeline);
             TravelRule = new TransactionsTravelRuleRawResource(pipeline);
         }
+
+        /// <summary>The <c>transactions.notes</c> resource.</summary>
+        public TransactionsNotesRawResource Notes { get; }
 
         /// <summary>The <c>transactions.rules</c> resource.</summary>
         public TransactionsRulesRawResource Rules { get; }
@@ -197,6 +249,21 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Download a transaction PDF report
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.GeneratePdfAsync"/>.</remarks>
+        public Task<DiditResponse<BinaryResponse>> GeneratePdfAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/transactions/" + PathParameter.Encode(transactionUuid, "transactionUuid") + "/pdf/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// List transactions
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListAsync"/>.</remarks>
@@ -210,6 +277,7 @@ namespace Didit.Resources
             };
             request.Query.Add("limit", parameters?.Limit);
             request.Query.Add("offset", parameters?.Offset);
+            request.Query.Add("travel_rule_status", parameters?.TravelRuleStatus);
             return _pipeline.SendPageAsync<TransactionsListResponseResults>(request, requestOptions, cancellationToken);
         }
 
@@ -217,7 +285,7 @@ namespace Didit.Resources
         /// List networks for a transaction
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListNetworksAsync"/>.</remarks>
-        public Task<DiditResponse<TransactionsListNetworksResponse>> ListNetworksAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<EntityNetworkMembershipList>> ListNetworksAsync(string transactionUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/transactions/" + PathParameter.Encode(transactionUuid, "transactionUuid") + "/networks/")
             {
@@ -225,14 +293,14 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<TransactionsListNetworksResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
         /// List networks for a transaction party
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListPartyNetworksAsync"/>.</remarks>
-        public Task<DiditResponse<TransactionsListPartyNetworksResponse>> ListPartyNetworksAsync(string transactionUuid, string transactionPartyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<EntityNetworkMembershipList>> ListPartyNetworksAsync(string transactionUuid, string transactionPartyUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/transactions/" + PathParameter.Encode(transactionUuid, "transactionUuid") + "/parties/" + PathParameter.Encode(transactionPartyUuid, "transactionPartyUuid") + "/networks/")
             {
@@ -240,7 +308,24 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<TransactionsListPartyNetworksResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List related transactions
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.ListRelatedAsync"/>.</remarks>
+        public Task<DiditResponse<Page<TransactionSummary>>> ListRelatedAsync(string transactionId, TransactionsListRelatedParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/" + PathParameter.Encode(transactionId, "transactionId") + "/related/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<TransactionSummary>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

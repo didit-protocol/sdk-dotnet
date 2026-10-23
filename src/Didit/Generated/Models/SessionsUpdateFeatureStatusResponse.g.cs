@@ -21,7 +21,7 @@ namespace Didit
         public string? SessionId { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;node_id&lt;/c&gt; field.
+        /// The updated step's workflow node, or <c>null</c> for a step without a node (the <c>default</c> path in a non-graph workflow).
         /// </summary>
         [JsonPropertyName("node_id")]
         public string? NodeId { get; init; }
@@ -33,10 +33,16 @@ namespace Didit
         public string? FeatureType { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;new_status&lt;/c&gt; field.
+        /// The check's stored status: the requested one once the override applied, the unchanged one while the override waits for the flow to finish.
         /// </summary>
         [JsonPropertyName("new_status")]
         public string? NewStatus { get; init; }
+
+        /// <summary>
+        /// One override of a check (feature) status made with <c>PATCH /v3/session/{sessionId}/features/{nodeId}/update-status/</c>: what it changes, whether it applied or still waits for the person to finish the flow, who asked and why.
+        /// </summary>
+        [JsonPropertyName("override")]
+        public FeatureStatusOverride? Override { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

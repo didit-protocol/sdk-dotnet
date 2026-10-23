@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// How strictly beneficiary names must match before a transfer can reach COMPLETED.
+    /// How strictly beneficiary names must match before a transfer can reach COMPLETED. <c>CONTAINS</c> accepts one name whose words all appear in the other.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(TravelRuleSettingsDetailNameMatchingStrictness.EnumJsonConverter))]
@@ -28,6 +28,9 @@ namespace Didit
 
         /// <summary><c>STRICT</c></summary>
         public static TravelRuleSettingsDetailNameMatchingStrictness Strict { get; } = new("STRICT");
+
+        /// <summary><c>CONTAINS</c></summary>
+        public static TravelRuleSettingsDetailNameMatchingStrictness Contains { get; } = new("CONTAINS");
 
         /// <summary><c>DEFAULT</c></summary>
         public static TravelRuleSettingsDetailNameMatchingStrictness Default { get; } = new("DEFAULT");

@@ -28,6 +28,13 @@ namespace Didit
         [JsonIgnore]
         public long? Offset { get; set; }
 
+        /// <summary>
+        /// Return only transactions whose Travel Rule transfer is in this exact status (for example <c>ON_HOLD</c> or <c>AWAITING_COUNTERPARTY</c>). <c>count</c> follows this filter; <c>total_transactions</c> still counts every transaction in the application.
+        /// </summary>
+        [JsonPropertyName("travel_rule_status")]
+        [JsonIgnore]
+        public string? TravelRuleStatus { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

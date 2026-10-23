@@ -135,6 +135,12 @@ namespace Didit
         public string? LogoRectangular { get; init; }
 
         /// <summary>
+        /// Read-only. Temporary signed URL of the rectangular logo for dark mode, shown on a dark background. <c>null</c> when no dark logo is set or rectangular logos are not shown for your account. Upload it with <c>image_rectangular_dark</c>.
+        /// </summary>
+        [JsonPropertyName("logo_rectangular_dark")]
+        public string? LogoRectangularDark { get; init; }
+
+        /// <summary>
         /// Read-only URL of the favicon. Upload via <c>image_favicon</c>.
         /// </summary>
         [JsonPropertyName("favicon")]

@@ -57,7 +57,7 @@ namespace Didit
         public SessionsCreateResponseStatus? Status { get; init; }
 
         /// <summary>
-        /// Final redirect URL the user is sent to after completing the flow. Didit appends <c>?verificationSessionId={session_id}&amp;status={status}</c> to this URL. Falls back to the workflow's configured callback URL when not provided in the request; <c>null</c> when neither is set.
+        /// Final redirect URL the user is sent to after completing the flow. Didit appends <c>?verificationSessionId={session_id}&amp;status={status}</c> to this URL. Falls back to the workflow's configured callback URL when not provided in the request; <c>null</c> when neither is set. When the application has allowed domains and this URL is a web URL outside them (for example a workflow default set before the list changed), the hosted flow does not redirect the user to it.
         /// </summary>
         [JsonPropertyName("callback")]
         public string? Callback { get; init; }

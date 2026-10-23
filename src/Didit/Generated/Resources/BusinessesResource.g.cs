@@ -57,6 +57,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Download a business session PDF report
+        /// </summary>
+        /// <remarks>
+        /// Render the PDF report of one Business Verification (KYB) session: company registry data, key people and beneficial owners, documents, AML results and the other workflow features, plus the session's tags and review activity. With white-label customization on, the report carries your logo and privacy policy URL. The body is the PDF itself (<c>application/pdf</c>), not JSON.
+        /// <para/>
+        /// The session must be <c>Approved</c>, <c>Declined</c> or <c>In Review</c>; any other status returns <c>403</c>, so wait for the <c>status.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> first. The report is rendered on every call and nothing is billed, so store the file instead of fetching it repeatedly. <c>GET /v3/session/{sessionId}/generate-pdf/</c> renders the same kind of report by session ID alone.
+        /// <para/>
+        /// A PDF report counts as media: a scoped API key needs <c>businesses: read</c> and <c>media: read</c>, and a key limited to some workflows or to approved sessions cannot call it.
+        /// <para/>
+        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/businesses/{business_session_id}/pdf/</c> (<c>businesses.generate_session_pdf</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="businessSessionId"><c>session_id</c> of the Business Verification (KYB) session, as returned when the session was created. A session of another application returns <c>404</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BinaryResponse> GenerateSessionPdfAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.GenerateSessionPdfAsync(businessSessionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List businesses
         /// </summary>
         /// <remarks>
@@ -85,7 +107,7 @@ namespace Didit.Resources
         /// <param name="vendorBusinessUuid">Vendor business UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<BusinessesListNetworksResponse> ListNetworksAsync(string vendorBusinessUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<EntityNetworkMembershipList> ListNetworksAsync(string vendorBusinessUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListNetworksAsync(vendorBusinessUuid, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -120,7 +142,7 @@ namespace Didit.Resources
         /// <param name="jobId">Monitoring job UUID returned by the toggle endpoint.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<BusinessesRetrieveOngoingMonitoringJobResponse> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<OngoingMonitoringJob> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveOngoingMonitoringJobAsync(jobId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -138,7 +160,7 @@ namespace Didit.Resources
         /// <param name="jobId">Monitoring job UUID returned by the toggle endpoint.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<BusinessesRetrieveSessionOngoingMonitoringJobResponse> RetrieveSessionOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<OngoingMonitoringJob> RetrieveSessionOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveSessionOngoingMonitoringJobAsync(jobId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -175,7 +197,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> SetOngoingMonitoringAsync(BusinessesSetOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<JsonElement> SetOngoingMonitoringAsync(OngoingMonitoringToggleRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.SetOngoingMonitoringAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -203,7 +225,7 @@ namespace Didit.Resources
         /// Update business
         /// </summary>
         /// <remarks>
-        /// Partial update of a business: <c>display_name</c>, <c>legal_name</c>, <c>registration_number</c>, <c>country_code</c>, <c>status</c>, <c>metadata</c>. <c>metadata</c> fully replaces. Setting <c>status</c> to <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry.
+        /// Partial update of a business: <c>display_name</c>, <c>legal_name</c>, <c>registration_number</c>, <c>country_code</c>, <c>status</c>, <c>metadata</c>. <c>metadata</c> fully replaces. Setting <c>status</c> to <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Every edit is recorded in the company's activity: a status change with the optional <c>reason</c>, and a change to <c>display_name</c>, <c>legal_name</c>, <c>registration_number</c>, <c>country_code</c> or <c>metadata</c> as a profile update.
         /// <para/>
         /// <c>PATCH /v3/businesses/{vendor_data}/</c> (<c>businesses.update</c>).
         /// </remarks>
@@ -221,7 +243,7 @@ namespace Didit.Resources
         /// Update business status
         /// </summary>
         /// <remarks>
-        /// Flip only the lifecycle <c>status</c> of a business — VendorBusinessStatusChoices (<c>ACTIVE</c>/<c>FLAGGED</c>/<c>BLOCKED</c>, NOT session statuses). <c>BLOCKED</c> adds <c>vendor_data</c> to the system blocklist.
+        /// Flip only the lifecycle <c>status</c> of a business: <c>ACTIVE</c>, <c>FLAGGED</c> or <c>BLOCKED</c> (not session statuses). <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Each change is recorded in the company's activity, with the optional <c>reason</c>. Sending the current status changes nothing and records no <c>reason</c>. The <c>business.status.updated</c> webhook does not carry <c>reason</c>.
         /// <para/>
         /// <c>PATCH /v3/businesses/{vendor_data}/update-status/</c> (<c>businesses.update_status</c>).
         /// </remarks>
@@ -289,6 +311,21 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Download a business session PDF report
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="BusinessesResource.GenerateSessionPdfAsync"/>.</remarks>
+        public Task<DiditResponse<BinaryResponse>> GenerateSessionPdfAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/businesses/" + PathParameter.Encode(businessSessionId, "businessSessionId") + "/pdf/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// List businesses
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="BusinessesResource.ListAsync"/>.</remarks>
@@ -309,7 +346,7 @@ namespace Didit.Resources
         /// List networks for a business
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="BusinessesResource.ListNetworksAsync"/>.</remarks>
-        public Task<DiditResponse<BusinessesListNetworksResponse>> ListNetworksAsync(string vendorBusinessUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<EntityNetworkMembershipList>> ListNetworksAsync(string vendorBusinessUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/businesses/" + PathParameter.Encode(vendorBusinessUuid, "vendorBusinessUuid") + "/networks/")
             {
@@ -317,7 +354,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<BusinessesListNetworksResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -339,7 +376,7 @@ namespace Didit.Resources
         /// Get AML ongoing monitoring job
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="BusinessesResource.RetrieveOngoingMonitoringJobAsync"/>.</remarks>
-        public Task<DiditResponse<BusinessesRetrieveOngoingMonitoringJobResponse>> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<OngoingMonitoringJob>> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/vendor-businesses/toggle-ongoing-monitoring/" + PathParameter.Encode(jobId, "jobId") + "/")
             {
@@ -347,14 +384,14 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<BusinessesRetrieveOngoingMonitoringJobResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<OngoingMonitoringJob>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
         /// Get AML ongoing monitoring job
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="BusinessesResource.RetrieveSessionOngoingMonitoringJobAsync"/>.</remarks>
-        public Task<DiditResponse<BusinessesRetrieveSessionOngoingMonitoringJobResponse>> RetrieveSessionOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<OngoingMonitoringJob>> RetrieveSessionOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/businesses/toggle-ongoing-monitoring/" + PathParameter.Encode(jobId, "jobId") + "/")
             {
@@ -362,7 +399,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<BusinessesRetrieveSessionOngoingMonitoringJobResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<OngoingMonitoringJob>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -390,7 +427,7 @@ namespace Didit.Resources
         /// Toggle AML ongoing monitoring for businesses
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="BusinessesResource.SetOngoingMonitoringAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> SetOngoingMonitoringAsync(BusinessesSetOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<JsonElement>> SetOngoingMonitoringAsync(OngoingMonitoringToggleRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {

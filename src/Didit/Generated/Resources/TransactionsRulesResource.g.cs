@@ -74,7 +74,7 @@ namespace Didit.Resources
         /// Install library rules
         /// </summary>
         /// <remarks>
-        /// Install one or more presets onto the application, by <c>library_keys</c> or a whole <c>bundle</c>. Installed presets evaluate immediately in their default mode; already-installed keys are skipped.
+        /// Install one or more presets onto the application, by <c>library_keys</c> or a whole <c>bundle</c>. An installed preset is active at once while transaction monitoring is on, and disabled otherwise; already-installed keys are skipped. A library rule whose conditions read data the rules engine cannot evaluate yet is withheld until it can run. A request that names one in <c>library_keys</c> answers 400 and installs nothing ("These library rules cannot run yet: their conditions read data the rules engine cannot evaluate." followed by the keys), and a <c>bundle</c> install skips it. A withheld rule comes back on its own once its conditions can be evaluated. A <c>library_keys</c> entry that is not in the library is skipped, not refused.
         /// <para/>
         /// <c>POST /v3/transactions/rules/install/</c> (<c>transactions.rules.install_library</c>).
         /// </remarks>
@@ -108,7 +108,7 @@ namespace Didit.Resources
         /// List rule library
         /// </summary>
         /// <remarks>
-        /// Browse the full preset rule library (150+ rules) with each entry's complete configuration and an <c>is_installed</c> flag for this application. Filter by bundle, category, or free-text search.
+        /// Browse the full preset rule library (150+ rules) with each entry's complete configuration and an <c>is_installed</c> flag for this application. Filter by bundle, category, or free-text search. A library rule whose conditions read data the rules engine cannot evaluate yet is withheld until it can run. Withheld rules are not listed.
         /// <para/>
         /// <c>GET /v3/transactions/rules/library/</c> (<c>transactions.rules.list_library</c>).
         /// </remarks>
@@ -159,7 +159,7 @@ namespace Didit.Resources
         /// Update rule
         /// </summary>
         /// <remarks>
-        /// Partially update a rule. Custom rules accept every configuration field. Library (PRESET) rules accept only <c>mode</c> - use it to activate, disable, or switch a preset to TEST; any other field returns 400.
+        /// Partially update a rule. Custom rules accept every configuration field. Library (PRESET) rules accept only <c>mode</c> - use it to activate, disable, or switch a preset to TEST; any other field returns 400. An installed copy of a withheld library rule is switched off: setting its <c>mode</c> to anything but <c>DISABLED</c> answers 400 ("This library rule cannot run yet: its conditions read data the rules engine cannot evaluate.").
         /// <para/>
         /// <c>PATCH /v3/transactions/rules/{rule_uuid}/</c> (<c>transactions.rules.update</c>).
         /// </remarks>

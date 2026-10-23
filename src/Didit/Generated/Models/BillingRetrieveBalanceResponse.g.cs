@@ -21,7 +21,7 @@ namespace Didit
         public string? Balance { get; init; }
 
         /// <summary>
-        /// When <c>true</c>, Didit will automatically charge the saved Stripe payment method to add credits once the balance crosses <c>auto_refill_threshold</c>. Configured from Console → Billing.
+        /// When <c>true</c>, Didit will automatically charge the saved payment method to add credits once the balance crosses <c>auto_refill_threshold</c>. Configured from Console → Billing.
         /// </summary>
         [JsonPropertyName("auto_refill_enabled")]
         public bool? AutoRefillEnabled { get; init; }

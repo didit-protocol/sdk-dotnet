@@ -15,13 +15,13 @@ namespace Didit
     public sealed record BillingTopUpResponse
     {
         /// <summary>
-        /// Stripe Checkout Session identifier (e.g. <c>cs_test_a1B2c3...</c>). Useful for server-side reconciliation.
+        /// Hosted checkout session identifier (e.g. <c>cs_test_a1B2c3...</c>). Useful for server-side reconciliation.
         /// </summary>
         [JsonPropertyName("checkout_session_id")]
         public string? CheckoutSessionId { get; init; }
 
         /// <summary>
-        /// Single-use Stripe-hosted payment page URL. Redirect the customer here to complete payment.
+        /// Single-use hosted payment page URL. Redirect the customer here to complete payment.
         /// </summary>
         [JsonPropertyName("checkout_session_url")]
         public string? CheckoutSessionUrl { get; init; }

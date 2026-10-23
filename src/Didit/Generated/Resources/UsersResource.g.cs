@@ -26,7 +26,7 @@ namespace Didit.Resources
         /// Batch delete users
         /// </summary>
         /// <remarks>
-        /// Permanently delete users — the user records are removed permanently. For everyday blocking prefer [Update User Status](#patch-/v3/users/-vendor_data-/update-status/) with <c>BLOCKED</c>. Select users with <c>vendor_data_list</c>, with <c>didit_internal_id_list</c>, or with both at once; or pass <c>delete_all: true</c>. The Console's <c>filter_*</c> batch params are rejected with a <c>400</c> rather than ignored, so a narrowed intent can never turn into a full wipe.
+        /// Permanently delete users: the user records are removed permanently. For everyday blocking prefer [Update User Status](#patch-/v3/users/-vendor_data-/update-status/) with <c>BLOCKED</c>. Select users with <c>vendor_data_list</c>, with <c>didit_internal_id_list</c>, or with both at once; or pass <c>delete_all: true</c>. This endpoint never narrows <c>delete_all</c> with filters. The Console's People filters are refused with a <c>400</c> (see the <c>400</c> response), so a narrowed intent does not turn into a full wipe. Two exceptions: <c>filter_has_approved_sessions</c> and <c>filter_has_declined_sessions</c> are not refused and not applied, so with <c>delete_all: true</c> they still delete every user; do not send them.
         /// <para/>
         /// Biometric templates: every image-free biometric template retained for these users after session deletion (see <c>/v3/biometric-templates/</c>) is purged before the user is deleted, so the person stops matching in duplicate detection and Face Search. If a template cannot be purged because a biometric store is unavailable, the call returns <c>503</c>, no user in the request is deleted, and repeating the request finishes the job.
         /// <para/>
@@ -45,14 +45,20 @@ namespace Didit.Resources
         /// Create user
         /// </summary>
         /// <remarks>
-        /// Pre-create a [user](/entities/users) by <c>vendor_data</c> *without* a verification session. <c>vendor_data</c> must be unique among non-deleted users for the application (exact match; conflicts return 400). Not idempotent.
+        /// Create a [user](/entities/users) by <c>vendor_data</c>, before or without a verification session. <c>vendor_data</c> must be unique among the application's users (a duplicate returns <c>400</c>). Not idempotent.
+        /// <para/>
+        /// Contact details: <c>email</c> and <c>phone_number</c> are stored in <c>metadata.contact</c>, and <c>country</c> in <c>metadata.address</c>. When you send <c>first_name</c> or <c>last_name</c> without <c>full_name</c>, Didit joins them into <c>full_name</c>.
+        /// <para/>
+        /// Verification link: with <c>send_verification_link: true</c>, Didit also creates a verification session for the person on <c>workflow_id</c> and emails them the link at <c>email</c>. The session runs the same checks as [Create Session](/sessions-api/create-session), such as the blocklist and your credit balance. The person and the session are created together or not at all: if any check fails, nothing is written and no email is sent. The response's <c>verification_link</c> describes the session, and is <c>null</c> when you don't ask for a link.
+        /// <para/>
+        /// API key access: a scoped API key needs <c>users</c> write. With <c>send_verification_link: true</c> it also needs <c>sessions</c> write, or the call answers <c>403</c> before anything is written. Full-access keys are unaffected. See [API keys](/console/api-keys).
         /// <para/>
         /// <c>POST /v3/users/create/</c> (<c>users.create</c>).
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<UserDetailItem> CreateAsync(UsersCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<UsersCreateResponse> CreateAsync(UsersCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -120,7 +126,7 @@ namespace Didit.Resources
         /// <param name="vendorUserUuid">Vendor user UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<UsersListNetworksResponse> ListNetworksAsync(string vendorUserUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<EntityNetworkMembershipList> ListNetworksAsync(string vendorUserUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListNetworksAsync(vendorUserUuid, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -155,7 +161,7 @@ namespace Didit.Resources
         /// <param name="jobId">Monitoring job UUID returned by the toggle endpoint.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<UsersRetrieveOngoingMonitoringJobResponse> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<OngoingMonitoringJob> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveOngoingMonitoringJobAsync(jobId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -192,7 +198,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<JsonElement> SetOngoingMonitoringAsync(UsersSetOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<JsonElement> SetOngoingMonitoringAsync(OngoingMonitoringToggleRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.SetOngoingMonitoringAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -202,7 +208,7 @@ namespace Didit.Resources
         /// Update user
         /// </summary>
         /// <remarks>
-        /// Partial update of a user: <c>display_name</c>, <c>full_name</c>, <c>date_of_birth</c>, <c>status</c>, <c>metadata</c>, <c>approved_emails</c>/<c>approved_phones</c>/<c>issuing_states</c>. <c>metadata</c> fully replaces. Note: unlike [Update User Status](#patch-/v3/users/-vendor_data-/update-status/), changing <c>status</c> here does NOT record a status-change activity and does NOT sync the system blocklist — use the dedicated update-status endpoint for <c>BLOCKED</c>/unblock flows.
+        /// Partial update of a user: <c>display_name</c>, <c>full_name</c>, <c>date_of_birth</c>, <c>status</c>, <c>metadata</c>, <c>approved_emails</c>/<c>approved_phones</c>/<c>issuing_states</c>. <c>metadata</c> fully replaces. Changing <c>status</c> here works like [Update User Status](#patch-/v3/users/-vendor_data-/update-status/): it records a <c>STATUS_CHANGED</c> activity with the optional <c>reason</c>, and <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist (moving away from <c>BLOCKED</c> removes that entry). Changes to <c>display_name</c>, <c>full_name</c>, <c>date_of_birth</c> or <c>metadata</c> are recorded as a <c>PROFILE_UPDATED</c> activity.
         /// <para/>
         /// <c>PATCH /v3/users/{vendor_data}/</c> (<c>users.update</c>).
         /// </remarks>
@@ -220,7 +226,7 @@ namespace Didit.Resources
         /// Update user status
         /// </summary>
         /// <remarks>
-        /// Flip only the lifecycle <c>status</c> of a user — <c>ACTIVE</c>/<c>FLAGGED</c>/<c>BLOCKED</c> (NOT session statuses). <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Each change is recorded as a <c>STATUS_CHANGED</c> activity on the user.
+        /// Flip only the lifecycle <c>status</c> of a user: <c>ACTIVE</c>, <c>FLAGGED</c> or <c>BLOCKED</c> (not session statuses). <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Each change is recorded as a <c>STATUS_CHANGED</c> activity on the user, with the optional <c>reason</c> as its <c>comment</c>. Sending the current status changes nothing and records no <c>reason</c>. The <c>user.status.updated</c> webhook does not carry <c>reason</c>.
         /// <para/>
         /// <c>PATCH /v3/users/{vendor_data}/update-status/</c> (<c>users.update_status</c>).
         /// </remarks>
@@ -289,7 +295,7 @@ namespace Didit.Resources
         /// Create user
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="UsersResource.CreateAsync"/>.</remarks>
-        public Task<DiditResponse<UserDetailItem>> CreateAsync(UsersCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<UsersCreateResponse>> CreateAsync(UsersCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -303,7 +309,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<UserDetailItem>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<UsersCreateResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -342,7 +348,7 @@ namespace Didit.Resources
         /// List networks for a user
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="UsersResource.ListNetworksAsync"/>.</remarks>
-        public Task<DiditResponse<UsersListNetworksResponse>> ListNetworksAsync(string vendorUserUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<EntityNetworkMembershipList>> ListNetworksAsync(string vendorUserUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/users/" + PathParameter.Encode(vendorUserUuid, "vendorUserUuid") + "/networks/")
             {
@@ -350,7 +356,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<UsersListNetworksResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -372,7 +378,7 @@ namespace Didit.Resources
         /// Get AML ongoing monitoring job
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="UsersResource.RetrieveOngoingMonitoringJobAsync"/>.</remarks>
-        public Task<DiditResponse<UsersRetrieveOngoingMonitoringJobResponse>> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<OngoingMonitoringJob>> RetrieveOngoingMonitoringJobAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/vendor-users/toggle-ongoing-monitoring/" + PathParameter.Encode(jobId, "jobId") + "/")
             {
@@ -380,7 +386,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<UsersRetrieveOngoingMonitoringJobResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<OngoingMonitoringJob>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -408,7 +414,7 @@ namespace Didit.Resources
         /// Toggle AML ongoing monitoring for users
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="UsersResource.SetOngoingMonitoringAsync"/>.</remarks>
-        public Task<DiditResponse<JsonElement>> SetOngoingMonitoringAsync(UsersSetOngoingMonitoringParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<JsonElement>> SetOngoingMonitoringAsync(OngoingMonitoringToggleRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {

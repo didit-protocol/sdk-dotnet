@@ -27,10 +27,22 @@ namespace Didit
         public string? Lei { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;dd_score&lt;/c&gt; field.
+        /// Due-diligence score from 0 to 100, where higher is better. Same scale as in the VASP directory.
         /// </summary>
         [JsonPropertyName("dd_score")]
         public long? DdScore { get; init; }
+
+        /// <summary>
+        /// Per-component contributions to dd_score, one object per component as in the VASP directory (jurisdiction, verification, protocol, lei, history, essentials, responsiveness), each {points, max, reason, detail}. {} until the counterparty has been assessed.
+        /// </summary>
+        [JsonPropertyName("dd_score_breakdown")]
+        public IReadOnlyDictionary<string, TravelRuleTransferDetailCounterpartyVaspDdScoreBreakdownValue>? DdScoreBreakdown { get; init; }
+
+        /// <summary>
+        /// When the due-diligence assessment last ran. Null until the counterparty has been assessed.
+        /// </summary>
+        [JsonPropertyName("dd_assessed_at")]
+        public DateTimeOffset? DdAssessedAt { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
