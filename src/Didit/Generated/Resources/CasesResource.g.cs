@@ -77,7 +77,7 @@ namespace Didit.Resources
         /// Approve staged resolution (4-eyes)
         /// </summary>
         /// <remarks>
-        /// Apply a resolution staged by resolve on a maker blueprint. The caller must be a different user than the one who submitted it, otherwise 403.
+        /// Apply a resolution staged by resolve on a four-eyes blueprint. The caller must be a different officer than the one who submitted it, otherwise 403. When the resolution names a checker (the case's <c>checker</c>), only that member can approve it: any other caller, including an API key, gets 403.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/approve/</c> (<c>cases.approve_resolution</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -122,7 +122,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<CasesBulkAssignResponse> BulkAssignAsync(CasesBulkAssignParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CaseBulkUpdateResult> BulkAssignAsync(CasesBulkAssignParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.BulkAssignAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -140,7 +140,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<CasesBulkUpdateStatusResponse> BulkUpdateStatusAsync(CasesBulkUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CaseBulkUpdateResult> BulkUpdateStatusAsync(CasesBulkUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.BulkUpdateStatusAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -264,7 +264,7 @@ namespace Didit.Resources
         /// <param name="caseUuid">Case UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<IReadOnlyList<JsonElement>> ListAmlHitsAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<AMLScreening>> ListAmlHitsAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListAmlHitsAsync(caseUuid, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -328,7 +328,7 @@ namespace Didit.Resources
         /// Reject staged resolution (4-eyes)
         /// </summary>
         /// <remarks>
-        /// Reject a resolution staged by resolve and return the case to its maker blueprint. The caller must be a different user than the one who submitted it, otherwise 403.
+        /// Reject a resolution staged by resolve and return the case to its maker blueprint. The caller must be a different officer than the one who submitted it, otherwise 403. When the resolution names a checker (the case's <c>checker</c>), only that member can reject it: any other caller, including an API key, gets 403.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/reject-approval/</c> (<c>cases.reject_resolution</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -383,7 +383,7 @@ namespace Didit.Resources
         /// Resolve case
         /// </summary>
         /// <remarks>
-        /// Resolve the case as false_positive or valid_threat. Blocked with 400 if the blueprint's checklist is not optional and items remain incomplete, or if the blueprint requires a resolution note and none is given. When the case's blueprint has a four_eyes_checker_blueprint configured, the resolution is staged (case.pending_resolution) and the case moves to the checker blueprint instead of resolving immediately; a different user must call approve or reject-approval.
+        /// Resolve the case with one of five resolutions: FALSE_POSITIVE (no concern found), VALID_THREAT (concern confirmed), INCONCLUSIVE, REQUIREMENTS_NOT_MET or REQUIREMENTS_SATISFIED. Blocked with 400 if the blueprint's checklist is not optional and items remain incomplete, or if the blueprint requires a resolution note and none is given. When the case's blueprint has a four-eyes checker step (four_eyes_checker_blueprint), the resolution is staged (case.pending_resolution) and the case moves to the checker blueprint instead of resolving immediately; a different officer must call approve or reject-approval. Submit a four-eyes resolution as a console member: a resolution an API key submits has no recorded maker, so approve and reject-approval return 403 for every caller. On a four-eyes blueprint you can name the member who must approve with <c>checker</c>: then only that member can approve or reject the resolution, and the response's <c>checker</c> names them. Without <c>checker</c>, the resolution waits on the checker blueprint's queue. Sending <c>checker</c> for a blueprint without a checker step returns 400.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/resolve/</c> (<c>cases.resolve</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -476,7 +476,7 @@ namespace Didit.Resources
         /// Update case
         /// </summary>
         /// <remarks>
-        /// Update the case's title, priority, due date, or tags. Logs PRIORITY_CHANGED/DUE_DATE_CHANGED/TAG_ADDED/TAG_REMOVED events as applicable.
+        /// Update the case's title, priority, due date, tags, or owning review team. Send only the fields you want to change; fields you omit keep their value. <c>tags</c> replaces the whole tag list. <c>team</c> takes the uuid of an active review team of this application (list them with <c>GET .../cases/teams/</c>), or null to clear the team. Requires a full-access API key, or <c>write:cases</c> for a console member: a key with restricted access gets 403. Logs PRIORITY_CHANGED, DUE_DATE_CHANGED, TAG_ADDED, TAG_REMOVED and TEAM_CHANGED events as applicable; a title change is saved without a timeline event. Returns the updated case.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/</c> (<c>cases.update</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -595,7 +595,7 @@ namespace Didit.Resources
         /// Bulk assign cases
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="CasesResource.BulkAssignAsync"/>.</remarks>
-        public Task<DiditResponse<CasesBulkAssignResponse>> BulkAssignAsync(CasesBulkAssignParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<CaseBulkUpdateResult>> BulkAssignAsync(CasesBulkAssignParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -609,14 +609,14 @@ namespace Didit.Resources
                 ApplicationScoped = true,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<CasesBulkAssignResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<CaseBulkUpdateResult>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
         /// Bulk update case status
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="CasesResource.BulkUpdateStatusAsync"/>.</remarks>
-        public Task<DiditResponse<CasesBulkUpdateStatusResponse>> BulkUpdateStatusAsync(CasesBulkUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<CaseBulkUpdateResult>> BulkUpdateStatusAsync(CasesBulkUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -630,7 +630,7 @@ namespace Didit.Resources
                 ApplicationScoped = true,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<CasesBulkUpdateStatusResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<CaseBulkUpdateResult>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -753,7 +753,7 @@ namespace Didit.Resources
         /// List case AML hits
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="CasesResource.ListAmlHitsAsync"/>.</remarks>
-        public Task<DiditResponse<IReadOnlyList<JsonElement>>> ListAmlHitsAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<IReadOnlyList<AMLScreening>>> ListAmlHitsAsync(string caseUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/aml/")
             {
@@ -761,7 +761,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<IReadOnlyList<JsonElement>>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<IReadOnlyList<AMLScreening>>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

@@ -22,11 +22,18 @@ namespace Didit
         public Optional<string> MethodType { get; set; }
 
         /// <summary>
-        /// Account identifier (e.g. IBAN, wallet address). For crypto screening, this should contain the wallet address for this participant. Inbound transaction-hash screening requires the service/customer deposit address on the subject. Outbound screening uses the destination wallet on the counterparty.
+        /// Account identifier (e.g. IBAN, wallet address). For crypto screening, this should contain the wallet address for this participant. Inbound transaction-hash screening requires the service/customer deposit address on the subject. Outbound screening uses the destination wallet on the counterparty. On a crypto transfer on bitcoin or Lightning it may be a Lightning payment request (BOLT11 invoice, BOLT12 offer, LNURL) or a Lightning Address: Didit stores the payee it names as the account ("" when it names none) and what the request says on the Travel Rule transfer's <c>chain_details.lightning</c>. At most 255 characters once stored. On a crypto transfer on bitcoin or Lightning it may be a Lightning payment request (BOLT11 invoice, BOLT12 offer, LNURL) or a Lightning Address: Didit stores the payee it names as the account ("" when it names none) and what the request says on the Travel Rule transfer's <c>chain_details.lightning</c>. At most 255 characters once stored.
         /// </summary>
         [JsonPropertyName("account_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> AccountId { get; set; }
+
+        /// <summary>
+        /// The destination tag or memo that is part of the wallet on a memo network (XRP, XLM, EOS, ATOM, HBAR). On one shared exchange address each memo is its own payment method. XRP: a destination tag, a whole number from 0 to 4294967295 (a JSON number is accepted). XLM: a text memo of up to 28 bytes, a 64-bit id or a 32-byte hash in hex. EOS: up to 256 bytes. ATOM: up to 256 characters. HBAR: up to 100 bytes. Bitcoin, EVM, Solana, Tron, Litecoin, Bitcoin Cash, Dogecoin and Lightning wallets take no memo: one there is a <c>400</c>. Alias: <c>destinationTag</c> or <c>destination_tag</c>.
+        /// </summary>
+        [JsonPropertyName("memo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Memo { get; set; }
 
         /// <summary>
         /// ISO 3166-1 alpha-3 country code of the issuer.

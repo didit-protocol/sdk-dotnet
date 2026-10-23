@@ -21,14 +21,14 @@ namespace Didit
         public required double AmountInDollars { get; set; }
 
         /// <summary>
-        /// URL Stripe redirects the customer to after a successful payment. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable. Append the literal placeholder <c>{CHECKOUT_SESSION_ID}</c> if you want Stripe to substitute the session ID.
+        /// URL the hosted checkout redirects the customer to after a successful payment. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable. Append the literal placeholder <c>{CHECKOUT_SESSION_ID}</c> if you want the hosted checkout to substitute the session ID.
         /// </summary>
         [JsonPropertyName("success_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> SuccessUrl { get; set; }
 
         /// <summary>
-        /// URL Stripe redirects the customer to when they abort or close the Checkout window. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable.
+        /// URL the hosted checkout redirects the customer to when they abort or close the Checkout window. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable.
         /// </summary>
         [JsonPropertyName("cancel_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

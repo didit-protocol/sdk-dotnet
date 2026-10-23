@@ -38,6 +38,18 @@ namespace Didit
         [JsonPropertyName("external_id")]
         public string? ExternalId { get; init; }
 
+        /// <summary>
+        /// Three-letter country code of the subject (ISO 3166-1 alpha-3), or null when it is not known. For a business, its country of incorporation. For a person, the issuing country of an identity document from their verifications; a person with documents from several countries shows one of them, and ICAO document codes such as <c>XXA</c> can appear.
+        /// </summary>
+        [JsonPropertyName("country")]
+        public string? Country { get; init; }
+
+        /// <summary>
+        /// Short-lived signed URL of the person's portrait image. Always null for a business, and null for a person without a portrait. The URL expires, so download the image when you read the case instead of storing the URL.
+        /// </summary>
+        [JsonPropertyName("portrait")]
+        public string? Portrait { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

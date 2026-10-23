@@ -15,7 +15,7 @@ namespace Didit
     public sealed record CasesUpdateParams
     {
         /// <summary>
-        /// The &lt;c&gt;title&lt;/c&gt; field.
+        /// New case title.
         /// </summary>
         [JsonPropertyName("title")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -29,18 +29,25 @@ namespace Didit
         public Optional<CasesUpdateParamsPriority> Priority { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;due_at&lt;/c&gt; field.
+        /// New deadline. Send null to clear it.
         /// </summary>
         [JsonPropertyName("due_at")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<DateTimeOffset?> DueAt { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;tags&lt;/c&gt; field.
+        /// The complete tag list. It replaces the current tags.
         /// </summary>
         [JsonPropertyName("tags")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<IReadOnlyList<string>> Tags { get; set; }
+
+        /// <summary>
+        /// UUID of the review team that owns the case. It must be an active team of this application. Send null to clear the team.
+        /// </summary>
+        [JsonPropertyName("team")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string?> Team { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -29,6 +29,15 @@ namespace Didit
         /// <summary><c>VALID_THREAT</c></summary>
         public static CaseListItemResolution ValidThreat { get; } = new("VALID_THREAT");
 
+        /// <summary><c>INCONCLUSIVE</c></summary>
+        public static CaseListItemResolution Inconclusive { get; } = new("INCONCLUSIVE");
+
+        /// <summary><c>REQUIREMENTS_NOT_MET</c></summary>
+        public static CaseListItemResolution RequirementsNotMet { get; } = new("REQUIREMENTS_NOT_MET");
+
+        /// <summary><c>REQUIREMENTS_SATISFIED</c></summary>
+        public static CaseListItemResolution RequirementsSatisfied { get; } = new("REQUIREMENTS_SATISFIED");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

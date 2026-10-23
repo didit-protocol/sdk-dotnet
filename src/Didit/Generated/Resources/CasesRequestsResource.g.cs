@@ -95,6 +95,25 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Remind the customer of a request
+        /// </summary>
+        /// <remarks>
+        /// Send a waiting customer request's email again, to the same verified recipient, with the same content. You can remind a request at most once every 24 hours. A reminder changes nothing else: the request keeps its deadline and the case keeps its status. Each reminder is logged on the case as a CUSTOMER_REQUEST event with action <c>reminded</c>. The response's <c>delivery_status</c> is how this reminder's delivery ended: SENT, SIMULATED (the email was not sent), or UNKNOWN (the email might have been accepted; it is not sent again automatically). <c>next_reminder_at</c> is when you can remind this request again. Returns 409 with a <c>reason</c> when the customer no longer has the request to answer, and 429 with <c>retry_at</c> and a <c>Retry-After</c> header when the request was reminded in the last 24 hours. Requires <c>write:cases</c>.
+        /// <para/>
+        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/remind/</c> (<c>cases.requests.remind</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="caseUuid">Case UUID.</param>
+        /// <param name="requestUuid">Customer request UUID, from the case's request list.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<CasesRequestsRemindResponse> RemindAsync(string caseUuid, string requestUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RemindAsync(caseUuid, requestUuid, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// GET /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/attachment/
         /// </summary>
         /// <remarks>
@@ -211,6 +230,21 @@ namespace Didit.Resources
             };
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<CustomerMessagingCaseRequestPreviewResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Remind the customer of a request
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="CasesRequestsResource.RemindAsync"/>.</remarks>
+        public Task<DiditResponse<CasesRequestsRemindResponse>> RemindAsync(string caseUuid, string requestUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/cases/" + PathParameter.Encode(caseUuid, "caseUuid") + "/requests/" + PathParameter.Encode(requestUuid, "requestUuid") + "/remind/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            return _pipeline.SendJsonAsync<CasesRequestsRemindResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

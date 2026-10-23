@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Provide exactly one of: payment_txn_id (finish), action=cancel, or action=resend.
+    /// Provide exactly one of: payment_txn_id (finish), action=cancel, action=resend, action=update_compliance_email with compliance_email, or action=update_originator_wallet with wallet_address.
     /// </summary>
     public sealed record TravelRuleTransferPatchRequest
     {
@@ -22,11 +22,32 @@ namespace Didit
         public Optional<string> PaymentTxnId { get; set; }
 
         /// <summary>
-        /// "cancel" cancels a non-terminal transfer. "resend" re-runs routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA.
+        /// "cancel" cancels a non-terminal transfer. "resend" re-runs routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA. "update_compliance_email" replaces the compliance email the request goes to, on an outbound transfer in one of those three statuses; send "resend" afterwards. "update_originator_wallet" records the wallet the funds actually left from (<c>wallet_address</c>, <c>memo</c>).
         /// </summary>
         [JsonPropertyName("action")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<TravelRuleTransferPatchRequestAction> Action { get; set; }
+
+        /// <summary>
+        /// Required with <c>action: update_compliance_email</c>. Kept as this transfer's <c>beneficiary_data.counterparty_vasp_email</c>: it belongs to this transfer only and joins no directory entry and no contact list.
+        /// </summary>
+        [JsonPropertyName("compliance_email")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> ComplianceEmail { get; set; }
+
+        /// <summary>
+        /// With <c>action: update_originator_wallet</c>: the wallet the funds left from. When the transfer's UTXO inputs are known it must be one of them.
+        /// </summary>
+        [JsonPropertyName("wallet_address")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> WalletAddress { get; set; }
+
+        /// <summary>
+        /// With <c>action: update_originator_wallet</c>: the wallet's memo or tag on a memo network. Optional.
+        /// </summary>
+        [JsonPropertyName("memo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Memo { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

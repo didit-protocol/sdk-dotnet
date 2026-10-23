@@ -27,6 +27,20 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> Comment { get; set; }
 
+        /// <summary>
+        /// Which kind of step to target. Needed on non-graph workflows (<c>nodeId</c> = <c>default</c>), where every step shares no node; optional otherwise. An unknown value returns <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("feature_type")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<SessionsUpdateFeatureStatusParamsFeatureType> FeatureType { get; set; }
+
+        /// <summary>
+        /// While the person is still in the flow, store the override as <c>pending_until_flow_finishes</c> and apply it when the flow finishes, instead of at once. Omitted or <c>false</c>, the override applies at once. On a session whose flow already ended it applies at once either way.
+        /// </summary>
+        [JsonPropertyName("defer_until_flow_finishes")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> DeferUntilFlowFinishes { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

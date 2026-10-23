@@ -26,7 +26,7 @@ namespace Didit.Resources
         /// Create webhook destination
         /// </summary>
         /// <remarks>
-        /// Create a webhook destination. The response includes the auto-generated <c>secret_shared_key</c> HMAC signing secret (also readable later via <c>GET /v3/webhook/destinations/{destination_uuid}/</c>). Always send <c>subscribed_events</c> with at least one event (no wildcards): an explicit empty list is rejected with 400, and omitting the field creates a destination subscribed to nothing, which never receives a webhook. The <c>(application, url)</c> pair must be unique among non-deleted destinations.
+        /// Create a webhook destination. The response includes the auto-generated <c>secret_shared_key</c> HMAC signing secret (also readable later via <c>GET /v3/webhook/destinations/{destination_uuid}/</c>). Always send <c>subscribed_events</c> with at least one event (no wildcards): an explicit empty list is rejected with 400, and omitting the field creates a destination subscribed to nothing, which never receives a webhook. The <c>(application, url)</c> pair must be unique among the application's destinations.
         /// <para/>
         /// <c>POST /v3/webhook/destinations/</c> (<c>webhooks.destinations.create</c>).
         /// </remarks>
@@ -43,7 +43,7 @@ namespace Didit.Resources
         /// Delete webhook destination
         /// </summary>
         /// <remarks>
-        /// Delete a webhook destination. Future events stop being pushed to its URL. Past delivery records are not affected and stay queryable from the Business Console, so deleting a destination is not a way to remove your delivery history. Calling again returns 404.
+        /// Permanently delete a webhook destination, its signing secret and its entire delivery log. This cannot be undone. No new webhook is sent to the destination's URL; other destinations subscribed to the same events keep receiving them. Afterwards the destination no longer appears in <c>GET /v3/webhook/destinations/</c>, and every route under <c>/v3/webhook/destinations/{destination_uuid}/</c>, including its deliveries, a delivery's detail and its resend, answers 404. The application's legacy <c>webhook_url</c> is set to the URL of the oldest remaining enabled destination, or cleared when no enabled destination is left. Calling DELETE again returns 404.
         /// <para/>
         /// <c>DELETE /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.delete</c>).
         /// </remarks>
@@ -57,7 +57,7 @@ namespace Didit.Resources
         /// List webhook destinations
         /// </summary>
         /// <remarks>
-        /// List all webhook destinations (unpaginated array, oldest first). Each row includes URL, subscribed events, and delivery health metrics. The signing secret is NOT included in the list — fetch a single destination (<c>GET /v3/webhook/destinations/{destination_uuid}/</c>) to read <c>secret_shared_key</c>.
+        /// List all webhook destinations (unpaginated array, oldest first). Each item carries the destination's configuration, its delivery metrics for the last 30 days (<c>metrics_window_days</c>) with one <c>daily_points</c> entry per day, and its health (<c>health_status</c>, <c>failing_streak</c>, <c>failing_since</c>, <c>last_success_at</c>). The list has no <c>summary</c> object and never includes the signing secret: each item shows only <c>secret_last4</c>. Fetch a single destination (<c>GET /v3/webhook/destinations/{destination_uuid}/</c>) to read <c>secret_shared_key</c>.
         /// <para/>
         /// <c>GET /v3/webhook/destinations/</c> (<c>webhooks.destinations.list</c>).
         /// </remarks>
@@ -70,10 +70,46 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List webhook destination deliveries
+        /// </summary>
+        /// <remarks>
+        /// Page through every delivery attempt to one webhook destination, newest first. The first send of each event, each automatic <see href="https://docs.didit.me/integration/webhooks#retry-policy">retry</see> and each resend are separate entries. Entries carry the HTTP status and response time but not the payload: fetch one delivery to read its headers and body. <c>count</c> is exact up to 100 and reads 100 above that, so follow <c>next</c> until it is <c>null</c>. Delivery records are available for about 30 days. A scoped API key needs <c>webhooks: read</c> and <c>decisions: read</c>; a key limited to some workflows or to approved sessions cannot use this endpoint.
+        /// <para/>
+        /// <c>GET /v3/webhook/destinations/{destination_uuid}/deliveries/</c> (<c>webhooks.destinations.list_deliveries</c>).
+        /// </remarks>
+        /// <param name="destinationUuid">UUID of the destination (the <c>uuid</c> returned by <c>GET /v3/webhook/destinations/</c>).</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<WebhookDestinationDelivery>> ListDeliveriesAsync(string destinationUuid, WebhooksDestinationsListDeliveriesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListDeliveriesAsync(destinationUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Resend webhook destination delivery
+        /// </summary>
+        /// <remarks>
+        /// Send a past delivery again, for example after your endpoint was down. Didit takes the stored payload, sets a fresh <c>timestamp</c>, signs it again with the destination's current <c>secret_shared_key</c> (<c>X-Signature</c>, <c>X-Signature-V2</c>, <c>X-Signature-Simple</c> and <c>X-Timestamp</c>) and posts it to the delivery's <c>request_url</c>, even if the destination's URL has changed since or the destination is disabled. <c>event_id</c> and the rest of the payload are unchanged, so deduplicate on <c>event_id</c>. The call waits up to 5 seconds for your endpoint and returns the new delivery with <c>200</c> whatever your endpoint answered: read <c>response_status</c>. A resend is not retried automatically, every call sends again and creates a new delivery, and the request has no body. A scoped API key needs <c>webhooks: write</c> and <c>decisions: read</c>; a key limited to some workflows or to approved sessions cannot use this endpoint.
+        /// <para/>
+        /// <c>POST /v3/webhook/destinations/{destination_uuid}/deliveries/{delivery_uuid}/resend/</c> (<c>webhooks.destinations.resend_delivery</c>).
+        /// </remarks>
+        /// <param name="destinationUuid">UUID of the destination the delivery was sent to.</param>
+        /// <param name="deliveryUuid">UUID of the delivery to resend: the <c>uuid</c> of an entry returned by <c>GET /v3/webhook/destinations/{destination_uuid}/deliveries/</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<WebhookDestinationDeliveryDetail> ResendDeliveryAsync(string destinationUuid, string deliveryUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ResendDeliveryAsync(destinationUuid, deliveryUuid, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Get webhook destination
         /// </summary>
         /// <remarks>
-        /// Retrieve one webhook destination with its <c>secret_shared_key</c> signing secret and delivery health summary. API-key callers always receive the secret in full; Console users without <c>read:webhooks</c> see an empty string.
+        /// Retrieve one webhook destination with its <c>secret_shared_key</c> signing secret, its health (<c>health_status</c>, <c>failing_streak</c>, <c>failing_since</c>, <c>last_success_at</c>) and a delivery <c>summary</c> for the last 30 days. API-key callers always receive the secret in full; Console users without <c>read:webhooks</c> see an empty string.
         /// <para/>
         /// <c>GET /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.retrieve</c>).
         /// </remarks>
@@ -87,10 +123,46 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Get webhook destination analytics
+        /// </summary>
+        /// <remarks>
+        /// Delivery totals, failure rate and response times for one webhook destination, over the whole range (<c>summary</c>) and per UTC day (<c>points</c>). Every attempt counts as a delivery: the first send of an event, each automatic <see href="https://docs.didit.me/integration/webhooks#retry-policy">retry</see> and each resend. A delivery is failed when its recorded HTTP status is 400 or above, so timeouts (recorded as <c>504</c>) and connection failures (<c>503</c>) count as failed; a delivery still queued counts in <c>total_deliveries</c> only. Delivery records are available for about 30 days. A scoped API key needs <c>webhooks: read</c>.
+        /// <para/>
+        /// <c>GET /v3/webhook/destinations/{destination_uuid}/analytics/</c> (<c>webhooks.destinations.retrieve_analytics</c>).
+        /// </remarks>
+        /// <param name="destinationUuid">UUID of the destination (the <c>uuid</c> returned by <c>GET /v3/webhook/destinations/</c>).</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<WebhooksDestinationsRetrieveAnalyticsResponse> RetrieveAnalyticsAsync(string destinationUuid, WebhooksDestinationsRetrieveAnalyticsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveAnalyticsAsync(destinationUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Get webhook destination delivery
+        /// </summary>
+        /// <remarks>
+        /// Retrieve one delivery attempt to a webhook destination with the exact request headers and JSON body Didit sent, the HTTP status your endpoint returned and the response time. <c>request_header</c> and <c>request_body</c> are JSON text: parse them to read the signature headers and the payload, for example to check your <see href="https://docs.didit.me/integration/webhooks#signature-verification">signature verification</see> against the destination's <c>secret_shared_key</c>. A delivery never contains the signing secret, and Didit does not record your endpoint's response body. A scoped API key needs <c>webhooks: read</c> and <c>decisions: read</c>; a key limited to some workflows or to approved sessions cannot use this endpoint.
+        /// <para/>
+        /// <c>GET /v3/webhook/destinations/{destination_uuid}/deliveries/{delivery_uuid}/</c> (<c>webhooks.destinations.retrieve_delivery</c>).
+        /// </remarks>
+        /// <param name="destinationUuid">UUID of the destination the delivery was sent to.</param>
+        /// <param name="deliveryUuid">UUID of the delivery: the <c>uuid</c> of an entry returned by <c>GET /v3/webhook/destinations/{destination_uuid}/deliveries/</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<WebhookDestinationDeliveryDetail> RetrieveDeliveryAsync(string destinationUuid, string deliveryUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveDeliveryAsync(destinationUuid, deliveryUuid, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update webhook destination
         /// </summary>
         /// <remarks>
-        /// Update a webhook destination. <c>subscribed_events</c> is REPLACED wholesale, not merged — fetch first, append, resend. Secret is not rotated.
+        /// Update a webhook destination. <c>subscribed_events</c> is REPLACED wholesale, not merged: fetch first, append, resend. Secret is not rotated. A <c>uuid</c> in the body is ignored: the path names the destination.
         /// <para/>
         /// <c>PATCH /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.update</c>).
         /// </remarks>
@@ -167,6 +239,40 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List webhook destination deliveries
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.ListDeliveriesAsync"/>.</remarks>
+        public Task<DiditResponse<Page<WebhookDestinationDelivery>>> ListDeliveriesAsync(string destinationUuid, WebhooksDestinationsListDeliveriesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/deliveries/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            request.Query.Add("date_from", parameters?.DateFrom);
+            request.Query.Add("date_to", parameters?.DateTo);
+            return _pipeline.SendPageAsync<WebhookDestinationDelivery>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Resend webhook destination delivery
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.ResendDeliveryAsync"/>.</remarks>
+        public Task<DiditResponse<WebhookDestinationDeliveryDetail>> ResendDeliveryAsync(string destinationUuid, string deliveryUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/deliveries/" + PathParameter.Encode(deliveryUuid, "deliveryUuid") + "/resend/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<WebhookDestinationDeliveryDetail>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Get webhook destination
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.RetrieveAsync"/>.</remarks>
@@ -179,6 +285,38 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<WebhooksDestinationsRetrieveResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get webhook destination analytics
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.RetrieveAnalyticsAsync"/>.</remarks>
+        public Task<DiditResponse<WebhooksDestinationsRetrieveAnalyticsResponse>> RetrieveAnalyticsAsync(string destinationUuid, WebhooksDestinationsRetrieveAnalyticsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/analytics/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("date_from", parameters?.DateFrom);
+            request.Query.Add("date_to", parameters?.DateTo);
+            return _pipeline.SendJsonAsync<WebhooksDestinationsRetrieveAnalyticsResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get webhook destination delivery
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.RetrieveDeliveryAsync"/>.</remarks>
+        public Task<DiditResponse<WebhookDestinationDeliveryDetail>> RetrieveDeliveryAsync(string destinationUuid, string deliveryUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/deliveries/" + PathParameter.Encode(deliveryUuid, "deliveryUuid") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<WebhookDestinationDeliveryDetail>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

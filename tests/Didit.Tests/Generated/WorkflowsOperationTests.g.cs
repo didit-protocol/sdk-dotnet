@@ -33,7 +33,9 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"workflow_label\": \"Standard KYC\", \"is_default\": true, \"status\": \"draft\", \"features\": [{\"feature\": \"OCR\"}], \"is_white_label_enabled\": true, \"is_desktop_allowed\": true, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"face_liveness_max_attempts\": 1, \"face_match_max_attempts\": 1, \"session_expiration_time\": 1}", request.BodyText);
-            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+            Assert.NotNull(result);
+            Assert.Equal("c3d4e5f6-7890-12cd-ef34-333333333333", result.Uuid);
+            Assert.Equal(1L, result.Version);
         }
 
         [Fact]
@@ -92,7 +94,10 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
-            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+            Assert.NotNull(result);
+            Assert.Equal("a1b2c3d4-5678-90ab-cdef-111111111111", result.Uuid);
+            Assert.Equal(2L, result.Version);
+            Assert.True(result.AdditionalProperties?.ContainsKey("is_liveness_enabled"), "unknown fields are preserved");
         }
 
         [Fact]
@@ -100,7 +105,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"key\": \"value\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"workflow_id\": \"sample\", \"workflow_label\": \"sample\", \"workflow_type\": \"kyc\", \"is_default\": true, \"is_archived\": true, \"version\": 1, \"status\": \"draft\", \"published_at\": \"2026-01-02T03:04:05Z\", \"is_simple_workflow\": true, \"is_editable\": true, \"workflow_url\": \"sample\", \"workflow_graph\": {\"key\": \"value\"}, \"features\": \"sample\", \"total_price\": 1.5, \"min_price\": 1.5, \"max_price\": 1.5, \"special_add_on_prices\": {\"key\": \"value\"}, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"session_expiration_time\": 1, \"questionnaire\": {\"key\": \"value\"}, \"kyb_role_settings\": [{\"key\": \"value\"}], \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Workflows.UpdateAsync("settings_uuid-1", new SimpleWorkflowUpdateRequest { WorkflowLabel = "sample-workflow_label", IsDefault = true, Status = new SimpleWorkflowUpdateRequestStatus("draft"), IsWhiteLabelEnabled = true, IsDesktopAllowed = true, MaxRetryAttempts = 1L, RetryWindowDays = 1L, FaceLivenessMaxAttempts = 1L, FaceMatchMaxAttempts = 1L, SessionExpirationTime = 1L });
 
@@ -113,7 +118,9 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"workflow_label\": \"sample-workflow_label\", \"is_default\": true, \"status\": \"draft\", \"is_white_label_enabled\": true, \"is_desktop_allowed\": true, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"face_liveness_max_attempts\": 1, \"face_match_max_attempts\": 1, \"session_expiration_time\": 1}", request.BodyText);
-            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+            Assert.Equal(1L, result.Version);
         }
     }
 }

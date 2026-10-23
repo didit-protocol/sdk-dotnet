@@ -27,6 +27,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string?> Note { get; set; }
 
+        /// <summary>
+        /// Four-eyes blueprints only. The user uuid of the member who must approve this resolution (the same id as <c>assigned_to.uuid</c> on a case, or <c>members[].user_id</c> on a review team). The member must have case access to this application and cannot be the officer who submits the resolution. Omit it or send null to leave the resolution to the checker queue.
+        /// </summary>
+        [JsonPropertyName("checker")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string?> Checker { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

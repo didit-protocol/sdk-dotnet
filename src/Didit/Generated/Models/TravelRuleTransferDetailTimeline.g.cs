@@ -32,6 +32,18 @@ namespace Didit
         [JsonPropertyName("detail")]
         public string? Detail { get; init; }
 
+        /// <summary>
+        /// The name comparison this entry decided, next to <c>detail</c>. Absent on entries that compared no name.
+        /// </summary>
+        [JsonPropertyName("name_match")]
+        public TravelRuleNameMatch? NameMatch { get; init; }
+
+        /// <summary>
+        /// Present only on the entry of a transition a failed delivery caused: <c>email_undeliverable</c> or <c>delivery_failed</c>, the value the transfer's <c>reason</c> reports.
+        /// </summary>
+        [JsonPropertyName("reason")]
+        public string? Reason { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

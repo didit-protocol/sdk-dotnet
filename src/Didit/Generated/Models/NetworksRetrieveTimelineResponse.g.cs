@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (NetworksRetrieveTimelineResponse).
+    /// Without <c>contract</c>: the network's own events, oldest first, not paginated.
     /// </summary>
     public sealed record NetworksRetrieveTimelineResponse
     {
@@ -18,7 +18,13 @@ namespace Didit
         /// The &lt;c&gt;results&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("results")]
-        public IReadOnlyList<NetworkTimelineEvent>? Results { get; init; }
+        public JsonElement? Results { get; init; }
+
+        /// <summary>
+        /// Pass as <c>cursor</c> to read the next page. Null on the last page.
+        /// </summary>
+        [JsonPropertyName("next_cursor")]
+        public string? NextCursor { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

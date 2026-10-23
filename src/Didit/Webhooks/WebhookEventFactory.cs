@@ -29,7 +29,7 @@ namespace Didit.Internal
             WebhookJson.GetString(payload, "webhook_type") ?? WebhookJson.GetString(payload, "event_type") ?? string.Empty;
 
         /// <summary>The session decision as the generated type, or <c>null</c> when it is absent or does not parse.</summary>
-        public static SessionsRetrieveDecisionResponse? ReadDecision(JsonElement payload)
+        public static SessionDecision? ReadDecision(JsonElement payload)
         {
             if (WebhookJson.GetObject(payload, "decision") is not { } decision)
             {
@@ -38,7 +38,7 @@ namespace Didit.Internal
 
             try
             {
-                return JsonSupport.Deserialize<SessionsRetrieveDecisionResponse>(decision.GetRawText());
+                return JsonSupport.Deserialize<SessionDecision>(decision.GetRawText());
             }
             catch (Exception ex) when (ex is JsonException or NotSupportedException or InvalidOperationException or ArgumentException or FormatException or OverflowException)
             {

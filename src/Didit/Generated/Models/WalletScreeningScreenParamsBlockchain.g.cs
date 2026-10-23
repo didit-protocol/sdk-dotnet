@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Network identifier. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), and ARB (Arbitrum One). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. Celo, Mode and Plume are not currently supported. Alias: <c>currency</c>.
+    /// Network identifier. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), and ARB (Arbitrum One). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. CELO (Celo), MODE (Mode) and PLUME (Plume) are screened through a connected TRM Labs account; managed screening answers 400 for them. Alias: <c>currency</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(WalletScreeningScreenParamsBlockchain.EnumJsonConverter))]
@@ -70,6 +70,15 @@ namespace Didit
 
         /// <summary><c>ARB</c></summary>
         public static WalletScreeningScreenParamsBlockchain Arb { get; } = new("ARB");
+
+        /// <summary><c>CELO</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Celo { get; } = new("CELO");
+
+        /// <summary><c>MODE</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Mode { get; } = new("MODE");
+
+        /// <summary><c>PLUME</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Plume { get; } = new("PLUME");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

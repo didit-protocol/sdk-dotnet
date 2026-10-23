@@ -15,7 +15,7 @@ namespace Didit
     public sealed record TransactionsCreateParamsTransactionDetailsCryptoParams
     {
         /// <summary>
-        /// Actual network used for screening. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism) and ARB (Arbitrum One). Always specify this for multi-network tokens. Connected-provider coverage varies; LIGHTNING requires a supported connected provider.
+        /// Actual network used for screening. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism) and ARB (Arbitrum One). Always specify this for multi-network tokens. When it is missing for USDT, USDC or ETH sent with a 0x transaction hash, Didit looks the hash up on Ethereum, BNB Chain, Polygon, Base, Arbitrum and Optimism and screens it on the network where it is found; if no network has it, the transaction is not screened and custom_values.aml_screening_status is FAILED with the reason in custom_values.aml_screening_error. When it is missing for USDT or USDC screened by wallet (no transaction hash), a Tron address is screened on Tron, a Solana address on Solana, and a 0x address on the first of those six networks where it has sent a transaction or holds the token, or on Ethereum when it is active on none of them. Connected-provider coverage varies; LIGHTNING requires a supported connected provider.
         /// </summary>
         [JsonPropertyName("crypto_chain")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

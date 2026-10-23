@@ -30,11 +30,12 @@ namespace Didit.Resources
         /// <para/>
         /// <c>GET /organizations/me/</c> (<c>account.organizations.list</c>).
         /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<IReadOnlyList<Organization>> ListAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<Page<Organization>> ListAsync(AccountOrganizationsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            var response = await _raw.ListAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            var response = await _raw.ListAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
     }
@@ -53,7 +54,7 @@ namespace Didit.Resources
         /// List My Organizations
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="AccountOrganizationsResource.ListAsync"/>.</remarks>
-        public Task<DiditResponse<IReadOnlyList<Organization>>> ListAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<Page<Organization>>> ListAsync(AccountOrganizationsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/organizations/me/")
             {
@@ -61,7 +62,9 @@ namespace Didit.Resources
                 Auth = AuthKind.AccountToken,
                 ApplicationScoped = false,
             };
-            return _pipeline.SendJsonAsync<IReadOnlyList<Organization>>(request, requestOptions, cancellationToken);
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<Organization>(request, requestOptions, cancellationToken);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Didit.Resources
         /// <param name="businessSessionId">Business session UUID.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<BusinessSessionsListNetworksResponse> ListNetworksAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<EntityNetworkMembershipList> ListNetworksAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListNetworksAsync(businessSessionId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -55,7 +55,7 @@ namespace Didit.Resources
         /// List networks for a business session
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="BusinessSessionsResource.ListNetworksAsync"/>.</remarks>
-        public Task<DiditResponse<BusinessSessionsListNetworksResponse>> ListNetworksAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<EntityNetworkMembershipList>> ListNetworksAsync(string businessSessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/business-sessions/" + PathParameter.Encode(businessSessionId, "businessSessionId") + "/networks/")
             {
@@ -63,7 +63,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
-            return _pipeline.SendJsonAsync<BusinessSessionsListNetworksResponse>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
         }
     }
 }

@@ -33,7 +33,7 @@ Console.WriteLine($"Session {session.SessionId} created: send the user to {sessi
 // 2. Read the decision (poll, or better, wait for the webhook below).
 var decision = await client.Sessions.RetrieveDecisionAsync(session.SessionId!);
 Console.WriteLine($"Decision: {decision.Status}");
-foreach (var check in decision.IdVerifications ?? Array.Empty<SessionsRetrieveDecisionResponseIdVerifications>())
+foreach (var check in decision.IdVerifications ?? Array.Empty<SessionDecisionIdVerifications>())
 {
     Console.WriteLine($"  ID verification {check.Status}: {check.FirstName} {check.LastName}, {check.DocumentType}");
 }

@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Name-matching strategy applied by the registry search.
+    /// Name-matching strategy applied by the registry search. <c>contains</c> is the only accepted value: no registry source behind the search offers a prefix or fuzzy mode, so <c>start_with</c> and <c>fuzzy</c> are rejected with <c>400</c> (<c>not a valid choice</c>).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(KybSearchParamsSearchType.EnumJsonConverter))]
@@ -25,12 +25,6 @@ namespace Didit
 
         /// <summary><c>contains</c></summary>
         public static KybSearchParamsSearchType Contains { get; } = new("contains");
-
-        /// <summary><c>start_with</c></summary>
-        public static KybSearchParamsSearchType StartWith { get; } = new("start_with");
-
-        /// <summary><c>fuzzy</c></summary>
-        public static KybSearchParamsSearchType Fuzzy { get; } = new("fuzzy");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of TravelRuleSettingsUpdateNameMatchingStrictness.
+    /// <c>CONTAINS</c> accepts one name whose words all appear in the other.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(TravelRuleSettingsUpdateNameMatchingStrictness.EnumJsonConverter))]
@@ -28,6 +28,9 @@ namespace Didit
 
         /// <summary><c>STRICT</c></summary>
         public static TravelRuleSettingsUpdateNameMatchingStrictness Strict { get; } = new("STRICT");
+
+        /// <summary><c>CONTAINS</c></summary>
+        public static TravelRuleSettingsUpdateNameMatchingStrictness Contains { get; } = new("CONTAINS");
 
         /// <summary><c>DEFAULT</c></summary>
         public static TravelRuleSettingsUpdateNameMatchingStrictness Default { get; } = new("DEFAULT");

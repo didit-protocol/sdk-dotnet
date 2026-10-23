@@ -56,7 +56,7 @@ namespace Didit
         public Optional<string> EmailLanguage { get; set; }
 
         /// <summary>
-        /// Optional signed receipt from Preview Resubmission Email. When supplied with send_email=true and new_status=Resubmitted, the recipient, language, checks, current session state, sender and message must still match the preview. A changed or expired receipt returns 409 before changing the session or sending email. Existing integrations may omit this field.
+        /// Optional receipt from [Preview Decision Email](/sessions-api/preview-decision-email) (for <c>Approved</c> and <c>Declined</c>) or [Preview Resubmission Email](/sessions-api/preview-resubmission) (for <c>Resubmitted</c>): its <c>preview_token</c>. Valid only with <c>send_email: true</c>; without it the request returns <c>400</c>. The recipient, language, session status, sender and email (and, for a resubmission, the selected steps) must still match the preview, and the receipt expires after 15 minutes. Otherwise the request returns <c>409</c> before the session changes or an email is sent. Existing integrations may omit this field.
         /// </summary>
         [JsonPropertyName("email_preview_token")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

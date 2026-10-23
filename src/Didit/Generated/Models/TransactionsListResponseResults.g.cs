@@ -170,6 +170,18 @@ namespace Didit
         [JsonPropertyName("assigned_to_name")]
         public string? AssignedToName { get; init; }
 
+        /// <summary>
+        /// Status of the transaction's Travel Rule transfer (for example <c>COMPLETED</c>), or <c>null</c> when it has none.
+        /// </summary>
+        [JsonPropertyName("travel_rule_status")]
+        public string? TravelRuleStatus { get; init; }
+
+        /// <summary>
+        /// The transaction's Travel Rule transfer, the same block as <c>travel_rule</c> on <c>GET /v3/transactions/{transaction_id}/</c>, or <c>null</c> when the transaction has none.
+        /// </summary>
+        [JsonPropertyName("travel_rule")]
+        public TransactionTravelRule? TravelRule { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

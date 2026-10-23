@@ -57,25 +57,25 @@ namespace Didit
         public long? SubscribedEventsCount { get; init; }
 
         /// <summary>
-        /// Total delivery attempts (successful + failed) recorded for this destination.
+        /// Delivery attempts (retries included) made to this destination in the last 30 days.
         /// </summary>
         [JsonPropertyName("deliveries_count")]
         public long? DeliveriesCount { get; init; }
 
         /// <summary>
-        /// Delivery attempts whose target responded with HTTP ≥ 400 (or did not respond).
+        /// Delivery attempts in the last 30 days that the destination answered with HTTP 400 or above, or did not answer (timeout, refused connection or blocked address).
         /// </summary>
         [JsonPropertyName("failed_deliveries_count")]
         public long? FailedDeliveriesCount { get; init; }
 
         /// <summary>
-        /// Average target response time in milliseconds, rounded to an integer. <c>null</c> if no deliveries yet.
+        /// Average response time in milliseconds over the last 30 days, rounded to an integer. <c>null</c> when there were no deliveries in that window.
         /// </summary>
         [JsonPropertyName("average_response_time_ms")]
         public long? AverageResponseTimeMs { get; init; }
 
         /// <summary>
-        /// <c>round(failed_deliveries_count / deliveries_count * 100)</c>; <c>0</c> when there are no deliveries.
+        /// <c>round(failed_deliveries_count / deliveries_count * 100)</c> over the last 30 days; <c>0</c> when there are no deliveries.
         /// </summary>
         [JsonPropertyName("error_rate_percentage")]
         public long? ErrorRatePercentage { get; init; }
@@ -85,6 +85,66 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("last_delivery_at")]
         public DateTimeOffset? LastDeliveryAt { get; init; }
+
+        /// <summary>
+        /// Length in days of the window that <c>deliveries_count</c>, <c>failed_deliveries_count</c>, <c>average_response_time_ms</c>, <c>error_rate_percentage</c> and <c>daily_points</c> cover. Always <c>30</c>.
+        /// </summary>
+        [JsonPropertyName("metrics_window_days")]
+        public long? MetricsWindowDays { get; init; }
+
+        /// <summary>
+        /// Delivery health. <c>failing</c>: 3 or more consecutive events failed their first delivery attempt since the destination last answered successfully (see <c>failing_streak</c>). <c>degraded</c>: not failing, but a delivery attempt failed in the last 24 hours and no later attempt has delivered that event; a retry or resend that delivers it clears this. <c>healthy</c>: neither. Independent of <c>enabled</c>. A failed attempt is one answered with HTTP 400 or above, or not answered at all.
+        /// </summary>
+        [JsonPropertyName("health_status")]
+        public WebhooksDestinationsListResponseHealthStatus? HealthStatus { get; init; }
+
+        /// <summary>
+        /// How many consecutive events failed their first delivery attempt since the destination last answered successfully, within the last 30 days. Retries are not counted, and any successful attempt, including a retry or a resend, ends the streak. <c>0</c> when no event has failed since the last success.
+        /// </summary>
+        [JsonPropertyName("failing_streak")]
+        public long? FailingStreak { get; init; }
+
+        /// <summary>
+        /// When the first failed attempt of the current <c>failing_streak</c> was made. <c>null</c> when <c>failing_streak</c> is <c>0</c>.
+        /// </summary>
+        [JsonPropertyName("failing_since")]
+        public DateTimeOffset? FailingSince { get; init; }
+
+        /// <summary>
+        /// When the destination last answered a delivery with an HTTP status under 400, within the last 30 days. <c>null</c> if it has not in that window.
+        /// </summary>
+        [JsonPropertyName("last_success_at")]
+        public DateTimeOffset? LastSuccessAt { get; init; }
+
+        /// <summary>
+        /// Environment of the application that owns the destination.
+        /// </summary>
+        [JsonPropertyName("environment")]
+        public WebhooksDestinationsListResponseEnvironment? Environment { get; init; }
+
+        /// <summary>
+        /// One entry per UTC day of the last 30 days, oldest first, including days with no deliveries. Counts every attempt, retries included.
+        /// </summary>
+        [JsonPropertyName("daily_points")]
+        public IReadOnlyList<WebhooksDestinationsListResponseDailyPoints>? DailyPoints { get; init; }
+
+        /// <summary>
+        /// Last four characters of the destination's current signing secret, so you can tell secrets apart. Not enough to verify a signature.
+        /// </summary>
+        [JsonPropertyName("secret_last4")]
+        public string? SecretLast4 { get; init; }
+
+        /// <summary>
+        /// Email of the Business Console member who created the destination. <c>null</c> for a destination created with an API key.
+        /// </summary>
+        [JsonPropertyName("created_by_email")]
+        public string? CreatedByEmail { get; init; }
+
+        /// <summary>
+        /// Name of the Business Console member who created the destination. <c>null</c> for a destination created with an API key.
+        /// </summary>
+        [JsonPropertyName("created_by_name")]
+        public string? CreatedByName { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;created_at&lt;/c&gt; field.

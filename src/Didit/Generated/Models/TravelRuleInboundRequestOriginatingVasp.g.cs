@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Optional description of the sending VASP.
+    /// Optional description of the sending VASP. It stays on this transfer only (<c>metadata.originating_vasp</c>, and the transfer's originator VASP in GET /v3/travel-rule/transfers/); it never creates, edits or links a shared VASP directory entry.
     /// </summary>
     public sealed record TravelRuleInboundRequestOriginatingVasp
     {
@@ -22,14 +22,14 @@ namespace Didit
         public Optional<string> Name { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;lei&lt;/c&gt; field.
+        /// Optional. A valid 20-character ISO 17442 LEI, or empty.
         /// </summary>
         [JsonPropertyName("lei")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> Lei { get; set; }
 
         /// <summary>
-        /// Travel address that lets Didit reach the sender on the TRP rail.
+        /// The sender's travel address, recorded on this transfer.
         /// </summary>
         [JsonPropertyName("travel_address")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

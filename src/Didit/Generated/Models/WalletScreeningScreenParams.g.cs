@@ -21,7 +21,7 @@ namespace Didit
         public required string WalletAddress { get; set; }
 
         /// <summary>
-        /// Network identifier. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), and ARB (Arbitrum One). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. Celo, Mode and Plume are not currently supported. Alias: <c>currency</c>.
+        /// Network identifier. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), and ARB (Arbitrum One). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. CELO (Celo), MODE (Mode) and PLUME (Plume) are screened through a connected TRM Labs account; managed screening answers 400 for them. Alias: <c>currency</c>.
         /// </summary>
         [JsonPropertyName("blockchain")]
         public required WalletScreeningScreenParamsBlockchain Blockchain { get; set; }

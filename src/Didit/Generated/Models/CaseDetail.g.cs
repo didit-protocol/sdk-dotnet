@@ -87,6 +87,12 @@ namespace Didit
         public DateTimeOffset? AssignedAt { get; init; }
 
         /// <summary>
+        /// The review team that owns the case, or null when no team owns it. Routing sets it when a routing rule places the case with one of its teams. Change or clear it with <c>PATCH .../cases/{case_uuid}/</c> (<c>team</c>).
+        /// </summary>
+        [JsonPropertyName("team")]
+        public CaseTeamSummary? Team { get; init; }
+
+        /// <summary>
         /// The &lt;c&gt;due_at&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("due_at")]
@@ -109,6 +115,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("pending_resolution")]
         public CaseDetailPendingResolution? PendingResolution { get; init; }
+
+        /// <summary>
+        /// The member named to approve or reject the pending resolution. Set only while a four-eyes resolution waits on a named checker. Null when nothing is pending, while the pending resolution waits on the checker queue, and once the resolution is approved, rejected, or returned for a new review because the evidence changed.
+        /// </summary>
+        [JsonPropertyName("checker")]
+        public CaseChecker? Checker { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;metadata&lt;/c&gt; field.

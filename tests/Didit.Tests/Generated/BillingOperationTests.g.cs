@@ -41,7 +41,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"checkout_session_id\": \"cs_test_a1B2c3D4e5F6g7H8i9J0\", \"checkout_session_url\": \"https://checkout.stripe.com/c/pay/cs_test_a1B2c3D4e5F6g7H8i9J0\"}");
+            handler.Enqueue(200, "{\"checkout_session_id\": \"cs_test_a1B2c3D4e5F6g7H8i9J0\", \"checkout_session_url\": \"https://checkout.example.com/c/pay/cs_test_a1B2c3D4e5F6g7H8i9J0\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Billing.TopUpAsync(new BillingTopUpParams { AmountInDollars = 1.5, SuccessUrl = "https://example.com/callback", CancelUrl = "https://example.com/callback" });
 

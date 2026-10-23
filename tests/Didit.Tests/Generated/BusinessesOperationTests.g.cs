@@ -61,6 +61,27 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Businesses_GenerateSessionPdf()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, new byte[] { 37, 80, 68, 70 }, "application/pdf", new Dictionary<string, string> { ["Content-Disposition"] = "attachment; filename=\"report.bin\"" });
+            using var client = TestClients.Create(handler);
+            var result = await client.Businesses.GenerateSessionPdfAsync("business_session_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/businesses/business_session_id-1/pdf/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);
+            Assert.Equal("application/pdf", result.ContentType);
+            Assert.Equal("report.bin", result.FileName);
+        }
+
+        [Fact]
         public async Task Businesses_List()
         {
             var handler = new MockHttpHandler();
@@ -195,7 +216,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's schema.
             handler.Enqueue(200, "{\"key\": \"value\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Businesses.SetOngoingMonitoringAsync(new BusinessesSetOngoingMonitoringParams { IsEnabled = true, EstimateOnly = true, UpdateAll = true, FilterSearch = "sample-filter_search", FilterStatus = new string[] { "sample-filter_status" }, FilterCountry = "sample-filter_country", FilterDateFrom = "2026-01-02", FilterDateTo = "2026-01-02", DiditInternalIdList = new string[] { "11111111-2222-3333-4444-555555555555" } });
+            var result = await client.Businesses.SetOngoingMonitoringAsync(new OngoingMonitoringToggleRequest { IsEnabled = true, EstimateOnly = true, UpdateAll = true, FilterSearch = "sample-filter_search", FilterStatus = new string[] { "sample-filter_status" }, FilterCountry = "sample-filter_country", FilterDateFrom = "2026-01-02", FilterDateTo = "2026-01-02", DiditInternalIdList = new string[] { "11111111-2222-3333-4444-555555555555" } });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -237,7 +258,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"didit_internal_id\": \"a1b2c3d4-e5f6-4890-abcd-ef1234567890\", \"vendor_data\": \"company-123\", \"display_name\": \"Acme Corp\", \"legal_name\": \"Acme Trading Ltd\", \"registration_number\": \"12345678\", \"country_code\": \"GB\", \"effective_name\": \"Acme Corp\", \"status\": \"FLAGGED\", \"session_count\": 2, \"approved_count\": 1, \"declined_count\": 0, \"in_review_count\": 1, \"features\": {\"KYB\": \"Approved\"}, \"features_list\": [{\"feature\": \"KYB\", \"status\": \"Approved\"}], \"last_session_at\": \"2026-03-15T10:30:00Z\", \"last_activity_at\": \"2026-03-15T10:30:00Z\", \"first_session_at\": \"2026-01-10T08:00:00Z\", \"tags\": [{\"uuid\": \"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\", \"name\": \"VIP\", \"color\": \"#2567FF\"}], \"created_at\": \"2026-01-10T08:00:00Z\", \"metadata\": {\"industry\": \"fintech\", \"risk_level\": \"low\"}, \"updated_at\": \"2026-03-15T10:30:00Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Businesses.UpdateAsync("vendor_data-1", new BusinessesUpdateParams { DisplayName = "sample-display_name", LegalName = "sample-legal_name", RegistrationNumber = "sample-registration_number", CountryCode = "sample-country_code", Status = new BusinessesUpdateParamsStatus("ACTIVE") });
+            var result = await client.Businesses.UpdateAsync("vendor_data-1", new BusinessesUpdateParams { DisplayName = "sample-display_name", LegalName = "sample-legal_name", RegistrationNumber = "sample-registration_number", CountryCode = "sample-country_code", Status = new BusinessesUpdateParamsStatus("ACTIVE"), Reason = "sample-reason" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -247,7 +268,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"display_name\": \"sample-display_name\", \"legal_name\": \"sample-legal_name\", \"registration_number\": \"sample-registration_number\", \"country_code\": \"sample-country_code\", \"status\": \"ACTIVE\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"display_name\": \"sample-display_name\", \"legal_name\": \"sample-legal_name\", \"registration_number\": \"sample-registration_number\", \"country_code\": \"sample-country_code\", \"status\": \"ACTIVE\", \"reason\": \"sample-reason\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("a1b2c3d4-e5f6-4890-abcd-ef1234567890", result.DiditInternalId);
             Assert.Equal(2L, result.SessionCount);
@@ -260,7 +281,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"didit_internal_id\": \"a1b2c3d4-e5f6-4890-abcd-ef1234567890\", \"vendor_data\": \"company-123\", \"display_name\": null, \"legal_name\": \"Acme Trading Ltd\", \"registration_number\": \"12345678\", \"country_code\": \"GB\", \"effective_name\": \"Acme Trading Ltd\", \"status\": \"BLOCKED\", \"session_count\": 2, \"approved_count\": 1, \"declined_count\": 0, \"in_review_count\": 1, \"features\": {\"KYB\": \"Approved\"}, \"features_list\": [{\"feature\": \"KYB\", \"status\": \"Approved\"}], \"last_session_at\": \"2026-03-15T10:30:00Z\", \"last_activity_at\": \"2026-03-15T10:30:00Z\", \"first_session_at\": \"2026-01-10T08:00:00Z\", \"tags\": [{\"uuid\": \"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\", \"name\": \"VIP\", \"color\": \"#2567FF\"}], \"created_at\": \"2026-01-10T08:00:00Z\", \"metadata\": {\"industry\": \"fintech\"}, \"updated_at\": \"2026-03-15T10:30:00Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Businesses.UpdateStatusAsync("vendor_data-1", new BusinessesUpdateStatusParams { Status = new BusinessesUpdateStatusParamsStatus("ACTIVE") });
+            var result = await client.Businesses.UpdateStatusAsync("vendor_data-1", new BusinessesUpdateStatusParams { Status = new BusinessesUpdateStatusParamsStatus("ACTIVE"), Reason = "sample-reason" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -270,7 +291,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"status\": \"ACTIVE\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"status\": \"ACTIVE\", \"reason\": \"sample-reason\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("a1b2c3d4-e5f6-4890-abcd-ef1234567890", result.DiditInternalId);
             Assert.Equal(2L, result.SessionCount);

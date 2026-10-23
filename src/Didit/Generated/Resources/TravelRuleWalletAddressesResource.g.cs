@@ -23,6 +23,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Import wallet addresses in bulk
+        /// </summary>
+        /// <remarks>
+        /// Add up to 10,000 wallets to your Travel Rule address book in one call, as JSON or as a CSV file. A wallet can be sent by its address, by the SHA-256 of its lowercased address (<c>address_hash</c>) to keep the address private, or both. The import is idempotent: a wallet already in the book is reported as <c>existing</c> and left untouched, so the same file can be sent again. Each row is validated on its own, so one bad row never fails the others. A wallet imported by its hash only matches transfers to that address and can be proven with the wallet-ownership widget like any other entry.
+        /// <para/>
+        /// <c>POST /v3/travel-rule/wallet-addresses/import/</c> (<c>travel_rule.wallet_addresses.bulk_import</c>).
+        /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<WalletAddressImportReport> BulkImportAsync(TravelRuleWalletAddressesBulkImportParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.BulkImportAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Register a wallet address
         /// </summary>
         /// <remarks>
@@ -43,7 +61,7 @@ namespace Didit.Resources
         /// Delete a wallet address
         /// </summary>
         /// <remarks>
-        /// Deletes the entry. It stops matching new transfers immediately and the address is freed up for re-registration.
+        /// Deletes the entry together with its ownership proofs and the screenshots they stored. It stops matching new transfers immediately and the address is freed up for re-registration. Transfers that already used the wallet keep their own record of it and read the same. Deletion is irreversible.
         /// <para/>
         /// <c>DELETE /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.delete</c>).
         /// </remarks>
@@ -97,6 +115,39 @@ namespace Didit.Resources
         internal TravelRuleWalletAddressesRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+        }
+
+        /// <summary>
+        /// Import wallet addresses in bulk
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.BulkImportAsync"/>.</remarks>
+        public Task<DiditResponse<WalletAddressImportReport>> BulkImportAsync(TravelRuleWalletAddressesBulkImportParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/travel-rule/wallet-addresses/import/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            if (parameters.File.IsSet)
+            {
+                var form = new MultipartRequestBody();
+                if (parameters.File.IsSet)
+                {
+                    form.Add("file", parameters.File.Value);
+                }
+                request.Body = form;
+            }
+            else
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
+            return _pipeline.SendJsonAsync<WalletAddressImportReport>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

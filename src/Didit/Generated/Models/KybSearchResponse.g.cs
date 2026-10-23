@@ -24,7 +24,7 @@ namespace Didit
         /// The &lt;c&gt;kyb_registry&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("kyb_registry")]
-        public KybSearchResponseKybRegistry? KybRegistry { get; init; }
+        public KYBRegistrySearchResults? KybRegistry { get; init; }
 
         /// <summary>
         /// Echo of the <c>vendor_data</c> you sent.

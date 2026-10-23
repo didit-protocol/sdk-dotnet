@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// What happens to the underlying transaction when a transfer expires. Default HOLD.
+    /// What happens to the underlying transaction when a transfer expires. Default HOLD. sunrise_policy and non_responsive_policy take precedence when they apply and are set.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(TravelRuleSettingsDetailTimeoutOutcome.EnumJsonConverter))]

@@ -319,7 +319,7 @@ Choices DESIGN.md leaves to each language, made the .NET way:
 - Response types are records with nullable init-only properties: a field the API leaves out reads as `null` and never throws, so older SDK versions keep working when the API grows. Fields the SDK does not know yet are kept in `AdditionalProperties` (raw JSON), which request types also send.
 - Enums are open: readonly structs with a static property per known value (`SessionsCreateResponseStatus.Approved`), any other string is accepted and kept, values compare with `==`, and a string converts implicitly (`NewStatus = "Approved"`). For an optional enum field, use the static property or `new T("value")`.
 - Integers are `long`, numbers `double`, date-times `DateTimeOffset`, UUIDs and string decimals `string`, free-form JSON `JsonElement` in responses and `object` in requests (dictionaries and anonymous objects work).
-- Type names follow DESIGN.md 5.1 literally, so deeply nested inline objects have long names (`SessionsRetrieveDecisionResponseIdVerifications`); `var` keeps code short.
+- Type names follow DESIGN.md 5.1 literally, so deeply nested inline objects have long names (`SessionDecisionIdVerifications`); `var` keeps code short.
 - A query parameter whose name clashes with a body field of the same operation gets a `Query` suffix (`NodeIdQuery`).
 - JSON uses System.Text.Json source generation. Free-form request values are serialised by reflection, except in trimmed or Native AOT apps that disable reflection.
 - Raw responses: `client.WithRawResponse`, the C# form of `with_raw_response`.

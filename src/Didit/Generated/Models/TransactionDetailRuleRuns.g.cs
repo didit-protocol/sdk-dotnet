@@ -87,7 +87,7 @@ namespace Didit
         public string? ActionSummary { get; init; }
 
         /// <summary>
-        /// Evaluation detail: <c>scope_match</c>, <c>conditions[]</c> and <c>aggregations[]</c>. Each condition entry carries <c>field</c>, <c>operator</c>, <c>expected_value</c>, the <c>current_value</c> read from the transaction, <c>matched</c>, <c>group_index</c> and <c>group_logic</c>. Each aggregation entry (velocity / count / sum) carries <c>metric</c>, <c>field</c>, <c>operator</c>, <c>expected_value</c>, the <c>computed_value</c> the aggregate evaluated to, <c>window</c>, <c>filters</c>, <c>matched</c> and <c>sample_references</c>; deferred async aggregations have <c>computed_value: null</c> and <c>deferred: true</c>.
+        /// Evaluation detail: <c>scope_match</c>, <c>conditions[]</c> and <c>aggregations[]</c>. Each condition entry carries <c>field</c>, <c>operator</c>, <c>expected_value</c>, the <c>current_value</c> read from the transaction, <c>matched</c>, <c>group_index</c> and <c>group_logic</c>. Each aggregation entry (velocity / count / sum) carries <c>metric</c>, <c>field</c>, <c>operator</c>, <c>expected_value</c>, the <c>computed_value</c> the aggregate evaluated to, <c>window</c>, <c>filters</c>, <c>matched</c> and <c>sample_references</c>; deferred async aggregations have <c>computed_value: null</c> and <c>deferred: true</c>. A nested condition group is one <c>conditions[]</c> entry with <c>operator</c> <c>any_of</c> or <c>all_of</c>, <c>field</c> null, and its members' results under its own <c>conditions</c>.
         /// </summary>
         [JsonPropertyName("metadata")]
         public JsonElement? Metadata { get; init; }

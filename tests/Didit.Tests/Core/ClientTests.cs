@@ -99,7 +99,7 @@ namespace Didit.Tests.Core
         {
             var handler = new MockHttpHandler();
             handler.Enqueue(200, "{\"access_token\":\"tok\"}");
-            handler.Enqueue(200, "[]");
+            handler.Enqueue(200, "{\"count\":0,\"next\":null,\"previous\":null,\"results\":[]}");
             using var client = TestClients.Create(handler);
 
             await client.Account.LoginAsync(new LoginRequest { Email = "a@example.com", Password = "pw" });

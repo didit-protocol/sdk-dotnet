@@ -15,7 +15,7 @@ namespace Didit
     public sealed record UsersCreateParams
     {
         /// <summary>
-        /// Your unique identifier for this user (free-form string, NOT a UUID). Must be unique among non-deleted users for the application; matched exactly as sent.
+        /// Your unique identifier for this user (free-form string, NOT a UUID). Must be unique among the application's users; matched exactly as sent.
         /// </summary>
         [JsonPropertyName("vendor_data")]
         public required string VendorData { get; set; }
@@ -75,6 +75,62 @@ namespace Didit
         [JsonPropertyName("issuing_states")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<IReadOnlyList<string>> IssuingStates { get; set; }
+
+        /// <summary>
+        /// Given name. When <c>full_name</c> is not sent, Didit joins <c>first_name</c> and <c>last_name</c> with a space into <c>full_name</c>. Not returned as a separate field.
+        /// </summary>
+        [JsonPropertyName("first_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FirstName { get; set; }
+
+        /// <summary>
+        /// Family name. Joined with <c>first_name</c> into <c>full_name</c> when <c>full_name</c> is not sent. Not returned as a separate field.
+        /// </summary>
+        [JsonPropertyName("last_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> LastName { get; set; }
+
+        /// <summary>
+        /// Contact email, stored in <c>metadata.contact.email</c> (it replaces an <c>email</c> you send inside <c>metadata.contact</c>). Required when <c>send_verification_link</c> is <c>true</c>: the link is sent to this address. If <c>metadata.contact</c> is not a JSON object, the call answers <c>400</c> on this field.
+        /// </summary>
+        [JsonPropertyName("email")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Email { get; set; }
+
+        /// <summary>
+        /// Contact phone number, stored in <c>metadata.contact.phone_number</c>. If <c>metadata.contact</c> is not a JSON object, the call answers <c>400</c> on this field.
+        /// </summary>
+        [JsonPropertyName("phone_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Country as an ISO 3166 code, alpha-2 or alpha-3 (<c>ES</c> or <c>ESP</c>). Stored uppercased in <c>metadata.address.country</c>. If <c>metadata.address</c> is not a JSON object, the call answers <c>400</c> on this field.
+        /// </summary>
+        [JsonPropertyName("country")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Country { get; set; }
+
+        /// <summary>
+        /// When <c>true</c>, Didit creates a verification session for the person on <c>workflow_id</c> and emails them the link at <c>email</c>. Requires <c>email</c> and <c>workflow_id</c>. A scoped API key also needs <c>sessions</c> write.
+        /// </summary>
+        [JsonPropertyName("send_verification_link")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> SendVerificationLink { get; set; }
+
+        /// <summary>
+        /// The workflow of the verification session. Required when <c>send_verification_link</c> is <c>true</c>. It must verify a person: a Business Verification (KYB) workflow is refused. Ignored otherwise.
+        /// </summary>
+        [JsonPropertyName("workflow_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> WorkflowId { get; set; }
+
+        /// <summary>
+        /// Language of the verification email, as a [supported language](/integration/supported-languages) code. English when omitted. Ignored when <c>send_verification_link</c> is not <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("language")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Language { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

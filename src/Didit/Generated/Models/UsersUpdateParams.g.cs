@@ -36,7 +36,7 @@ namespace Didit
         public Optional<string?> DateOfBirth { get; set; }
 
         /// <summary>
-        /// User lifecycle status. Changing it via this generic PATCH does NOT sync the system blocklist or record a status-change activity; prefer the update-status endpoint.
+        /// User lifecycle status. A change is recorded as a <c>STATUS_CHANGED</c> activity, and <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist (moving away from <c>BLOCKED</c> removes that entry).
         /// </summary>
         [JsonPropertyName("status")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -69,6 +69,13 @@ namespace Didit
         [JsonPropertyName("issuing_states")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<IReadOnlyList<string>> IssuingStates { get; set; }
+
+        /// <summary>
+        /// Why the status changed. Recorded on the status-change entry of the user's activity (<c>comments[].comment</c>, and Activity in the Business Console), only when the status actually changes. Webhooks do not carry it.
+        /// </summary>
+        [JsonPropertyName("reason")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string?> Reason { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -67,7 +67,7 @@ namespace Didit
         public Optional<object?> CustomProperties { get; set; }
 
         /// <summary>
-        /// Travel Rule compliance metadata.
+        /// Travel Rule data. When Travel Rule is enabled and transaction_category is travel_rule, Didit runs the exchange itself: it ignores status, protocol, required and obligations_count, and uses originator_data, beneficiary_data and metadata. Otherwise Didit stores these values as a passive Travel Rule record. While Travel Rule is on, an outbound transfer at or above your threshold must carry what its regime requires (EU TFR or FATF Recommendation 16), checked on the sides you send: a missing field answers 400 under <c>travel_rule_details.originator_data</c> or <c>travel_rule_details.beneficiary_data</c>, for example "EU TFR requires the originator name."
         /// </summary>
         [JsonPropertyName("travel_rule_details")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

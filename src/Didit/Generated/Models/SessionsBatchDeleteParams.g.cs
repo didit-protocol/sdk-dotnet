@@ -22,7 +22,7 @@ namespace Didit
         public Optional<IReadOnlyList<string>> SessionNumbers { get; set; }
 
         /// <summary>
-        /// When <c>true</c>, every remaining KYC session in the calling application is deleted and <c>session_numbers</c> is ignored. More than 20 matching sessions run as a deletion job (<c>202</c>) that covers only the sessions created before the request. Defaults to <c>false</c>. Irreversible; there is no confirmation step.
+        /// When <c>true</c>, every remaining KYC session in the calling application is deleted and <c>session_numbers</c> is ignored, unless you narrow the selection with <c>filter_*</c> keys. More than 20 matching sessions run as a deletion job (<c>202</c>) that covers only the sessions created before the request. Defaults to <c>false</c>. Irreversible; there is no confirmation step.
         /// </summary>
         [JsonPropertyName("delete_all")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -62,6 +62,139 @@ namespace Didit
         [JsonPropertyName("instruction_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> InstructionId { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>status</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_status")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterStatus { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>vendor_data</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated text, so several values are not matched as alternatives. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_vendor_data")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterVendorData { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>search</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated text, so several values are not matched as alternatives. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_search")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterSearch { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>workflow_id</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_workflow_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterWorkflowId { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>date_from</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated value, so several values are refused with <c>400</c>. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_date_from")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterDateFrom { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>date_to</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated value, so several values are refused with <c>400</c>. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_date_to")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterDateTo { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>country</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_country")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterCountry { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>document_type</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_document_type")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterDocumentType { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>document_name</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_document_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterDocumentName { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>region</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_region")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterRegion { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>didit_internal_id</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated value, so several values are refused with <c>400</c>. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_didit_internal_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterDiditInternalId { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>session_type</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_session_type")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterSessionType { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>api_service</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated value, so several values are refused with <c>400</c>. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_api_service")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterApiService { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>screened_full_name</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated text, so several values are not matched as alternatives. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_screened_full_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterScreenedFullName { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>warning</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_warning")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterWarning { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>status_initialized_as_in_review</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_status_initialized_as_in_review")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> FilterStatusInitializedAsInReview { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>is_kyc_to_be_reviewed</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_is_kyc_to_be_reviewed")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> FilterIsKycToBeReviewed { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>euuid</c> filter of [List Sessions](/sessions-api/list-sessions), with the same value. One value, not a list: an array is joined into one comma-separated value, so several values are refused with <c>400</c>. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_euuid")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FilterEuuid { get; set; }
+
+        /// <summary>
+        /// Narrows a <c>delete_all</c> to the sessions that match the <c>organization_name</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. With an API key it can only match your own organization's name, so it selects all of your sessions or none. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
+        /// </summary>
+        [JsonPropertyName("filter_organization_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<object?> FilterOrganizationName { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

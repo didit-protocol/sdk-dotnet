@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Delivery health summary (all zero/null on a brand-new destination).
+    /// Delivery metrics for the last <c>metrics_window_days</c> (30) days. <c>last_delivery_at</c> is the most recent attempt, whenever it was made.
     /// </summary>
     public sealed record WebhooksDestinationsCreateResponseSummary
     {
@@ -55,6 +55,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("last_delivery_at")]
         public DateTimeOffset? LastDeliveryAt { get; init; }
+
+        /// <summary>
+        /// Length in days of the window the other summary metrics cover. Always <c>30</c>.
+        /// </summary>
+        [JsonPropertyName("metrics_window_days")]
+        public long? MetricsWindowDays { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

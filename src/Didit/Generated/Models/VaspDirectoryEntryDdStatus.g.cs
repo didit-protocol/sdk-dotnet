@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of VaspDirectoryEntryDdStatus.
+    /// Didit's verification status of the entry, scored by the verification component of dd_score. Always COMPLETED for a Didit network member.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(VaspDirectoryEntryDdStatus.EnumJsonConverter))]

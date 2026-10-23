@@ -32,6 +32,15 @@ namespace Didit
         /// <summary><c>GTR</c></summary>
         public static VaspDirectoryEntryReachableRails Gtr { get; } = new("GTR");
 
+        /// <summary><c>TRUST</c></summary>
+        public static VaspDirectoryEntryReachableRails Trust { get; } = new("TRUST");
+
+        /// <summary><c>VERIFYVASP</c></summary>
+        public static VaspDirectoryEntryReachableRails Verifyvasp { get; } = new("VERIFYVASP");
+
+        /// <summary><c>SYGNA</c></summary>
+        public static VaspDirectoryEntryReachableRails Sygna { get; } = new("SYGNA");
+
         /// <summary><c>EMAIL</c></summary>
         public static VaspDirectoryEntryReachableRails Email { get; } = new("EMAIL");
 

@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// PATCH body for application metadata. Send only the fields you want to change; omitted fields are preserved. <c>uuid</c>, <c>client_id</c>, and <c>api_key</c> cannot be updated.
+    /// PATCH body for application metadata. Send only the fields you want to change; omitted fields are preserved. <c>uuid</c>, <c>client_id</c>, and <c>api_key</c> cannot be updated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored.
     /// </summary>
     public sealed record ApplicationUpdateRequest
     {
