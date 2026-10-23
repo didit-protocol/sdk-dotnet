@@ -153,6 +153,12 @@ namespace Didit
         public IReadOnlyList<SessionDecisionQuestionnaireResponses>? QuestionnaireResponses { get; init; }
 
         /// <summary>
+        /// Bank Verification results, one item per Bank Verification step, for User and Business Verification. <c>null</c> until a step produces one. Each item's <c>method</c> says how the account was verified: <c>open_banking</c> (bank sign-in) or <c>account_lookup</c> (account check), or a <c>microdeposits</c> or <c>statement</c> fallback. See [Bank verification methods](/core-technology/bank-verification/verification-methods).
+        /// </summary>
+        [JsonPropertyName("bank_verifications")]
+        public IReadOnlyList<BankVerificationResult>? BankVerifications { get; init; }
+
+        /// <summary>
         /// Electronic Signature results, one item per signer and signature step, for User and Business Verification. Present only when the workflow has an Electronic Signature step; an empty array until a signer reaches it. See the [Electronic Signature report](/core-technology/electronic-signature/report-electronic-signature).
         /// </summary>
         [JsonPropertyName("signatures")]
