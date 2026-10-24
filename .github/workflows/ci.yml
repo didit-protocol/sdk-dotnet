@@ -101,7 +101,7 @@ jobs:
           args=(tests/Didit.Tests/Didit.Tests.csproj -c Release --no-build -f "$TFM"
             --logger "trx" --results-directory TestResults)
           if [ "$COVERAGE" = "true" ]; then
-            args+=(--collect:"XPlat Code Coverage")
+            args+=(--collect:"XPlat Code Coverage" --settings tests/coverage.runsettings)
           fi
           dotnet test "${args[@]}"
       - name: Upload test results

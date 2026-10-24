@@ -23,6 +23,9 @@ namespace Didit
         /// <summary>The <c>analytics</c> resource.</summary>
         public AnalyticsResource Analytics { get; private set; } = null!;
 
+        /// <summary>The <c>bank</c> resource.</summary>
+        public BankResource Bank { get; private set; } = null!;
+
         /// <summary>The <c>billing</c> resource.</summary>
         public BillingResource Billing { get; private set; } = null!;
 
@@ -139,6 +142,7 @@ namespace Didit
             Aml = new AmlResource(WithRawResponse.Aml);
             AmlMonitoring = new AmlMonitoringResource(WithRawResponse.AmlMonitoring);
             Analytics = new AnalyticsResource(WithRawResponse.Analytics);
+            Bank = new BankResource(WithRawResponse.Bank);
             Billing = new BillingResource(WithRawResponse.Billing);
             BiometricTemplates = new BiometricTemplatesResource(WithRawResponse.BiometricTemplates);
             Blocklist = new BlocklistResource(WithRawResponse.Blocklist);
@@ -186,6 +190,7 @@ namespace Didit
             Aml = new AmlRawResource(pipeline);
             AmlMonitoring = new AmlMonitoringRawResource(pipeline);
             Analytics = new AnalyticsRawResource(pipeline);
+            Bank = new BankRawResource(pipeline);
             Billing = new BillingRawResource(pipeline);
             BiometricTemplates = new BiometricTemplatesRawResource(pipeline);
             Blocklist = new BlocklistRawResource(pipeline);
@@ -236,6 +241,9 @@ namespace Didit
 
         /// <summary>The <c>analytics</c> resource.</summary>
         public AnalyticsRawResource Analytics { get; }
+
+        /// <summary>The <c>bank</c> resource.</summary>
+        public BankRawResource Bank { get; }
 
         /// <summary>The <c>billing</c> resource.</summary>
         public BillingRawResource Billing { get; }
