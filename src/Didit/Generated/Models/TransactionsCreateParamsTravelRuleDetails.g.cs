@@ -49,7 +49,7 @@ namespace Didit
         public Optional<object?> OriginatorData { get; set; }
 
         /// <summary>
-        /// Beneficiary party, as flat fields or one IVMS 101 person. An empty <c>wallet_address</c> is filled from <c>counterparty.payment_method.account_id</c>. It must be an object: anything else is a <c>400</c>. On a memo network <c>memo</c> names the beneficiary wallet's memo or tag; <c>wallet_address</c> and <c>memo</c> win over the counterparty's payment method.
+        /// Beneficiary party, as flat fields or one IVMS 101 person. It must be an object: anything else is a <c>400</c>. To route the transfer, Didit reads <c>wallet_address</c> (an empty one is filled from <c>counterparty.payment_method.account_id</c>), <c>chain</c> (filled from <c>transaction_details.crypto_params.crypto_chain</c> or the <c>currency</c> when that names a supported chain), <c>name</c> (falling back to <c>counterparty.full_name</c>), <c>travel_address</c>, <c>counterparty_vasp_name</c>, <c>counterparty_vasp_lei</c> and <c>counterparty_vasp_email</c>. On a memo network <c>memo</c> names the beneficiary wallet's memo or tag; <c>wallet_address</c> and <c>memo</c> win over the counterparty's payment method.
         /// </summary>
         [JsonPropertyName("beneficiary_data")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
