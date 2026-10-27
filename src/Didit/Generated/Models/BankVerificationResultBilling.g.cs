@@ -33,7 +33,7 @@ namespace Didit
         public string? MarketplaceFee { get; init; }
 
         /// <summary>
-        /// The usage line the charge was booked on.
+        /// The usage line the charge was booked on: <c>bank_verification</c> for a bank sign-in or an account check, <c>bank_statement_upload</c> for a statement upload with no charged bank attempt before it, and <c>bank_byok_fee</c> for the marketplace fee on your own provider. <c>null</c> when nothing was billed.
         /// </summary>
         [JsonPropertyName("usage_type")]
         public string? UsageType { get; init; }

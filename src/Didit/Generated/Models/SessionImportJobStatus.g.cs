@@ -41,6 +41,9 @@ namespace Didit
         /// <summary><c>CANCELLED</c></summary>
         public static SessionImportJobStatus Cancelled { get; } = new("CANCELLED");
 
+        /// <summary><c>READY</c></summary>
+        public static SessionImportJobStatus Ready { get; } = new("READY");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

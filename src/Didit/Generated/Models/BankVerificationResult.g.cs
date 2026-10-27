@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// One Bank Verification step's result, for User and Business Verification. <c>method</c> says how the account was verified. See [Bank verification methods](/core-technology/bank-verification/verification-methods).
+    /// One Bank Verification step's result, for User and Business Verification. <c>method</c> says how the account was verified, and <c>none</c> that the person continued without a bank before any attempt was evaluated. <c>continued_without_bank</c> says the person continued without a bank, also after an evaluated attempt. See [Bank verification methods](/core-technology/bank-verification/verification-methods) and [When the person cannot verify their bank](/core-technology/bank-verification/fallbacks).
     /// </summary>
     public sealed record BankVerificationResult
     {
@@ -45,7 +45,7 @@ namespace Didit
         public string? OriginalStatus { get; init; }
 
         /// <summary>
-        /// How the account was verified: <c>open_banking</c> (bank sign-in: the person signed in at their bank), <c>account_lookup</c> (account check: the person typed the account details and the bank confirmed the name), <c>microdeposits</c> or <c>statement</c> (a statement upload). <c>null</c> until an account is evaluated. Workflow rules read the same value as <c>bank.method</c>.
+        /// How the account was verified: <c>open_banking</c> (bank sign-in: the person signed in at their bank), <c>account_lookup</c> (account check: the person typed the account details and the bank confirmed the name), <c>microdeposits</c> or <c>statement</c> (a statement upload). <c>none</c> when the person continued without a bank before any attempt was evaluated, so no account was verified. After an evaluated attempt, it stays the method of that attempt. <c>null</c> until an account is evaluated, and when the workflow narrows the data it returns. Workflow rules read the same value as <c>bank.method</c>.
         /// </summary>
         [JsonPropertyName("method")]
         public BankVerificationResultMethod? Method { get; init; }
@@ -117,10 +117,22 @@ namespace Didit
         public bool? ConnectionAbandoned { get; init; }
 
         /// <summary>
-        /// Whether the person's bank or country could not be reached on this step.
+        /// Whether the person's bank or country could not be reached on this step. Also <c>true</c> when the person continued without a bank because no method could verify their country or bank.
         /// </summary>
         [JsonPropertyName("not_covered")]
         public bool? NotCovered { get; init; }
+
+        /// <summary>
+        /// Whether the person left the step with Continue without your bank. <c>continuation</c> then says why. <c>method</c> is <c>none</c> when no attempt was evaluated before they continued. After an evaluated attempt, such as a holder that does not match, <c>method</c> stays the method of that attempt and its verdict and reason codes stand. Returned even when the workflow narrows the data it returns.
+        /// </summary>
+        [JsonPropertyName("continued_without_bank")]
+        public bool? ContinuedWithoutBank { get; init; }
+
+        /// <summary>
+        /// How the person continued without a bank. <c>null</c> when they did not. When the workflow narrows the data it returns, <c>reason</c> is still returned and every other key is <c>null</c>.
+        /// </summary>
+        [JsonPropertyName("continuation")]
+        public BankVerificationResultContinuation? Continuation { get; init; }
 
         /// <summary>
         /// When the bank evidence was deleted under <c>bank_evidence_retention_days</c>. <c>null</c> otherwise.
@@ -135,7 +147,7 @@ namespace Didit
         public IReadOnlyList<string>? Warnings { get; init; }
 
         /// <summary>
-        /// Why the verdict came out the way it did, for example <c>OWNER_NAME_PARTIAL</c>. Several may apply.
+        /// Why the verdict came out the way it did, for example <c>OWNER_NAME_PARTIAL</c>. Several may apply. <c>NOT_COVERED</c>: the person continued without a bank because no method could verify their country or bank. <c>SKIPPED</c>: the person chose to continue without a bank while a way to verify was there. Neither is added when an evaluated attempt already decided the step.
         /// </summary>
         [JsonPropertyName("reason_codes")]
         public IReadOnlyList<string>? ReasonCodes { get; init; }

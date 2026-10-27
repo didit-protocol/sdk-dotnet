@@ -43,6 +43,62 @@ namespace Didit
         public Optional<string> SourceFileUrl { get; set; }
 
         /// <summary>
+        /// <c>provider</c> makes this a migration from another identity verification provider. Omit for a file import.
+        /// </summary>
+        [JsonPropertyName("source")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<SessionsImportsCreateParamsSource> Source { get; set; }
+
+        /// <summary>
+        /// Migration source, from <c>GET /v3/session/imports/providers/</c>. Required when <c>source</c> is <c>provider</c>.
+        /// </summary>
+        [JsonPropertyName("provider")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<SessionsImportsCreateParamsProvider> Provider { get; set; }
+
+        /// <summary>
+        /// The provider's read-only key, with the field names <c>credential_fields</c> lists. Encrypted at rest, never returned, and erased when the import ends. Send it as a JSON string in multipart.
+        /// </summary>
+        [JsonPropertyName("credentials")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<IReadOnlyDictionary<string, string>> Credentials { get; set; }
+
+        /// <summary>
+        /// The &lt;c&gt;options&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("options")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<SessionsImportsCreateParamsOptions> Options { get; set; }
+
+        /// <summary>
+        /// Edits to the provider's default status mapping: source status to Didit status. <c>Not Finished</c> and <c>Abandoned</c> are skipped and counted, never imported.
+        /// </summary>
+        [JsonPropertyName("status_mapping")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<IReadOnlyDictionary<string, SessionsImportsCreateParamsStatusMappingValue>> StatusMapping { get; set; }
+
+        /// <summary>
+        /// Count what the migration would import (by status, already in Didit, same person, not finished) and write nothing. The job ends <c>READY</c>; start it with <c>POST /v3/session/imports/{importId}/start/</c>.
+        /// </summary>
+        [JsonPropertyName("dry_run")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> DryRun { get; set; }
+
+        /// <summary>
+        /// Build face templates from the imported selfies and search them against the application's faces and blocklist. Matches are flagged for review only. Requires <c>lawful_basis_confirmed</c>.
+        /// </summary>
+        [JsonPropertyName("face_templates")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> FaceTemplates { get; set; }
+
+        /// <summary>
+        /// Confirms you have a lawful basis to share these selfies with Didit as processor.
+        /// </summary>
+        [JsonPropertyName("lawful_basis_confirmed")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> LawfulBasisConfirmed { get; set; }
+
+        /// <summary>
         /// Canonical CSV or NDJSON file. Use NDJSON for large imports. Maximum upload size 25 MB (use <c>source_file_url</c> for bigger files). Mutually exclusive with <c>source_file_url</c>.
         /// </summary>
         [JsonPropertyName("file")]

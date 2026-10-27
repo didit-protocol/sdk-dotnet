@@ -164,6 +164,30 @@ namespace Didit
         [JsonPropertyName("updated_at")]
         public DateTimeOffset? UpdatedAt { get; init; }
 
+        /// <summary>
+        /// Whether a simple KYC or KYB workflow runs Bank verification. It runs after the contact steps and before database validation, AML and IP analysis. Set in the console.
+        /// </summary>
+        [JsonPropertyName("is_bank_verification_enabled")]
+        public bool? IsBankVerificationEnabled { get; init; }
+
+        /// <summary>
+        /// Bank verification settings of a simple workflow, with the same keys a <c>BANK_VERIFICATION</c> node takes (for example <c>bank_countries</c> and <c>bank_method_order</c>). Every key is optional and an absent key keeps its default, so <c>{}</c> means all defaults. See [Bank verification settings](/management-api/workflows/feature-configs#bank-verification).
+        /// </summary>
+        [JsonPropertyName("bank_verification_config")]
+        public JsonElement? BankVerificationConfig { get; init; }
+
+        /// <summary>
+        /// Whether a simple KYC workflow runs Location verification. It runs after the contact steps and before Bank verification. Never on KYB workflows. Set in the console.
+        /// </summary>
+        [JsonPropertyName("is_geolocation_enabled")]
+        public bool? IsGeolocationEnabled { get; init; }
+
+        /// <summary>
+        /// Location verification settings of a simple workflow, with the same keys a <c>GEOLOCATION</c> node takes (for example <c>is_geolocation_geofencing_enabled</c> and <c>geolocation_max_attempts</c>). Every key is optional and an absent key keeps its default, so <c>{}</c> means all defaults.
+        /// </summary>
+        [JsonPropertyName("geolocation_config")]
+        public JsonElement? GeolocationConfig { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

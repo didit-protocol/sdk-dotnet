@@ -23,10 +23,44 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Cancel an import job
+        /// </summary>
+        /// <remarks>
+        /// Cancel an import. What was imported stays; the uploaded file and the key are erased.
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/cancel/</c> (<c>sessions.imports.cancel</c>).
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> CancelAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CancelAsync(importId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Check a provider key
+        /// </summary>
+        /// <remarks>
+        /// Read the provider with your key before creating a migration. Nothing is stored.
+        /// <para/>
+        /// <c>POST /v3/session/imports/providers/check/</c> (<c>sessions.imports.check_provider</c>).
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsImportsCheckProviderResponse> CheckProviderAsync(SessionsImportsCheckProviderParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CheckProviderAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Create a verification import job
         /// </summary>
         /// <remarks>
-        /// Create an asynchronous import job for historical User Verification sessions, Business Verification sessions, transaction monitoring records, or workflow custom status rules. Use this to migrate from providers such as Sumsub, MetaMap, Veriff, Onfido, Persona, Trulioo, Jumio, Incode, iDenfy, or any other provider after transforming the export into Didit's canonical CSV/NDJSON format. Imports are disabled by default and must be enabled per organization by Didit.
+        /// Create an asynchronous import job for historical User Verification sessions, Business Verification sessions, transaction monitoring records, or workflow custom status rules. Set <c>source=provider</c> to migrate from another provider: Didit reads Sumsub, Onfido, Persona and ComplyCube with your read-only key, reads Veriff, iDenfy and MetaMap records by the IDs you upload in <c>file</c>, and imports an export file in Didit's format for the other providers. Record IDs are namespaced by provider (<c>sumsub:&lt;id&gt;</c>) so a re-run skips everything already in Didit. Imports are disabled by default and must be enabled per organization by Didit.
         /// <para/>
         /// <c>POST /v3/session/imports/</c> (<c>sessions.imports.create</c>).
         /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
@@ -37,6 +71,22 @@ namespace Didit.Resources
         public async Task<SessionImportJob> CreateAsync(SessionsImportsCreateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List active import jobs
+        /// </summary>
+        /// <remarks>
+        /// What is running or waiting, plus what just ended, for a progress indicator.
+        /// <para/>
+        /// <c>GET /v3/import-jobs/active/</c> (<c>sessions.imports.list_active_jobs</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsImportsListActiveJobsResponse> ListActiveJobsAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListActiveJobsAsync(requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -55,6 +105,73 @@ namespace Didit.Resources
         public async Task<Page<SessionImportError>> ListErrorsAsync(string importId, SessionsImportsListErrorsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListErrorsAsync(importId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List import jobs
+        /// </summary>
+        /// <remarks>
+        /// Every import of the application in one shape: verification imports and migrations, people and businesses.
+        /// <para/>
+        /// <c>GET /v3/import-jobs/</c> (<c>sessions.imports.list_jobs</c>).
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsImportsListJobsResponse> ListJobsAsync(SessionsImportsListJobsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListJobsAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List migration providers
+        /// </summary>
+        /// <remarks>
+        /// The 15 providers you can migrate verifications from: what each needs to connect, whether its API can list records, the permissions its key needs and its default status mapping.
+        /// <para/>
+        /// <c>GET /v3/session/imports/providers/</c> (<c>sessions.imports.list_providers</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsImportsListProvidersResponse> ListProvidersAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListProvidersAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Pause an import job
+        /// </summary>
+        /// <remarks>
+        /// Pause a queued or running import.
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/pause/</c> (<c>sessions.imports.pause</c>).
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> PauseAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.PauseAsync(importId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Resume an import job
+        /// </summary>
+        /// <remarks>
+        /// Resume an import you paused. A job paused by the provider's rate limit resumes by itself.
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/resume/</c> (<c>sessions.imports.resume</c>).
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> ResumeAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ResumeAsync(importId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -91,6 +208,42 @@ namespace Didit.Resources
             var response = await _raw.RetrieveTemplateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Retry a migration
+        /// </summary>
+        /// <remarks>
+        /// Run a migration that ended again as a new job, with a new key (the old one was erased). It keeps the provider, workflow, region, status mapping and face templates choice; everything already in Didit is skipped.
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/retry/</c> (<c>sessions.imports.retry</c>).
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> RetryAsync(string importId, SessionsImportsRetryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetryAsync(importId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Start a dry run
+        /// </summary>
+        /// <remarks>
+        /// Start a migration whose dry run finished (<c>READY</c>): the same job imports for real, with the status mapping and face templates choice as sent now.
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/start/</c> (<c>sessions.imports.start</c>).
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> StartAsync(string importId, SessionsImportsStartParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.StartAsync(importId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
     }
 
     /// <summary>The <c>sessions.imports</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -101,6 +254,42 @@ namespace Didit.Resources
         internal SessionsImportsRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+        }
+
+        /// <summary>
+        /// Cancel an import job
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.CancelAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> CancelAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/cancel/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Check a provider key
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.CheckProviderAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsImportsCheckProviderResponse>> CheckProviderAsync(SessionsImportsCheckProviderParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/providers/check/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SessionsImportsCheckProviderResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -139,6 +328,38 @@ namespace Didit.Resources
                 {
                     form.Add("source_file_url", parameters.SourceFileUrl.Value);
                 }
+                if (parameters.Source.IsSet)
+                {
+                    form.Add("source", parameters.Source.Value.Value);
+                }
+                if (parameters.Provider.IsSet)
+                {
+                    form.Add("provider", parameters.Provider.Value.Value);
+                }
+                if (parameters.Credentials.IsSet)
+                {
+                    form.AddJson("credentials", parameters.Credentials.Value);
+                }
+                if (parameters.Options.IsSet)
+                {
+                    form.AddJson("options", parameters.Options.Value);
+                }
+                if (parameters.StatusMapping.IsSet)
+                {
+                    form.AddJson("status_mapping", parameters.StatusMapping.Value);
+                }
+                if (parameters.DryRun.IsSet)
+                {
+                    form.Add("dry_run", parameters.DryRun.Value);
+                }
+                if (parameters.FaceTemplates.IsSet)
+                {
+                    form.Add("face_templates", parameters.FaceTemplates.Value);
+                }
+                if (parameters.LawfulBasisConfirmed.IsSet)
+                {
+                    form.Add("lawful_basis_confirmed", parameters.LawfulBasisConfirmed.Value);
+                }
                 if (parameters.File.IsSet)
                 {
                     form.Add("file", parameters.File.Value);
@@ -150,6 +371,21 @@ namespace Didit.Resources
                 request.Body = JsonRequestBody.Create(parameters);
             }
             return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List active import jobs
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.ListActiveJobsAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsImportsListActiveJobsResponse>> ListActiveJobsAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/import-jobs/active/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionsImportsListActiveJobsResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -167,6 +403,68 @@ namespace Didit.Resources
             request.Query.Add("limit", parameters?.Limit);
             request.Query.Add("offset", parameters?.Offset);
             return _pipeline.SendPageAsync<SessionImportError>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List import jobs
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.ListJobsAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsImportsListJobsResponse>> ListJobsAsync(SessionsImportsListJobsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/import-jobs/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("scope", parameters?.Scope?.Value);
+            request.Query.Add("limit", parameters?.Limit);
+            return _pipeline.SendJsonAsync<SessionsImportsListJobsResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List migration providers
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.ListProvidersAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsImportsListProvidersResponse>> ListProvidersAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/imports/providers/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionsImportsListProvidersResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Pause an import job
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.PauseAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> PauseAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/pause/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Resume an import job
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.ResumeAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> ResumeAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/resume/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -198,6 +496,53 @@ namespace Didit.Resources
             };
             request.Query.Add("import_type", parameters?.ImportType?.Value);
             return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retry a migration
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.RetryAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> RetryAsync(string importId, SessionsImportsRetryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/retry/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            if (parameters is not null)
+            {
+                var form = new MultipartRequestBody();
+                if (parameters.Credentials.IsSet)
+                {
+                    form.AddJson("credentials", parameters.Credentials.Value);
+                }
+                if (parameters.File.IsSet)
+                {
+                    form.Add("file", parameters.File.Value);
+                }
+                request.Body = form;
+            }
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Start a dry run
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.StartAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> StartAsync(string importId, SessionsImportsStartParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/start/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            if (parameters is not null)
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
         }
     }
 }
