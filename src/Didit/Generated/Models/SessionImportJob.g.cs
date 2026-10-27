@@ -122,6 +122,120 @@ namespace Didit
         [JsonPropertyName("completed_at")]
         public DateTimeOffset? CompletedAt { get; init; }
 
+        /// <summary>
+        /// The job's state as the console shows it; <c>errors</c> is a completed job with rejected rows.
+        /// </summary>
+        [JsonPropertyName("state")]
+        public SessionImportJobState? State { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;source&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("source")]
+        public SessionImportJobSource? Source { get; init; }
+
+        /// <summary>
+        /// Migration source; empty for a file or API import.
+        /// </summary>
+        [JsonPropertyName("provider")]
+        public string? Provider { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;provider_options&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("provider_options")]
+        public JsonElement? ProviderOptions { get; init; }
+
+        /// <summary>
+        /// The first characters of the key the migration holds. The key itself is never returned.
+        /// </summary>
+        [JsonPropertyName("credential_hint")]
+        public string? CredentialHint { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;credentials_expires_at&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("credentials_expires_at")]
+        public DateTimeOffset? CredentialsExpiresAt { get; init; }
+
+        /// <summary>
+        /// When a job paused by the provider's rate limit resumes by itself.
+        /// </summary>
+        [JsonPropertyName("resumes_at")]
+        public DateTimeOffset? ResumesAt { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;status_mapping&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("status_mapping")]
+        public IReadOnlyDictionary<string, string>? StatusMapping { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;is_dry_run&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("is_dry_run")]
+        public bool? IsDryRun { get; init; }
+
+        /// <summary>
+        /// What a dry run found: <c>total</c>, <c>by_status</c>, <c>already_in_didit</c>, <c>same_person</c>, <c>not_finished</c>, <c>failed</c>, <c>unmapped_statuses</c>.
+        /// </summary>
+        [JsonPropertyName("dry_run_summary")]
+        public JsonElement? DryRunSummary { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;face_templates_enabled&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("face_templates_enabled")]
+        public bool? FaceTemplatesEnabled { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;lawful_basis_confirmed_at&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("lawful_basis_confirmed_at")]
+        public DateTimeOffset? LawfulBasisConfirmedAt { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;not_finished_count&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("not_finished_count")]
+        public long? NotFinishedCount { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;same_person_count&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("same_person_count")]
+        public long? SamePersonCount { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;face_templates_count&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("face_templates_count")]
+        public long? FaceTemplatesCount { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;face_duplicates_count&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("face_duplicates_count")]
+        public long? FaceDuplicatesCount { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;face_blocklist_hits_count&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("face_blocklist_hits_count")]
+        public long? FaceBlocklistHitsCount { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;created_by_name&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("created_by_name")]
+        public string? CreatedByName { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;created_by_email&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("created_by_email")]
+        public string? CreatedByEmail { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

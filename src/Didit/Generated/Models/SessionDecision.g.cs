@@ -153,7 +153,7 @@ namespace Didit
         public IReadOnlyList<SessionDecisionQuestionnaireResponses>? QuestionnaireResponses { get; init; }
 
         /// <summary>
-        /// Bank Verification results, one item per Bank Verification step, for User and Business Verification. <c>null</c> until a step produces one. Each item's <c>method</c> says how the account was verified: <c>open_banking</c> (bank sign-in) or <c>account_lookup</c> (account check), or a <c>microdeposits</c> or <c>statement</c> fallback. See [Bank verification methods](/core-technology/bank-verification/verification-methods).
+        /// Bank Verification results, one item per Bank Verification step, for User and Business Verification. <c>null</c> until a step produces one. Each item's <c>method</c> says how the account was verified: <c>open_banking</c> (bank sign-in) or <c>account_lookup</c> (account check), or a <c>statement</c> or <c>microdeposits</c> fallback, and <c>none</c> when the person continued without a bank before any attempt was evaluated (<c>continued_without_bank</c>). See [Bank verification methods](/core-technology/bank-verification/verification-methods).
         /// </summary>
         [JsonPropertyName("bank_verifications")]
         public IReadOnlyList<BankVerificationResult>? BankVerifications { get; init; }

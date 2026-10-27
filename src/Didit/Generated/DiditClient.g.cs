@@ -95,6 +95,9 @@ namespace Didit
         /// <summary>The <c>phone</c> resource.</summary>
         public PhoneResource Phone { get; private set; } = null!;
 
+        /// <summary>The <c>pricing</c> resource.</summary>
+        public PricingResource Pricing { get; private set; } = null!;
+
         /// <summary>The <c>proof_of_address</c> resource.</summary>
         public ProofOfAddressResource ProofOfAddress { get; private set; } = null!;
 
@@ -166,6 +169,7 @@ namespace Didit
             Networks = new NetworksResource(WithRawResponse.Networks);
             PassiveLiveness = new PassiveLivenessResource(WithRawResponse.PassiveLiveness);
             Phone = new PhoneResource(WithRawResponse.Phone);
+            Pricing = new PricingResource(WithRawResponse.Pricing);
             ProofOfAddress = new ProofOfAddressResource(WithRawResponse.ProofOfAddress);
             Questionnaires = new QuestionnairesResource(WithRawResponse.Questionnaires);
             RegulatoryReports = new RegulatoryReportsResource(WithRawResponse.RegulatoryReports);
@@ -214,6 +218,7 @@ namespace Didit
             Networks = new NetworksRawResource(pipeline);
             PassiveLiveness = new PassiveLivenessRawResource(pipeline);
             Phone = new PhoneRawResource(pipeline);
+            Pricing = new PricingRawResource(pipeline);
             ProofOfAddress = new ProofOfAddressRawResource(pipeline);
             Questionnaires = new QuestionnairesRawResource(pipeline);
             RegulatoryReports = new RegulatoryReportsRawResource(pipeline);
@@ -313,6 +318,9 @@ namespace Didit
 
         /// <summary>The <c>phone</c> resource.</summary>
         public PhoneRawResource Phone { get; }
+
+        /// <summary>The <c>pricing</c> resource.</summary>
+        public PricingRawResource Pricing { get; }
 
         /// <summary>The <c>proof_of_address</c> resource.</summary>
         public ProofOfAddressRawResource ProofOfAddress { get; }

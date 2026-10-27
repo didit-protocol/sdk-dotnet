@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// How the account was verified: <c>open_banking</c> (bank sign-in: the person signed in at their bank), <c>account_lookup</c> (account check: the person typed the account details and the bank confirmed the name), <c>microdeposits</c> or <c>statement</c> (a statement upload). <c>null</c> until an account is evaluated. Workflow rules read the same value as <c>bank.method</c>.
+    /// How the account was verified: <c>open_banking</c> (bank sign-in: the person signed in at their bank), <c>account_lookup</c> (account check: the person typed the account details and the bank confirmed the name), <c>microdeposits</c> or <c>statement</c> (a statement upload). <c>none</c> when the person continued without a bank before any attempt was evaluated, so no account was verified. After an evaluated attempt, it stays the method of that attempt. <c>null</c> until an account is evaluated, and when the workflow narrows the data it returns. Workflow rules read the same value as <c>bank.method</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankVerificationResultMethod.EnumJsonConverter))]
@@ -34,6 +34,9 @@ namespace Didit
 
         /// <summary><c>statement</c></summary>
         public static BankVerificationResultMethod Statement { get; } = new("statement");
+
+        /// <summary><c>none</c></summary>
+        public static BankVerificationResultMethod None { get; } = new("none");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

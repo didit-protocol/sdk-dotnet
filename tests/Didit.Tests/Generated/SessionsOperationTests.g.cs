@@ -214,13 +214,57 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Sessions_Imports_Cancel()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.CancelAsync("importId-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/cancel/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+            Assert.Equal(1L, result.TotalRows);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_CheckProvider()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"ok\": true, \"provider\": \"sample\", \"credential_hint\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.CheckProviderAsync(new SessionsImportsCheckProviderParams { Provider = new SessionsImportsCheckProviderParamsProvider("sumsub"), Credentials = new Dictionary<string, string> { ["key"] = "sample-credentials" }, RecordIds = new string[] { "sample-record_ids" } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/providers/check/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"provider\": \"sumsub\", \"credentials\": {\"key\": \"sample-credentials\"}, \"record_ids\": [\"sample-record_ids\"]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Provider);
+        }
+
+        [Fact]
         public async Task Sessions_Imports_Create()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"uuid\": \"3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"ndjson\", \"source_filename\": \"sessions.ndjson\", \"total_rows\": 0, \"processed_rows\": 0, \"checkpoint_row\": 0, \"created_count\": 0, \"updated_count\": 0, \"skipped_count\": 0, \"failed_count\": 0, \"total_media_bytes\": 0, \"last_error\": null, \"created_at\": \"2026-05-17T08:42:11Z\", \"updated_at\": \"2026-05-17T08:42:11Z\", \"started_at\": null, \"completed_at\": null}");
             using var client = TestClients.Create(handler);
-            var result = await client.Sessions.Imports.CreateAsync(new SessionsImportsCreateParams { ImportType = new SessionsImportsCreateParamsImportType("user_verification"), WorkflowId = "11111111-2222-3333-4444-555555555555", SourceFormat = new SessionsImportsCreateParamsSourceFormat("csv"), SourceFileUrl = "https://example.com/callback", File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
+            var result = await client.Sessions.Imports.CreateAsync(new SessionsImportsCreateParams { ImportType = new SessionsImportsCreateParamsImportType("user_verification"), WorkflowId = "11111111-2222-3333-4444-555555555555", SourceFormat = new SessionsImportsCreateParamsSourceFormat("csv"), SourceFileUrl = "https://example.com/callback", Source = new SessionsImportsCreateParamsSource("file"), Provider = new SessionsImportsCreateParamsProvider("sumsub"), DryRun = true, FaceTemplates = true, LawfulBasisConfirmed = true, File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -234,10 +278,36 @@ namespace Didit.Tests.Generated
             Assert.Contains("name=\"workflow_id\"", request.BodyText);
             Assert.Contains("name=\"source_format\"", request.BodyText);
             Assert.Contains("name=\"source_file_url\"", request.BodyText);
+            Assert.Contains("name=\"source\"", request.BodyText);
+            Assert.Contains("name=\"provider\"", request.BodyText);
+            Assert.Contains("name=\"dry_run\"", request.BodyText);
+            Assert.Contains("name=\"face_templates\"", request.BodyText);
+            Assert.Contains("name=\"lawful_basis_confirmed\"", request.BodyText);
             Assert.Contains("name=\"file\"", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b", result.Uuid);
             Assert.Equal(0L, result.TotalRows);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_ListActiveJobs()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"results\": [{\"id\": \"sample\", \"kind\": \"sessions\", \"source\": \"file\", \"provider\": \"sample\", \"provider_name\": \"sample\", \"filename\": \"sample\", \"state\": \"ready\", \"status\": \"sample\", \"is_dry_run\": true, \"credential_hint\": \"sample\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"started_by\": {\"name\": \"sample\", \"email\": \"sample\"}, \"progress\": {\"total\": 1, \"processed\": 1, \"imported\": 1, \"updated\": 1, \"already_in_didit\": 1, \"failed\": 1, \"not_finished\": 1, \"same_person\": 1}, \"face_templates\": {\"enabled\": true, \"built\": 1, \"duplicates\": 1, \"blocklisted\": 1}, \"eta_seconds\": 1, \"created_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\"}], \"running\": 1}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.ListActiveJobsAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/import-jobs/active/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal(1L, result.Running);
         }
 
         [Fact]
@@ -262,11 +332,95 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Sessions_Imports_ListJobs()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"results\": [{\"id\": \"sample\", \"kind\": \"sessions\", \"source\": \"file\", \"provider\": \"sample\", \"provider_name\": \"sample\", \"filename\": \"sample\", \"state\": \"ready\", \"status\": \"sample\", \"is_dry_run\": true, \"credential_hint\": \"sample\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"started_by\": {\"name\": \"sample\", \"email\": \"sample\"}, \"progress\": {\"total\": 1, \"processed\": 1, \"imported\": 1, \"updated\": 1, \"already_in_didit\": 1, \"failed\": 1, \"not_finished\": 1, \"same_person\": 1}, \"face_templates\": {\"enabled\": true, \"built\": 1, \"duplicates\": 1, \"blocklisted\": 1}, \"eta_seconds\": 1, \"created_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\"}], \"counts\": {\"all\": 1, \"running_and_waiting\": 1, \"needs_attention\": 1, \"done\": 1}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.ListJobsAsync(new SessionsImportsListJobsParams { Scope = new SessionsImportsListJobsParamsScope("all"), Limit = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/import-jobs/", request.Path);
+            Assert.Equal("?scope=all&limit=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_ListProviders()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"providers\": [{\"key\": \"sumsub\", \"name\": \"sample\", \"mode\": \"api_list\", \"record_noun\": \"sample\", \"credential_fields\": [{}], \"regions\": [\"sample\"], \"required_permissions\": [\"sample\"], \"docs_url\": \"sample\", \"status_mapping\": {\"key\": \"Approved\"}}], \"mapping_targets\": [\"sample\"], \"skipped_statuses\": [\"sample\"]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.ListProvidersAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/providers/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_Pause()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.PauseAsync("importId-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/pause/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+            Assert.Equal(1L, result.TotalRows);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_Resume()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.ResumeAsync("importId-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/resume/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+            Assert.Equal(1L, result.TotalRows);
+        }
+
+        [Fact]
         public async Task Sessions_Imports_Retrieve()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.RetrieveAsync("importId-1");
 
@@ -302,6 +456,52 @@ namespace Didit.Tests.Generated
             Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);
             Assert.Equal("text/csv", result.ContentType);
             Assert.Equal("report.bin", result.FileName);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_Retry()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(201, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.RetryAsync("importId-1", new SessionsImportsRetryParams { File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/retry/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.Contains("name=\"file\"", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+            Assert.Equal(1L, result.TotalRows);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_Start()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.StartAsync("importId-1", new SessionsImportsStartParams { FaceTemplates = true, LawfulBasisConfirmed = true });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/start/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"face_templates\": true, \"lawful_basis_confirmed\": true}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+            Assert.Equal(1L, result.TotalRows);
         }
 
         [Fact]
