@@ -7,6 +7,12 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish (for example v1.2.0); release-please starts this run
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -34,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
           persist-credentials: false
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
@@ -45,7 +51,7 @@ jobs:
       - name: Check that the release tag matches the version in Directory.Build.props
         id: version
         env:
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
           version="$(dotnet msbuild src/Didit/Didit.csproj -getProperty:Version)"
           version="${version//[[:space:]]/}"
@@ -122,7 +128,7 @@ jobs:
       - name: Attach the packages to the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
           VERSION: ${{ needs.build.outputs.version }}
         run: |
           gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
