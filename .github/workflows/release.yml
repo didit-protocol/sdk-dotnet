@@ -1,6 +1,6 @@
 # Publishes Didit and Didit.Extensions.DependencyInjection to nuget.org when a GitHub release is published.
-# Nothing is published without Alex's explicit approval, and not before the 2026-11-01 Didit release (CLAUDE.md).
-# The publish job runs in the "nuget" environment, whose required reviewers gate the upload, and authenticates with
+# Merging the release pull request is the release approval. The publish job runs in the "nuget" environment (no
+# required reviewers) and authenticates with
 # NuGet trusted publishing (GitHub OIDC exchanged for a short-lived API key); no long-lived NuGet key is stored.
 name: Release
 
