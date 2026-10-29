@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.0.0...v1.0.1) (2026-10-29)
+
+
+### chore
+
+* release 1.0.1 ([bcbb74d](https://github.com/didit-protocol/sdk-dotnet/commit/bcbb74df84981e3dd992942ed338eb865bbb654d))
+
+
+### Documentation
+
+* **release:** releases publish straight from the repository ([#12](https://github.com/didit-protocol/sdk-dotnet/issues/12)) ([9615f4a](https://github.com/didit-protocol/sdk-dotnet/commit/9615f4a7e66c54529b1d618f43c05c3b3a35ec82))
+
 ## [1.0.0](https://github.com/didit-protocol/sdk-dotnet/compare/v0.1.0...v1.0.0) (2026-10-29)
 
 
