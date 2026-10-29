@@ -3,8 +3,6 @@
 The official Didit .NET library.
 Identity verification (KYC), business verification (KYB), AML screening, liveness and biometrics, transaction monitoring, wallet screening, the Travel Rule and customer Authentication, from your C#, F# or VB backend.
 
-> In development. Not released yet: nothing is published to NuGet before the first release.
-
 ```sh
 dotnet add package Didit
 # optional: services.AddDidit() with IHttpClientFactory

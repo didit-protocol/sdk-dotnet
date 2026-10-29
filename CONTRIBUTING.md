@@ -104,10 +104,10 @@ Preview a sync locally without writing anything with `python3 codegen/spec_sync.
 ## Commits and releases
 
 - Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org/). The type must match the semver impact: `feat` for new public API, `fix` for bug fixes, `perf`, `deps`, `docs`; `!` or a `BREAKING CHANGE:` footer for breaking changes. While the version is `0.x`, a breaking change bumps the minor version and a feature bumps the patch version.
-- [release-please](https://github.com/googleapis/release-please) keeps a release pull request open on `main`. Merging it updates `CHANGELOG.md`, `.release-please-manifest.json` and the version in `Directory.Build.props`, tags `vX.Y.Z` and creates a draft GitHub release.
+- [release-please](https://github.com/googleapis/release-please) keeps a release pull request open on `main`. Merging it updates `CHANGELOG.md`, `.release-please-manifest.json` and the version in `Directory.Build.props`, tags `vX.Y.Z`, creates the GitHub release and starts `.github/workflows/release.yml` for the tag.
 - `CHANGELOG.md` is generated from the commits. Never edit it by hand.
-- Publishing the draft release runs `.github/workflows/release.yml`: it checks that the tag matches the version, builds, tests, packs, and then waits for approval in the `nuget` environment before it pushes `Didit` and `Didit.Extensions.DependencyInjection` (with symbols) to nuget.org through trusted publishing and attaches the packages to the release.
-- Never publish a package, push a release tag or make this repository public without Alex's explicit approval. Nothing is released before the 2026-11-01 Didit release.
+- `.github/workflows/release.yml` checks that the tag matches the version, builds, tests, packs, and then (in the `nuget` environment, no required reviewers) pushes `Didit` and `Didit.Extensions.DependencyInjection` (with symbols) to nuget.org through trusted publishing and attaches the packages to the release.
+- Merging the release pull request is the release approval (Alex, 2026-10-29); nobody tags or publishes by hand. 1.0.0 was released on 2026-10-29.
 
 ## Keeping the seven SDKs in sync
 
