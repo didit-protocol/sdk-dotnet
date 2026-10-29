@@ -165,7 +165,7 @@ namespace Didit
         public IReadOnlyList<TravelRuleSettingsDetailDisabledNetworks>? DisabledNetworks { get; init; }
 
         /// <summary>
-        /// Effective membership configuration for each network. No network, including GTR, is included by default. This is not a live health or delivery check.
+        /// Per network, how this application would send and why it cannot. No network, including GTR, is included by default: a network is reachable through your own connected membership, or through Didit's membership once Didit's membership of that network is live and your own participant on it is active. Not a live health or delivery check.
         /// </summary>
         [JsonPropertyName("networks")]
         public TravelRuleSettingsDetailNetworks? Networks { get; init; }

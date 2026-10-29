@@ -92,6 +92,8 @@ namespace Didit.Resources
         /// <para/>
         /// This endpoint accepts API keys only. Business Console user Bearer tokens are rejected with <c>403</c> (unlike the single-session delete, which accepts both).
         /// <para/>
+        /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
+        /// <para/>
         /// <c>POST /v3/sessions/delete/</c> (<c>sessions.batch_delete</c>).
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -202,6 +204,8 @@ namespace Didit.Resources
         /// Rate limit: shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints; exceeding it returns <c>429</c>.
         /// <para/>
         /// To bulk-delete KYC sessions by their numeric <c>session_number</c>, use <c>POST /v3/sessions/delete/</c> instead.
+        /// <para/>
+        /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>DELETE /v3/session/{sessionId}/delete/</c> (<c>sessions.delete</c>).
         /// </remarks>

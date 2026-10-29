@@ -302,6 +302,12 @@ namespace Didit
         [JsonPropertyName("document_liveness")]
         public SessionDecisionIdVerificationsDocumentLiveness? DocumentLiveness { get; init; }
 
+        /// <summary>
+        /// Address Validation of the address printed on this document: whether it exists and its normalised form, as the document read it (a later correction of <c>address</c> does not run it again). Present when this ID verification step enabled the Address Validation add-on; <c>null</c> otherwise.
+        /// </summary>
+        [JsonPropertyName("address_validation")]
+        public AddressValidationResult? AddressValidation { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

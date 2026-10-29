@@ -44,16 +44,19 @@ namespace Didit.Resources
         /// Delete report
         /// </summary>
         /// <remarks>
-        /// Delete a draft or validated report. Finalized reports cannot be deleted (409).
+        /// Delete a regulatory report permanently. The report, its copied narrative and reasons, its transaction links, and its generated goAML XML and PDF are erased, including every stored version of those files. The report disappears from lists and download URLs stop working. Other records, including the case, transactions, people and companies, are not deleted. There is no undo.
+        /// <para/>
+        /// A draft or validated report can be deleted without a request body. Deleting a finalized report requires <c>confirm_delete: true</c> in the request body. If the report is missing, the request returns <c>404</c>; if a finalized report is sent without confirmation, it returns <c>400</c> and nothing is deleted.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.delete</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="reportUuid">Report UUID.</param>
+        /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public Task DeleteAsync(string reportUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
-            _raw.DeleteAsync(reportUuid, requestOptions, cancellationToken);
+        public Task DeleteAsync(string reportUuid, RegulatoryReportsDeleteParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
+            _raw.DeleteAsync(reportUuid, parameters, requestOptions, cancellationToken);
 
         /// <summary>
         /// Finalize report
@@ -201,7 +204,7 @@ namespace Didit.Resources
         /// Delete report
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="RegulatoryReportsResource.DeleteAsync"/>.</remarks>
-        public Task<DiditResponse> DeleteAsync(string reportUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse> DeleteAsync(string reportUuid, RegulatoryReportsDeleteParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/regulatory-reports/" + PathParameter.Encode(reportUuid, "reportUuid") + "/")
             {
@@ -209,6 +212,10 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = true,
             };
+            if (parameters is not null)
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
             return _pipeline.SendNoContentAsync(request, requestOptions, cancellationToken);
         }
 

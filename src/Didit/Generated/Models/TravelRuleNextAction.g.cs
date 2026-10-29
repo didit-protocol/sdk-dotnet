@@ -15,7 +15,7 @@ namespace Didit
     public sealed record TravelRuleNextAction
     {
         /// <summary>
-        /// <c>select_counterparty_vasp</c>: the end user picks the destination VASP in the wallet-ownership widget. <c>declare_self_hosted</c>: the end user declares the wallet self-hosted in the widget. <c>add_vasp_hint</c>: tell Didit who the counterparty is, with a VASP name, LEI or travel address (for example a <c>travel_address</c> on the destination wallet's address-book entry), then resend. <c>update_compliance_email</c> and <c>resend</c> are <c>action</c> values of <c>PATCH /v3/transactions/{transaction_id}/travel-rule/</c>: give the counterparty's compliance email again, and re-run routing.
+        /// <c>select_counterparty_vasp</c>: the end user picks the destination VASP in the wallet-ownership widget, or you PATCH <c>action=beneficiary_vasp</c>. <c>declare_self_hosted</c>: the end user declares the wallet self-hosted in the widget. <c>add_vasp_hint</c>: tell Didit who the counterparty is, with a VASP name, LEI or travel address (for example a <c>travel_address</c> on the destination wallet's address-book entry), then resend. <c>update_compliance_email</c> and <c>resend</c> are <c>action</c> values of <c>PATCH /v3/transactions/{transaction_id}/travel-rule/</c>: give the counterparty's compliance email again, and re-run routing.
         /// </summary>
         [JsonPropertyName("action")]
         public TravelRuleNextActionAction? Action { get; init; }

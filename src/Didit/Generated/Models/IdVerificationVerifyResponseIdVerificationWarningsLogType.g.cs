@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Severity. <c>error</c> warnings drive <c>status</c> to <c>Declined</c>; <c>information</c> entries are advisory and never decline on their own. (<c>warning</c> is not produced by this endpoint — its options only accept <c>DECLINE</c> or <c>NO_ACTION</c>.)
+    /// Severity. <c>error</c> warnings drive <c>status</c> to <c>Declined</c>; <c>warning</c> (only <c>DOCUMENT_LIVENESS_NOT_COMPUTED</c>, when the requested forgery check produced no usable score) drives <c>status</c> to <c>In Review</c>; <c>information</c> entries are advisory and never change the status.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(IdVerificationVerifyResponseIdVerificationWarningsLogType.EnumJsonConverter))]

@@ -64,6 +64,13 @@ namespace Didit
         public Optional<long?> FaceRetentionDays { get; set; }
 
         /// <summary>
+        /// When the hosted flow and the native SDKs ask the person for explicit biometric consent before a face capture. <c>auto</c> (default) asks only where a trigger applies: a declared state, the person's IP, or the identity document's issuer is in Illinois, Texas or Colorado, or the person looks to be in the US without a known state. <c>always</c> asks every person whose workflow captures a face. <c>never</c> never shows the step, and you collect consent yourself before the selfie. Each change is recorded in the audit log. See <see href="https://docs.didit.me/getting-started/biometric-consent">Biometric consent</see>.
+        /// </summary>
+        [JsonPropertyName("biometric_consent_mode")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<WebhooksUpdateConfigParamsBiometricConsentMode> BiometricConsentMode { get; set; }
+
+        /// <summary>
         /// Replaces the whole list of Digital ID wallet return hosts. Bare hostnames only, such as <c>shop.example.com</c>: no scheme, port, path or wildcard. Values are lowercased and duplicates are dropped. Send <c>[]</c> to clear the list.
         /// </summary>
         [JsonPropertyName("allowed_return_hosts")]

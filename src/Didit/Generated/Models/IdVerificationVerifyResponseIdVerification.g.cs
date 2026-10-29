@@ -15,7 +15,7 @@ namespace Didit
     public sealed record IdVerificationVerifyResponseIdVerification
     {
         /// <summary>
-        /// <c>Approved</c> when no warning resolves to a decline; <c>Declined</c> otherwise — the <c>warnings</c> list explains why.
+        /// <c>Approved</c> when no warning resolves to a decline and the requested document-liveness check produced a usable result; <c>In Review</c> when that requested check produced no usable result (<c>DOCUMENT_LIVENESS_NOT_COMPUTED</c>); <c>Declined</c> when a warning resolves to a decline — the <c>warnings</c> list explains why.
         /// </summary>
         [JsonPropertyName("status")]
         public IdVerificationVerifyResponseIdVerificationStatus? Status { get; init; }
@@ -207,7 +207,7 @@ namespace Didit
         public IdVerificationVerifyResponseIdVerificationParsedAddress? ParsedAddress { get; init; }
 
         /// <summary>
-        /// Empty on a clean approval. Every entry explains one detected risk; entries with <c>log_type: "error"</c> set <c>status</c> to <c>Declined</c>.
+        /// Empty on a clean approval. Every entry explains one detected risk; entries with <c>log_type: "error"</c> set <c>status</c> to <c>Declined</c>, and <c>DOCUMENT_LIVENESS_NOT_COMPUTED</c> (<c>log_type: "warning"</c>) sets it to <c>In Review</c>.
         /// </summary>
         [JsonPropertyName("warnings")]
         public IReadOnlyList<IdVerificationVerifyResponseIdVerificationWarnings>? Warnings { get; init; }

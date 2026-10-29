@@ -11,6 +11,9 @@ namespace Didit
         /// <summary>The <c>account</c> resource.</summary>
         public AccountResource Account { get; private set; } = null!;
 
+        /// <summary>The <c>address_validation</c> resource.</summary>
+        public AddressValidationResource AddressValidation { get; private set; } = null!;
+
         /// <summary>The <c>age_estimation</c> resource.</summary>
         public AgeEstimationResource AgeEstimation { get; private set; } = null!;
 
@@ -141,6 +144,7 @@ namespace Didit
         {
             WithRawResponse = new DiditRawClient(Pipeline);
             Account = new AccountResource(WithRawResponse.Account);
+            AddressValidation = new AddressValidationResource(WithRawResponse.AddressValidation);
             AgeEstimation = new AgeEstimationResource(WithRawResponse.AgeEstimation);
             Aml = new AmlResource(WithRawResponse.Aml);
             AmlMonitoring = new AmlMonitoringResource(WithRawResponse.AmlMonitoring);
@@ -190,6 +194,7 @@ namespace Didit
         internal DiditRawClient(Internal.HttpPipeline pipeline)
         {
             Account = new AccountRawResource(pipeline);
+            AddressValidation = new AddressValidationRawResource(pipeline);
             AgeEstimation = new AgeEstimationRawResource(pipeline);
             Aml = new AmlRawResource(pipeline);
             AmlMonitoring = new AmlMonitoringRawResource(pipeline);
@@ -234,6 +239,9 @@ namespace Didit
 
         /// <summary>The <c>account</c> resource.</summary>
         public AccountRawResource Account { get; }
+
+        /// <summary>The <c>address_validation</c> resource.</summary>
+        public AddressValidationRawResource AddressValidation { get; }
 
         /// <summary>The <c>age_estimation</c> resource.</summary>
         public AgeEstimationRawResource AgeEstimation { get; }

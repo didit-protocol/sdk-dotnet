@@ -21,19 +21,27 @@ namespace Didit.Resources
         {
             _raw = raw;
             CounterpartyContacts = new TravelRuleCounterpartyContactsResource(raw.CounterpartyContacts);
+            Networks = new TravelRuleNetworksResource(raw.Networks);
             Transfers = new TravelRuleTransfersResource(raw.Transfers);
             WalletAddresses = new TravelRuleWalletAddressesResource(raw.WalletAddresses);
+            WalletProofs = new TravelRuleWalletProofsResource(raw.WalletProofs);
             Workspace = new TravelRuleWorkspaceResource(raw.Workspace);
         }
 
         /// <summary>The <c>travel_rule.counterparty_contacts</c> resource.</summary>
         public TravelRuleCounterpartyContactsResource CounterpartyContacts { get; }
 
+        /// <summary>The <c>travel_rule.networks</c> resource.</summary>
+        public TravelRuleNetworksResource Networks { get; }
+
         /// <summary>The <c>travel_rule.transfers</c> resource.</summary>
         public TravelRuleTransfersResource Transfers { get; }
 
         /// <summary>The <c>travel_rule.wallet_addresses</c> resource.</summary>
         public TravelRuleWalletAddressesResource WalletAddresses { get; }
+
+        /// <summary>The <c>travel_rule.wallet_proofs</c> resource.</summary>
+        public TravelRuleWalletProofsResource WalletProofs { get; }
 
         /// <summary>The <c>travel_rule.workspace</c> resource.</summary>
         public TravelRuleWorkspaceResource Workspace { get; }
@@ -287,19 +295,27 @@ namespace Didit.Resources
         {
             _pipeline = pipeline;
             CounterpartyContacts = new TravelRuleCounterpartyContactsRawResource(pipeline);
+            Networks = new TravelRuleNetworksRawResource(pipeline);
             Transfers = new TravelRuleTransfersRawResource(pipeline);
             WalletAddresses = new TravelRuleWalletAddressesRawResource(pipeline);
+            WalletProofs = new TravelRuleWalletProofsRawResource(pipeline);
             Workspace = new TravelRuleWorkspaceRawResource(pipeline);
         }
 
         /// <summary>The <c>travel_rule.counterparty_contacts</c> resource.</summary>
         public TravelRuleCounterpartyContactsRawResource CounterpartyContacts { get; }
 
+        /// <summary>The <c>travel_rule.networks</c> resource.</summary>
+        public TravelRuleNetworksRawResource Networks { get; }
+
         /// <summary>The <c>travel_rule.transfers</c> resource.</summary>
         public TravelRuleTransfersRawResource Transfers { get; }
 
         /// <summary>The <c>travel_rule.wallet_addresses</c> resource.</summary>
         public TravelRuleWalletAddressesRawResource WalletAddresses { get; }
+
+        /// <summary>The <c>travel_rule.wallet_proofs</c> resource.</summary>
+        public TravelRuleWalletProofsRawResource WalletProofs { get; }
 
         /// <summary>The <c>travel_rule.workspace</c> resource.</summary>
         public TravelRuleWorkspaceRawResource Workspace { get; }

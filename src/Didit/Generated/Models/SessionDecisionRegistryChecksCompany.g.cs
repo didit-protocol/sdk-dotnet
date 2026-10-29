@@ -303,7 +303,7 @@ namespace Didit
         public string? RegistryTierDelivered { get; init; }
 
         /// <summary>
-        /// <c>not_requested</c>, <c>pending</c>, <c>delivered</c> or <c>unavailable</c>. Also in <c>ownership.status</c>.
+        /// <c>not_requested</c>, <c>pending</c>, <c>delivered</c>, <c>not_held</c> or <c>unavailable</c>. Also in <c>ownership.status</c>.
         /// </summary>
         [JsonPropertyName("registry_ownership_status")]
         public string? RegistryOwnershipStatus { get; init; }

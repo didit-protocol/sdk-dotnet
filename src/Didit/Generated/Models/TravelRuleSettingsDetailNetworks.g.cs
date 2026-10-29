@@ -10,33 +10,33 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Effective membership configuration for each network. No network, including GTR, is included by default. This is not a live health or delivery check.
+    /// Per network, how this application would send and why it cannot. No network, including GTR, is included by default: a network is reachable through your own connected membership, or through Didit's membership once Didit's membership of that network is live and your own participant on it is active. Not a live health or delivery check.
     /// </summary>
     public sealed record TravelRuleSettingsDetailNetworks
     {
         /// <summary>
-        /// The &lt;c&gt;gtr&lt;/c&gt; field.
+        /// How Travel Rule messages on one network would be sent for this application, and why they cannot be. Configuration status, not a live health or delivery check.
         /// </summary>
         [JsonPropertyName("gtr")]
-        public TravelRuleSettingsDetailNetworksGtr? Gtr { get; init; }
+        public TravelRuleNetworkState? Gtr { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;trust&lt;/c&gt; field.
+        /// How Travel Rule messages on one network would be sent for this application, and why they cannot be. Configuration status, not a live health or delivery check.
         /// </summary>
         [JsonPropertyName("trust")]
-        public TravelRuleSettingsDetailNetworksTrust? Trust { get; init; }
+        public TravelRuleNetworkState? Trust { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;verifyvasp&lt;/c&gt; field.
+        /// How Travel Rule messages on one network would be sent for this application, and why they cannot be. Configuration status, not a live health or delivery check.
         /// </summary>
         [JsonPropertyName("verifyvasp")]
-        public TravelRuleSettingsDetailNetworksVerifyvasp? Verifyvasp { get; init; }
+        public TravelRuleNetworkState? Verifyvasp { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;sygna&lt;/c&gt; field.
+        /// How Travel Rule messages on one network would be sent for this application, and why they cannot be. Configuration status, not a live health or delivery check.
         /// </summary>
         [JsonPropertyName("sygna")]
-        public TravelRuleSettingsDetailNetworksSygna? Sygna { get; init; }
+        public TravelRuleNetworkState? Sygna { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

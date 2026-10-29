@@ -168,7 +168,9 @@ namespace Didit.Resources
         /// Delete case
         /// </summary>
         /// <remarks>
-        /// Delete a case. There is no undelete endpoint.
+        /// Delete a case permanently. Its draft regulatory reports are deleted with it. Linked verifications, people, companies and transactions are not deleted. There is no undelete endpoint.
+        /// <para/>
+        /// If the case has a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/</c> (<c>cases.delete</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.

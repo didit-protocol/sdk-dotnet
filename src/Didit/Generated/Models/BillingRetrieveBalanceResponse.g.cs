@@ -27,7 +27,7 @@ namespace Didit
         public bool? AutoRefillEnabled { get; init; }
 
         /// <summary>
-        /// USD amount that will be charged on each auto-refill. <c>null</c> when auto-refill is disabled or unset.
+        /// USD amount that will be charged and added to the balance on each auto-refill, at face value. Set from \$50 to \$10,000 in Console → Billing. <c>null</c> when auto-refill is disabled or unset.
         /// </summary>
         [JsonPropertyName("auto_refill_amount")]
         public string? AutoRefillAmount { get; init; }

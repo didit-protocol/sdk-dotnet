@@ -35,6 +35,25 @@ namespace Didit.Resources
         public TransactionsTravelRuleResource TravelRule { get; }
 
         /// <summary>
+        /// Batch delete transactions
+        /// </summary>
+        /// <remarks>
+        /// Delete one or more transactions permanently. Select them with <c>transaction_uuids</c>, or delete every transaction in the application with <c>delete_all: true</c>.
+        /// <para/>
+        /// A deleted transaction goes with the records that are only its own: its parties, tags, notes, payment method links, documents and every stored version of their files, rule runs, alerts, provider results, network snapshot and Travel Rule data. Cases, people and companies stay; their link to the deleted transaction is cleared. Draft regulatory reports stop listing it and are rebuilt without it. Deletion is permanent and irreversible; there is no undo endpoint.
+        /// <para/>
+        /// If any selected transaction is listed in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each transaction and the reports that list it. Delete those reports, then repeat the request.
+        /// <para/>
+        /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/transactions/delete/</c> (<c>transactions.batch_delete</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public Task BatchDeleteAsync(TransactionsBatchDeleteParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
+            _raw.BatchDeleteAsync(parameters, requestOptions, cancellationToken);
+
+        /// <summary>
         /// Create transaction
         /// </summary>
         /// <remarks>
@@ -205,6 +224,27 @@ namespace Didit.Resources
 
         /// <summary>The <c>transactions.travel_rule</c> resource.</summary>
         public TransactionsTravelRuleRawResource TravelRule { get; }
+
+        /// <summary>
+        /// Batch delete transactions
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsResource.BatchDeleteAsync"/>.</remarks>
+        public Task<DiditResponse> BatchDeleteAsync(TransactionsBatchDeleteParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Delete, "/v3/organization/{organization_id}/application/{application_id}/transactions/delete/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendNoContentAsync(request, requestOptions, cancellationToken);
+        }
 
         /// <summary>
         /// Create transaction

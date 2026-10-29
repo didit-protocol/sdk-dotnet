@@ -35,7 +35,7 @@ namespace Didit.Resources
         /// <para/>
         /// <c>status</c> is <c>Declined</c> only when a <c>FACE_IN_BLOCKLIST</c> or <c>POSSIBLE_FACE_IN_BLOCKLIST</c> warning fires; <c>DUPLICATED_FACE</c> / <c>POSSIBLE_DUPLICATED_FACE</c> (<c>information</c>) and <c>MULTIPLE_FACES_DETECTED</c> (<c>warning</c>) never decline. Unlike Passive Liveness, this endpoint does not exclude prior sessions with the same <c>vendor_data</c> from matching. A passive-liveness analysis also runs internally and is stored with the persisted session, but its result is not part of this response.
         /// <para/>
-        /// Billing. Each <c>200</c> response consumes one Face Search API credit (standalone APIs have no free tier). Insufficient balance returns <c>403</c> before any image processing.
+        /// Billing. Each <c>200</c> response consumes one Face Search API credit (paid from your plan credit or top-up balance). Insufficient balance returns <c>403</c> before any image processing.
         /// <para/>
         /// Session persistence and face enrollment (<c>save_api_request</c>, default <c>true</c>). When <c>true</c>, the call is persisted as an API-type session (Business Console, <c>GET /v3/session/{sessionId}/decision/</c> via the returned <c>request_id</c>, <c>status.updated</c> webhook) and the searched face is enrolled into your face search index. Faces enrolled by Face Search calls are excluded from future Face Search results, so repeated searches never match each other. When <c>false</c>, the call is one-shot: nothing is stored, the face is not enrolled, and <c>match_image_url</c> values are internal storage paths rather than downloadable URLs.
         /// <para/>

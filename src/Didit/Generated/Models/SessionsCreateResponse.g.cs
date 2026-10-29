@@ -51,6 +51,12 @@ namespace Didit
         public JsonElement? Metadata { get; init; }
 
         /// <summary>
+        /// The tags on the session, by name.
+        /// </summary>
+        [JsonPropertyName("tags")]
+        public IReadOnlyList<string>? Tags { get; init; }
+
+        /// <summary>
         /// Current status of the session. Newly created sessions return <c>Not Started</c>. If a non-finished session already existed for the same <c>vendor_data</c> on the workflow's latest published version, the returned status reflects that existing session.
         /// </summary>
         [JsonPropertyName("status")]
