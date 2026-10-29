@@ -50,7 +50,7 @@ namespace Didit
         public string? VendorData { get; set; }
 
         /// <summary>
-        /// Smart free-text search. A full UUID matches <c>session_id</c>; numeric input matches session-number prefix, document/personal numbers, phone prefix, or <c>vendor_data</c>; input containing <c>@</c> matches email prefixes; other text matches names (accent-insensitive) and <c>vendor_data</c>. Free text containing digits additionally matches document/personal-number search fields and session-number prefixes.
+        /// A complete displayed reference such as <c>S-0001</c> (user) or <c>B-0001</c> (business) matches only that session number and kind; leading zeros and letter case do not affect matching. Smart free-text search. A full UUID matches <c>session_id</c>; numeric input matches session-number prefix, document/personal numbers, phone prefix, or <c>vendor_data</c>; input containing <c>@</c> matches email prefixes; other text matches names (accent-insensitive) and <c>vendor_data</c>. Free text containing digits additionally matches document/personal-number search fields and session-number prefixes.
         /// </summary>
         [JsonPropertyName("search")]
         [JsonIgnore]

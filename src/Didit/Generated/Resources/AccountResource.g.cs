@@ -51,7 +51,7 @@ namespace Didit.Resources
         /// Register Account
         /// </summary>
         /// <remarks>
-        /// Step 1 of programmatic onboarding. Creates a pending account and emails a 6-char code (10 min TTL). Rate limit: 5/IP/hour.
+        /// Step 1 of programmatic onboarding. Creates a pending account and emails a 6-char code (10 min TTL). The address is checked before any account is created: one that cannot receive the code returns 400 <c>email_undeliverable</c>. Rate limits: 5/IP/hour, plus a shared hourly budget per network (/24 for IPv4, /64 for IPv6).
         /// <para/>
         /// <c>POST /programmatic/register/</c> (<c>account.register</c>).
         /// </remarks>
@@ -70,7 +70,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Resend the 6-character verification code for an unverified programmatic account. Requires the account's email and password so only the owner can trigger a new code (no console Basic Auth). A fresh code replaces the previous one and is valid for 10 minutes.
         /// <para/>
-        /// Rate limits: a per-email cooldown of 60 seconds between resends (HTTP 429 with <c>Retry-After</c>), and the same 5-per-IP-per-hour budget as registration.
+        /// Rate limits: a per-email cooldown of 60 seconds between resends (HTTP 429 with <c>Retry-After</c>), and the same 5-per-IP-per-hour and per-network hourly budgets as registration.
         /// <para/>
         /// <c>POST /programmatic/resend-otp/</c> (<c>account.resend_otp</c>).
         /// </remarks>

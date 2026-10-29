@@ -30,6 +30,8 @@ namespace Didit.Resources
         /// <para/>
         /// Biometric templates: every image-free biometric template retained for these users after session deletion (see <c>/v3/biometric-templates/</c>) is purged before the user is deleted, so the person stops matching in duplicate detection and Face Search. If a template cannot be purged because a biometric store is unavailable, the call returns <c>503</c>, no user in the request is deleted, and repeating the request finishes the job.
         /// <para/>
+        /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
+        /// <para/>
         /// <c>POST /v3/users/delete/</c> (<c>users.batch_delete</c>).
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>

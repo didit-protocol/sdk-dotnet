@@ -42,7 +42,7 @@ namespace Didit
         public Optional<string> BackImagePassword { get; set; }
 
         /// <summary>
-        /// Screens both images for presentation fraud: screen replays (<c>SCREEN_CAPTURE_DETECTED</c>), printed copies (<c>PRINTED_COPY_DETECTED</c>), and portrait manipulation (<c>PORTRAIT_MANIPULATION_DETECTED</c>). Any of these auto-declines. Enabled by default; set to <c>false</c> to skip fraud screening and reduce latency.
+        /// Screens both images for presentation fraud: screen replays (<c>SCREEN_CAPTURE_DETECTED</c>), printed copies (<c>PRINTED_COPY_DETECTED</c>), and portrait manipulation (<c>PORTRAIT_MANIPULATION_DETECTED</c>). Any of these auto-declines. Enabled by default; set to <c>false</c> to skip fraud screening and reduce latency. When enabled and the provider returns no usable score, the response is <c>In Review</c> with a <c>DOCUMENT_LIVENESS_NOT_COMPUTED</c> warning rather than <c>Approved</c>.
         /// </summary>
         [JsonPropertyName("perform_document_liveness")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

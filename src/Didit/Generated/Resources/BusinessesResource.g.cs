@@ -28,6 +28,8 @@ namespace Didit.Resources
         /// <remarks>
         /// Permanently delete businesses — this cannot be undone. For blocking prefer [Update Business Status](#patch-/v3/businesses/-vendor_data-/update-status/) with <c>BLOCKED</c>.
         /// <para/>
+        /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
+        /// <para/>
         /// <c>POST /v3/businesses/delete/</c> (<c>businesses.batch_delete</c>).
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>

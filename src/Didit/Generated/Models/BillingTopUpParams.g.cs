@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BillingTopUpParams
     {
         /// <summary>
-        /// Amount to charge, in USD. Must be at least 50. Tax is added automatically at checkout based on the customer's billing address.
+        /// Amount to charge, in USD. Must be from 50 to 10,000. The balance receives the same amount, with no discount or bonus. Tax is added automatically at checkout based on the customer's billing address.
         /// </summary>
         [JsonPropertyName("amount_in_dollars")]
         public required double AmountInDollars { get; set; }

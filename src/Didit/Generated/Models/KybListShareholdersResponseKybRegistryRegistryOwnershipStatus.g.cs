@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>delivered</c> when the ownership data came back, <c>unavailable</c> when an ownership tier was requested but the registry had none for this company (see <c>registry_data.ownership_error</c>), <c>pending</c> when the ownership section has not been retrieved from the registry yet and Didit is still completing it, <c>not_requested</c> on the Lite tier.
+    /// <c>delivered</c> when the ownership data came back, <c>not_held</c> when the ownership registry answered and does not list this company (see <c>registry_data.ownership_error</c>), <c>unavailable</c> when an ownership tier was requested but the registry had none for this company or could not be asked (see <c>registry_data.ownership_error</c>), <c>pending</c> when the ownership section has not been retrieved from the registry yet and Didit is still completing it, <c>not_requested</c> on the Lite tier.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(KybListShareholdersResponseKybRegistryRegistryOwnershipStatus.EnumJsonConverter))]
@@ -28,6 +28,9 @@ namespace Didit
 
         /// <summary><c>delivered</c></summary>
         public static KybListShareholdersResponseKybRegistryRegistryOwnershipStatus Delivered { get; } = new("delivered");
+
+        /// <summary><c>not_held</c></summary>
+        public static KybListShareholdersResponseKybRegistryRegistryOwnershipStatus NotHeld { get; } = new("not_held");
 
         /// <summary><c>unavailable</c></summary>
         public static KybListShareholdersResponseKybRegistryRegistryOwnershipStatus Unavailable { get; } = new("unavailable");

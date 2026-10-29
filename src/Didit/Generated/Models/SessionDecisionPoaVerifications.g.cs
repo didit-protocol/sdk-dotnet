@@ -158,6 +158,12 @@ namespace Didit
         [JsonPropertyName("detected_codes")]
         public IReadOnlyList<DocumentAIDetectedCode>? DetectedCodes { get; init; }
 
+        /// <summary>
+        /// Address Validation of the address on this proof of address: whether it exists and its normalised form, as the document read it (a later correction of <c>poa_address</c> does not run it again). Present when this Proof of Address step enabled the Address Validation add-on and the upload passed the document checks; <c>null</c> otherwise.
+        /// </summary>
+        [JsonPropertyName("address_validation")]
+        public AddressValidationResult? AddressValidation { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

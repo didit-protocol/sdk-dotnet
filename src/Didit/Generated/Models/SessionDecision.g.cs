@@ -267,6 +267,12 @@ namespace Didit
         public IReadOnlyList<SessionDecisionResubmissions>? Resubmissions { get; init; }
 
         /// <summary>
+        /// Whether the session required explicit biometric consent before a face capture, why, and the evidence of the answer. User Verification (KYC) sessions only; the same object is in the <c>decision</c> of session webhooks. <c>null</c> when the session was never evaluated, for example a workflow without a face capture. Fields with no recorded value are <c>null</c>. A native SDK below 4.10.0, or one that does not report its version, cannot show the consent step: its face captures run as before, and a session that required consent then reports <c>status: "pending"</c> with <c>reason: "BIOMETRIC_CONSENT_UNSUPPORTED_SDK"</c>. See [Biometric consent](/getting-started/biometric-consent).
+        /// </summary>
+        [JsonPropertyName("biometric_consent")]
+        public SessionDecisionBiometricConsent? BiometricConsent { get; init; }
+
+        /// <summary>
         /// The item's latest Investigator review, or null when it never had one. Carried by the V3 session and business session decision (and so by <c>status.updated</c> webhooks).
         /// </summary>
         [JsonPropertyName("investigator")]

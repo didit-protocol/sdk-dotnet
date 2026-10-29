@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Why cross-organization signals do not apply, checked in this order. <c>plan</c>: the organization's Identity plan does not include the cross-organization fraud network (it needs Identity Enterprise), whatever the sharing mode. <c>sharing_mode</c>: the plan includes it, but the sharing mode is <c>private</c> or <c>off</c>. Null when <c>cross_org_available</c> is <c>true</c>.
+    /// Why cross-organization signals do not apply, checked in this order. <c>plan</c>: the organization's plan does not include the cross-organization fraud network (it needs the Enterprise plan), whatever the sharing mode. <c>sharing_mode</c>: the plan includes it, but the sharing mode is <c>private</c> or <c>off</c>. Null when <c>cross_org_available</c> is <c>true</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(NetworkDetailResponseCrossOrgUnavailableReason.EnumJsonConverter))]

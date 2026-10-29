@@ -15,7 +15,7 @@ namespace Didit
     public sealed record KYBRegistryOwnership
     {
         /// <summary>
-        /// <c>delivered</c> when the registry published ownership; <c>unavailable</c> when it did not (see <c>unavailable_reason</c>); <c>pending</c> while the registry is still fetching it; <c>not_requested</c> for the Basic tier.
+        /// <c>delivered</c> when the registry published ownership; <c>not_held</c> when the ownership registry answered and does not list the company at all (see <c>unavailable_reason</c>); <c>unavailable</c> when it did not serve the ownership data for any other reason (see <c>unavailable_reason</c>); <c>pending</c> while the registry is still fetching it; <c>not_requested</c> for the Basic tier.
         /// </summary>
         [JsonPropertyName("status")]
         public KYBRegistryOwnershipStatus? Status { get; init; }

@@ -135,13 +135,13 @@ namespace Didit
         public NetworkDetailResponseSharingMode? SharingMode { get; init; }
 
         /// <summary>
-        /// Whether cross-organization signals apply to this organization. They need both the Identity Enterprise plan and the <c>global</c> sharing mode.
+        /// Whether cross-organization signals apply to this organization. They need both the Enterprise plan and the <c>global</c> sharing mode.
         /// </summary>
         [JsonPropertyName("cross_org_available")]
         public bool? CrossOrgAvailable { get; init; }
 
         /// <summary>
-        /// Why cross-organization signals do not apply, checked in this order. <c>plan</c>: the organization's Identity plan does not include the cross-organization fraud network (it needs Identity Enterprise), whatever the sharing mode. <c>sharing_mode</c>: the plan includes it, but the sharing mode is <c>private</c> or <c>off</c>. Null when <c>cross_org_available</c> is <c>true</c>.
+        /// Why cross-organization signals do not apply, checked in this order. <c>plan</c>: the organization's plan does not include the cross-organization fraud network (it needs the Enterprise plan), whatever the sharing mode. <c>sharing_mode</c>: the plan includes it, but the sharing mode is <c>private</c> or <c>off</c>. Null when <c>cross_org_available</c> is <c>true</c>.
         /// </summary>
         [JsonPropertyName("cross_org_unavailable_reason")]
         public NetworkDetailResponseCrossOrgUnavailableReason? CrossOrgUnavailableReason { get; init; }

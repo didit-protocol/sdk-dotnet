@@ -165,25 +165,25 @@ namespace Didit
         public DateTimeOffset? UpdatedAt { get; init; }
 
         /// <summary>
-        /// Whether a simple KYC or KYB workflow runs Bank verification. It runs after the contact steps and before database validation, AML and IP analysis. Set in the console.
+        /// Whether a simple KYC or KYB workflow runs Bank verification. It runs after the contact steps (and Location verification) and before database validation, AML and IP analysis. Bank verification is not generally available yet: turning it on is refused wherever it is not enabled.
         /// </summary>
         [JsonPropertyName("is_bank_verification_enabled")]
         public bool? IsBankVerificationEnabled { get; init; }
 
         /// <summary>
-        /// Bank verification settings of a simple workflow, with the same keys a <c>BANK_VERIFICATION</c> node takes (for example <c>bank_countries</c> and <c>bank_method_order</c>). Every key is optional and an absent key keeps its default, so <c>{}</c> means all defaults. See [Bank verification settings](/management-api/workflows/feature-configs#bank-verification).
+        /// Bank verification settings of a simple workflow, with the same keys a <c>BANK_VERIFICATION</c> node takes (for example <c>bank_countries</c> and <c>bank_method_order</c>). Unknown keys are dropped. Every key is optional and an absent key keeps its default, so <c>{}</c> means all defaults. See [Bank verification settings](/management-api/workflows/feature-configs#bank-verification).
         /// </summary>
         [JsonPropertyName("bank_verification_config")]
         public JsonElement? BankVerificationConfig { get; init; }
 
         /// <summary>
-        /// Whether a simple KYC workflow runs Location verification. It runs after the contact steps and before Bank verification. Never on KYB workflows. Set in the console.
+        /// Whether a simple KYC workflow runs Location verification. It runs after the contact steps and before Bank verification and database validation. Business (KYB) workflows cannot run it.
         /// </summary>
         [JsonPropertyName("is_geolocation_enabled")]
         public bool? IsGeolocationEnabled { get; init; }
 
         /// <summary>
-        /// Location verification settings of a simple workflow, with the same keys a <c>GEOLOCATION</c> node takes (for example <c>is_geolocation_geofencing_enabled</c> and <c>geolocation_max_attempts</c>). Every key is optional and an absent key keeps its default, so <c>{}</c> means all defaults.
+        /// Location verification settings of a simple workflow, with the same keys a <c>GEOLOCATION</c> node takes (for example <c>is_geolocation_geofencing_enabled</c> and <c>geolocation_max_attempts</c>). Unknown keys are dropped. Every key is optional and an absent key keeps its default, so <c>{}</c> means all defaults.
         /// </summary>
         [JsonPropertyName("geolocation_config")]
         public JsonElement? GeolocationConfig { get; init; }

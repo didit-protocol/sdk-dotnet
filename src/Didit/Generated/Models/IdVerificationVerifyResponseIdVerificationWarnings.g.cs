@@ -15,7 +15,7 @@ namespace Didit
     public sealed record IdVerificationVerifyResponseIdVerificationWarnings
     {
         /// <summary>
-        /// Machine-readable risk code. Always-decline risks: <c>DOCUMENT_EXPIRED</c>, <c>MINIMUM_AGE_NOT_MET</c>, <c>PORTRAIT_IMAGE_NOT_DETECTED</c>, <c>SCREEN_CAPTURE_DETECTED</c>, <c>PRINTED_COPY_DETECTED</c>, <c>PORTRAIT_MANIPULATION_DETECTED</c>, <c>PUBLIC_DOCUMENT_IMAGE_DETECTED</c>, <c>INVALID_DATE</c>, <c>COULD_NOT_RECOGNIZE_DOCUMENT</c> (400-only, never a warning), <c>DOCUMENT_NUMBER_NOT_DETECTED</c>, <c>COULD_NOT_DETECT_DOCUMENT_TYPE</c>, <c>NAME_NOT_DETECTED</c>, <c>DATE_OF_BIRTH_NOT_DETECTED</c>. Governed by request options: <c>MRZ_NOT_DETECTED</c> / <c>MRZ_VALIDATION_FAILED</c> (<c>invalid_mrz_action</c>), <c>DATA_INCONSISTENT</c> / <c>MRZ_AND_DATA_EXTRACTED_FROM_OCR_NOT_SAME</c> / <c>DOCUMENT_NAME_DIFFERENT_FROM_OTHER_APPROVED_DOCUMENTS</c> (<c>inconsistent_data_action</c>), <c>EXPIRATION_DATE_NOT_DETECTED</c> (<c>expiration_date_not_detected_action</c>). Other risks (e.g. <c>POSSIBLE_DUPLICATED_USER</c>) are informational.
+        /// Machine-readable risk code. Always-decline risks: <c>DOCUMENT_EXPIRED</c>, <c>MINIMUM_AGE_NOT_MET</c>, <c>PORTRAIT_IMAGE_NOT_DETECTED</c>, <c>SCREEN_CAPTURE_DETECTED</c>, <c>PRINTED_COPY_DETECTED</c>, <c>PORTRAIT_MANIPULATION_DETECTED</c>, <c>PUBLIC_DOCUMENT_IMAGE_DETECTED</c>, <c>INVALID_DATE</c>, <c>COULD_NOT_RECOGNIZE_DOCUMENT</c> (400-only, never a warning), <c>DOCUMENT_NUMBER_NOT_DETECTED</c>, <c>COULD_NOT_DETECT_DOCUMENT_TYPE</c>, <c>NAME_NOT_DETECTED</c>, <c>DATE_OF_BIRTH_NOT_DETECTED</c>. Governed by request options: <c>MRZ_NOT_DETECTED</c> / <c>MRZ_VALIDATION_FAILED</c> (<c>invalid_mrz_action</c>), <c>DATA_INCONSISTENT</c> / <c>MRZ_AND_DATA_EXTRACTED_FROM_OCR_NOT_SAME</c> / <c>DOCUMENT_NAME_DIFFERENT_FROM_OTHER_APPROVED_DOCUMENTS</c> (<c>inconsistent_data_action</c>), <c>EXPIRATION_DATE_NOT_DETECTED</c> (<c>expiration_date_not_detected_action</c>). Other risks (e.g. <c>POSSIBLE_DUPLICATED_USER</c>) are informational. <c>DOCUMENT_LIVENESS_NOT_COMPUTED</c> is raised when <c>perform_document_liveness=true</c> but the forgery check returned no usable score; it sets <c>status</c> to <c>In Review</c>.
         /// </summary>
         [JsonPropertyName("risk")]
         public string? Risk { get; init; }
@@ -33,7 +33,7 @@ namespace Didit
         public JsonElement? AdditionalData { get; init; }
 
         /// <summary>
-        /// Severity. <c>error</c> warnings drive <c>status</c> to <c>Declined</c>; <c>information</c> entries are advisory and never decline on their own. (<c>warning</c> is not produced by this endpoint — its options only accept <c>DECLINE</c> or <c>NO_ACTION</c>.)
+        /// Severity. <c>error</c> warnings drive <c>status</c> to <c>Declined</c>; <c>warning</c> (only <c>DOCUMENT_LIVENESS_NOT_COMPUTED</c>, when the requested forgery check produced no usable score) drives <c>status</c> to <c>In Review</c>; <c>information</c> entries are advisory and never change the status.
         /// </summary>
         [JsonPropertyName("log_type")]
         public IdVerificationVerifyResponseIdVerificationWarningsLogType? LogType { get; init; }

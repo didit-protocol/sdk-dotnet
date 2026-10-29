@@ -38,7 +38,7 @@ namespace Didit.Resources
         /// <para/>
         /// Blocklist and duplicate screening. Runs on every call — with or without <c>save_api_request</c> — by matching the detected face against your application's face search index. Prior faces with the same <c>vendor_data</c> are excluded from the entire index search — so re-running liveness for the same user does not trigger <c>DUPLICATED_FACE</c>, and a blocklisted face originating from a session with the caller's own <c>vendor_data</c> is also NOT flagged (<c>FACE_IN_BLOCKLIST</c> screening is bypassed for same-<c>vendor_data</c> faces).
         /// <para/>
-        /// Billing. Each <c>200</c> response consumes one Passive Liveness API credit (standalone APIs have no free tier). Insufficient balance returns <c>403</c> before any image processing.
+        /// Billing. Each <c>200</c> response consumes one Passive Liveness API credit (paid from your plan credit or top-up balance). Insufficient balance returns <c>403</c> before any image processing.
         /// <para/>
         /// Session persistence and face enrollment (<c>save_api_request</c>, default <c>true</c>). When <c>true</c>, the call is persisted as an API-type session (Business Console, <c>GET /v3/session/{sessionId}/decision/</c> via the returned <c>request_id</c>, <c>status.updated</c> webhook), the reference image and face crop are stored, and the detected face is enrolled into your face search index so later Face Search calls and duplicate checks can match it. When <c>false</c>, the call is one-shot: nothing is stored and the face is not enrolled (blocklist/duplicate screening still runs).
         /// <para/>

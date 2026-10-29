@@ -22,7 +22,7 @@ namespace Didit
         public Optional<string> WalletAddress { get; set; }
 
         /// <summary>
-        /// Chain token for the address, for example <c>ETH</c>, <c>BTC</c> or <c>SOL</c>. Use the same token as in your wallet address book. Message signing and the Satoshi test are offered only for a supported chain.
+        /// Chain token for the address, for example <c>ETH</c>, <c>BTC</c> or <c>SOL</c>. Use the same token as in your wallet address book. Message signing and the Satoshi test are offered only for a supported chain. The address book entry the proof verifies stores it under its canonical identifier (ETH, BTC, SOL, TRX).
         /// </summary>
         [JsonPropertyName("chain")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

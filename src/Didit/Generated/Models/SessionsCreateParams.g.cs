@@ -49,6 +49,13 @@ namespace Didit
         public Optional<object?> Metadata { get; set; }
 
         /// <summary>
+        /// Tags added to the session when it is created, by name. Up to 10, each up to 50 characters. Names are case-insensitive and stored in upper case. A name that does not exist yet in the application is created as a new tag. The tags show on the session in the console, where you can filter by them.
+        /// </summary>
+        [JsonPropertyName("tags")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<IReadOnlyList<string>> Tags { get; set; }
+
+        /// <summary>
         /// Language code (ISO 639-1) for the verification process interface. Controls the language displayed to the end user during verification. If not provided, the browser's language will be automatically detected and used. Check all the supported languages [here](/integration/supported-languages).
         /// </summary>
         [JsonPropertyName("language")]
@@ -89,6 +96,20 @@ namespace Didit
         [JsonPropertyName("sign")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<SessionsCreateParamsSign> Sign { get; set; }
+
+        /// <summary>
+        /// Where the person lives, when you know it: an ISO 3166-2 subdivision code (<c>US-IL</c>, <c>ES-M</c>) or a US state code or name (<c>IL</c>, <c>Illinois</c>). A state whose law requires explicit biometric consent (Illinois, Texas, Colorado) makes the verification flow ask for it before capturing a face, with trigger <c>declared_state</c>. An unrecognized value returns <c>400</c>. See [Biometric consent](/getting-started/biometric-consent).
+        /// </summary>
+        [JsonPropertyName("user_state")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> UserState { get; set; }
+
+        /// <summary>
+        /// Explicit biometric consent you already collected from the person. It satisfies the requirement, so the verification flow does not ask again, and the decision records it as <c>status: "given"</c> with trigger <c>customer_collected</c>. An answer the person already gave in the flow is never replaced. See [Biometric consent](/getting-started/biometric-consent).
+        /// </summary>
+        [JsonPropertyName("biometric_consent")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<SessionsCreateParamsBiometricConsent> BiometricConsent { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

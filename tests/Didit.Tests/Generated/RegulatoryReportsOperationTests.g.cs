@@ -43,7 +43,7 @@ namespace Didit.Tests.Generated
             var handler = new MockHttpHandler();
             handler.Enqueue(204);
             using var client = TestClients.Create(handler);
-            await client.RegulatoryReports.DeleteAsync("report_uuid-1");
+            await client.RegulatoryReports.DeleteAsync("report_uuid-1", new RegulatoryReportsDeleteParams { ConfirmDelete = true });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("DELETE", request.Method);
@@ -52,7 +52,8 @@ namespace Didit.Tests.Generated
             Assert.Equal("", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
-            Assert.Empty(request.Body);
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"confirm_delete\": true}", request.BodyText);
         }
 
         [Fact]

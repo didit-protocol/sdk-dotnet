@@ -57,6 +57,12 @@ namespace Didit
         public long? FaceRetentionDays { get; init; }
 
         /// <summary>
+        /// When the hosted flow and the native SDKs ask the person for explicit biometric consent before a face capture. <c>auto</c> (default) asks only where a trigger applies: a declared state, the person's IP, or the identity document's issuer is in Illinois, Texas or Colorado, or the person looks to be in the US without a known state. <c>always</c> asks every person whose workflow captures a face. <c>never</c> never shows the step, and you collect consent yourself before the selfie. Each change is recorded in the audit log. See <see href="https://docs.didit.me/getting-started/biometric-consent">Biometric consent</see>.
+        /// </summary>
+        [JsonPropertyName("biometric_consent_mode")]
+        public WebhookConfigBiometricConsentMode? BiometricConsentMode { get; init; }
+
+        /// <summary>
         /// Every event type a destination can subscribe to, with a display label.
         /// </summary>
         [JsonPropertyName("available_events")]

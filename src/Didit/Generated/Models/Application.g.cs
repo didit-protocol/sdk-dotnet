@@ -33,7 +33,7 @@ namespace Didit
         public string? ClientId { get; init; }
 
         /// <summary>
-        /// Long-lived secret (also called <c>client_secret</c>). Use as the <c>x-api-key</c> header for every call to <c>https://verification.didit.me/v3/...</c> (sessions, workflows, AML, etc.). Treat as a credential; never expose client-side. New keys start with <c>sk_live_</c> (live application) or <c>sk_test_</c> (sandbox application), followed by 43 URL-safe characters (letters, digits, <c>-</c> and <c>_</c>). Keys created before this format have no prefix and keep working unchanged.
+        /// Long-lived secret (also called <c>client_secret</c>). Use as the <c>x-api-key</c> header for every call to <c>https://verification.didit.me/v3/...</c> (sessions, workflows, AML, etc.). Treat as a credential; never expose client-side. New keys start with <c>sk_live_</c> (live application) or <c>sk_test_</c> (sandbox application), followed by 43 URL-safe characters (letters, digits, <c>-</c> and <c>_</c>). Keys created before this format have no prefix and keep working unchanged. For 72 hours after you recovered your account, list, retrieve and update return an empty string here instead of the key.
         /// </summary>
         [JsonPropertyName("api_key")]
         public string? ApiKey { get; init; }

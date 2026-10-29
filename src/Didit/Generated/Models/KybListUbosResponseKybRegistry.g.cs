@@ -291,7 +291,7 @@ namespace Didit
         public KybListUbosResponseKybRegistryRegistryTierDelivered? RegistryTierDelivered { get; init; }
 
         /// <summary>
-        /// <c>delivered</c> when the ownership data came back, <c>unavailable</c> when an ownership tier was requested but the registry had none for this company (see <c>registry_data.ownership_error</c>), <c>pending</c> when the ownership section has not been retrieved from the registry yet and Didit is still completing it, <c>not_requested</c> on the Lite tier.
+        /// <c>delivered</c> when the ownership data came back, <c>not_held</c> when the ownership registry answered and does not list this company (see <c>registry_data.ownership_error</c>), <c>unavailable</c> when an ownership tier was requested but the registry had none for this company or could not be asked (see <c>registry_data.ownership_error</c>), <c>pending</c> when the ownership section has not been retrieved from the registry yet and Didit is still completing it, <c>not_requested</c> on the Lite tier.
         /// </summary>
         [JsonPropertyName("registry_ownership_status")]
         public KybListUbosResponseKybRegistryRegistryOwnershipStatus? RegistryOwnershipStatus { get; init; }

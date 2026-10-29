@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>Approved</c> when no warning resolves to a decline; <c>Declined</c> otherwise — the <c>warnings</c> list explains why.
+    /// <c>Approved</c> when no warning resolves to a decline and the requested document-liveness check produced a usable result; <c>In Review</c> when that requested check produced no usable result (<c>DOCUMENT_LIVENESS_NOT_COMPUTED</c>); <c>Declined</c> when a warning resolves to a decline — the <c>warnings</c> list explains why.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(IdVerificationVerifyResponseIdVerificationStatus.EnumJsonConverter))]
@@ -28,6 +28,9 @@ namespace Didit
 
         /// <summary><c>Declined</c></summary>
         public static IdVerificationVerifyResponseIdVerificationStatus Declined { get; } = new("Declined");
+
+        /// <summary><c>In Review</c></summary>
+        public static IdVerificationVerifyResponseIdVerificationStatus InReview { get; } = new("In Review");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
