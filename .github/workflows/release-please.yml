@@ -3,8 +3,8 @@
 # that tag, which publishes Didit and Didit.Extensions.DependencyInjection to NuGet with trusted
 # publishing. Everything runs on GITHUB_TOKEN.
 # Opens and updates the release pull request from conventional commits (docs/DESIGN.md section 13).
-# Merging that pull request makes release-please tag the version and create a draft GitHub release.
-# Publishing the draft (a person, after Alex approves) starts release.yml, which waits for the nuget environment.
+# Merging that pull request is the release approval: release-please creates the vX.Y.Z tag and the
+# GitHub release, and starts release.yml for that tag, which publishes to NuGet with trusted publishing.
 name: Release Please
 
 on:
