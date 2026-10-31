@@ -306,6 +306,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Start Google Wallet verification
+        /// </summary>
+        /// <remarks>
+        /// Start a Google Wallet sign-in (Google Wallet (ID pass) and US state issuers (mobile driving licence); USA, GBR, BRA, SGP, TWN) without any workflow. Billed once, only when the identity is verified. The response carries next_action.type=request_digital_credential with a request Didit signed for your application, usable only from origin. In a user gesture there, pass next_action.digital_credentials.request to navigator.credentials.get({digital: ...}) (or to Android Credential Manager as GetDigitalCredentialOption requestJson), then POST what the wallet returns to /v3/id-verification/wallets/verifications/{request_id}/response/. The browser offers its own QR code when the wallet is on another device. Sandbox applications get a deterministic simulation (simulated: true) that never contacts the provider.
+        /// <para/>
+        /// <c>POST /v3/id-verification/wallets/google-wallet/</c> (<c>id_wallets.start_google_wallet</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<DigitalIdWalletApiWalletVerificationResponse> StartGoogleWalletAsync(DigitalIdWalletApiGoogleWalletWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.StartGoogleWalletAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Start gov.br verification
         /// </summary>
         /// <remarks>
@@ -536,6 +554,24 @@ namespace Didit.Resources
         public async Task<DigitalIdWalletApiWalletVerificationResponse> StartVippsAsync(DigitalIdWalletApiVippsWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.StartVippsAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Submit a wallet response
+        /// </summary>
+        /// <remarks>
+        /// Digital Credentials API wallets (Google Wallet): send what the wallet returned to your page or app for a verification whose next_action is request_digital_credential. Didit decrypts it, checks the issuer's signature against the trusted issuer roots, every returned value against its signed digest, and the device signature over your origin and this request, then decides the verification: verified (billed once) or declined with the error code. Single use: a second submit returns the decided verification.
+        /// <para/>
+        /// <c>POST /v3/id-verification/wallets/verifications/{request_id}/response/</c> (<c>id_wallets.submit_verification_response</c>).
+        /// </remarks>
+        /// <param name="requestId">The request_id the start endpoint returned.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<DigitalIdWalletApiWalletVerificationResponse> SubmitVerificationResponseAsync(string requestId, DigitalIdWalletApiWalletDigitalCredentialResponseRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.SubmitVerificationResponseAsync(requestId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
     }
@@ -863,6 +899,27 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Start Google Wallet verification
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartGoogleWalletAsync"/>.</remarks>
+        public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> StartGoogleWalletAsync(DigitalIdWalletApiGoogleWalletWalletVerificationStartRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/id-verification/wallets/google-wallet/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<DigitalIdWalletApiWalletVerificationResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Start gov.br verification
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="IdWalletsResource.StartGovbrAsync"/>.</remarks>
@@ -1126,6 +1183,27 @@ namespace Didit.Resources
             }
 
             var request = new ApiRequest(HttpMethods.Post, "/v3/id-verification/wallets/vipps/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<DigitalIdWalletApiWalletVerificationResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Submit a wallet response
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="IdWalletsResource.SubmitVerificationResponseAsync"/>.</remarks>
+        public Task<DiditResponse<DigitalIdWalletApiWalletVerificationResponse>> SubmitVerificationResponseAsync(string requestId, DigitalIdWalletApiWalletDigitalCredentialResponseRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/id-verification/wallets/verifications/" + PathParameter.Encode(requestId, "requestId") + "/response/")
             {
                 Host = ApiHost.Verification,
                 Auth = AuthKind.ApiKey,

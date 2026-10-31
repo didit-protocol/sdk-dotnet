@@ -11,6 +11,7 @@ namespace Didit
     /// <summary>
     /// * <c>redirect</c> - redirect
     /// * <c>in_app</c> - in_app
+    /// * <c>digital_credentials</c> - digital_credentials
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(DigitalIdWalletApiInteractionEnum.EnumJsonConverter))]
@@ -29,6 +30,9 @@ namespace Didit
 
         /// <summary><c>in_app</c></summary>
         public static DigitalIdWalletApiInteractionEnum InApp { get; } = new("in_app");
+
+        /// <summary><c>digital_credentials</c></summary>
+        public static DigitalIdWalletApiInteractionEnum DigitalCredentials { get; } = new("digital_credentials");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
