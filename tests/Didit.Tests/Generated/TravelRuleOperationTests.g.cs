@@ -458,6 +458,48 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_UnmatchedDeposits_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"7d3a1c55-0b9e-4d52-8a3c-1f6e2b9d4a08\", \"transaction_id\": \"c41f9b2e-5a8d-4e0c-9f17-3b6d8a2e5c91\", \"txn_id\": \"dep-2026-10-20-0007\", \"txn_date\": \"2026-10-19T08:41:12Z\", \"kind\": \"deposit\", \"direction\": \"INBOUND\", \"status\": \"AWAITING_COUNTERPARTY\", \"rail\": \"TRP\", \"asset\": \"ETH\", \"amount\": \"1.25\", \"originator_vasp\": \"\", \"beneficiary_vasp\": \"Example Counterparty VASP\", \"originator_wallet\": \"0x77ccff0cc624a53cd8b8d8703ced826710211ec7\", \"beneficiary_wallet\": \"0xede2d7e4f5b097e6391ab6bbcf2f47a53f4778cb\", \"originator_memo\": \"\", \"beneficiary_memo\": \"\", \"originator_wallet_type\": \"vasp\", \"beneficiary_wallet_type\": \"vasp\", \"matched_transaction_id\": null, \"deadline_at\": null, \"created_at\": \"2026-10-19T08:41:13Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.UnmatchedDeposits.ListAsync(new TravelRuleUnmatchedDepositsListParams { Direction = "sample-direction", Status = "sample-status", Rail = "sample-rail", Kind = "sample-kind", Currency = "sample-currency", StartDate = "2026-01-02", EndDate = "2026-01-02", Counterparty = "11111111-2222-3333-4444-555555555555", Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/unmatched/", request.Path);
+            Assert.Equal("?direction=sample-direction&status=sample-status&rail=sample-rail&kind=sample-kind&currency=sample-currency&start_date=2026-01-02&end_date=2026-01-02&counterparty=11111111-2222-3333-4444-555555555555&limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task TravelRule_UnmatchedDeposits_Match()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"deposit\": {\"id\": \"7d3a1c55-0b9e-4d52-8a3c-1f6e2b9d4a08\", \"transaction_id\": \"c41f9b2e-5a8d-4e0c-9f17-3b6d8a2e5c91\", \"txn_id\": \"dep-2026-10-20-0007\", \"txn_date\": \"2026-10-19T08:41:12Z\", \"kind\": \"deposit\", \"direction\": \"INBOUND\", \"status\": \"AWAITING_COUNTERPARTY\", \"rail\": \"TRP\", \"asset\": \"ETH\", \"amount\": \"1.25\", \"originator_vasp\": \"Example Counterparty VASP\", \"beneficiary_vasp\": \"Example Counterparty VASP\", \"originator_wallet\": \"0x77ccff0cc624a53cd8b8d8703ced826710211ec7\", \"beneficiary_wallet\": \"0xede2d7e4f5b097e6391ab6bbcf2f47a53f4778cb\", \"originator_memo\": \"\", \"beneficiary_memo\": \"\", \"originator_wallet_type\": \"vasp\", \"beneficiary_wallet_type\": \"vasp\", \"matched_transaction_id\": \"e90a4d7b-1c2f-4b83-a6d5-8f0e3c1b7a24\", \"deadline_at\": null, \"created_at\": \"2026-10-19T08:41:13Z\"}, \"message\": {\"id\": \"2b8e6f10-9c3a-47d1-b5e2-0a4c7d9f3e66\", \"transaction_id\": \"e90a4d7b-1c2f-4b83-a6d5-8f0e3c1b7a24\", \"txn_id\": \"msg-2026-10-20-0003\", \"txn_date\": \"2026-10-19T08:41:12Z\", \"kind\": \"message\", \"direction\": \"INBOUND\", \"status\": \"COMPLETED\", \"rail\": \"TRP\", \"asset\": \"ETH\", \"amount\": \"1.25\", \"originator_vasp\": \"Origin CASP SL\", \"beneficiary_vasp\": \"Example Counterparty VASP\", \"originator_wallet\": \"0x77ccff0cc624a53cd8b8d8703ced826710211ec7\", \"beneficiary_wallet\": \"0xede2d7e4f5b097e6391ab6bbcf2f47a53f4778cb\", \"originator_memo\": \"\", \"beneficiary_memo\": \"\", \"originator_wallet_type\": \"vasp\", \"beneficiary_wallet_type\": \"vasp\", \"matched_transaction_id\": null, \"deadline_at\": \"2026-10-21T08:41:13Z\", \"created_at\": \"2026-10-19T08:41:13Z\"}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.UnmatchedDeposits.MatchAsync("transaction_uuid-1", new TravelRuleManualMatchRequest { TransactionId = "11111111-2222-3333-4444-555555555555" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/unmatched/transaction_uuid-1/match/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"transaction_id\": \"11111111-2222-3333-4444-555555555555\"}", request.BodyText);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task TravelRule_UpdateSettings()
         {
             var handler = new MockHttpHandler();

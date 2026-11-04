@@ -35,6 +35,13 @@ namespace Didit
         [JsonIgnore]
         public string? TravelRuleStatus { get; set; }
 
+        /// <summary>
+        /// Comma-separated; a transaction matches when it meets any value. <c>unassigned</c> is what nobody holds yet, <c>rules</c> is what the rules decided on their own without a reviewer, and a member email matches the reviewer assigned to it. <c>me</c> is the signed-in Console reviewer, so an API key sending <c>me</c> gets <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("assignee")]
+        [JsonIgnore]
+        public string? Assignee { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

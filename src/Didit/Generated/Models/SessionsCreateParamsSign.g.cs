@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Electronic Signature input for this session. <c>documents</c> are the documents to sign, for a workflow whose Electronic Signature step takes documents from the session (<c>signature_documents_source</c> <c>session</c> or <c>both</c>): up to 20 documents and 50 MB in total. <c>field_values</c> fills the fields whose <c>prefill</c> is <c>api.&lt;key&gt;</c>, on workflow and session documents alike. Creating a session again for the same <c>workflow_id</c> and <c>vendor_data</c> returns the pending session; if that call sends <c>sign</c>, its documents, fields and values must be identical to the first ones, and anything different returns <c>400</c> with <c>{"sign": "signature_document_changed"}</c>. See [Electronic signature documents](/sessions-api/create-session#electronic-signature-documents).
+    /// E-signature input for this session. <c>documents</c> are the documents to sign, for a workflow whose E-signature step takes documents from the session (<c>signature_documents_source</c> <c>session</c> or <c>both</c>): up to 20 documents and 50 MB in total. <c>field_values</c> fills the fields whose <c>prefill</c> is <c>api.&lt;key&gt;</c>, on workflow and session documents alike. Creating a session again for the same <c>workflow_id</c> and <c>vendor_data</c> returns the pending session; if that call sends <c>sign</c>, its documents, fields and values must be identical to the first ones, and anything different returns <c>400</c> with <c>{"sign": "signature_document_changed"}</c>. See [E-signature documents](/sessions-api/create-session#e-signature-documents).
     /// </summary>
     public sealed record SessionsCreateParamsSign
     {

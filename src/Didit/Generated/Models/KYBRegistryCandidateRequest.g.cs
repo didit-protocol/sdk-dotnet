@@ -15,7 +15,7 @@ namespace Didit
     public sealed record KYBRegistryCandidateRequest
     {
         /// <summary>
-        /// Candidate handle from <c>POST /v3/kyb/search/</c> (<c>kyb_registry.companies[].kyb_response_id</c>). Ephemeral — use it shortly after the search that produced it.
+        /// Candidate handle from <c>POST /v3/kyb/search/</c> (<c>kyb_registry.companies[].kyb_response_id</c>). Ephemeral: use it shortly after the search that produced it. Handles can be long, so store and send the value exactly as returned, without trimming or assuming a length.
         /// </summary>
         [JsonPropertyName("kyb_response_id")]
         public required string KybResponseId { get; set; }

@@ -165,6 +165,12 @@ namespace Didit
         public DateTimeOffset? UpdatedAt { get; init; }
 
         /// <summary>
+        /// Which E-signature levels can sign right now. Check it before you set <c>signature_level</c>. Returned on <c>kyc</c>, <c>kyb</c> and graph workflows.
+        /// </summary>
+        [JsonPropertyName("signature_availability")]
+        public WorkflowDetailSignatureAvailability? SignatureAvailability { get; init; }
+
+        /// <summary>
         /// Whether a simple KYC or KYB workflow runs Bank verification. It runs after the contact steps (and Location verification) and before database validation, AML and IP analysis. Bank verification is not generally available yet: turning it on is refused wherever it is not enabled.
         /// </summary>
         [JsonPropertyName("is_bank_verification_enabled")]

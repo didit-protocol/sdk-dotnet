@@ -308,6 +308,24 @@ namespace Didit
         [JsonPropertyName("address_validation")]
         public AddressValidationResult? AddressValidation { get; init; }
 
+        /// <summary>
+        /// Region or state of the document's issuing country where the document identifies one.
+        /// </summary>
+        [JsonPropertyName("region")]
+        public string? Region { get; init; }
+
+        /// <summary>
+        /// Snapshot of the data extracted from the document that the person was shown to review, kept next to the confirmed values so you can compare what was read with what the person confirmed. <c>null</c> when the person was not asked to review.
+        /// </summary>
+        [JsonPropertyName("extracted_data")]
+        public JsonElement? ExtractedData { get; init; }
+
+        /// <summary>
+        /// Data read from the document's barcodes. Empty when the document has none or none was read.
+        /// </summary>
+        [JsonPropertyName("barcodes")]
+        public IReadOnlyList<JsonElement>? Barcodes { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

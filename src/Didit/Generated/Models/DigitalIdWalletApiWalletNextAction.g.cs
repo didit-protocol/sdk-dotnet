@@ -15,10 +15,11 @@ namespace Didit
     public sealed record DigitalIdWalletApiWalletNextAction
     {
         /// <summary>
-        /// redirect: send the user's browser to url. confirm_in_app: show verification_code to the user, who checks it matches the code in their wallet app and confirms there; then poll.
+        /// redirect: send the user's browser to url. confirm_in_app: show verification_code to the user, who checks it matches the code in their wallet app and confirms there; then poll. request_digital_credential: in a user gesture on the origin you started with, ask the wallet with digital_credentials.request, then send what it returns to POST .../verifications/{request_id}/response/.
         /// <para/>
         /// * <c>redirect</c> - redirect
         /// * <c>confirm_in_app</c> - confirm_in_app
+        /// * <c>request_digital_credential</c> - request_digital_credential
         /// </summary>
         [JsonPropertyName("type")]
         public DigitalIdWalletApiWalletNextActionTypeEnum? Type { get; init; }
@@ -28,6 +29,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("url")]
         public string? Url { get; init; }
+
+        /// <summary>
+        /// request_digital_credential only: the request to hand to the wallet.
+        /// </summary>
+        [JsonPropertyName("digital_credentials")]
+        public DigitalIdWalletApiWalletDigitalCredentialsRequest? DigitalCredentials { get; init; }
 
         /// <summary>
         /// confirm_in_app only: the 4-digit comparison code the wallet app shows too.

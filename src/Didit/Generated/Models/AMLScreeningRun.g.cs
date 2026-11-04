@@ -21,6 +21,12 @@ namespace Didit
         public string? Uuid { get; init; }
 
         /// <summary>
+        /// The monitoring run this screening belongs to. Every verification screened in the same run shares it.
+        /// </summary>
+        [JsonPropertyName("run_id")]
+        public string? RunId { get; init; }
+
+        /// <summary>
         /// When this subject's re-screen finished. Results are ordered by it, newest first.
         /// </summary>
         [JsonPropertyName("completed_at")]
@@ -67,6 +73,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("total_hits")]
         public long? TotalHits { get; init; }
+
+        /// <summary>
+        /// Number of hits this run found that the check did not have before it. <c>0</c> when nothing new was found; <c>null</c> when the run failed or was recorded before this count existed.
+        /// </summary>
+        [JsonPropertyName("new_hits")]
+        public long? NewHits { get; init; }
+
+        /// <summary>
+        /// Number of entities this run screened for the verification: <c>1</c> when the subject was screened, <c>0</c> when the run failed.
+        /// </summary>
+        [JsonPropertyName("entities_screened")]
+        public long? EntitiesScreened { get; init; }
 
         /// <summary>
         /// Dataset freshness behind this run, or <c>null</c> when no dates were available.

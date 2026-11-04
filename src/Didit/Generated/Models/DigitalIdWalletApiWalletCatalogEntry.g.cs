@@ -53,6 +53,7 @@ namespace Didit
         /// <summary>
         /// * <c>redirect</c> - redirect
         /// * <c>in_app</c> - in_app
+        /// * <c>digital_credentials</c> - digital_credentials
         /// </summary>
         [JsonPropertyName("interaction")]
         public DigitalIdWalletApiInteractionEnum? Interaction { get; init; }

@@ -39,10 +39,10 @@ namespace Didit
         public SessionDecisionRegistryChecksCompany? Company { get; init; }
 
         /// <summary>
-        /// Raw ownership snapshot kept for reviewers; its shape differs by registry source and is not a stable contract. Read <c>company.beneficial_owners</c> and <c>company.ownership</c> instead.
+        /// The cap table the registry proved, as it stood when the ownership tier was delivered: direct <c>shareholders</c> and <c>beneficial_owners</c>. Null when the registry proved no ownership. It never carries the registry source's own rows; read <c>company.beneficial_owners</c> and <c>company.ownership</c> for the current record.
         /// </summary>
         [JsonPropertyName("ownership_structure")]
-        public JsonElement? OwnershipStructure { get; init; }
+        public KYBOwnershipStructure? OwnershipStructure { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;warnings&lt;/c&gt; field.

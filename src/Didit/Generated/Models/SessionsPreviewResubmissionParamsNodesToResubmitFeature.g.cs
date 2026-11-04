@@ -95,6 +95,9 @@ namespace Didit
         /// <summary><c>KYB</c></summary>
         public static SessionsPreviewResubmissionParamsNodesToResubmitFeature Kyb { get; } = new("KYB");
 
+        /// <summary><c>GEOLOCATION</c></summary>
+        public static SessionsPreviewResubmissionParamsNodesToResubmitFeature Geolocation { get; } = new("GEOLOCATION");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

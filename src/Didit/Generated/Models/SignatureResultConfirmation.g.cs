@@ -15,7 +15,7 @@ namespace Didit
     public sealed record SignatureResultConfirmation
     {
         /// <summary>
-        /// The &lt;c&gt;channel&lt;/c&gt; field.
+        /// <c>null</c> for a Simple signature, which has no code.
         /// </summary>
         [JsonPropertyName("channel")]
         public SignatureResultConfirmationChannel? Channel { get; init; }

@@ -107,13 +107,13 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"total_transactions\": 1, \"results\": [{\"uuid\": \"abcdef12-3456-4890-abcd-ef1234567890\", \"transaction_number\": 4123, \"txn_id\": \"your-txn-2026-05-17-001\", \"transaction_type\": \"finance\", \"action_type\": \"withdrawal\", \"status\": \"IN_REVIEW\", \"direction\": \"OUTBOUND\", \"amount\": \"1500\", \"currency\": \"EUR\", \"preferred_currency_amount\": \"1620.45\", \"preferred_currency_code\": \"USD\", \"payment_details\": \"Withdrawal to crypto wallet\", \"txn_date\": \"2026-05-17T08:42:00Z\", \"created_at\": \"2026-05-17T08:42:11Z\", \"score\": 78, \"severity\": \"HIGH\", \"decision_reason_code\": \"WALLET_HIGH_RISK\", \"decision_reason_label\": \"Destination wallet flagged as high risk\", \"tags\": [{\"uuid\": \"9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d\", \"name\": \"Manual review\", \"color\": \"#F59E0B\", \"description\": null, \"source\": \"custom\"}], \"subject_name\": \"Maria Garcia\", \"subject_vendor_data\": \"user-12345\", \"counterparty_name\": null, \"counterparty_vendor_data\": null, \"counterparty_country\": null, \"subject_country\": null, \"assigned_to_name\": \"Alex Reviewer\", \"travel_rule_status\": null, \"travel_rule\": null}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Transactions.ListAsync(new TransactionsListParams { Limit = 1L, Offset = 1L, TravelRuleStatus = "sample-travel_rule_status" });
+            var result = await client.Transactions.ListAsync(new TransactionsListParams { Limit = 1L, Offset = 1L, TravelRuleStatus = "sample-travel_rule_status", Assignee = "sample-assignee" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("GET", request.Method);
             Assert.Equal("verification.didit.me", request.Uri.Host);
             Assert.Equal("/v3/transactions/", request.Path);
-            Assert.Equal("?limit=1&offset=1&travel_rule_status=sample-travel_rule_status", request.Query);
+            Assert.Equal("?limit=1&offset=1&travel_rule_status=sample-travel_rule_status&assignee=sample-assignee", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);

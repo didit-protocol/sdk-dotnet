@@ -22,7 +22,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"deleted\": 2}");
             using var client = TestClients.Create(handler);
-            var result = await client.Users.BatchDeleteAsync(new UsersBatchDeleteParams { VendorDataList = new string[] { "sample-vendor_data_list" }, DiditInternalIdList = new string[] { "11111111-2222-3333-4444-555555555555" }, DeleteAll = true });
+            var result = await client.Users.BatchDeleteAsync(new UsersBatchDeleteParams { VendorDataList = new string[] { "sample-vendor_data_list" }, DiditInternalIdList = new string[] { "11111111-2222-3333-4444-555555555555" }, DeleteAll = true, RetainFaceEmbeddings = true, FaceRetentionDays = 365L });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -32,7 +32,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"vendor_data_list\": [\"sample-vendor_data_list\"], \"didit_internal_id_list\": [\"11111111-2222-3333-4444-555555555555\"], \"delete_all\": true}", request.BodyText);
+            JsonAssert.Equivalent("{\"vendor_data_list\": [\"sample-vendor_data_list\"], \"didit_internal_id_list\": [\"11111111-2222-3333-4444-555555555555\"], \"delete_all\": true, \"retain_face_embeddings\": true, \"face_retention_days\": 365}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal(2L, result.Deleted);
         }

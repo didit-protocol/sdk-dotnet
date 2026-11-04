@@ -56,6 +56,12 @@ namespace Didit
         [JsonPropertyName("warnings")]
         public IReadOnlyList<SessionDecisionFaceMatchesWarnings>? Warnings { get; init; }
 
+        /// <summary>
+        /// Whether the eyes, mouth and face are covered in the captured image. Returned by <c>GET /v3/session/{sessionId}/decision/</c> only; it is not part of webhook payloads. <c>null</c> when no coverage reading exists.
+        /// </summary>
+        [JsonPropertyName("face_coverage")]
+        public SessionDecisionFaceMatchesFaceCoverage? FaceCoverage { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

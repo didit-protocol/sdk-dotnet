@@ -35,6 +35,20 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<bool> DeleteAll { get; set; }
 
+        /// <summary>
+        /// Your explicit choice to keep one image-free biometric template of each deleted person for duplicate detection, for <c>face_retention_days</c>. Everything else about the person is deleted. Omit it, or send <c>false</c>, to delete the templates with the users. When <c>true</c>, <c>face_retention_days</c> is required.
+        /// </summary>
+        [JsonPropertyName("retain_face_embeddings")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> RetainFaceEmbeddings { get; set; }
+
+        /// <summary>
+        /// Number of days the image-free biometric template is kept when <c>retain_face_embeddings</c> is <c>true</c>. Required with it, and rejected without it with a <c>400</c> on <c>face_retention_days</c>.
+        /// </summary>
+        [JsonPropertyName("face_retention_days")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> FaceRetentionDays { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

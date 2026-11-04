@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (SignatureResultIdentityUsed).
+    /// The verified identity the signature relies on. Empty for a Simple signature with no verified identity.
     /// </summary>
     public sealed record SignatureResultIdentityUsed
     {

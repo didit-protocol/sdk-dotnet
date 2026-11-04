@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Network identifier. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), and ARB (Arbitrum One). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. CELO (Celo), MODE (Mode) and PLUME (Plume) are screened through a connected TRM Labs account; managed screening answers 400 for them. Alias: <c>currency</c>.
+    /// Optional network identifier. When omitted, the network is read from the address format: <c>bc1</c>, <c>1</c> and <c>3</c> addresses are Bitcoin (BTC), <c>T</c> addresses are Tron (TRX) and base58 public keys are Solana (SOL). A <c>0x</c> address is valid on every EVM network, so omitting <c>blockchain</c> for it answers 422 with the candidate networks in <c>candidate_chains</c>. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), ARB (Arbitrum One), AVAX (Avalanche C-Chain), ADA (Cardano), XLM (Stellar) and HBAR (Hedera). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. CELO (Celo), MODE (Mode) and PLUME (Plume) are screened through a connected TRM Labs account; managed screening answers 400 for them. Alias: <c>currency</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(WalletScreeningScreenParamsBlockchain.EnumJsonConverter))]
@@ -70,6 +70,18 @@ namespace Didit
 
         /// <summary><c>ARB</c></summary>
         public static WalletScreeningScreenParamsBlockchain Arb { get; } = new("ARB");
+
+        /// <summary><c>AVAX</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Avax { get; } = new("AVAX");
+
+        /// <summary><c>ADA</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Ada { get; } = new("ADA");
+
+        /// <summary><c>XLM</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Xlm { get; } = new("XLM");
+
+        /// <summary><c>HBAR</c></summary>
+        public static WalletScreeningScreenParamsBlockchain Hbar { get; } = new("HBAR");
 
         /// <summary><c>CELO</c></summary>
         public static WalletScreeningScreenParamsBlockchain Celo { get; } = new("CELO");

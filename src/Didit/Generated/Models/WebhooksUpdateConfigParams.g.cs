@@ -77,6 +77,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<IReadOnlyList<string>> AllowedReturnHosts { get; set; }
 
+        /// <summary>
+        /// Replaces the whole list of allowed origins. Origins (for example <c>https://app.example.com</c>; <c>http</c> only for <c>localhost</c>) the hosted verification flow may be embedded in and may send the user back to with a session callback. Server-to-server calls are not affected. An empty list means no restriction. Didit stores each origin in lower case without a default port. An invalid entry fails with <c>400</c> on <c>allowed_domains</c>. Send <c>[]</c> to remove the restriction.
+        /// </summary>
+        [JsonPropertyName("allowed_domains")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<IReadOnlyList<string>> AllowedDomains { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

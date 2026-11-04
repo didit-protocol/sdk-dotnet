@@ -86,6 +86,18 @@ namespace Didit
         [JsonPropertyName("matches")]
         public IReadOnlyList<SessionDecisionEmailVerificationsMatches>? Matches { get; init; }
 
+        /// <summary>
+        /// Email intelligence signals. Present only when the email intelligence add-on ran for this address.
+        /// </summary>
+        [JsonPropertyName("email_intelligence")]
+        public EmailIntelligence? EmailIntelligence { get; init; }
+
+        /// <summary>
+        /// Social footprint of the address. Present only when the social footprint add-on ran for this address.
+        /// </summary>
+        [JsonPropertyName("email_social")]
+        public EmailSocialFootprint? EmailSocial { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

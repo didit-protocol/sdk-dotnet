@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// One signer's result for one Electronic Signature step. See the [Electronic Signature report](/core-technology/electronic-signature/report-electronic-signature).
+    /// One signer's result for one E-signature step. See the [E-signature report](/core-technology/electronic-signature/report-electronic-signature).
     /// </summary>
     public sealed record SignatureResult
     {
@@ -39,19 +39,19 @@ namespace Didit
         public SignatureResultVerdict? Verdict { get; init; }
 
         /// <summary>
-        /// <c>aes</c>. <c>qes</c> (Qualified Electronic Signature, QES) is coming soon.
+        /// <c>simple</c> (default) or <c>aes</c>. <c>qes</c> (Qualified Electronic Signature, QES) is an add-on that is not available yet.
         /// </summary>
         [JsonPropertyName("level")]
         public SignatureResultLevel? Level { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;format&lt;/c&gt; field.
+        /// <c>pdf</c> for a Simple signature, <c>pades</c> for Advanced (AES).
         /// </summary>
         [JsonPropertyName("format")]
         public SignatureResultFormat? Format { get; init; }
 
         /// <summary>
-        /// <c>PAdES-B-LT</c> once signed.
+        /// <c>PAdES-B-LT</c> once an Advanced (AES) signature is signed, otherwise null.
         /// </summary>
         [JsonPropertyName("profile")]
         public string? Profile { get; init; }
@@ -63,13 +63,13 @@ namespace Didit
         public SignatureResultSigner? Signer { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;identity_used&lt;/c&gt; field.
+        /// The verified identity the signature relies on. Empty for a Simple signature with no verified identity.
         /// </summary>
         [JsonPropertyName("identity_used")]
         public SignatureResultIdentityUsed? IdentityUsed { get; init; }
 
         /// <summary>
-        /// The certificate the documents were signed with. <c>null</c> until signed.
+        /// The certificate the documents were signed with. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
         /// </summary>
         [JsonPropertyName("certificate")]
         public SignatureResultCertificate? Certificate { get; init; }
@@ -81,7 +81,7 @@ namespace Didit
         public SignatureResultConfirmation? Confirmation { get; init; }
 
         /// <summary>
-        /// The trusted timestamp in the signature. <c>null</c> until signed.
+        /// The RFC 3161 timestamp in the signature, issued by Didit. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
         /// </summary>
         [JsonPropertyName("timestamp")]
         public SignatureResultTimestamp? Timestamp { get; init; }
@@ -111,7 +111,7 @@ namespace Didit
         public string? EvidenceFile { get; init; }
 
         /// <summary>
-        /// Warnings raised for this signer. See [Electronic Signature warnings](/core-technology/electronic-signature/warnings-electronic-signature).
+        /// Warnings raised for this signer. See [E-signature warnings](/core-technology/electronic-signature/warnings-electronic-signature).
         /// </summary>
         [JsonPropertyName("warnings")]
         public IReadOnlyList<SignatureResultWarnings>? Warnings { get; init; }

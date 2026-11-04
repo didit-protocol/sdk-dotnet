@@ -59,6 +59,9 @@ namespace Didit
         /// <summary><c>DATABASE_VALIDATION</c></summary>
         public static SessionsListResponseResultsFeaturesFeature DatabaseValidation { get; } = new("DATABASE_VALIDATION");
 
+        /// <summary><c>GEOLOCATION</c></summary>
+        public static SessionsListResponseResultsFeaturesFeature Geolocation { get; } = new("GEOLOCATION");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

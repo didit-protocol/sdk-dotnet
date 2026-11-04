@@ -400,6 +400,118 @@ namespace Didit
         public Optional<string> BankCardNumber { get; set; }
 
         /// <summary>
+        /// Company registration number as issued by the companies register: the CNPJ in Brazil (e.g. <c>11222333000181</c>), the registration number in South Africa (e.g. <c>1936/007721/06</c>). Required by the company registry and company directors services (<c>bra_company_registry</c>, <c>bra_company_directors</c>, <c>zaf_company_registry</c>, <c>zaf_company_directors</c>).
+        /// </summary>
+        [JsonPropertyName("company_registration_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> CompanyRegistrationNumber { get; set; }
+
+        /// <summary>
+        /// Registered company name, cross-checked against the register entry. Optional for <c>zaf_company_registry</c>.
+        /// </summary>
+        [JsonPropertyName("company_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> CompanyName { get; set; }
+
+        /// <summary>
+        /// The person's initials as printed on the document. Required by <c>zaf_drivers_license</c>; accepted by <c>zaf_bank_account_holder</c>.
+        /// </summary>
+        [JsonPropertyName("initials")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Initials { get; set; }
+
+        /// <summary>
+        /// Driving licence number as printed on the card, for <c>zaf_drivers_license</c>. When omitted, <c>document_number</c> is used.
+        /// </summary>
+        [JsonPropertyName("licence_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> LicenceNumber { get; set; }
+
+        /// <summary>
+        /// Refugee file number issued by South Africa's Department of Home Affairs. Required by <c>zaf_refugee</c>.
+        /// </summary>
+        [JsonPropertyName("refugee_file_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> RefugeeFileNumber { get; set; }
+
+        /// <summary>
+        /// Name of the bank that holds the account. Required by <c>zaf_bank_account_holder</c>.
+        /// </summary>
+        [JsonPropertyName("bank_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> BankName { get; set; }
+
+        /// <summary>
+        /// Bank account number. Required by <c>zaf_bank_account_holder</c>; accepted by <c>zaf_fraud_prevention</c>.
+        /// </summary>
+        [JsonPropertyName("bank_account_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> BankAccountNumber { get; set; }
+
+        /// <summary>
+        /// Bank account type for <c>zaf_bank_account_holder</c>: <c>current</c>, <c>savings</c>, <c>transmission</c>, <c>subscriptionShare</c> or <c>notKnown</c>, case-insensitive. Any other value returns <c>400</c>. Omit it when you do not know the type: the account-type cross-check is then reported as not confirmed.
+        /// </summary>
+        [JsonPropertyName("account_type")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> AccountType { get; set; }
+
+        /// <summary>
+        /// Contact mobile number, for the services that cross-check contactability (<c>zaf_bank_account_holder</c>, <c>zaf_fraud_prevention</c>, <c>zaf_refugee</c>).
+        /// </summary>
+        [JsonPropertyName("phone_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Base64-encoded right thumb fingerprint for <c>zaf_dha_fingerprint_match</c>, with <c>left_thumb</c> or on its own.
+        /// </summary>
+        [JsonPropertyName("right_thumb")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> RightThumb { get; set; }
+
+        /// <summary>
+        /// Base64-encoded left thumb fingerprint for <c>zaf_dha_fingerprint_match</c>, with <c>right_thumb</c> or on its own.
+        /// </summary>
+        [JsonPropertyName("left_thumb")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> LeftThumb { get; set; }
+
+        /// <summary>
+        /// Minimum biometric score level for <c>zaf_criminal_face_screening</c>. Defaults to <c>3</c>.
+        /// </summary>
+        [JsonPropertyName("score_level")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> ScoreLevel { get; set; }
+
+        /// <summary>
+        /// Maximum number of candidate matches <c>zaf_criminal_face_screening</c> returns. Defaults to <c>1</c>.
+        /// </summary>
+        [JsonPropertyName("max_matches")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> MaxMatches { get; set; }
+
+        /// <summary>
+        /// Vehicle register number. Required, with <c>vehicle_licence_plate</c> and <c>vin</c>, by <c>zaf_vehicle_ownership</c>.
+        /// </summary>
+        [JsonPropertyName("vehicle_register_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> VehicleRegisterNumber { get; set; }
+
+        /// <summary>
+        /// Vehicle licence plate number. Required, with <c>vehicle_register_number</c> and <c>vin</c>, by <c>zaf_vehicle_ownership</c>.
+        /// </summary>
+        [JsonPropertyName("vehicle_licence_plate")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> VehicleLicencePlate { get; set; }
+
+        /// <summary>
+        /// Vehicle Identification Number (VIN or chassis number). Required, with <c>vehicle_register_number</c> and <c>vehicle_licence_plate</c>, by <c>zaf_vehicle_ownership</c>.
+        /// </summary>
+        [JsonPropertyName("vin")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Vin { get; set; }
+
+        /// <summary>
         /// Social Security Number (USA).
         /// </summary>
         [JsonPropertyName("ssn")]

@@ -49,7 +49,7 @@ namespace Didit
         public Optional<string> Window { get; set; }
 
         /// <summary>
-        /// Narrows which historical transactions are aggregated. Keys are field paths from the condition field catalog; a value of "__current__" resolves to the same field's value on the transaction being evaluated (e.g. {"subject_vendor_data": "__current__"} scopes the window to the same subject), and a list value means membership. Filters compare by equality or membership ONLY - there is no lt/gte filter, so a range such as "historical transactions under 10,000" cannot be expressed here. Put the range on the metric instead (metric max with operator lt keeps every transaction in the window below the threshold).
+        /// Narrows which historical transactions are aggregated. Keys are field paths from the condition field catalog; a value of "__current__" resolves to the same field's value on the transaction being evaluated (e.g. {"subject_vendor_data": "__current__"} scopes the window to the same subject), and a list value means membership. Records without the grouped value are never grouped together: when the transaction being evaluated has no value for a "__current__" field (no counterparty, no device fingerprint), the aggregation does not match, whatever its operator. Filters compare by equality or membership ONLY - there is no lt/gte filter, so a range such as "historical transactions under 10,000" cannot be expressed here. Put the range on the metric instead (metric max with operator lt keeps every transaction in the window below the threshold).
         /// </summary>
         [JsonPropertyName("filters")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

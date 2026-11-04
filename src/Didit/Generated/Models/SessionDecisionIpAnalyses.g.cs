@@ -170,6 +170,54 @@ namespace Didit
         [JsonPropertyName("matches")]
         public IReadOnlyList<SessionDecisionIpAnalysesMatches>? Matches { get; init; }
 
+        /// <summary>
+        /// The &lt;c&gt;browser_version&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("browser_version")]
+        public string? BrowserVersion { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;os_version&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("os_version")]
+        public string? OsVersion { get; init; }
+
+        /// <summary>
+        /// The browser's user agent string.
+        /// </summary>
+        [JsonPropertyName("user_agent")]
+        public string? UserAgent { get; init; }
+
+        /// <summary>
+        /// The <c>Accept-Language</c> header the browser sent.
+        /// </summary>
+        [JsonPropertyName("accept_language")]
+        public string? AcceptLanguage { get; init; }
+
+        /// <summary>
+        /// Identifier of the browsing session the verification ran in.
+        /// </summary>
+        [JsonPropertyName("session_identifier")]
+        public string? SessionIdentifier { get; init; }
+
+        /// <summary>
+        /// Age of that browsing session in milliseconds when the step ran.
+        /// </summary>
+        [JsonPropertyName("session_age_ms")]
+        public long? SessionAgeMs { get; init; }
+
+        /// <summary>
+        /// Accuracy radius, in metres, of the coordinates the device reported.
+        /// </summary>
+        [JsonPropertyName("coords_accuracy")]
+        public double? CoordsAccuracy { get; init; }
+
+        /// <summary>
+        /// Raw device signals collected for the step.
+        /// </summary>
+        [JsonPropertyName("raw_device_data")]
+        public JsonElement? RawDeviceData { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

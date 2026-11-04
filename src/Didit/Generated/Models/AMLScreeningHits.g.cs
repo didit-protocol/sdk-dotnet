@@ -15,7 +15,7 @@ namespace Didit
     public sealed record AMLScreeningHits
     {
         /// <summary>
-        /// Unique identifier of the match
+        /// Didit's stable identifier for the hit: <c>hit_</c> followed by 24 hexadecimal characters. The same matched entity keeps the same <c>id</c> when the subject is screened again. Pass it as <c>hit_id</c> to the AML hit review endpoints.
         /// </summary>
         [JsonPropertyName("id")]
         public string? Id { get; init; }
@@ -52,7 +52,7 @@ namespace Didit
         public string? Caption { get; init; }
 
         /// <summary>
-        /// List of dataset categories where the match was found. Indicates whether the entity appeared in PEP lists (with level), sanctions databases, adverse media, warnings/regulatory enforcement, or other compliance datasets.
+        /// List of dataset categories where the match was found. Indicates whether the entity appeared in PEP lists (with level), sanctions databases, adverse media, warnings/regulatory enforcement, or other compliance datasets. <c>Other Lists</c> when the entity's source states none of these categories.
         /// </summary>
         [JsonPropertyName("datasets")]
         public IReadOnlyList<AMLScreeningHitsDatasets>? Datasets { get; init; }

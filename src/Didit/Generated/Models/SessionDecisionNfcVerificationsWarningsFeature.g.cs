@@ -68,6 +68,12 @@ namespace Didit
         /// <summary><c>KYB_KEY_PEOPLE</c></summary>
         public static SessionDecisionNfcVerificationsWarningsFeature KybKeyPeople { get; } = new("KYB_KEY_PEOPLE");
 
+        /// <summary><c>GEOLOCATION</c></summary>
+        public static SessionDecisionNfcVerificationsWarningsFeature Geolocation { get; } = new("GEOLOCATION");
+
+        /// <summary><c>SIGNATURE</c></summary>
+        public static SessionDecisionNfcVerificationsWarningsFeature Signature { get; } = new("SIGNATURE");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

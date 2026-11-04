@@ -207,7 +207,7 @@ namespace Didit
         public IReadOnlyList<TransactionDetailActivities>? Activities { get; init; }
 
         /// <summary>
-        /// Alerts raised by rules and providers.
+        /// Always empty today. An open alert is a transaction with status <c>IN_REVIEW</c> or <c>AWAITING_USER</c>.
         /// </summary>
         [JsonPropertyName("alerts")]
         public IReadOnlyList<TransactionDetailAlerts>? Alerts { get; init; }

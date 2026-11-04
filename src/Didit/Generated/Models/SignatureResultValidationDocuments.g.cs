@@ -57,13 +57,13 @@ namespace Didit
         public SignatureResultValidationDocumentsTrustedList? TrustedList { get; init; }
 
         /// <summary>
-        /// The certificate the documents were signed with. <c>null</c> until signed.
+        /// The certificate the documents were signed with. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
         /// </summary>
         [JsonPropertyName("certificate")]
         public SignatureResultValidationDocumentsCertificate? Certificate { get; init; }
 
         /// <summary>
-        /// The trusted timestamp in the signature. <c>null</c> until signed.
+        /// The RFC 3161 timestamp in the signature, issued by Didit. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
         /// </summary>
         [JsonPropertyName("timestamp")]
         public SignatureResultValidationDocumentsTimestamp? Timestamp { get; init; }

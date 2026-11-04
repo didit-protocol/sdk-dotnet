@@ -75,10 +75,10 @@ namespace Didit
         public double? NoOfBreaches { get; init; }
 
         /// <summary>
-        /// Machine-readable codes explaining the score. Values can grow over time, so do not reject unknown codes.
+        /// Signals that explain the score, each with a stable Didit code, a direction, a message and an impact level. New codes can appear over time, so do not reject unknown codes.
         /// </summary>
         [JsonPropertyName("reason_codes")]
-        public IReadOnlyList<string>? ReasonCodes { get; init; }
+        public IReadOnlyList<EmailIntelligenceReasonCodes>? ReasonCodes { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The certificate the documents were signed with. <c>null</c> until signed.
+    /// The certificate the documents were signed with. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
     /// </summary>
     public sealed record SignatureResultValidationDocumentsCertificate
     {

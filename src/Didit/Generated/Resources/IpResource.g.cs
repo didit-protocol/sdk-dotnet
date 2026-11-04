@@ -38,7 +38,7 @@ namespace Didit.Resources
         /// <para/>
         /// Authentication. Send your application's API key in <c>x-api-key</c>. Missing or invalid credentials return <c>403</c> - this API never returns <c>401</c>.
         /// <para/>
-        /// Rate limit. Shared write budget of 300 requests per minute per API key across all POST/PATCH/DELETE endpoints.
+        /// Rate limit. Shared write budget of 300 requests per minute per API key across POST/PATCH/DELETE endpoints (transaction creates and event ingestion have a separate budget of 600).
         /// <para/>
         /// <c>POST /v3/ip/risk/</c> (<c>ip.assess_risk</c>).
         /// </remarks>

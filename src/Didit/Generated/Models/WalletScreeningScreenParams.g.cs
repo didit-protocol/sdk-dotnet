@@ -21,10 +21,11 @@ namespace Didit
         public required string WalletAddress { get; set; }
 
         /// <summary>
-        /// Network identifier. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), and ARB (Arbitrum One). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. CELO (Celo), MODE (Mode) and PLUME (Plume) are screened through a connected TRM Labs account; managed screening answers 400 for them. Alias: <c>currency</c>.
+        /// Optional network identifier. When omitted, the network is read from the address format: <c>bc1</c>, <c>1</c> and <c>3</c> addresses are Bitcoin (BTC), <c>T</c> addresses are Tron (TRX) and base58 public keys are Solana (SOL). A <c>0x</c> address is valid on every EVM network, so omitting <c>blockchain</c> for it answers 422 with the candidate networks in <c>candidate_chains</c>. Managed screening supports BTC, ETH, LTC, XRP, BCH, DOGE, TRX, SOL, MATIC, BNB, BASE (Base), OP (Optimism), ARB (Arbitrum One), AVAX (Avalanche C-Chain), ADA (Cardano), XLM (Stellar) and HBAR (Hedera). USDT and USDC are legacy Ethereum aliases, not multi-network searches. Connected-provider coverage varies. LIGHTNING requires a supported connected provider. CELO (Celo), MODE (Mode) and PLUME (Plume) are screened through a connected TRM Labs account; managed screening answers 400 for them. Alias: <c>currency</c>.
         /// </summary>
         [JsonPropertyName("blockchain")]
-        public required WalletScreeningScreenParamsBlockchain Blockchain { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<WalletScreeningScreenParamsBlockchain> Blockchain { get; set; }
 
         /// <summary>
         /// Optional. Whether the address is being screened as an inbound (deposit) or outbound (withdrawal) counterparty. Accepts <c>inbound</c>, <c>outbound</c>, <c>deposit</c>, or <c>withdrawal</c>. Defaults to a neutral pre-transfer screen when omitted. This is passed to the provider as context only; it does not change the returned <c>risk_score</c>, <c>severity</c>, or the <c>source_of_funds</c>/<c>destination_of_funds</c> breakdowns, which are always both returned regardless of <c>direction</c>. Changing or omitting <c>direction</c> therefore does not require re-screening an address.
