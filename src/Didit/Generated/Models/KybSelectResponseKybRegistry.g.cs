@@ -255,10 +255,10 @@ namespace Didit
         public JsonElement? Accounts { get; init; }
 
         /// <summary>
-        /// Raw record returned by the registry source, kept for reviewers. Its shape differs by country and source and is not a stable contract: read the canonical fields (<c>addresses</c>, <c>industries</c>, <c>ownership</c>, <c>beneficial_owners[].shareholding</c>) instead.
+        /// Didit's normalized registry detail for the company: the ownership outcome (<c>ownership_error</c>, <c>section_errors</c>, <c>ubo_resolution</c>, <c>lite_enrichment</c>), the corrections made with update-data, and registry facts that have no field of their own. It never carries the registry source's own record. Every key is optional and present only when the company has a value for it; new keys may be added. Read the canonical fields (<c>addresses</c>, <c>industries</c>, <c>ownership</c>, <c>beneficial_owners[].shareholding</c>) for anything they cover.
         /// </summary>
         [JsonPropertyName("registry_data")]
-        public JsonElement? RegistryData { get; init; }
+        public KYBRegistryData? RegistryData { get; init; }
 
         /// <summary>
         /// Always <c>null</c> on this endpoint (used by the hosted KYB flow when end users edit registry data).
@@ -307,6 +307,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("registry_tier")]
         public string? RegistryTier { get; init; }
+
+        /// <summary>
+        /// The latest registry monitor for the company, or <c>null</c> when none exists.
+        /// </summary>
+        [JsonPropertyName("registry_monitoring")]
+        public KybSelectResponseKybRegistryRegistryMonitoring? RegistryMonitoring { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

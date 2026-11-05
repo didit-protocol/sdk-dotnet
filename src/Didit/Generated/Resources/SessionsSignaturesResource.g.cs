@@ -26,14 +26,14 @@ namespace Didit.Resources
         /// Download a signed document
         /// </summary>
         /// <remarks>
-        /// Download the signed PDF of one document of an Electronic Signature step. Use the <c>signed_file</c> path of <c>signatures[].documents[]</c> in the decision. The PDF holds the document the signer was shown with their field values stamped, the evidence page (unless <c>signature_evidence_page</c> is off) and the PAdES signature with its timestamp. Didit checks the file against <c>sha256_signed</c> before returning it.
+        /// Download the signed PDF of one document of an E-signature step. Use the <c>signed_file</c> path of <c>signatures[].documents[]</c> in the decision. The PDF holds the document the signer was shown with their field values stamped and the evidence page (unless <c>signature_evidence_page</c> is off). An Advanced (AES) PDF also carries the PAdES signature with its timestamp; a Simple PDF has no digital signature, seal or timestamp. Didit checks the file against <c>sha256_signed</c> before returning it.
         /// <para/>
-        /// Works for User Verification (KYC) and Business Verification (KYB) sessions. Needs <c>read:sessions</c>; your API key works. See the [Electronic Signature report](/core-technology/electronic-signature/report-electronic-signature#download-the-signed-documents).
+        /// Works for User Verification (KYC) and Business Verification (KYB) sessions. Needs <c>read:sessions</c>; your API key works. See the [E-signature report](/core-technology/electronic-signature/report-electronic-signature#download-the-signed-documents).
         /// <para/>
         /// <c>GET /v3/session/{sessionId}/signatures/{nodeId}/documents/{documentId}/file/</c> (<c>sessions.signatures.download_document</c>).
         /// </remarks>
         /// <param name="sessionId">The User Verification (KYC) or Business Verification (KYB) session.</param>
-        /// <param name="nodeId">The Electronic Signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
+        /// <param name="nodeId">The E-signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
         /// <param name="documentId"><c>id</c> of the document in <c>signatures[].documents[]</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -47,14 +47,14 @@ namespace Didit.Resources
         /// Download the signature evidence
         /// </summary>
         /// <remarks>
-        /// Download a signer's evidence PDF: the level and format, the signer and their verified identity session, the code confirmation, the IP address, each document with its original SHA-256 and field values, the certificate, the timestamp and the SHA-256 of every signed file. Use the <c>evidence_file</c> path of the signer's item in <c>signatures[]</c>.
+        /// Download a signer's evidence PDF: the level and format, the signer, the IP address, each document with its original SHA-256 and field values and the SHA-256 of every signed file, plus, for an Advanced (AES) signature, the verified identity session, the code confirmation, the certificate and the timestamp. Use the <c>evidence_file</c> path of the signer's item in <c>signatures[]</c>.
         /// <para/>
         /// Always pass <c>signature_id</c> when a Business Verification step has several signers: without it, the route picks one of the step's signers. Needs <c>read:sessions</c>; your API key works.
         /// <para/>
         /// <c>GET /v3/session/{sessionId}/signatures/{nodeId}/evidence/</c> (<c>sessions.signatures.download_evidence</c>).
         /// </remarks>
         /// <param name="sessionId">The User Verification (KYC) or Business Verification (KYB) session.</param>
-        /// <param name="nodeId">The Electronic Signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
+        /// <param name="nodeId">The E-signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -73,7 +73,7 @@ namespace Didit.Resources
         /// <c>GET /v3/session/{sessionId}/signatures/{nodeId}/fields/{fieldId}/image/</c> (<c>sessions.signatures.download_field_image</c>).
         /// </remarks>
         /// <param name="sessionId">The User Verification (KYC) or Business Verification (KYB) session.</param>
-        /// <param name="nodeId">The Electronic Signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
+        /// <param name="nodeId">The E-signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
         /// <param name="fieldId">The field on this signer's copy, as in the field's <c>image_url</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -87,14 +87,14 @@ namespace Didit.Resources
         /// Validate signatures again
         /// </summary>
         /// <remarks>
-        /// Re-check the signed documents of an Electronic Signature step. Didit re-reads every signed PDF, checks its SHA-256 and validates the PAdES signature, the certificate, the revocation data and the timestamp, then saves the result in each signer's <c>validation</c> and returns the updated items. Nothing is signed again. Send <c>signature_id</c> to check one signer; without it, every signer of the step is checked, and the call fails if any of them hasn't signed.
+        /// Re-check the signed documents of an E-signature step. Didit re-reads every signed PDF, checks its SHA-256 and, for an Advanced (AES) signature, validates the PAdES signature, the certificate, the revocation data and the timestamp (a Simple signature has no digital signature, so only the file integrity is checked), then saves the result in each signer's <c>validation</c> and returns the updated items. Nothing is signed again. Send <c>signature_id</c> to check one signer; without it, every signer of the step is checked, and the call fails if any of them hasn't signed.
         /// <para/>
         /// Needs <c>write:sessions</c>; your API key works. In the console it's the Validate again button.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/signatures/{nodeId}/validate/</c> (<c>sessions.signatures.validate</c>).
         /// </remarks>
         /// <param name="sessionId">The User Verification (KYC) or Business Verification (KYB) session.</param>
-        /// <param name="nodeId">The Electronic Signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
+        /// <param name="nodeId">The E-signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>

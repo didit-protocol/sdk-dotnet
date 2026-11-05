@@ -15,7 +15,7 @@ namespace Didit
     public sealed record SignatureResultSigner
     {
         /// <summary>
-        /// Verified name.
+        /// The signer's name. Verified (from the approved ID verification or the session) except at the Simple level without a verified session name, where it is the name the signer typed and is not verified.
         /// </summary>
         [JsonPropertyName("name")]
         public string? Name { get; init; }

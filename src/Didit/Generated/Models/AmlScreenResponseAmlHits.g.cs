@@ -15,7 +15,7 @@ namespace Didit
     public sealed record AmlScreenResponseAmlHits
     {
         /// <summary>
-        /// Stable identifier of the matched entity in the screening datasets.
+        /// Didit's stable identifier for the hit: <c>hit_</c> followed by 24 hexadecimal characters. The same matched entity keeps the same <c>id</c> when the subject is screened again. Pass it as <c>hit_id</c> to the AML hit review endpoints.
         /// </summary>
         [JsonPropertyName("id")]
         public string? Id { get; init; }
@@ -63,10 +63,10 @@ namespace Didit
         public string? Caption { get; init; }
 
         /// <summary>
-        /// Datasets the entity appears in (e.g. <c>PEP</c>, <c>PEP Level 1</c>, sanctions list names).
+        /// Risk categories the entity is listed under: <c>PEP</c> (with its level, <c>PEP Level 1</c> to <c>PEP Level 4</c>), <c>Sanctions</c>, <c>Adverse Media</c>, <c>Warnings and Regulatory Enforcement</c>, <c>Fitness and Probity</c>, <c>SIP</c>, <c>SIE</c> or <c>Insolvency</c>. <c>Other Lists</c> when the entity's source states none of these categories.
         /// </summary>
         [JsonPropertyName("datasets")]
-        public IReadOnlyList<string>? Datasets { get; init; }
+        public IReadOnlyList<AmlScreenResponseAmlHitsDatasets>? Datasets { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;features&lt;/c&gt; field.

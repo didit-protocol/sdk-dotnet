@@ -23,6 +23,7 @@ namespace Didit.Resources
             CounterpartyContacts = new TravelRuleCounterpartyContactsResource(raw.CounterpartyContacts);
             Networks = new TravelRuleNetworksResource(raw.Networks);
             Transfers = new TravelRuleTransfersResource(raw.Transfers);
+            UnmatchedDeposits = new TravelRuleUnmatchedDepositsResource(raw.UnmatchedDeposits);
             WalletAddresses = new TravelRuleWalletAddressesResource(raw.WalletAddresses);
             WalletProofs = new TravelRuleWalletProofsResource(raw.WalletProofs);
             Workspace = new TravelRuleWorkspaceResource(raw.Workspace);
@@ -36,6 +37,9 @@ namespace Didit.Resources
 
         /// <summary>The <c>travel_rule.transfers</c> resource.</summary>
         public TravelRuleTransfersResource Transfers { get; }
+
+        /// <summary>The <c>travel_rule.unmatched_deposits</c> resource.</summary>
+        public TravelRuleUnmatchedDepositsResource UnmatchedDeposits { get; }
 
         /// <summary>The <c>travel_rule.wallet_addresses</c> resource.</summary>
         public TravelRuleWalletAddressesResource WalletAddresses { get; }
@@ -297,6 +301,7 @@ namespace Didit.Resources
             CounterpartyContacts = new TravelRuleCounterpartyContactsRawResource(pipeline);
             Networks = new TravelRuleNetworksRawResource(pipeline);
             Transfers = new TravelRuleTransfersRawResource(pipeline);
+            UnmatchedDeposits = new TravelRuleUnmatchedDepositsRawResource(pipeline);
             WalletAddresses = new TravelRuleWalletAddressesRawResource(pipeline);
             WalletProofs = new TravelRuleWalletProofsRawResource(pipeline);
             Workspace = new TravelRuleWorkspaceRawResource(pipeline);
@@ -310,6 +315,9 @@ namespace Didit.Resources
 
         /// <summary>The <c>travel_rule.transfers</c> resource.</summary>
         public TravelRuleTransfersRawResource Transfers { get; }
+
+        /// <summary>The <c>travel_rule.unmatched_deposits</c> resource.</summary>
+        public TravelRuleUnmatchedDepositsRawResource UnmatchedDeposits { get; }
 
         /// <summary>The <c>travel_rule.wallet_addresses</c> resource.</summary>
         public TravelRuleWalletAddressesRawResource WalletAddresses { get; }

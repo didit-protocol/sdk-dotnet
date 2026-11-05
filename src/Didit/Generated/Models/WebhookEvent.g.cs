@@ -56,6 +56,9 @@ namespace Didit
         /// <summary><c>workflow.compliance_changed</c></summary>
         public static WebhookEvent WorkflowComplianceChanged { get; } = new("workflow.compliance_changed");
 
+        /// <summary><c>transaction_rule_suggestions.created</c></summary>
+        public static WebhookEvent TransactionRuleSuggestionsCreated { get; } = new("transaction_rule_suggestions.created");
+
         /// <summary><c>auth.signup</c></summary>
         public static WebhookEvent AuthSignup { get; } = new("auth.signup");
 

@@ -86,6 +86,12 @@ namespace Didit
         [JsonPropertyName("email_social")]
         public EmailSocialFootprint? EmailSocial { get; init; }
 
+        /// <summary>
+        /// Email intelligence signals. Present only when <c>enable_enrichment</c> was <c>true</c> on the check.
+        /// </summary>
+        [JsonPropertyName("email_intelligence")]
+        public EmailIntelligence? EmailIntelligence { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

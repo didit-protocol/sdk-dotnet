@@ -173,6 +173,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Create a KYB party draft
+        /// </summary>
+        /// <remarks>
+        /// Add a party (a person or a company) to the list you are preparing for this KYB session. The same fields and rules as the hosted Key People screen apply: a person needs <c>full_name</c> or <c>first_name</c> and <c>last_name</c>, at least one role and a nationality; a company needs <c>company_name</c> and the country of incorporation in <c>nationality</c>. Nothing is declared or billed until <c>POST /v3/session/{sessionId}/kyb/parties/submit/</c>. Requires <c>write:businesses</c>.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/kyb/parties/drafts/</c> (<c>sessions.create_kyb_party_draft</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsCreateKybPartyDraftResponse> CreateKybPartyDraftAsync(string sessionId, SessionsCreateKybPartyDraftParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CreateKybPartyDraftAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Delete a verification session (KYC or KYB)
         /// </summary>
         /// <remarks>
@@ -180,7 +198,7 @@ namespace Didit.Resources
         /// <para/>
         /// What is deleted:
         /// - The session and every verification attempt it holds, including results that a resubmission replaced: the decision, extracted data, all related feature records (ID verification, face, liveness, face match, AML, registry checks, IP analysis, and so on), its reviews and its activity log.
-        /// - All stored files owned by the session: document front/back photos (full, cropped, and privacy-blurred variants), document-capture videos, portrait crops, NFC chip portrait and signature images, face reference images, liveness videos, face-match source/target images, Proof of Address documents, and any extra uploaded files (KYC); uploaded company documents and extra files (KYB). Electronic Signature documents, signed PDFs, evidence PDFs and signature images (KYC and KYB): their download paths stop working. Previously issued media URLs (<c>https://&lt;media-host&gt;/...</c>) stop resolving.
+        /// - All stored files owned by the session: document front/back photos (full, cropped, and privacy-blurred variants), document-capture videos, portrait crops, NFC chip portrait and signature images, face reference images, liveness videos, face-match source/target images, Proof of Address documents, and any extra uploaded files (KYC); uploaded company documents and extra files (KYB). E-signature documents, signed PDFs, evidence PDFs and signature images (KYC and KYB): their download paths stop working. Previously issued media URLs (<c>https://&lt;media-host&gt;/...</c>) stop resolving.
         /// - The session's face data. Its face embedding is deleted too, unless you choose to keep an image-free template (see Face biometric data).
         /// - Webhook deliveries still queued for the session, and their retries. Webhooks already delivered are not affected.
         /// - For a Business Verification (KYB) session: the verifications it created for its key people (KYC) and its corporate owners (KYB), recursively, reported as <c>deleted_child_verifications</c>. A verification it only links to, such as an existing approved KYC it reused, is not deleted.
@@ -220,10 +238,26 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Delete a KYB party draft
+        /// </summary>
+        /// <remarks>
+        /// Drop one party draft. Declared parties are not affected. Requires <c>write:businesses</c>.
+        /// <para/>
+        /// <c>DELETE /v3/session/{sessionId}/kyb/parties/drafts/{draftId}/</c> (<c>sessions.delete_kyb_party_draft</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="draftId">UUID of the party draft (<c>draft_id</c> returned when it was created).</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public Task DeleteKybPartyDraftAsync(string sessionId, string draftId, SessionsDeleteKybPartyDraftParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
+            _raw.DeleteKybPartyDraftAsync(sessionId, draftId, parameters, requestOptions, cancellationToken);
+
+        /// <summary>
         /// Export AML screening history as CSV
         /// </summary>
         /// <remarks>
-        /// Download the same ongoing-monitoring history as <c>GET /v3/session/{sessionId}/aml-screening-history/</c> as a CSV file, one line per completed re-screen, newest first, ready to hand to an auditor. The file is streamed whole (no pagination) and starts with a header line; an empty cell means unknown, dataset dates are never estimated, and a value that would start a spreadsheet formula is prefixed with an apostrophe. Works for KYC and KYB session IDs; pass <c>node_id</c> when the session ran more than one AML step. Errors are returned as JSON, not CSV. A scoped API key needs <c>decisions: read</c> and <c>media: read</c>: the response is a file, so a key without <c>media: read</c> gets <c>403</c>.
+        /// Download the same ongoing-monitoring history as <c>GET /v3/session/{sessionId}/aml-screening-history/</c> as a CSV file, one line per completed re-screen, newest first, ready to hand to an auditor. The file is streamed whole (no pagination) and starts with a header line; an empty cell means unknown, dataset dates are never estimated, and a value that would start a spreadsheet formula is prefixed with an apostrophe. Works for KYC and KYB session IDs; pass <c>node_id</c> when the session ran more than one AML step. Pass <c>month</c> to export one calendar month. Errors are returned as JSON, not CSV. A scoped API key needs <c>decisions: read</c> and <c>media: read</c>: the response is a file, so a key without <c>media: read</c> gets <c>403</c>.
         /// <para/>
         /// <c>GET /v3/session/{sessionId}/aml-screening-history/export/</c> (<c>sessions.export_aml_screening_history</c>).
         /// </remarks>
@@ -234,6 +268,25 @@ namespace Didit.Resources
         public async Task<BinaryResponse> ExportAmlScreeningHistoryAsync(string sessionId, SessionsExportAmlScreeningHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ExportAmlScreeningHistoryAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Export every file of a session
+        /// </summary>
+        /// <remarks>
+        /// Start preparing one ZIP with every image, video and document of a User Verification (KYC) or Business Verification (KYB) session, in original quality: the files are stored in the ZIP as they were captured, never recompressed. Answers <c>202</c> with the export; read it with <c>GET /v3/session/{sessionId}/files-export/{exportId}/</c> until <c>status</c> is <c>READY</c>, then download <c>download_url</c>. While an export of the same session is still being prepared, that export is returned instead of a new one.
+        /// <para/>
+        /// The ZIP is deleted 24 hours after it is ready, and at once when the session is deleted. A deleted session cannot be exported. Every export and every download link handed out is written to the session's audit log. A scoped API key needs <c>media: read</c> and <c>decisions: read</c>; a console user needs the privilege to read sessions.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/files-export/</c> (<c>sessions.export_files</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs. A deleted session returns <c>404</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionFilesExport> ExportFilesAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ExportFilesAsync(sessionId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -273,6 +326,24 @@ namespace Didit.Resources
         public async Task<BinaryResponse> GeneratePdfAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.GeneratePdfAsync(sessionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Get a session files export
+        /// </summary>
+        /// <remarks>
+        /// Progress of an export started with <c>POST /v3/session/{sessionId}/files-export/</c>. Once <c>status</c> is <c>READY</c>, <c>download_url</c> is a signed URL of the ZIP that stays valid for a short time; read the export again for a new one until <c>expires_at</c>. Each read that hands out a download link is written to the session's audit log. An export of a deleted session returns <c>404</c>.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/files-export/{exportId}/</c> (<c>sessions.get_files_export</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs. A deleted session returns <c>404</c>.</param>
+        /// <param name="exportId">The <c>export_id</c> returned by <c>POST /v3/session/{sessionId}/files-export/</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionFilesExport> GetFilesExportAsync(string sessionId, string exportId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.GetFilesExportAsync(sessionId, exportId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -333,7 +404,7 @@ namespace Didit.Resources
         /// List AML screening history
         /// </summary>
         /// <remarks>
-        /// List every completed ongoing-monitoring re-screen of a session's AML check, newest first by <c>completed_at</c>, including the runs where nothing changed: alerts, activity entries and webhooks fire only when a result moves, so this history is the evidence that a clean subject was still being screened. Works for KYC and KYB session IDs; pass <c>node_id</c> when the session ran more than one AML step. Only ongoing-monitoring re-screens are listed (the first screening is part of the session decision) and runs from before this history existed are not reconstructed, so a session without ongoing monitoring returns an empty list. <c>count</c> is exact up to 100 and capped at 100 above that, so follow <c>next</c> until it is <c>null</c>. A scoped API key needs <c>decisions: read</c>; see <see href="https://docs.didit.me/core-technology/aml-screening/continuous-monitoring-aml-screening">Continuous AML monitoring</see>.
+        /// List every completed ongoing-monitoring re-screen of a session's AML check, newest first by <c>completed_at</c>, including the runs where nothing changed: alerts, activity entries and webhooks fire only when a result moves, so this history is the evidence that a clean subject was still being screened. Works for KYC and KYB session IDs; pass <c>node_id</c> when the session ran more than one AML step. Only ongoing-monitoring re-screens are listed (the first screening is part of the session decision) and runs from before this history existed are not reconstructed, so a session without ongoing monitoring returns an empty list. <c>count</c> is exact up to 100 and capped at 100 above that, so follow <c>next</c> until it is <c>null</c>. Pass <c>month</c> to read one calendar month at a time. A scoped API key needs <c>decisions: read</c>; see <see href="https://docs.didit.me/core-technology/aml-screening/continuous-monitoring-aml-screening">Continuous AML monitoring</see>.
         /// <para/>
         /// <c>GET /v3/session/{sessionId}/aml-screening-history/</c> (<c>sessions.list_aml_screening_history</c>).
         /// </remarks>
@@ -383,6 +454,42 @@ namespace Didit.Resources
         public async Task<SessionsListFeatureOverridesResponse> ListFeatureOverridesAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListFeatureOverridesAsync(sessionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List the parties named by the uploaded documents
+        /// </summary>
+        /// <remarks>
+        /// Return the shareholders and directors that the documents uploaded to this KYB session name, merged per person and attributed to the documents that named them. Show them to your applicant to confirm, then declare them with the party draft endpoints. A range stays a range: <c>ownership_percent.text</c> keeps the verbatim figure and <c>min</c> / <c>max</c> the numbers read from it. Nobody is labelled a UBO here; that is decided when the parties are submitted, from the role settings and ownership thresholds of the workflow. The same list is in the session decision as <c>document_verifications[].extracted_parties</c>. Requires <c>read:businesses</c> or <c>read:sessions</c>.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/kyb/extracted-parties/</c> (<c>sessions.list_kyb_extracted_parties</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsListKybExtractedPartiesResponse> ListKybExtractedPartiesAsync(string sessionId, SessionsListKybExtractedPartiesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListKybExtractedPartiesAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List the KYB party drafts
+        /// </summary>
+        /// <remarks>
+        /// List the parties you are preparing for this KYB session, oldest first. A draft is not a declared party: it does not appear in the decision or the console and creates no verification session until you submit it with <c>POST /v3/session/{sessionId}/kyb/parties/submit/</c>. Requires <c>write:businesses</c>.
+        /// <para/>
+        /// <c>GET /v3/session/{sessionId}/kyb/parties/drafts/</c> (<c>sessions.list_kyb_party_drafts</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsListKybPartyDraftsResponse> ListKybPartyDraftsAsync(string sessionId, SessionsListKybPartyDraftsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListKybPartyDraftsAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -476,7 +583,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Retrieve the complete decision report for a verification session — the rolled-up session <c>status</c> plus one report per verification feature the workflow executed. This is the canonical read endpoint for both User Verification (KYC) and Business Verification (KYB) sessions: the same path serves both, and the top-level <c>session_kind</c> discriminator tells you which shape you received (<c>"user"</c> or <c>"business"</c>).
         /// <para/>
-        /// Every feature report is a plural array. V3 workflows are graphs that can run the same feature more than once, so each block (<c>id_verifications</c>, <c>nfc_verifications</c>, <c>liveness_checks</c>, <c>face_matches</c>, <c>poa_verifications</c>, <c>document_ai_documents</c>, <c>phone_verifications</c>, <c>email_verifications</c>, <c>aml_screenings</c>, <c>ip_analyses</c>, <c>database_validations</c>, <c>questionnaire_responses</c>) is a JSON array whose items each carry a <c>node_id</c> identifying the workflow graph node that produced them. Read NFC as <c>response.nfc_verifications[0]</c> — never as a singular <c>nfc</c> field. A block is <c>null</c> until the workflow has run that feature at least once; features the workflow does not include never appear with data. Electronic Signature results are in <c>signatures</c>, which is present only when the workflow has an Electronic Signature step.
+        /// Every feature report is a plural array. V3 workflows are graphs that can run the same feature more than once, so each block (<c>id_verifications</c>, <c>nfc_verifications</c>, <c>liveness_checks</c>, <c>face_matches</c>, <c>poa_verifications</c>, <c>document_ai_documents</c>, <c>phone_verifications</c>, <c>email_verifications</c>, <c>aml_screenings</c>, <c>ip_analyses</c>, <c>database_validations</c>, <c>questionnaire_responses</c>) is a JSON array whose items each carry a <c>node_id</c> identifying the workflow graph node that produced them. Read NFC as <c>response.nfc_verifications[0]</c> — never as a singular <c>nfc</c> field. A block is <c>null</c> until the workflow has run that feature at least once; features the workflow does not include never appear with data. E-signature results are in <c>signatures</c>, which is present only when the workflow has an E-signature step.
         /// <para/>
         /// When to call. The recommended pattern is event-driven: wait for the <c>status.updated</c> webhook that fires when the session reaches a decision (<c>Approved</c>, <c>Declined</c>, <c>In Review</c>), then call this endpoint once to fetch the full report. Polling also works — the endpoint can be called at any point in the session lifecycle and returns the data produced so far — but webhook-then-fetch is cheaper and faster. Media URLs in the response (document images, videos, PDFs) are short-lived presigned links: fetch them promptly or re-request the decision to get fresh ones, and do not persist them as long-term references.
         /// <para/>
@@ -562,10 +669,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Submit the KYB party drafts
+        /// </summary>
+        /// <remarks>
+        /// Declare the stored drafts as the company's key people. This is the hosted Key People step under your API key: Didit decides from the role settings and ownership thresholds of the workflow which parties must be verified, creates one individual KYC session (or a KYB sub-session for a corporate owner) for each of them, sends the emails the workflow asks for, and advances the session. Each child session is billed like in the hosted flow. The drafts are consumed. Repeating the call after a successful submit changes nothing and answers <c>200</c> with <c>already_submitted: true</c> and the parties that already exist. The session must be on the Key People step. Send each person's <c>kyc_session_url</c> to them, or embed it. Requires <c>write:businesses</c>.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/kyb/parties/submit/</c> (<c>sessions.submit_kyb_parties</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsSubmitKybPartiesResponse> SubmitKybPartiesAsync(string sessionId, SessionsSubmitKybPartiesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.SubmitKybPartiesAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update an AML hit review status
         /// </summary>
         /// <remarks>
-        /// Set the review status of a single AML hit (a potential sanction / PEP / watchlist / adverse-media match) returned by AML screening, without changing the overall session decision. Identify the hit by its <c>hit_id</c> (the <c>id</c> of an entry in the AML check's <c>hits</c> array — see the session decision).
+        /// Set the review status of a single AML hit (a potential sanction / PEP / watchlist / adverse-media match) returned by AML screening, without changing the overall session decision. Identify the hit by its <c>hit_id</c> (the <c>id</c> of an entry in the AML check's <c>hits</c> array — see the session decision). A hit id returned in the earlier format is still accepted; the response always names the hit by its current <c>id</c>.
         /// <para/>
         /// <c>review_status</c> is one of <c>Unreviewed</c>, <c>Confirmed Match</c>, <c>False Positive</c>, or <c>Inconclusive</c>. Reviewer decisions are preserved across ongoing-monitoring updates, so a hit you mark <c>False Positive</c> stays that way when the provider re-screens.
         /// <para/>
@@ -734,6 +859,25 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Edit a KYB party draft
+        /// </summary>
+        /// <remarks>
+        /// Change fields of one party draft. The edit is merged into the stored draft and the merged party is validated as a whole, so an edit that would leave the party incomplete is rejected. Changing <c>first_name</c> or <c>last_name</c> replaces the stored full name. Requires <c>write:businesses</c>.
+        /// <para/>
+        /// <c>PATCH /v3/session/{sessionId}/kyb/parties/drafts/{draftId}/</c> (<c>sessions.update_kyb_party_draft</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="draftId">UUID of the party draft (<c>draft_id</c> returned when it was created).</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsUpdateKybPartyDraftResponse> UpdateKybPartyDraftAsync(string sessionId, string draftId, SessionsUpdateKybPartyDraftParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.UpdateKybPartyDraftAsync(sessionId, draftId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update Proof of Address data extracted from the POA document on a verification session
         /// </summary>
         /// <remarks>
@@ -784,6 +928,24 @@ namespace Didit.Resources
         public async Task<SessionsUpdateStatusResponse> UpdateStatusAsync(string sessionId, SessionsUpdateStatusParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateStatusAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Upload KYB documents to a session
+        /// </summary>
+        /// <remarks>
+        /// Upload one or more corporate documents (articles of incorporation, shareholder register, certificate of incorporation, ...) to the KYB Documents step of a Business Verification session, from your own server instead of the hosted page. Didit runs the hosted pipeline: compression, OCR, tampering and cross-document checks, document grouping, and advances the session when the required document groups are satisfied. The step costs one flat fee however many files you send. The session must be open and on the KYB Documents step, and the company chosen at the registry step must exist. Read the people the documents name with <c>GET /v3/session/{sessionId}/kyb/extracted-parties/</c>. Requires <c>write:businesses</c>.
+        /// <para/>
+        /// <c>POST /v3/session/{sessionId}/kyb/documents/</c> (<c>sessions.upload_kyb_documents</c>).
+        /// </remarks>
+        /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionsUploadKybDocumentsResponse> UploadKybDocumentsAsync(string sessionId, SessionsUploadKybDocumentsParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.UploadKybDocumentsAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
     }
@@ -922,6 +1084,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Create a KYB party draft
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.CreateKybPartyDraftAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsCreateKybPartyDraftResponse>> CreateKybPartyDraftAsync(string sessionId, SessionsCreateKybPartyDraftParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/parties/drafts/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters.NodeId);
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SessionsCreateKybPartyDraftResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Delete a verification session (KYC or KYB)
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.DeleteAsync"/>.</remarks>
@@ -941,6 +1125,22 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Delete a KYB party draft
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.DeleteKybPartyDraftAsync"/>.</remarks>
+        public Task<DiditResponse> DeleteKybPartyDraftAsync(string sessionId, string draftId, SessionsDeleteKybPartyDraftParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Delete, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/parties/drafts/" + PathParameter.Encode(draftId, "draftId") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters?.NodeId);
+            return _pipeline.SendNoContentAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Export AML screening history as CSV
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.ExportAmlScreeningHistoryAsync"/>.</remarks>
@@ -953,7 +1153,23 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Query.Add("node_id", parameters?.NodeId);
+            request.Query.Add("month", parameters?.Month);
             return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Export every file of a session
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ExportFilesAsync"/>.</remarks>
+        public Task<DiditResponse<SessionFilesExport>> ExportFilesAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/files-export/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionFilesExport>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -969,6 +1185,21 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get a session files export
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.GetFilesExportAsync"/>.</remarks>
+        public Task<DiditResponse<SessionFilesExport>> GetFilesExportAsync(string sessionId, string exportId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/files-export/" + PathParameter.Encode(exportId, "exportId") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<SessionFilesExport>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -1013,6 +1244,9 @@ namespace Didit.Resources
             request.Query.Add("workflow_id", parameters?.WorkflowId);
             request.Query.Add("date_from", parameters?.DateFrom);
             request.Query.Add("date_to", parameters?.DateTo);
+            request.Query.Add("tags", parameters?.Tags);
+            request.Query.Add("decided_from", parameters?.DecidedFrom);
+            request.Query.Add("decided_to", parameters?.DecidedTo);
             request.Query.Add("country", parameters?.Country);
             request.Query.Add("document_type", parameters?.DocumentType);
             request.Query.Add("document_name", parameters?.DocumentName);
@@ -1042,6 +1276,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Query.Add("node_id", parameters?.NodeId);
+            request.Query.Add("month", parameters?.Month);
             request.Query.Add("limit", parameters?.Limit);
             request.Query.Add("offset", parameters?.Offset);
             request.Query.Add("ordering", parameters?.Ordering);
@@ -1079,6 +1314,38 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<SessionsListFeatureOverridesResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List the parties named by the uploaded documents
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ListKybExtractedPartiesAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsListKybExtractedPartiesResponse>> ListKybExtractedPartiesAsync(string sessionId, SessionsListKybExtractedPartiesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/extracted-parties/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters?.NodeId);
+            return _pipeline.SendJsonAsync<SessionsListKybExtractedPartiesResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List the KYB party drafts
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.ListKybPartyDraftsAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsListKybPartyDraftsResponse>> ListKybPartyDraftsAsync(string sessionId, SessionsListKybPartyDraftsParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/parties/drafts/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters?.NodeId);
+            return _pipeline.SendJsonAsync<SessionsListKybPartyDraftsResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -1224,6 +1491,26 @@ namespace Didit.Resources
             };
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<SandboxSimulateResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Submit the KYB party drafts
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.SubmitKybPartiesAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsSubmitKybPartiesResponse>> SubmitKybPartiesAsync(string sessionId, SessionsSubmitKybPartiesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/parties/submit/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters?.NodeId);
+            if (parameters is not null)
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
+            return _pipeline.SendJsonAsync<SessionsSubmitKybPartiesResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -1377,6 +1664,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Edit a KYB party draft
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.UpdateKybPartyDraftAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsUpdateKybPartyDraftResponse>> UpdateKybPartyDraftAsync(string sessionId, string draftId, SessionsUpdateKybPartyDraftParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Patch, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/parties/drafts/" + PathParameter.Encode(draftId, "draftId") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters.NodeId);
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<SessionsUpdateKybPartyDraftResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Update Proof of Address data extracted from the POA document on a verification session
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.UpdatePoaDataAsync"/>.</remarks>
@@ -1417,6 +1726,42 @@ namespace Didit.Resources
             };
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<SessionsUpdateStatusResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Upload KYB documents to a session
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsResource.UploadKybDocumentsAsync"/>.</remarks>
+        public Task<DiditResponse<SessionsUploadKybDocumentsResponse>> UploadKybDocumentsAsync(string sessionId, SessionsUploadKybDocumentsParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/kyb/documents/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("node_id", parameters.NodeId);
+            var form = new MultipartRequestBody();
+            form.AddEach("documents", parameters.Documents);
+            if (parameters.DocumentPasswords.IsSet)
+            {
+                form.AddEach("document_passwords", parameters.DocumentPasswords.Value);
+            }
+            if (parameters.DocumentGroup.IsSet)
+            {
+                form.Add("document_group", parameters.DocumentGroup.Value.Value);
+            }
+            if (parameters.Locale.IsSet)
+            {
+                form.Add("locale", parameters.Locale.Value);
+            }
+            request.Body = form;
+            return _pipeline.SendJsonAsync<SessionsUploadKybDocumentsResponse>(request, requestOptions, cancellationToken);
         }
     }
 }

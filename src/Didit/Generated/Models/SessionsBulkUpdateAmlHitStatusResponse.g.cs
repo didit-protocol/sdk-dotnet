@@ -21,7 +21,7 @@ namespace Didit
         public string? Message { get; init; }
 
         /// <summary>
-        /// The <c>hit_id</c> of every entry in <c>hit_updates</c>, in request order, including hits whose status did not change.
+        /// The <c>id</c> of the hit each entry in <c>hit_updates</c> names, as the session decision returns it, in request order, including hits whose status did not change.
         /// </summary>
         [JsonPropertyName("updated_hits")]
         public IReadOnlyList<string>? UpdatedHits { get; init; }

@@ -38,7 +38,7 @@ namespace Didit.Resources
         /// <para/>
         /// Authentication. Send your application's API key in <c>x-api-key</c>. Missing or invalid credentials return <c>403</c> - this API never returns <c>401</c>.
         /// <para/>
-        /// Rate limit. Shared write budget of 300 requests per minute per API key across all POST/PATCH/DELETE endpoints.
+        /// Rate limit. Shared write budget of 300 requests per minute per API key across POST/PATCH/DELETE endpoints (transaction creates and event ingestion have a separate budget of 600).
         /// <para/>
         /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>phone_social</c> block: the online platforms this number is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the number was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>phone_social</c> unit per request on top of this endpoint's own price.
         /// <para/>

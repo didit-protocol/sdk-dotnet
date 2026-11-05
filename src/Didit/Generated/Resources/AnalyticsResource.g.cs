@@ -43,6 +43,26 @@ namespace Didit.Resources
             var response = await _raw.RetrieveAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Get today's verifications by hour
+        /// </summary>
+        /// <remarks>
+        /// Today's user verification (KYC) sessions, from local midnight in <c>tz</c>, counted per local hour they were created in, next to the same hours of the same weekday one week before, and split by the outcome each one holds now: approved, in review or declined. This is the volume card of the Business Console's Home.
+        /// <para/>
+        /// <c>total</c> is today so far. <c>previous_total_so_far</c> counts the comparison day only up to the same local time, so a change between them compares the same part of both days. The hours still to come today are <c>0</c>. A day on which the clocks change has 23 or 25 hours: the missing hour stays <c>0</c> and the repeated hour holds both.
+        /// <para/>
+        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/analytics/today/</c> (<c>analytics.retrieve_today</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<ApplicationAnalyticsToday> RetrieveTodayAsync(AnalyticsRetrieveTodayParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveTodayAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
     }
 
     /// <summary>The <c>analytics</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -78,6 +98,22 @@ namespace Didit.Resources
             request.Query.Add("transaction_type", parameters?.TransactionType);
             request.Query.Add("action_type", parameters?.ActionType);
             return _pipeline.SendJsonAsync<AnalyticsRetrieveResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get today's verifications by hour
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="AnalyticsResource.RetrieveTodayAsync"/>.</remarks>
+        public Task<DiditResponse<ApplicationAnalyticsToday>> RetrieveTodayAsync(AnalyticsRetrieveTodayParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/analytics/today/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            request.Query.Add("tz", parameters?.Tz);
+            return _pipeline.SendJsonAsync<ApplicationAnalyticsToday>(request, requestOptions, cancellationToken);
         }
     }
 }

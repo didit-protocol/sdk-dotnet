@@ -318,6 +318,7 @@ namespace Didit.Resources
             request.Query.Add("limit", parameters?.Limit);
             request.Query.Add("offset", parameters?.Offset);
             request.Query.Add("travel_rule_status", parameters?.TravelRuleStatus);
+            request.Query.Add("assignee", parameters?.Assignee);
             return _pipeline.SendPageAsync<TransactionsListResponseResults>(request, requestOptions, cancellationToken);
         }
 

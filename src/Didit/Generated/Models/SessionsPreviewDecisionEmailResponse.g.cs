@@ -63,6 +63,12 @@ namespace Didit
         public string? Html { get; init; }
 
         /// <summary>
+        /// The email's words as plain text, as the person's Messages thread keeps them, for a compact preview (the HTML stays the email the person receives).
+        /// </summary>
+        [JsonPropertyName("text")]
+        public string? Text { get; init; }
+
+        /// <summary>
         /// The language the email is written in. English (<c>en</c>) when the <c>email_language</c> you asked for is not offered.
         /// </summary>
         [JsonPropertyName("language")]

@@ -28,6 +28,13 @@ namespace Didit
         public Optional<string> VendorData { get; set; }
 
         /// <summary>
+        /// Optional duplicate-detection realm inside your organization. Duplicate face checks compare this session only with other sessions that carry the same segment, so separate account bases (personal and business accounts, or one per B2B sub-client) do not flag a person who legitimately holds one account in each. Omit it to use the single default realm, which is what every session uses today. Blocklist and allowlist matching ignore this field.
+        /// </summary>
+        [JsonPropertyName("multi_account_segment")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> MultiAccountSegment { get; set; }
+
+        /// <summary>
         /// URL to redirect the user to after verification completes. Didit automatically appends <c>verificationSessionId</c> and <c>status</c> (Approved, Declined, In Review) as query parameters. Custom URL schemes (e.g. <c>myapp://</c>) are supported for mobile callbacks. If omitted, the workflow's default <c>callback_url</c> is used. When the application has allowed domains (<c>allowed_domains</c> on <c>PATCH /v3/webhook/</c>), an <c>http</c> or <c>https</c> callback must be on one of those origins (same scheme, host and port), otherwise the request fails with 400 on <c>callback</c>: <c>callback must be on one of the application's allowed domains: https://app.example.com</c>. Custom URL schemes are always accepted.
         /// </summary>
         [JsonPropertyName("callback")]
@@ -91,7 +98,7 @@ namespace Didit
         public Optional<string> SandboxScenario { get; set; }
 
         /// <summary>
-        /// Electronic Signature input for this session. <c>documents</c> are the documents to sign, for a workflow whose Electronic Signature step takes documents from the session (<c>signature_documents_source</c> <c>session</c> or <c>both</c>): up to 20 documents and 50 MB in total. <c>field_values</c> fills the fields whose <c>prefill</c> is <c>api.&lt;key&gt;</c>, on workflow and session documents alike. Creating a session again for the same <c>workflow_id</c> and <c>vendor_data</c> returns the pending session; if that call sends <c>sign</c>, its documents, fields and values must be identical to the first ones, and anything different returns <c>400</c> with <c>{"sign": "signature_document_changed"}</c>. See [Electronic signature documents](/sessions-api/create-session#electronic-signature-documents).
+        /// E-signature input for this session. <c>documents</c> are the documents to sign, for a workflow whose E-signature step takes documents from the session (<c>signature_documents_source</c> <c>session</c> or <c>both</c>): up to 20 documents and 50 MB in total. <c>field_values</c> fills the fields whose <c>prefill</c> is <c>api.&lt;key&gt;</c>, on workflow and session documents alike. Creating a session again for the same <c>workflow_id</c> and <c>vendor_data</c> returns the pending session; if that call sends <c>sign</c>, its documents, fields and values must be identical to the first ones, and anything different returns <c>400</c> with <c>{"sign": "signature_document_changed"}</c>. See [E-signature documents](/sessions-api/create-session#e-signature-documents).
         /// </summary>
         [JsonPropertyName("sign")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

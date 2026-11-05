@@ -21,7 +21,7 @@ namespace Didit
         public string? Message { get; init; }
 
         /// <summary>
-        /// The updated hit, with surrounding whitespace removed.
+        /// The <c>id</c> of the updated hit, as the session decision returns it, also when the request named the hit by an id in the earlier format.
         /// </summary>
         [JsonPropertyName("hit_id")]
         public string? HitId { get; init; }

@@ -34,5 +34,27 @@ namespace Didit.Tests.Generated
             Assert.Empty(request.Body);
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task Analytics_RetrieveToday()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"time_zone\": \"Europe/Madrid\", \"date\": \"2026-10-30\", \"current_hour\": 14, \"previous_date\": \"2026-10-23\", \"hours\": [3, 1, 0, 0, 1, 2, 4, 9, 14, 18, 21, 19, 22, 24, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"previous_hours\": [2, 1, 1, 0, 1, 3, 5, 8, 12, 16, 19, 18, 20, 22, 24, 26, 23, 19, 15, 12, 9, 7, 5, 3], \"total\": 165, \"previous_total_so_far\": 151, \"outcomes\": {\"approved\": 139, \"in_review\": 6, \"declined\": 18}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Analytics.RetrieveTodayAsync(new AnalyticsRetrieveTodayParams { Tz = "Europe/Madrid" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/analytics/today/", request.Path);
+            Assert.Equal("?tz=Europe%2FMadrid", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("Europe/Madrid", result.TimeZone);
+            Assert.Equal(14L, result.CurrentHour);
+        }
     }
 }

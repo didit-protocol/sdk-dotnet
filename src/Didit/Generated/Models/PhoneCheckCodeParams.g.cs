@@ -48,6 +48,41 @@ namespace Didit
         public Optional<PhoneCheckCodeParamsVoipNumberAction> VoipNumberAction { get; set; }
 
         /// <summary>
+        /// When <c>true</c>, also run phone intelligence on the number: a risk score, the line type, whether it was recently ported and a trust index. Billed as one <c>phone_intelligence_api</c> unit per request ($0.05 at list price) in addition to this endpoint's own price. The request returns <c>403</c> when your balance cannot cover it.
+        /// </summary>
+        [JsonPropertyName("enable_enrichment")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> EnableEnrichment { get; set; }
+
+        /// <summary>
+        /// Action when the phone intelligence risk score is above the threshold. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("phone_intelligence_score_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<PhoneCheckCodeParamsPhoneIntelligenceScoreAction> PhoneIntelligenceScoreAction { get; set; }
+
+        /// <summary>
+        /// Action when the number is a high-risk line type. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("phone_type_risk_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<PhoneCheckCodeParamsPhoneTypeRiskAction> PhoneTypeRiskAction { get; set; }
+
+        /// <summary>
+        /// Action when the number was ported to another carrier recently. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("recent_port_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<PhoneCheckCodeParamsRecentPortAction> RecentPortAction { get; set; }
+
+        /// <summary>
+        /// Action when the phone intelligence trust index is at or below the threshold. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("low_phone_trust_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<PhoneCheckCodeParamsLowPhoneTrustAction> LowPhoneTrustAction { get; set; }
+
+        /// <summary>
         /// When true, also look up the social footprint of the number - the messaging, social, e-commerce and professional platforms it is registered on. Billed as one <c>phone_social</c> unit per request in addition to this endpoint's own price.
         /// </summary>
         [JsonPropertyName("enable_social")]

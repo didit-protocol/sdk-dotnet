@@ -363,6 +363,28 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task IdWallets_StartGoogleWallet()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"request_id\": \"00000000-0000-4000-8000-000000000001\", \"wallet_verification\": {\"wallet\": {\"id\": \"google_wallet\", \"name\": \"Google Wallet\", \"issuing_authority\": \"Google Wallet (ID pass) and US state issuers (mobile driving licence)\"}, \"country\": \"USA\", \"status\": \"Not Finished\", \"outcome\": \"pending\", \"error\": null, \"interaction\": \"digital_credentials\", \"simulated\": false, \"expires_at\": \"2026-01-01T10:10:00Z\", \"next_action\": {\"type\": \"request_digital_credential\", \"digital_credentials\": {\"protocol\": \"openid4vp-v1-signed\", \"request\": {\"requests\": [{\"protocol\": \"openid4vp-v1-signed\", \"data\": {\"request\": \"<compact JWS signed by Didit>\"}}]}}}, \"identity\": null, \"attributes\": null, \"level_of_assurance\": null, \"verified_at\": null, \"signature_valid\": null, \"credential_type\": \"person_identification\"}, \"vendor_data\": \"your-customer-reference\", \"metadata\": {\"reference\": \"example\"}, \"created_at\": \"2026-01-01T10:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.IdWallets.StartGoogleWalletAsync(new DigitalIdWalletApiGoogleWalletWalletVerificationStartRequest { VendorData = "sample-vendor_data", SandboxScenario = "sample-sandbox_scenario", Country = new DigitalIdWalletApiGoogleWalletWalletVerificationStartCountryEnum("USA"), Origin = "sample-origin" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/id-verification/wallets/google-wallet/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"vendor_data\": \"sample-vendor_data\", \"sandbox_scenario\": \"sample-sandbox_scenario\", \"country\": \"USA\", \"origin\": \"sample-origin\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("00000000-0000-4000-8000-000000000001", result.RequestId);
+        }
+
+        [Fact]
         public async Task IdWallets_StartGovbr()
         {
             var handler = new MockHttpHandler();
@@ -644,6 +666,28 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"vendor_data\": \"sample-vendor_data\", \"sandbox_scenario\": \"sample-sandbox_scenario\", \"country\": \"NOR\", \"return_url\": \"https://example.com/callback\", \"device\": \"same_device\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("00000000-0000-4000-8000-000000000001", result.RequestId);
+        }
+
+        [Fact]
+        public async Task IdWallets_SubmitVerificationResponse()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"request_id\": \"00000000-0000-4000-8000-000000000001\", \"wallet_verification\": {\"wallet\": {\"id\": \"google_wallet\", \"name\": \"Google Wallet\", \"issuing_authority\": \"Google Wallet (ID pass) and US state issuers (mobile driving licence)\"}, \"country\": \"USA\", \"status\": \"Approved\", \"outcome\": \"verified\", \"error\": null, \"interaction\": \"digital_credentials\", \"simulated\": false, \"expires_at\": \"2026-01-01T10:10:00Z\", \"next_action\": null, \"identity\": {\"full_name\": \"Alex Example\", \"first_name\": \"Alex\", \"last_name\": \"Example\", \"date_of_birth\": \"1990-01-31\", \"nationality\": \"USA\", \"issuing_state\": \"USA\"}, \"attributes\": {\"document_number\": \"X0000000\", \"document_expiry_date\": \"2030-01-31\"}, \"level_of_assurance\": \"substantial\", \"verified_at\": \"2026-01-01T10:01:00Z\", \"signature_valid\": true, \"credential_type\": \"person_identification\"}, \"vendor_data\": \"your-customer-reference\", \"metadata\": {\"reference\": \"example\"}, \"created_at\": \"2026-01-01T10:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.IdWallets.SubmitVerificationResponseAsync("request_id-1", new DigitalIdWalletApiWalletDigitalCredentialResponseRequest { Response = "sample" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/id-verification/wallets/verifications/request_id-1/response/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"response\": \"sample\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("00000000-0000-4000-8000-000000000001", result.RequestId);
         }

@@ -27,7 +27,7 @@ namespace Didit
         public required TransactionRuleConditionOperator Operator { get; set; }
 
         /// <summary>
-        /// Comparison value. Its shape depends on the operator and value_type; omit for the presence-check operators.
+        /// Comparison value. Its shape depends on the operator and value_type; omit it for the presence-check operators. Every other operator needs a value that is not <c>null</c> or an empty list, otherwise the rule is refused with <c>400</c>. <c>contains_any</c> needs a list of strings, and <c>contains</c>, <c>not_contains</c> and <c>regex</c> need a single string.
         /// </summary>
         [JsonPropertyName("value")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

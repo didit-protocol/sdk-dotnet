@@ -110,6 +110,18 @@ namespace Didit
         [JsonPropertyName("matches")]
         public IReadOnlyList<SessionDecisionPhoneVerificationsMatches>? Matches { get; init; }
 
+        /// <summary>
+        /// Phone intelligence signals. Present only when the phone intelligence add-on ran for this number.
+        /// </summary>
+        [JsonPropertyName("phone_intelligence")]
+        public PhoneIntelligence? PhoneIntelligence { get; init; }
+
+        /// <summary>
+        /// Social footprint of the number. Present only when the social footprint add-on ran for this number.
+        /// </summary>
+        [JsonPropertyName("phone_social")]
+        public PhoneSocialFootprint? PhoneSocial { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

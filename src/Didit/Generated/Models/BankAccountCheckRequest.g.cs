@@ -39,6 +39,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string?> VendorData { get; set; }
 
+        /// <summary>
+        /// Set to <c>true</c> when the account holder has explicitly consented to this check. Required in the countries whose account check needs that consent: without it the check is refused with a <c>400</c> whose <c>field</c> is <c>consent</c> and whose <c>reason</c> is <c>required</c>, and nothing is billed. Elsewhere it is optional, and Didit records it with the check's charge when you send it.
+        /// </summary>
+        [JsonPropertyName("consent")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> Consent { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

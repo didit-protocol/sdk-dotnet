@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of SignatureResultConfirmationChannel.
+    /// <c>null</c> for a Simple signature, which has no code.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultConfirmationChannel.EnumJsonConverter))]

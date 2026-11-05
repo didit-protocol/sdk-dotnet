@@ -305,6 +305,70 @@ namespace Didit.Resources
                 {
                     form.Add("bank_card_number", parameters.BankCardNumber.Value);
                 }
+                if (parameters.CompanyRegistrationNumber.IsSet)
+                {
+                    form.Add("company_registration_number", parameters.CompanyRegistrationNumber.Value);
+                }
+                if (parameters.CompanyName.IsSet)
+                {
+                    form.Add("company_name", parameters.CompanyName.Value);
+                }
+                if (parameters.Initials.IsSet)
+                {
+                    form.Add("initials", parameters.Initials.Value);
+                }
+                if (parameters.LicenceNumber.IsSet)
+                {
+                    form.Add("licence_number", parameters.LicenceNumber.Value);
+                }
+                if (parameters.RefugeeFileNumber.IsSet)
+                {
+                    form.Add("refugee_file_number", parameters.RefugeeFileNumber.Value);
+                }
+                if (parameters.BankName.IsSet)
+                {
+                    form.Add("bank_name", parameters.BankName.Value);
+                }
+                if (parameters.BankAccountNumber.IsSet)
+                {
+                    form.Add("bank_account_number", parameters.BankAccountNumber.Value);
+                }
+                if (parameters.AccountType.IsSet)
+                {
+                    form.Add("account_type", parameters.AccountType.Value);
+                }
+                if (parameters.PhoneNumber.IsSet)
+                {
+                    form.Add("phone_number", parameters.PhoneNumber.Value);
+                }
+                if (parameters.RightThumb.IsSet)
+                {
+                    form.Add("right_thumb", parameters.RightThumb.Value);
+                }
+                if (parameters.LeftThumb.IsSet)
+                {
+                    form.Add("left_thumb", parameters.LeftThumb.Value);
+                }
+                if (parameters.ScoreLevel.IsSet)
+                {
+                    form.Add("score_level", parameters.ScoreLevel.Value);
+                }
+                if (parameters.MaxMatches.IsSet)
+                {
+                    form.Add("max_matches", parameters.MaxMatches.Value);
+                }
+                if (parameters.VehicleRegisterNumber.IsSet)
+                {
+                    form.Add("vehicle_register_number", parameters.VehicleRegisterNumber.Value);
+                }
+                if (parameters.VehicleLicencePlate.IsSet)
+                {
+                    form.Add("vehicle_licence_plate", parameters.VehicleLicencePlate.Value);
+                }
+                if (parameters.Vin.IsSet)
+                {
+                    form.Add("vin", parameters.Vin.Value);
+                }
                 if (parameters.Ssn.IsSet)
                 {
                     form.Add("ssn", parameters.Ssn.Value);

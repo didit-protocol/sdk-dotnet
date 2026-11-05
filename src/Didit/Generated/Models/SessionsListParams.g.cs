@@ -78,6 +78,27 @@ namespace Didit
         public string? DateTo { get; set; }
 
         /// <summary>
+        /// Comma-separated tag ids (<c>tags</c> of your application). Returns the sessions that carry any of them. Ids that are not valid UUIDs are ignored, and when none is valid the list is empty.
+        /// </summary>
+        [JsonPropertyName("tags")]
+        [JsonIgnore]
+        public string? Tags { get; set; }
+
+        /// <summary>
+        /// ISO 8601 datetime. Returns the sessions whose status last changed at or after it. It filters on the time of the last status change, not on creation time.
+        /// </summary>
+        [JsonPropertyName("decided_from")]
+        [JsonIgnore]
+        public DateTimeOffset? DecidedFrom { get; set; }
+
+        /// <summary>
+        /// ISO 8601 datetime. Returns the sessions whose status last changed before it. Combine with <c>decided_from</c> for a half-open window.
+        /// </summary>
+        [JsonPropertyName("decided_to")]
+        [JsonIgnore]
+        public DateTimeOffset? DecidedTo { get; set; }
+
+        /// <summary>
         /// Comma-separated country filter. For KYC rows: ISO 3166-1 alpha-3 codes of the ID document's issuing state (e.g. <c>ESP,USA</c>), which may differ from nationality. For KYB rows: the registry company's country code.
         /// </summary>
         [JsonPropertyName("country")]

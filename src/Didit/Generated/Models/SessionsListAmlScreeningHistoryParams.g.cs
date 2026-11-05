@@ -22,6 +22,13 @@ namespace Didit
         public string? NodeId { get; set; }
 
         /// <summary>
+        /// A UTC calendar month as <c>YYYY-MM</c>. Only screenings completed in that month are returned; without it every month is returned. A malformed month returns <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("month")]
+        [JsonIgnore]
+        public string? Month { get; set; }
+
+        /// <summary>
         /// Maximum number of screening runs per page. Defaults to 50. A value below 1 or a non-numeric value falls back to 50; a value above 1,000,000 returns <c>400</c>.
         /// </summary>
         [JsonPropertyName("limit")]

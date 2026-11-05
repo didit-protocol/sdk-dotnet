@@ -110,6 +110,12 @@ namespace Didit
         [JsonPropertyName("phone_social")]
         public PhoneSocialFootprint? PhoneSocial { get; init; }
 
+        /// <summary>
+        /// Phone intelligence signals. Present only when <c>enable_enrichment</c> was <c>true</c> on the check.
+        /// </summary>
+        [JsonPropertyName("phone_intelligence")]
+        public PhoneIntelligence? PhoneIntelligence { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

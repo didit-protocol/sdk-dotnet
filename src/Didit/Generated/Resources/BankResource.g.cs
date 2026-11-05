@@ -26,6 +26,8 @@ namespace Didit.Resources
         /// Check a bank account
         /// </summary>
         /// <remarks>
+        /// Not available in production yet. Bank Verification is switched off in production, so until it is switched on this endpoint answers <c>404</c> with <c>bank_verification_not_available</c>. Do not build on it yet. The rest of this description is what the endpoint does once it is available.
+        /// <para/>
         /// Check that a bank account belongs to the person or company you name, before you send money to it. No session and no sign-in: send the name and the account, read the result. It is the [account check](/core-technology/bank-verification/account-check) of the Bank Verification step, run from your backend.
         /// <para/>
         /// What you send. The account's <c>country</c> (ISO 3166-1 alpha-3), the <c>account</c> the way that country writes it, and the <c>holder</c> name: <c>full_name</c> for a person or <c>business_name</c> for a company. A business name checks a business account.
@@ -36,7 +38,7 @@ namespace Didit.Resources
         /// <para/>
         /// Every request is a new check. There is no idempotency key and no endpoint to read a check back, so a retried request runs, and is billed, again. Store the response.
         /// <para/>
-        /// Sandbox. A sandbox key calls no bank and is charged nothing. The last 4 characters of the IBAN, else of the account number, choose the answer: <c>0001</c> a <c>close_match</c> with a <c>holder_name</c>, <c>0002</c> a <c>close_match</c> without one, <c>0003</c> and <c>0006</c> a <c>no_match</c>, <c>0004</c> <c>cannot_verify</c>, <c>0005</c> a <c>503</c> and <c>0009</c> a <c>400</c>. Any other ending is a <c>match</c>.
+        /// Sandbox. Where Bank Verification is available, a sandbox key calls no bank and is charged nothing. The last 4 characters of the IBAN, else of the account number, choose the answer: <c>0001</c> a <c>close_match</c> with a <c>holder_name</c>, <c>0002</c> a <c>close_match</c> without one, <c>0003</c> and <c>0006</c> a <c>no_match</c>, <c>0004</c> <c>cannot_verify</c>, <c>0005</c> a <c>503</c> and <c>0009</c> a <c>400</c>. Any other ending is a <c>match</c>.
         /// <para/>
         /// API keys. A scoped API key needs write access to sessions.
         /// <para/>

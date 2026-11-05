@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>aes</c>. <c>qes</c> (Qualified Electronic Signature, QES) is coming soon.
+    /// <c>simple</c> (default) or <c>aes</c>. <c>qes</c> (Qualified Electronic Signature, QES) is an add-on that is not available yet.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultLevel.EnumJsonConverter))]
@@ -22,6 +22,9 @@ namespace Didit
         {
             _value = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary><c>simple</c></summary>
+        public static SignatureResultLevel Simple { get; } = new("simple");
 
         /// <summary><c>aes</c></summary>
         public static SignatureResultLevel Aes { get; } = new("aes");

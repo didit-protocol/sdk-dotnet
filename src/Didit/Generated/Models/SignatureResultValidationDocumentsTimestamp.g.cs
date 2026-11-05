@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The trusted timestamp in the signature. <c>null</c> until signed.
+    /// The RFC 3161 timestamp in the signature, issued by Didit. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
     /// </summary>
     public sealed record SignatureResultValidationDocumentsTimestamp
     {

@@ -59,6 +59,9 @@ namespace Didit
         /// <summary><c>Insolvency</c></summary>
         public static AMLScreeningHitsDatasets Insolvency { get; } = new("Insolvency");
 
+        /// <summary><c>Other Lists</c></summary>
+        public static AMLScreeningHitsDatasets OtherLists { get; } = new("Other Lists");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

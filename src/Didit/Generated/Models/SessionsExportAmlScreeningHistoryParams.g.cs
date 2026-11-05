@@ -21,6 +21,13 @@ namespace Didit
         [JsonIgnore]
         public string? NodeId { get; set; }
 
+        /// <summary>
+        /// A UTC calendar month as <c>YYYY-MM</c>. Only screenings completed in that month are returned; without it every month is returned. A malformed month returns <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("month")]
+        [JsonIgnore]
+        public string? Month { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -21,7 +21,7 @@ namespace Didit
         public required TransactionsCreateParamsTransactionDetailsDirection Direction { get; set; }
 
         /// <summary>
-        /// Transaction amount (up to 18 decimal places). Send it as a decimal string (e.g. <c>"0.123456789012345678"</c>) when exact precision matters: a JSON number is parsed as a binary float first, so digits beyond about 15 significant digits are rounded before the amount is stored.
+        /// Transaction amount (up to 18 decimal places). Send it as a decimal string (e.g. <c>"0.123456789012345678"</c>) when exact precision matters: a JSON number is parsed as a binary float first, so digits beyond about 15 significant digits are rounded before the amount is stored. Must be zero or greater: the direction carries the sign, and a negative amount returns <c>400</c>.
         /// </summary>
         [JsonPropertyName("amount")]
         public required double Amount { get; set; }
@@ -40,7 +40,7 @@ namespace Didit
         public Optional<string> CurrencyKind { get; set; }
 
         /// <summary>
-        /// Pre-converted amount in the default currency. If omitted, automatic FX conversion is attempted.
+        /// Pre-converted amount in the default currency. If omitted, automatic FX conversion is attempted. Must be zero or greater.
         /// </summary>
         [JsonPropertyName("amount_in_default_currency")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

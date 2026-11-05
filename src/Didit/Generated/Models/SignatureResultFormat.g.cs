@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of SignatureResultFormat.
+    /// <c>pdf</c> for a Simple signature, <c>pades</c> for Advanced (AES).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultFormat.EnumJsonConverter))]
@@ -22,6 +22,9 @@ namespace Didit
         {
             _value = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary><c>pdf</c></summary>
+        public static SignatureResultFormat Pdf { get; } = new("pdf");
 
         /// <summary><c>pades</c></summary>
         public static SignatureResultFormat Pades { get; } = new("pades");

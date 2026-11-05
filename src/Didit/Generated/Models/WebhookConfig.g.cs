@@ -80,6 +80,12 @@ namespace Didit
         [JsonPropertyName("endpoints")]
         public IReadOnlyList<WebhookConfigDestination>? Endpoints { get; init; }
 
+        /// <summary>
+        /// Origins (for example <c>https://app.example.com</c>; <c>http</c> only for <c>localhost</c>) the hosted verification flow may be embedded in and may send the user back to with a session callback. Server-to-server calls are not affected. An empty list means no restriction. Didit stores each origin in lower case without a default port. An invalid entry fails with <c>400</c> on <c>allowed_domains</c>.
+        /// </summary>
+        [JsonPropertyName("allowed_domains")]
+        public IReadOnlyList<string>? AllowedDomains { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

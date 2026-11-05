@@ -111,6 +111,36 @@ namespace Didit
         public SessionsListResponseResultsAdditionalDetails? AdditionalDetails { get; init; }
 
         /// <summary>
+        /// The Console reviewer the session is assigned to, or <c>null</c> when nobody holds it.
+        /// </summary>
+        [JsonPropertyName("assignee")]
+        public SessionsListResponseResultsAssignee? Assignee { get; init; }
+
+        /// <summary>
+        /// When the session started waiting for review. <c>null</c> unless the session is <c>In Review</c>.
+        /// </summary>
+        [JsonPropertyName("waiting_since")]
+        public DateTimeOffset? WaitingSince { get; init; }
+
+        /// <summary>
+        /// When the review is due, from the review deadline set for your application in the Console. <c>null</c> unless the session is <c>In Review</c> and a deadline is set.
+        /// </summary>
+        [JsonPropertyName("sla_due_at")]
+        public DateTimeOffset? SlaDueAt { get; init; }
+
+        /// <summary>
+        /// Up to a few of the session's most important warnings, for a quick triage view. The full list is in the decision.
+        /// </summary>
+        [JsonPropertyName("top_warnings")]
+        public IReadOnlyList<SessionsListResponseResultsTopWarnings>? TopWarnings { get; init; }
+
+        /// <summary>
+        /// Number of warnings on the session.
+        /// </summary>
+        [JsonPropertyName("warnings_count")]
+        public long? WarningsCount { get; init; }
+
+        /// <summary>
         /// Identifier of the workflow this session was created with.
         /// </summary>
         [JsonPropertyName("workflow_id")]

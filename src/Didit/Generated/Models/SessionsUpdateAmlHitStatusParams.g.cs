@@ -15,7 +15,7 @@ namespace Didit
     public sealed record SessionsUpdateAmlHitStatusParams
     {
         /// <summary>
-        /// The <c>id</c> of the hit in the AML check's <c>hits</c> array.
+        /// The <c>id</c> of the hit in the AML check's <c>hits</c> array (<c>hit_...</c>). A hit id returned in the earlier format is still accepted.
         /// </summary>
         [JsonPropertyName("hit_id")]
         public required string HitId { get; set; }

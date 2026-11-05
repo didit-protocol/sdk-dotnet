@@ -48,6 +48,34 @@ namespace Didit
         public Optional<EmailCheckCodeParamsDisposableEmailAction> DisposableEmailAction { get; set; }
 
         /// <summary>
+        /// When <c>true</c>, also run email intelligence on the address: a risk score and its breach history. Billed as one <c>email_intelligence_api</c> unit per request ($0.05 at list price) in addition to this endpoint's own price. The request returns <c>403</c> when your balance cannot cover it.
+        /// </summary>
+        [JsonPropertyName("enable_enrichment")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> EnableEnrichment { get; set; }
+
+        /// <summary>
+        /// Action when the email intelligence risk score is above the threshold. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("email_intelligence_score_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<EmailCheckCodeParamsEmailIntelligenceScoreAction> EmailIntelligenceScoreAction { get; set; }
+
+        /// <summary>
+        /// Action when the address appears in a recent known data breach. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("recent_email_breach_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<EmailCheckCodeParamsRecentEmailBreachAction> RecentEmailBreachAction { get; set; }
+
+        /// <summary>
+        /// Action when the address appears in many known data breaches. <c>DECLINE</c> flips the final <c>status</c> to <c>Declined</c>; <c>NO_ACTION</c> records the signal without declining. Only takes effect when <c>enable_enrichment</c> is <c>true</c>.
+        /// </summary>
+        [JsonPropertyName("frequent_email_breach_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<EmailCheckCodeParamsFrequentEmailBreachAction> FrequentEmailBreachAction { get; set; }
+
+        /// <summary>
         /// When true, also look up the social footprint of the address - the email, social, professional, e-commerce and entertainment platforms it is registered on. Billed as one <c>email_social</c> unit per request in addition to this endpoint's own price.
         /// </summary>
         [JsonPropertyName("enable_social")]

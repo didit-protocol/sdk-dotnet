@@ -33,6 +33,12 @@ namespace Didit
         public string? SharedFromSession { get; init; }
 
         /// <summary>
+        /// <c>session_number</c> of the source session when this session was imported from another application of your organization. <c>null</c> otherwise.
+        /// </summary>
+        [JsonPropertyName("shared_from_session_number")]
+        public long? SharedFromSessionNumber { get; init; }
+
+        /// <summary>
         /// The number of the session.
         /// </summary>
         [JsonPropertyName("session_number")]
@@ -51,13 +57,31 @@ namespace Didit
         public SessionDecisionStatus? Status { get; init; }
 
         /// <summary>
+        /// Present when a reviewer set <c>status</c> by hand. <c>null</c> when the status is the automatic one. Use it to tell a manual approval from an automatic one.
+        /// </summary>
+        [JsonPropertyName("status_override")]
+        public SessionDecisionStatusOverride? StatusOverride { get; init; }
+
+        /// <summary>
+        /// How the status was reached: who set it and which warnings did.
+        /// </summary>
+        [JsonPropertyName("decision_trace")]
+        public SessionDecisionDecisionTrace? DecisionTrace { get; init; }
+
+        /// <summary>
+        /// A summary of other records linked to the session. <c>null</c> when there is nothing to show, and for workflows that declare an age assurance standard.
+        /// </summary>
+        [JsonPropertyName("linked_records")]
+        public SessionDecisionLinkedRecords? LinkedRecords { get; init; }
+
+        /// <summary>
         /// Stable identifier of the workflow group that produced this session. Workflows are versioned — this value identifies the workflow itself, not the specific version.
         /// </summary>
         [JsonPropertyName("workflow_id")]
         public string? WorkflowId { get; init; }
 
         /// <summary>
-        /// List of verification features configured for this session, as display names: <c>ID_VERIFICATION</c>, <c>NFC</c>, <c>LIVENESS</c>, <c>FACE_MATCH</c>, <c>POA</c>, <c>PHONE</c>, <c>EMAIL_VERIFICATION</c>, <c>AML</c>, <c>IP_ANALYSIS</c>, <c>DATABASE_VALIDATION</c>, <c>QUESTIONNAIRE</c>, <c>AGE_ESTIMATION</c>, <c>FACE_SEARCH</c> (Business Verification sessions use the KYB feature set: <c>KYB_REGISTRY</c>, <c>KYB_DOCUMENTS</c>, <c>KYB_KEY_PEOPLE</c>, <c>AML</c>, <c>PHONE</c>, <c>EMAIL_VERIFICATION</c>, <c>IP_ANALYSIS</c>, <c>QUESTIONNAIRE</c>). With <c>include=events</c> each entry becomes an object <c>{feature, node_id}</c> instead of a plain string, and the email feature is renamed: it appears as <c>EMAIL</c> in events mode instead of the <c>EMAIL_VERIFICATION</c> used here.
+        /// List of verification features configured for this session, as display names: <c>ID_VERIFICATION</c>, <c>NFC</c>, <c>LIVENESS</c>, <c>FACE_MATCH</c>, <c>POA</c>, <c>PHONE</c>, <c>EMAIL_VERIFICATION</c>, <c>AML</c>, <c>IP_ANALYSIS</c>, <c>DATABASE_VALIDATION</c>, <c>QUESTIONNAIRE</c>, <c>AGE_ESTIMATION</c>, <c>FACE_SEARCH</c>, <c>GEOLOCATION</c> (Location verification) (Business Verification sessions use the KYB feature set: <c>KYB_REGISTRY</c>, <c>KYB_DOCUMENTS</c>, <c>KYB_KEY_PEOPLE</c>, <c>AML</c>, <c>PHONE</c>, <c>EMAIL_VERIFICATION</c>, <c>IP_ANALYSIS</c>, <c>QUESTIONNAIRE</c>). With <c>include=events</c> each entry becomes an object <c>{feature, node_id}</c> instead of a plain string, and the email feature is renamed: it appears as <c>EMAIL</c> in events mode instead of the <c>EMAIL_VERIFICATION</c> used here.
         /// </summary>
         [JsonPropertyName("features")]
         public IReadOnlyList<string>? Features { get; init; }
@@ -153,13 +177,13 @@ namespace Didit
         public IReadOnlyList<SessionDecisionQuestionnaireResponses>? QuestionnaireResponses { get; init; }
 
         /// <summary>
-        /// Bank Verification results, one item per Bank Verification step, for User and Business Verification. <c>null</c> until a step produces one. Each item's <c>method</c> says how the account was verified: <c>open_banking</c> (bank sign-in) or <c>account_lookup</c> (account check), or a <c>statement</c> or <c>microdeposits</c> fallback, and <c>none</c> when the person continued without a bank before any attempt was evaluated (<c>continued_without_bank</c>). See [Bank verification methods](/core-technology/bank-verification/verification-methods).
+        /// Bank Verification results, one item per Bank Verification step, for User and Business Verification. <c>null</c> until a step produces one. Each item's <c>method</c> says how the account was verified: <c>open_banking</c> (bank sign-in) or <c>account_lookup</c> (account check), or a <c>statement</c> or <c>microdeposits</c> fallback, and <c>none</c> when the person continued without a bank before any attempt was evaluated (<c>continued_without_bank</c>). See [Bank verification methods](/core-technology/bank-verification/verification-methods). Bank Verification is not enabled in production yet, so this stays <c>null</c> on production sessions until it is.
         /// </summary>
         [JsonPropertyName("bank_verifications")]
         public IReadOnlyList<BankVerificationResult>? BankVerifications { get; init; }
 
         /// <summary>
-        /// Electronic Signature results, one item per signer and signature step, for User and Business Verification. Present only when the workflow has an Electronic Signature step; an empty array until a signer reaches it. See the [Electronic Signature report](/core-technology/electronic-signature/report-electronic-signature).
+        /// E-signature results, one item per signer and signature step, for User and Business Verification. Present only when the workflow has an E-signature step; an empty array until a signer reaches it. See the [E-signature report](/core-technology/electronic-signature/report-electronic-signature).
         /// </summary>
         [JsonPropertyName("signatures")]
         public IReadOnlyList<SignatureResult>? Signatures { get; init; }
@@ -175,6 +199,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("ip_analyses")]
         public IReadOnlyList<SessionDecisionIpAnalyses>? IpAnalyses { get; init; }
+
+        /// <summary>
+        /// Array of Location verification results, one per Location verification step: that step's accepted attempt. <c>null</c> until a Location verification step has produced data. Earlier attempts of the same step are in <c>geolocation_attempts</c>.
+        /// </summary>
+        [JsonPropertyName("geolocation_checks")]
+        public IReadOnlyList<GeolocationCheck>? GeolocationChecks { get; init; }
+
+        /// <summary>
+        /// Every attempt of every Location verification step of this session, oldest first. Attempts that a resubmission replaced are left out. A workflow that withholds <c>geolocation_checks</c> through its response attributes withholds this list too.
+        /// </summary>
+        [JsonPropertyName("geolocation_attempts")]
+        public IReadOnlyList<GeolocationAttempt>? GeolocationAttempts { get; init; }
 
         /// <summary>
         /// Array of Database Validation reports — always a JSON array, never a singular <c>database_validation</c> object. <c>null</c> until at least one DB validation step has produced data. Each item is the full report, including <c>node_id</c>, feature-level <c>status</c>, <c>screened_data</c>, the per-service <c>validations[]</c> (each with its registry <c>source_data</c>), and <c>warnings[]</c>. The <c>screened_data</c> and <c>source_data</c> fields vary by country:
@@ -219,10 +255,34 @@ namespace Didit
         public IReadOnlyList<SessionDecisionDatabaseValidations>? DatabaseValidations { get; init; }
 
         /// <summary>
+        /// Why a configured database validation produced no result, as <c>{code, message}</c> plus context fields. Present only when <c>database_validations</c> is <c>null</c> for a workflow that has the step, so you can tell "the registry agreed" from "nothing ran". <c>null</c> otherwise.
+        /// </summary>
+        [JsonPropertyName("database_validation_not_performed_reason")]
+        public SessionDecisionDatabaseValidationNotPerformedReason? DatabaseValidationNotPerformedReason { get; init; }
+
+        /// <summary>
         /// The &lt;c&gt;reviews&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("reviews")]
         public IReadOnlyList<SessionDecisionReviews>? Reviews { get; init; }
+
+        /// <summary>
+        /// The Console reviewer the session is assigned to, or <c>null</c> when nobody holds it.
+        /// </summary>
+        [JsonPropertyName("assignee")]
+        public SessionDecisionAssignee? Assignee { get; init; }
+
+        /// <summary>
+        /// When the session started waiting for review. <c>null</c> unless the session is <c>In Review</c> and your application sets a review deadline.
+        /// </summary>
+        [JsonPropertyName("waiting_since")]
+        public DateTimeOffset? WaitingSince { get; init; }
+
+        /// <summary>
+        /// When the review is due. <c>null</c> unless the session is <c>In Review</c> and your application sets a review deadline.
+        /// </summary>
+        [JsonPropertyName("sla_due_at")]
+        public DateTimeOffset? SlaDueAt { get; init; }
 
         /// <summary>
         /// Timestamp at which the session was created (ISO 8601, UTC).
@@ -261,6 +321,12 @@ namespace Didit
         public SessionDecisionEnvironment? Environment { get; init; }
 
         /// <summary>
+        /// The sandbox scenario the session was created with. <c>null</c> for live sessions and for sandbox sessions created without one.
+        /// </summary>
+        [JsonPropertyName("sandbox_scenario")]
+        public string? SandboxScenario { get; init; }
+
+        /// <summary>
         /// Returned only with <c>include=resubmissions</c>, for user and business sessions. One entry per resubmission request, oldest first. Each entry carries the results the resubmitted steps returned before the request, so earlier submissions stay readable. Deleting the session deletes every submission.
         /// </summary>
         [JsonPropertyName("resubmissions")]
@@ -277,6 +343,30 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("investigator")]
         public InvestigatorBlock? Investigator { get; init; }
+
+        /// <summary>
+        /// When the live biometric data of this session is deleted.
+        /// </summary>
+        [JsonPropertyName("biometric_retention")]
+        public BiometricRetention? BiometricRetention { get; init; }
+
+        /// <summary>
+        /// The result of a Fraud Check API call. <c>null</c> for every other session.
+        /// </summary>
+        [JsonPropertyName("fraud_check")]
+        public JsonElement? FraudCheck { get; init; }
+
+        /// <summary>
+        /// Expiring URL of the full-session recording. Returned only when your organization records full-session video.
+        /// </summary>
+        [JsonPropertyName("full_session_video")]
+        public string? FullSessionVideo { get; init; }
+
+        /// <summary>
+        /// When the full-session recording was made. Returned only when your organization records full-session video.
+        /// </summary>
+        [JsonPropertyName("full_session_video_recorded_at")]
+        public DateTimeOffset? FullSessionVideoRecordedAt { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
