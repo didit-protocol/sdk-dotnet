@@ -20,9 +20,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"Acme Customer App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"https://acme.example/callback\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": null, \"created_at\": \"2025-06-01T10:00:00Z\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
+            handler.Enqueue(201, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"Acme Customer App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"https://acme.example/callback\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": null, \"created_at\": \"2025-06-01T10:00:00Z\", \"data_location\": \"eu\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Account.Applications.CreateAsync("org_id-1", new ApplicationCreateRequest { Name = "Acme Customer App", WebsiteUrl = "https://acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "https://acme.example/terms", PrivacyUrl = "https://acme.example/privacy", Description = "sample-description" });
+            var result = await client.Account.Applications.CreateAsync("org_id-1", new ApplicationCreateRequest { Name = "Acme Customer App", WebsiteUrl = "https://acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "https://acme.example/terms", PrivacyUrl = "https://acme.example/privacy", Description = "sample-description", DataLocation = new ApplicationDataLocation("eu") });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -32,7 +32,7 @@ namespace Didit.Tests.Generated
             Assert.Equal("Bearer " + TestClients.AccountToken, request.Header("Authorization"));
             Assert.Null(request.Header("x-api-key"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"name\": \"Acme Customer App\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": \"sample-description\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"name\": \"Acme Customer App\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": \"sample-description\", \"data_location\": \"eu\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("b2c3d4e5-6789-01bc-defg-222222222222", result.Uuid);
         }
@@ -42,7 +42,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"My App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://example.com\", \"redirect_uris\": [\"https://example.com/callback\"], \"terms_url\": \"https://example.com/terms\", \"privacy_url\": \"https://example.com/privacy\", \"description\": \"Production application\", \"created_at\": \"2025-06-01T10:00:00Z\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"My App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://example.com\", \"redirect_uris\": [\"https://example.com/callback\"], \"terms_url\": \"https://example.com/terms\", \"privacy_url\": \"https://example.com/privacy\", \"description\": \"Production application\", \"created_at\": \"2025-06-01T10:00:00Z\", \"data_location\": \"eu\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.Applications.ListAsync("org_id-1", new AccountApplicationsListParams { Limit = 50L, Offset = 0L });
 
@@ -63,7 +63,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"My App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://example.com\", \"redirect_uris\": [\"https://example.com/callback\"], \"terms_url\": \"https://example.com/terms\", \"privacy_url\": \"https://example.com/privacy\", \"description\": \"Production application\", \"created_at\": \"2025-06-01T10:00:00Z\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
+            handler.Enqueue(200, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"My App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://example.com\", \"redirect_uris\": [\"https://example.com/callback\"], \"terms_url\": \"https://example.com/terms\", \"privacy_url\": \"https://example.com/privacy\", \"description\": \"Production application\", \"created_at\": \"2025-06-01T10:00:00Z\", \"data_location\": \"eu\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.Applications.RetrieveAsync("org_id-1", "app_id-1");
 
@@ -84,9 +84,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"Acme Production App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"https://acme.example/callback\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": null, \"created_at\": \"2025-06-01T10:00:00Z\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
+            handler.Enqueue(200, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"Acme Production App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"https://acme.example/callback\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": null, \"created_at\": \"2025-06-01T10:00:00Z\", \"data_location\": \"eu\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Account.Applications.UpdateAsync("org_id-1", "app_id-1", new ApplicationUpdateRequest { Name = "Acme Production App", WebsiteUrl = "https://app.acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "sample-terms_url", PrivacyUrl = "sample-privacy_url", Description = "sample-description" });
+            var result = await client.Account.Applications.UpdateAsync("org_id-1", "app_id-1", new ApplicationUpdateRequest { Name = "Acme Production App", WebsiteUrl = "https://app.acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "sample-terms_url", PrivacyUrl = "sample-privacy_url", Description = "sample-description", DataLocation = new ApplicationDataLocation("eu") });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -96,7 +96,7 @@ namespace Didit.Tests.Generated
             Assert.Equal("Bearer " + TestClients.AccountToken, request.Header("Authorization"));
             Assert.Null(request.Header("x-api-key"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"name\": \"Acme Production App\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"sample-terms_url\", \"privacy_url\": \"sample-privacy_url\", \"description\": \"sample-description\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"name\": \"Acme Production App\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"sample-terms_url\", \"privacy_url\": \"sample-privacy_url\", \"description\": \"sample-description\", \"data_location\": \"eu\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("b2c3d4e5-6789-01bc-defg-222222222222", result.Uuid);
         }
@@ -194,7 +194,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"access_token\": \"sample-token\", \"refresh_token\": \"sample-token\", \"expires_in\": 86400, \"organization\": {\"uuid\": \"a1b2c3d4-5678-90ab-cdef-111111111111\", \"name\": \"developer\"}, \"application\": {\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"developer\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}}");
+            handler.Enqueue(200, "{\"access_token\": \"sample-token\", \"refresh_token\": \"sample-token\", \"expires_in\": 86400, \"organization\": {\"uuid\": \"a1b2c3d4-5678-90ab-cdef-111111111111\", \"name\": \"developer\"}, \"application\": {\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"developer\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"data_location\": \"eu\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.VerifyEmailAsync(new VerifyEmailRequest { Email = "user@example.com", Code = "A3K9F2" });
 

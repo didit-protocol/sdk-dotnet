@@ -26,7 +26,7 @@ namespace Didit.Resources
         /// Create Application
         /// </summary>
         /// <remarks>
-        /// Create an application inside an organization. The response includes <c>api_key</c>; persist it now (recoverable via GET). Requires owner/admin JWT.
+        /// Create an application inside an organization, in the data location you choose (<c>data_location</c>, the European Union by default; it can't be changed afterwards). The response includes <c>api_key</c>; persist it now (recoverable via GET). Requires owner/admin JWT.
         /// <para/>
         /// <c>POST /organizations/me/{org_id}/applications/</c> (<c>account.applications.create</c>).
         /// </remarks>
@@ -80,7 +80,7 @@ namespace Didit.Resources
         /// Update Application
         /// </summary>
         /// <remarks>
-        /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored. Requires owner/admin JWT.
+        /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored. <c>data_location</c> can't be changed after the application is created, except once on the live application created with your organization, while it is unused (see the request body). Requires owner/admin JWT.
         /// <para/>
         /// <c>PATCH /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.update</c>).
         /// </remarks>

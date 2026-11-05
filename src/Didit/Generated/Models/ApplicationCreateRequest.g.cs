@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// All fields are optional. Sending an empty body creates an application with a default name.
+    /// All fields are optional. Sending an empty body creates an application with a default name, in the European Union.
     /// </summary>
     public sealed record ApplicationCreateRequest
     {
@@ -55,6 +55,13 @@ namespace Didit
         [JsonPropertyName("description")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> Description { get; set; }
+
+        /// <summary>
+        /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney) and <c>mx</c> (Mexico) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
+        /// </summary>
+        [JsonPropertyName("data_location")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<ApplicationDataLocation> DataLocation { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

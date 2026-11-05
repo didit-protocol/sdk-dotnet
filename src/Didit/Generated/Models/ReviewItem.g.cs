@@ -87,7 +87,7 @@ namespace Didit
         public IReadOnlyList<string>? ChangedFields { get; init; }
 
         /// <summary>
-        /// Extra context for system-generated entries. Console detail-page views carry <c>{"system_event": "DETAIL_VIEWED", "detail_type": "verification"}</c> so they can be filtered out of notification logic. <c>null</c> for ordinary entries.
+        /// Extra context for system-generated entries. Console detail-page views carry <c>{"system_event": "DETAIL_VIEWED", "detail_type": "verification"}</c> so they can be filtered out of notification logic. A <c>COMMENT</c> its author edited in the Console carries <c>edited_at</c>, the ISO 8601 time of the last edit (<c>comment</c> and <c>mentioned_emails</c> then hold the edited text and its mentions). <c>null</c> for ordinary entries.
         /// </summary>
         [JsonPropertyName("metadata")]
         public JsonElement? Metadata { get; init; }
