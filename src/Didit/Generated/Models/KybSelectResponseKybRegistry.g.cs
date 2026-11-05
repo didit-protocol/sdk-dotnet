@@ -99,10 +99,10 @@ namespace Didit
         public string? RiskLevel { get; init; }
 
         /// <summary>
-        /// Registry verification status, when available.
+        /// Cross-jurisdiction verification status: <c>verified</c> when the registry status establishes standing (<c>active</c>), <c>failed</c> when it says the company is no longer standing (for example <c>dissolved</c>), otherwise <c>unknown</c>. <c>null</c> for a company that did not come from a registry and while a selection is still <c>pending</c>.
         /// </summary>
         [JsonPropertyName("verification_status")]
-        public string? VerificationStatus { get; init; }
+        public KybSelectResponseKybRegistryVerificationStatus? VerificationStatus { get; init; }
 
         /// <summary>
         /// Always <c>true</c> for this endpoint — the profile was retrieved from an official registry.

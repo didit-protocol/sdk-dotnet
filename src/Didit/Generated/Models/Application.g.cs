@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Full application record. <c>uuid</c>, <c>client_id</c>, and <c>api_key</c> never change after creation.
+    /// Full application record. <c>uuid</c>, <c>client_id</c>, and <c>api_key</c> never change after creation. <c>data_location</c> doesn't either, except once on the live application created with your organization, before it is used (see the update request).
     /// </summary>
     public sealed record Application
     {
@@ -73,6 +73,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
+
+        /// <summary>
+        /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney) and <c>mx</c> (Mexico) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
+        /// </summary>
+        [JsonPropertyName("data_location")]
+        public ApplicationDataLocation? DataLocation { get; init; }
 
         /// <summary>
         /// The application's products. Always all three, in this order: <c>identity</c>, <c>transactions</c>, <c>authentication</c>. A new application has <c>identity</c> enabled with every module on, and <c>transactions</c> and <c>authentication</c> disabled. Read-only: a <c>products</c> key in a create or update body is ignored.

@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// PATCH body for application metadata. Send only the fields you want to change; omitted fields are preserved. <c>uuid</c>, <c>client_id</c>, and <c>api_key</c> cannot be updated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored.
+    /// PATCH body for application metadata. Send only the fields you want to change; omitted fields are preserved. <c>uuid</c>, <c>client_id</c>, and <c>api_key</c> cannot be updated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored. <c>data_location</c> can't be changed after the application is created: naming the location it already has is accepted, and any other location answers 400. The one exception is the live application created with your organization: the first update that names a <c>data_location</c> chooses it, once, while no API key of the application has been used and it has no verification session.
     /// </summary>
     public sealed record ApplicationUpdateRequest
     {
@@ -55,6 +55,13 @@ namespace Didit
         [JsonPropertyName("description")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> Description { get; set; }
+
+        /// <summary>
+        /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney) and <c>mx</c> (Mexico) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
+        /// </summary>
+        [JsonPropertyName("data_location")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<ApplicationDataLocation> DataLocation { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

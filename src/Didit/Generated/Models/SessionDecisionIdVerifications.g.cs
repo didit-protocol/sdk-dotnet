@@ -39,7 +39,7 @@ namespace Didit
         public string? WalletProvider { get; init; }
 
         /// <summary>
-        /// Why a non-document method ended the ID step. Set on the declined report when a lookup or a wallet sign-in failed and the country's fallback switch was <c>decline</c>. <c>null</c> otherwise.
+        /// Why a non-document method did not end the ID step. Set when a lookup or a wallet sign-in failed: on the document verification the user continued with when the country's fallback switch was <c>fallback_to_document</c> (<c>action</c> is <c>fallback_to_document</c>), or on the declined report when it was <c>decline</c>. <c>null</c> otherwise.
         /// </summary>
         [JsonPropertyName("fallback_from")]
         public SessionDecisionIdVerificationsFallbackFrom? FallbackFrom { get; init; }

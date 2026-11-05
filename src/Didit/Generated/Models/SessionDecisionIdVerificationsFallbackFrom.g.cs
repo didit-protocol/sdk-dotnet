@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Why a non-document method ended the ID step. Set on the declined report when a lookup or a wallet sign-in failed and the country's fallback switch was <c>decline</c>. <c>null</c> otherwise.
+    /// Why a non-document method did not end the ID step. Set when a lookup or a wallet sign-in failed: on the document verification the user continued with when the country's fallback switch was <c>fallback_to_document</c> (<c>action</c> is <c>fallback_to_document</c>), or on the declined report when it was <c>decline</c>. <c>null</c> otherwise.
     /// </summary>
     public sealed record SessionDecisionIdVerificationsFallbackFrom
     {
@@ -27,10 +27,10 @@ namespace Didit
         public string? Reason { get; init; }
 
         /// <summary>
-        /// The configured action that was taken, e.g. <c>decline</c>.
+        /// The configured action that was taken: <c>fallback_to_document</c> or <c>decline</c>.
         /// </summary>
         [JsonPropertyName("action")]
-        public string? Action { get; init; }
+        public SessionDecisionIdVerificationsFallbackFromAction? Action { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
