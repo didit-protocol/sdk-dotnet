@@ -170,7 +170,7 @@ jobs:
             echo
             echo "### Release notes"
             echo
-            echo "release-please reads the block below instead of the merge commit, so this sync releases as \`${TYPE}(spec)\` with these notes. Merge with **Squash and merge**: with a merge commit release-please reads the block once per commit and every line appears twice in the release notes. Keep the block when you edit this description."
+            echo "release-please reads the block below instead of the merge commit, so the release type (\`${TYPE}(spec)\`) and its notes do not depend on how the commit is titled. Merge with **Squash and merge**: with a merge commit release-please reads the block once per commit and every line appears twice in the release notes. Keep the block when you edit this description."
             echo
             echo "BEGIN_COMMIT_OVERRIDE"
             cat "$RUNNER_TEMP/commit-message.txt"
