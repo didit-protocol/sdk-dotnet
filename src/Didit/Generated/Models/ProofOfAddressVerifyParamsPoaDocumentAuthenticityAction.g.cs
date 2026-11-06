@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// What to do when document manipulation is suspected (<c>SUSPECTED_DOCUMENT_MANIPULATION</c>) — e.g. the PDF was modified after digital signing, processed by a known PDF editor, shows overlay-text manipulation, or has inconsistent EXIF dates.
+    /// What to do when document manipulation is suspected (<c>SUSPECTED_DOCUMENT_MANIPULATION</c>) — e.g. the PDF was modified after digital signing, processed by a known PDF editor, shows overlay-text manipulation, or has inconsistent EXIF dates. Also governs <c>POA_DOCUMENT_UNPROVEN_TEXT_REPLACEMENT</c> (a re-typed text field the file cannot prove changed or unchanged): <c>DECLINE</c> declines it too, <c>NO_ACTION</c> keeps it as a warning.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(ProofOfAddressVerifyParamsPoaDocumentAuthenticityAction.EnumJsonConverter))]
