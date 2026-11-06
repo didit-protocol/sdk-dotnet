@@ -78,11 +78,12 @@ namespace Didit.Tests.Authentication
             var operations = ServerOperations();
             foreach (var operation in operations)
             {
+                Assert.True(Implementations.TryGetValue(operation.Name, out var implementation), $"{operation.Name} has no hand-written method");
                 using var issuer = new TestIssuer();
                 issuer.Runtime = request => Respond(operations, request);
                 using var auth = issuer.Create();
 
-                await Implementations[operation.Name].Call(auth, issuer);
+                await implementation.Call(auth, issuer);
 
                 Assert.True(
                     issuer.Handler.Requests.Any(r => operation.Matches(r)),
