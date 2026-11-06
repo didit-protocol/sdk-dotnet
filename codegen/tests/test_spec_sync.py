@@ -496,6 +496,31 @@ class SpecSyncTest(unittest.TestCase):
             ],
         )
 
+    def test_body_whose_media_type_changed_or_that_was_removed(self) -> None:
+        verification = base_verification()
+        paths = verification["paths"]
+        paths["/v3/widgets/{widget_id}/"]["get"]["responses"] = {"200": {"description": "PDF", "content": {"application/pdf": {"schema": {"type": "string", "format": "binary"}}}}}
+        paths["/v3/gadgets/{gadget_id}/"]["delete"]["responses"]["204"] = {"description": "Deleted"}
+        del paths["/v3/gadgets/{gadget_id}/"]["delete"]["responses"]["200"]
+        del paths["/v3/widgets/"]["post"]["requestBody"]
+        # A media type added next to JSON changes nothing typed code reads.
+        paths["/v3/widgets/"]["get"]["responses"]["200"]["content"]["text/csv"] = {"schema": {"type": "string"}}
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        self.assertEqual(
+            self.changes(report),
+            [
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "", "type", "application/json->none"),
+                ("GET /v3/widgets/{widget_id}/", "response", "", "type", "application/json->application/pdf"),
+                ("POST /v3/widgets/", "request", "", "removed", ""),
+            ],
+        )
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response body: type changed from application/json to application/pdf", breaking)
+        self.assertIn("- `POST /v3/widgets/` request body: removed", breaking)
+
     def test_union_and_format_changes_that_change_the_generated_type(self) -> None:
         verification = base_verification()
         schemas = verification["components"]["schemas"]
