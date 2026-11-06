@@ -555,6 +555,32 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("- `GET /v3/widgets/{widget_id}/` response `name`: type changed from string to boolean|integer", breaking)
         self.assertIn("- `GET /v3/widgets/{widget_id}/` response `id`: type changed from string to string(date-time)", breaking)
 
+    def test_renamed_component_unconstrained_type_and_enum_inside_all_of(self) -> None:
+        verification = base_verification()
+        schemas = verification["components"]["schemas"]
+        schemas["WidgetStatus"] = {"type": "string", "enum": ["active", "archived"]}
+        schemas["Widget"]["properties"]["status"] = {"allOf": [ref("WidgetStatus")], "default": "active"}  # as drf-spectacular wraps a $ref
+        self.install(verification)
+        schemas["WidgetStatus"]["enum"] = ["active"]
+        schemas["Widget"]["properties"]["color"] = {}  # a string becomes any JSON value
+        schemas["GadgetPartV2"] = schemas.pop("GadgetPart")  # renamed, every reference follows: the SDK type is renamed too
+        schemas["Gadget"]["properties"]["part"] = ref("GadgetPartV2")
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        expected = [("DELETE /v3/gadgets/{gadget_id}/", "response", "part", "type", "GadgetPart->GadgetPartV2")]
+        for key, prefix in (("GET /v3/widgets/", "results[]."), ("GET /v3/widgets/{widget_id}/", ""), ("POST /v3/widgets/", "")):
+            expected += [
+                (key, "response", f"{prefix}color", "type", "string->any"),
+                (key, "response", f"{prefix}status", "enum-value-removed", '"archived"'),
+            ]
+        self.assertEqual(self.changes(report), expected)
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `DELETE /v3/gadgets/{gadget_id}/` response `part`: type changed from GadgetPart to GadgetPartV2", breaking)
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `color`: type changed from string to any", breaking)
+        self.assertEqual(report.commit_type, "feat")
+
     def test_property_named_like_a_documentation_key_is_compared(self) -> None:
         verification = base_verification()
         verification["components"]["schemas"]["GadgetPart"]["properties"]["description"] = {"type": "string"}
