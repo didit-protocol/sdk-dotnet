@@ -637,7 +637,7 @@ def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operat
     for media in sorted(old_bodies.keys() & new_bodies.keys()):
         compare_schemas(old_bodies[media], new_bodies[media], key, "request", "", found)
 
-    # Every 2xx response the operation keeps; when its only one changed status, the old body against the new one.
+    # Every 2xx response both versions have; when the only success status changed (200 to 201), the old body against the new.
     old_responses, new_responses = success_schemas(old_data, old.op), success_schemas(new_data, new.op)
     statuses = [(status, status) for status in old_responses if status in new_responses]
     if not statuses and len(old_responses) == 1 and len(new_responses) == 1:
