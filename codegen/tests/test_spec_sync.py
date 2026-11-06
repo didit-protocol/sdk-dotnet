@@ -204,6 +204,13 @@ class SpecSyncTest(unittest.TestCase):
         (self.offline / "authentication.json").write_bytes(encode(authentication or base_authentication()))
         return raw
 
+    def install(self, verification: dict[str, Any]) -> None:
+        """Makes `verification` the committed document the next sync starts from."""
+        raw = encode(verification)
+        (self.openapi / "verification.json").write_bytes(raw)
+        self.source["verification.json"]["sha256"] = hashlib.sha256(raw).hexdigest()
+        (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
+
     def sync(self, write: bool = True) -> tuple[spec_sync.Report, str]:
         summary = self.tmp / "summary.md"
         self.message = self.tmp / "commit-message.txt"
@@ -466,9 +473,7 @@ class SpecSyncTest(unittest.TestCase):
     def test_property_named_like_a_documentation_key_is_compared(self) -> None:
         verification = base_verification()
         verification["components"]["schemas"]["GadgetPart"]["properties"]["description"] = {"type": "string"}
-        (self.openapi / "verification.json").write_bytes(encode(verification))
-        self.source["verification.json"]["sha256"] = hashlib.sha256(encode(verification)).hexdigest()
-        (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
+        self.install(verification)
         del verification["components"]["schemas"]["GadgetPart"]["properties"]["description"]
         self.publish(verification)
 
