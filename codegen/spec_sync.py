@@ -306,7 +306,7 @@ def collect_operations(api: str, data: dict[str, Any]) -> dict[str, Operation]:
             op = item.get(method)
             if not isinstance(op, dict):
                 continue
-            key = operation_key(api, method, path)
+            key = f"{HAND_WRITTEN} {method.upper()} {path}" if api == HAND_WRITTEN else operation_key(api, method, path)
             found[key] = Operation(api, key, method, path, op, merge_parameters(data, shared, op))
     return found
 
@@ -551,10 +551,10 @@ def request_body(data: Any, op: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
 def success_schema(data: Any, op: dict[str, Any]) -> Any:
     """The schema of the first 2xx response with a body (JSON preferred), or None."""
     responses = op.get("responses") if isinstance(op.get("responses"), dict) else {}
-    for status in sorted(str(code) for code in responses):
-        if not status.startswith("2"):
+    for status in sorted(responses):
+        if not str(status).startswith("2"):
             continue
-        response = dereference(data, responses.get(status, responses.get(int(status) if status.isdigit() else status)))
+        response = dereference(data, responses[status])
         content = response.get("content") if isinstance(response, dict) and isinstance(response.get("content"), dict) else {}
         entries = [content["application/json"]] if isinstance(content.get("application/json"), dict) else list(content.values())
         for entry in entries:
@@ -671,7 +671,6 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             report.moved.append((key, replacement, name))
             if key in original_overlay:
                 report.overlay_notes.append(f"Deleted `{key}`: `{replacement}` carries its naming now.")
-            report.breaking.extend(operation_breaking(old_docs[op.api], new_docs[op.api], op, new_ops[replacement], name))
             continue
         if naming is not None and naming.get("server") is True:
             schemas = old_docs[op.api].get("components", {}).get("schemas", {})
@@ -687,13 +686,8 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             report.deprecated.append((key, name))
             if key in original_overlay:
                 report.overlay_notes.append(f"Moved `{key}` to `{DEPRECATED_FILE}`.")
-            report.breaking.append(
-                f"Removed operation `{key}` ({name}): the SDK method stays, marked `[Obsolete]`, until the next minor release"
-            )
-        else:
-            if key in original_overlay:
-                report.overlay_notes.append(f"Deleted `{key}`: the operation was removed upstream.")
-            report.breaking.append(f"Removed operation `{key}` ({name})")
+        elif key in original_overlay:
+            report.overlay_notes.append(f"Deleted `{key}`: the operation was removed upstream.")
 
     # A renamed server operation keeps its old method as an obsolete alias for one minor version (DESIGN.md 3.1).
     live_names = {name for op in new_ops.values() if (name := sdk_name(naming_of(op, overlay_ops))) is not None}
@@ -708,7 +702,7 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
         if not before or not after or not renamed(before, after):
             continue
         if sdk_name(before) is None or sdk_name(before) in live_names:
-            report.breaking.append(f"SDK naming of `{key}` changes from `{label(before)}` to `{label(after)}`")
+            report.naming_changes.append(f"SDK naming of `{key}` changes from `{label(before)}` to `{label(after)}`")
             continue
         record_naming = {**after, "resource": before.get("resource"), "method": before.get("method"), "server": True}
         deprecated["operations"][alias_key(key, before)] = {
@@ -719,7 +713,7 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             "renamed_to": copy.deepcopy(after),
         }
         report.deprecated.append((alias_key(key, before), label(before)))
-        report.breaking.append(
+        report.naming_changes.append(
             f"SDK naming of `{key}` changes from `{label(before)}` to `{label(after)}`: the old method stays as an "
             "`[Obsolete]` alias until the next minor release"
         )
@@ -728,30 +722,43 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
         old, new = old_ops[key], new_ops[key]
         if canonical(old.effective) == canonical(new.effective):
             continue
-        name = label(naming_of(new, overlay_ops))
-        report.changed_ops.append((key, name))
-        report.breaking.extend(operation_breaking(old_docs[old.api], new_docs[new.api], old, new, name))
+        report.changed_ops.append((key, label(naming_of(new, overlay_ops))))
 
     for key in sorted(original_overlay):
         if key not in old_ops and key not in new_ops:
             report.overlay_notes.append(f"`{key}` matches no operation upstream (left in place; delete it if it is obsolete).")
 
+    # The Authentication module is hand-written (DESIGN.md section 10): its operations are reported, never deprecated,
+    # and its contract test fails until the module follows an added, removed or renamed one.
+    old_auth = collect_operations(HAND_WRITTEN, old_docs.get(HAND_WRITTEN, {}))
+    new_auth = collect_operations(HAND_WRITTEN, new_docs.get(HAND_WRITTEN, {}))
+    for key in sorted(new_auth.keys() - old_auth.keys()):
+        name = label(naming_of(new_auth[key], {}))
+        report.added.append((key, name))
+        report.authentication_notes.append(f"Added `{key}`: {name}")
+    for key in sorted(old_auth.keys() - new_auth.keys()):
+        name = label(naming_of(old_auth[key], {}))
+        report.removed.append((key, name))
+        report.authentication_notes.append(f"Removed `{key}`: {name}")
+    for key in sorted(old_auth.keys() & new_auth.keys()):
+        if canonical(old_auth[key].effective) == canonical(new_auth[key].effective):
+            continue
+        before, after = naming_of(old_auth[key], {}), naming_of(new_auth[key], {})
+        report.changed_ops.append((key, label(after)))
+        if canonical(before) != canonical(after):
+            report.authentication_notes.append(f"SDK naming of `{key}` changes from `{label(before)}` to `{label(after)}`")
+
     # Component schemas.
-    for api in APIS:
+    for api in DOCUMENTS:
         old_schemas = old_docs.get(api, {}).get("components", {}).get("schemas", {}) or {}
         new_schemas = new_docs.get(api, {}).get("components", {}).get("schemas", {}) or {}
         for name in sorted(new_schemas.keys() - old_schemas.keys()):
             report.schemas_added.append(schema_label(api, name))
         for name in sorted(old_schemas.keys() - new_schemas.keys()):
             report.schemas_removed.append(schema_label(api, name))
-            report.breaking.append(f"Removed schema {schema_label(api, name)}")
         for name in sorted(old_schemas.keys() & new_schemas.keys()):
-            if canonical(old_schemas[name]) == canonical(new_schemas[name]):
-                continue
-            report.schemas_changed.append(schema_label(api, name))
-            gone = property_paths(old_docs[api], old_schemas[name], False) - property_paths(new_docs[api], new_schemas[name], False)
-            for path in sorted(gone):
-                report.breaking.append(f"Removed property `{path}` from schema {schema_label(api, name)}")
+            if canonical(old_schemas[name]) != canonical(new_schemas[name]):
+                report.schemas_changed.append(schema_label(api, name))
 
     # Keep only the deprecated schemas that a remaining deprecated operation still references.
     for api in APIS:
@@ -761,6 +768,9 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
             if api_of(key) == api:
                 keep.update(schema_closure(stored, record.get("operation")))
         deprecated["schemas"][api] = keep
+
+    report.breaking = breaking_changes(old_docs, new_docs, {**old_ops, **old_auth}, {**new_ops, **new_auth})
+    report.commit_type = commit_type(files, report.breaking)
 
 
 def bullet_list(items: list[str]) -> list[str]:
