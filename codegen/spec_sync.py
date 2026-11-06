@@ -94,6 +94,11 @@ ENUM_VALUE_REMOVED = "enum-value-removed"
 NOW_REQUIRED = "now-required"
 # String formats the SDKs map to a type of their own (a date and time, a file), so adding or removing one changes a type.
 TYPED_FORMATS = frozenset({"date-time", "binary"})
+# Keywords that make an allOf member a schema of its own, as the generator reads them; "$component", "$cycle" and
+# "$unresolved" are what a $ref becomes once dereferenced.
+SCHEMA_KEYS = frozenset(
+    {"type", "properties", "allOf", "oneOf", "anyOf", "enum", "items", "additionalProperties", "$component", "$cycle", "$unresolved"}
+)
 
 
 class SyncError(Exception):
@@ -411,7 +416,9 @@ def commit_type(files: list[Upstream], naming_changed: bool, breaking: list[Brea
 
 
 def dereference(data: Any, node: Any, stack: tuple[str, ...] = ()) -> Any:
-    """A copy of `node` with every local $ref replaced by its target; a $ref's siblings override the target's keys."""
+    """A copy of `node` with every local $ref replaced by its target; a $ref's siblings override the target's keys. A
+    component schema keeps its name as "$component" (the innermost one when a component only refers to another), because
+    the SDKs name the type after it."""
     if isinstance(node, dict):
         ref = node.get("$ref")
         if isinstance(ref, str):
@@ -421,6 +428,8 @@ def dereference(data: Any, node: Any, stack: tuple[str, ...] = ()) -> Any:
                 target = dereference(data, pointer(data, ref), stack + (ref,))
             except SyncError:
                 return {"$unresolved": ref}
+            if isinstance(target, dict) and ref.startswith(SCHEMA_REF):
+                target = {"$component": ref[len(SCHEMA_REF) :], **target}
             siblings = {key: dereference(data, value, stack) for key, value in node.items() if key != "$ref"}
             return {**target, **siblings} if isinstance(target, dict) else target
         return {key: dereference(data, value, stack) for key, value in node.items()}
@@ -448,10 +457,26 @@ def string_enum(schema: Any) -> bool:
     )
 
 
+def all_of_member(schema: Any) -> Any:
+    """The schema an allOf of one member stands for, read like the generator: that member, nullable when the wrapper is
+    (drf-spectacular wraps a $ref in allOf to give it a description, a default or nullable). Other schemas stay as they are."""
+    if not isinstance(schema, dict) or not isinstance(schema.get("allOf"), list) or schema.get("properties"):
+        return schema
+    members = [member for member in schema["allOf"] if isinstance(member, dict) and SCHEMA_KEYS & member.keys()]
+    if len(members) != 1:
+        return schema
+    member = all_of_member(members[0])
+    if can_be_null(schema) and not can_be_null(member):
+        member = {**member, "nullable": True}
+    return member
+
+
 def single(schema: Any, depth: int = 0) -> Any:
-    """The one type a oneOf/anyOf stands for, read like the generator: its only non-null variant, one object merging object
-    variants, or one enum merging string enum variants. Other schemas, a union of different types included, stay as they
-    are. Nullability is read from the schema itself (can_be_null), because merging drops the null variants."""
+    """The one type a oneOf/anyOf or a one-member allOf stands for, read like the generator: its only non-null variant, one
+    object merging object variants, or one enum merging string enum variants. Other schemas, a union of different types
+    included, stay as they are. Nullability is read from the schema itself (can_be_null), because merging drops the null
+    variants."""
+    schema = all_of_member(schema)
     if not isinstance(schema, dict) or "allOf" in schema or depth > MAX_SCHEMA_DEPTH:
         return schema
     variants = [single(variant, depth + 1) for variant in union_variants(schema)]
@@ -490,6 +515,8 @@ def schema_types(schema: dict[str, Any]) -> set[str]:
             types.add("object")
         elif "items" in schema:
             types.add("array")
+        elif string_enum(schema):
+            types.add("string")
         else:
             for member in schema.get("allOf") or []:
                 if isinstance(member, dict):
@@ -543,12 +570,18 @@ def compare_schemas(old: Any, new: Any, operation: str, location: str, path: str
     """Appends every change from `old` to `new` (both dereferenced) that can break typed code."""
     if depth > MAX_SCHEMA_DEPTH or observable(old) == observable(new):
         return
+    old, new = all_of_member(old), all_of_member(new)
     if not isinstance(old, dict) or not isinstance(new, dict):
         found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{type_kind(old) or 'any'}->{type_kind(new) or 'any'}"))
         return
-    old_kind, new_kind = type_kind(old), type_kind(new)
-    if old_kind and new_kind and old_kind != new_kind:
+    # An unconstrained schema ("any") is a type of its own: the SDKs read it as raw JSON.
+    old_kind, new_kind = type_kind(old) or "any", type_kind(new) or "any"
+    if old_kind != new_kind:
         found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{old_kind}->{new_kind}"))
+        return
+    old_name, new_name = named_type(single(old)), named_type(single(new))
+    if old_name and new_name and old_name != new_name:
+        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{old_name}->{new_name}"))
         return
     if can_be_null(new) and not can_be_null(old):
         found.append(BreakingChange(operation, location, path, NOW_NULL))
