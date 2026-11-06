@@ -644,8 +644,10 @@ def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operat
     new_body_required, new_bodies = request_body(new_data, new.op)
     if new_body_required and not old_body_required:
         found.append(BreakingChange(key, "request", "", NOW_REQUIRED))
-    for media in sorted(old_bodies.keys() & new_bodies.keys()):
-        compare_schemas(old_bodies[media], new_bodies[media], key, "request", "", found)
+    if old_bodies and not new_bodies:
+        found.append(BreakingChange(key, "request", "", REMOVED))
+    elif old_bodies:
+        compare_bodies(old_bodies, new_bodies, key, "request", found)
 
     # Every 2xx response both versions have; when the only success status changed (200 to 201), the old body against the new.
     old_responses, new_responses = success_schemas(old_data, old.op), success_schemas(new_data, new.op)
@@ -653,8 +655,7 @@ def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operat
     if not statuses and len(old_responses) == 1 and len(new_responses) == 1:
         statuses = [(next(iter(old_responses)), next(iter(new_responses)))]
     for before, after in statuses:
-        for media in sorted(old_responses[before].keys() & new_responses[after].keys()):
-            compare_schemas(old_responses[before][media], new_responses[after][media], key, "response", "", found)
+        compare_bodies(old_responses[before], new_responses[after], key, "response", found)
     return list(dict.fromkeys(found))  # one entry per change, even when several responses or media types share it
 
 
