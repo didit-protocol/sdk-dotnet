@@ -329,7 +329,13 @@ Choices DESIGN.md leaves to each language, made the .NET way:
 
 ## Versioning
 
-Semantic versioning: before 1.0.0 a breaking change bumped the minor version; from 1.0.0 it bumps the major version. Releases are cut by release-please from conventional commits, and `CHANGELOG.md` is generated.
+Semantic versioning, with one rule for API changes:
+
+- A change that mirrors the Didit API is a minor version, even when it can break typed code (a type change, a property that can now be null, a removed property, operation or enum value). The API already behaves that way for every caller, so staying on an older SDK version does not protect you. The release notes list these changes under "API changes that can break typed code"; read that section before you upgrade.
+- A major version is only for a change to the SDK's own design: renaming or removing a method or resource the API still has, changing client configuration, errors, retries, pagination or webhook verification behaviour, or dropping a supported runtime.
+- A sync that only changes the API documentation releases nothing on its own.
+
+Releases are cut by release-please from conventional commits, and `CHANGELOG.md` is generated.
 The SDK is regenerated from the OpenAPI documents published at docs.didit.me; a removed or renamed API operation keeps its method, marked `[Obsolete]`, for one minor version.
 
 ## Contributing and security
