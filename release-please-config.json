@@ -9,6 +9,7 @@
   "force-tag-creation": true,
   "changelog-sections": [
     { "type": "feat", "section": "Features" },
+    { "type": "api", "section": "API changes that can break typed code" },
     { "type": "fix", "section": "Bug Fixes" },
     { "type": "perf", "section": "Performance Improvements" },
     { "type": "deps", "section": "Dependencies" },

@@ -26,6 +26,7 @@ import spec_sync  # noqa: E402
 NOW = datetime(2026, 10, 17, 6, 17, 30, tzinfo=timezone.utc)
 VERIFICATION_URL = "https://docs.didit.me/openapi-25.json"
 ACCOUNT_URL = "https://docs.didit.me/openapi-auth.json"
+AUTHENTICATION_URL = "https://docs.didit.me/openapi-authentication.json"
 
 
 def ref(name: str) -> dict[str, str]:
@@ -83,7 +84,12 @@ def base_verification() -> dict[str, Any]:
             "schemas": {
                 "Widget": {
                     "type": "object",
-                    "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "color": {"type": "string"}},
+                    "properties": {
+                        "id": {"type": "string"},
+                        "name": {"type": "string"},
+                        "color": {"type": "string"},
+                        "status": {"type": "string", "enum": ["active", "archived"]},
+                    },
                 },
                 "WidgetList": {
                     "type": "object",
@@ -111,6 +117,29 @@ def base_account() -> dict[str, Any]:
                     "requestBody": json_body({"type": "object", "properties": {"email": {"type": "string"}}}),
                     "responses": ok({"type": "object", "properties": {"access_token": {"type": "string"}}}),
                 }
+            }
+        },
+        "components": {"schemas": {}},
+    }
+
+
+def base_authentication() -> dict[str, Any]:
+    """A small synthetic Authentication document: its naming is upstream, there is no overlay for it."""
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": "Synthetic authentication API", "version": "1.0.0"},
+        "paths": {
+            "/session/": {
+                "get": {
+                    "operationId": "getSession",
+                    "x-didit-sdk": {"resource": "authentication", "method": "get_session", "auth": "access_token", "server": True},
+                    "responses": ok({"type": "object", "properties": {"sid": {"type": "string"}}}),
+                },
+                "delete": {
+                    "operationId": "revokeSession",
+                    "x-didit-sdk": {"resource": "authentication", "method": "revoke_session", "auth": "access_token", "server": True},
+                    "responses": {"204": {"description": "Revoked"}},
+                },
             }
         },
         "components": {"schemas": {}},
@@ -152,12 +181,14 @@ class SpecSyncTest(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-        verification, account = encode(base_verification()), encode(base_account())
+        verification, account, authentication = encode(base_verification()), encode(base_account()), encode(base_authentication())
         (self.openapi / "verification.json").write_bytes(verification)
         (self.openapi / "account.json").write_bytes(account)
+        (self.openapi / "authentication.json").write_bytes(authentication)
         self.source = {
             "verification.json": {"url": VERIFICATION_URL, "sha256": hashlib.sha256(verification).hexdigest(), "fetched_at": "2026-10-16T06:17:00Z"},
             "account.json": {"url": ACCOUNT_URL, "sha256": hashlib.sha256(account).hexdigest(), "fetched_at": "2026-10-16T06:17:00Z"},
+            "authentication.json": {"url": AUTHENTICATION_URL, "sha256": hashlib.sha256(authentication).hexdigest(), "fetched_at": "2026-10-16T06:17:00Z"},
             "webhook-vectors.json": {"generator": "synthetic", "source": "synthetic"},
         }
         (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
@@ -166,17 +197,29 @@ class SpecSyncTest(unittest.TestCase):
 
     # helpers
 
-    def publish(self, verification: dict[str, Any], account: dict[str, Any] | None = None) -> bytes:
+    def publish(self, verification: dict[str, Any], account: dict[str, Any] | None = None, authentication: dict[str, Any] | None = None) -> bytes:
         raw = encode(verification)
         (self.offline / "verification.json").write_bytes(raw)
         (self.offline / "account.json").write_bytes(encode(account or base_account()))
+        (self.offline / "authentication.json").write_bytes(encode(authentication or base_authentication()))
         return raw
+
+    def install(self, verification: dict[str, Any]) -> None:
+        """Makes `verification` the committed document the next sync starts from."""
+        raw = encode(verification)
+        (self.openapi / "verification.json").write_bytes(raw)
+        self.source["verification.json"]["sha256"] = hashlib.sha256(raw).hexdigest()
+        (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
 
     def sync(self, write: bool = True) -> tuple[spec_sync.Report, str]:
         summary = self.tmp / "summary.md"
+        self.message = self.tmp / "commit-message.txt"
         with redirect_stdout(io.StringIO()):
-            report = spec_sync.run(self.root, offline=self.offline, write=write, summary_path=summary, now=NOW)
+            report = spec_sync.run(self.root, offline=self.offline, write=write, summary_path=summary, now=NOW, commit_message_path=self.message)
         return report, summary.read_text("utf-8")
+
+    def commit_message(self) -> str:
+        return self.message.read_text("utf-8")
 
     def snapshot(self) -> dict[str, bytes]:
         return {path.name: path.read_bytes() for path in sorted(self.openapi.iterdir())}
@@ -194,6 +237,10 @@ class SpecSyncTest(unittest.TestCase):
         end = summary.find("\n### ", start + 1)
         return summary[start : end if end != -1 else len(summary)]
 
+    @staticmethod
+    def changes(report: spec_sync.Report) -> list[tuple[str, str, str, str, str]]:
+        return [(c.operation, c.location, c.field, c.kind, c.detail) for c in report.breaking]
+
     # tests
 
     def test_no_change_writes_nothing(self) -> None:
@@ -202,7 +249,8 @@ class SpecSyncTest(unittest.TestCase):
         self.assertFalse(report.changed)
         self.assertEqual(before, self.snapshot())
         self.assertIn("No upstream changes.", summary)
-        self.assertEqual(self.outputs(), {"changed": "false", "needs_naming": "false", "date": "2026-10-17"})
+        self.assertNotIn("Breaking changes", summary)
+        self.assertEqual(self.outputs(), {"changed": "false", "needs_naming": "false", "type": "chore", "date": "2026-10-17"})
 
     def test_added_operations(self) -> None:
         verification = base_verification()
@@ -237,8 +285,11 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("`GET /v3/sprockets/`: sprockets.list", added)
         self.assertIn("`createGizmo`", self.section(summary, "Needs SDK naming"))
         self.assertIn("`Sprocket` (verification)", self.section(summary, "Schemas"))
-        self.assertIn("None.", self.section(summary, "Breaking"))
-        self.assertEqual(self.outputs(), {"changed": "true", "needs_naming": "true", "date": "2026-10-17"})
+        self.assertTrue(summary.startswith("### Breaking changes\n"), "the pull request body opens with the breaking changes")
+        self.assertIn("None detected.", self.section(summary, "Breaking changes"))
+        self.assertIn("`feat(spec)`", self.section(summary, "Release"))
+        self.assertEqual(self.commit_message(), "feat(spec): sync API spec 2026-10-17\n")
+        self.assertEqual(self.outputs(), {"changed": "true", "needs_naming": "true", "type": "feat", "date": "2026-10-17"})
 
     def test_removed_operation_is_deprecated(self) -> None:
         verification = base_verification()
@@ -262,10 +313,11 @@ class SpecSyncTest(unittest.TestCase):
         self.assertEqual(deprecated["schemas"]["account"], {})
         self.assertNotIn("DELETE /v3/gadgets/{gadget_id}/", self.overlay_ops(), "the naming moves to deprecated-operations.json")
 
-        breaking = self.section(summary, "Breaking")
-        self.assertIn("Removed operation `DELETE /v3/gadgets/{gadget_id}/` (gadgets.delete)", breaking)
-        self.assertIn("`[Obsolete]`", breaking)
-        self.assertIn("until the next minor release", self.section(summary, "Deprecated SDK methods"))
+        self.assertEqual(self.changes(report), [("DELETE /v3/gadgets/{gadget_id}/", "operation", "", "removed", "")])
+        self.assertIn("- `DELETE /v3/gadgets/{gadget_id}/`: operation removed", self.section(summary, "Breaking changes"))
+        deprecated_section = self.section(summary, "Deprecated SDK methods")
+        self.assertIn("`[Obsolete]`, until the next minor release", deprecated_section)
+        self.assertIn("`DELETE /v3/gadgets/{gadget_id}/`: gadgets.delete", deprecated_section)
 
     def test_deprecated_operation_restored_when_it_returns(self) -> None:
         verification = base_verification()
@@ -286,13 +338,14 @@ class SpecSyncTest(unittest.TestCase):
         verification["paths"]["/v3/widgets/"]["get"]["x-didit-sdk"] = dict(base_overlay()["operations"]["GET /v3/widgets/"])
         self.publish(verification)
 
-        _, summary = self.sync()
+        report, summary = self.sync()
 
         expected = base_overlay()
         del expected["operations"]["GET /v3/widgets/"]
         self.assertEqual((self.openapi / "overlay.json").read_text("utf-8"), json.dumps(expected, indent=1), "1-space indent, sorted keys, entries keep their key order")
         self.assertIn("Deleted `GET /v3/widgets/`: upstream now carries the same `x-didit-sdk`.", self.section(summary, "Overlay"))
-        self.assertIn("None.", self.section(summary, "Breaking"))
+        self.assertIn("None detected.", self.section(summary, "Breaking changes"))
+        self.assertEqual(report.commit_type, "chore", "upstream adopting the overlay naming as it is changes nothing a caller sees")
 
     def test_upstream_naming_wins_over_a_different_overlay_entry(self) -> None:
         verification = base_verification()
@@ -304,7 +357,9 @@ class SpecSyncTest(unittest.TestCase):
         self.assertNotIn("GET /v3/widgets/", self.overlay_ops())
         self.assertIn(("GET /v3/widgets/", "widgets.list_all"), report.changed_ops)
         self.assertIn("Naming change `GET /v3/widgets/`: overlay `widgets.list`, upstream `widgets.list_all`", self.section(summary, "Overlay"))
-        self.assertIn("SDK naming of `GET /v3/widgets/` changes from `widgets.list` to `widgets.list_all`", self.section(summary, "Breaking"))
+        self.assertIn("SDK naming of `GET /v3/widgets/` changes from `widgets.list` to `widgets.list_all`", self.section(summary, "SDK naming changes"))
+        self.assertEqual(report.breaking, [], "a new SDK name for the same endpoint is not an API change")
+        self.assertEqual(report.commit_type, "feat")
 
     def test_renamed_operation_keeps_an_obsolete_alias(self) -> None:
         verification = base_verification()
@@ -320,7 +375,7 @@ class SpecSyncTest(unittest.TestCase):
         self.assertEqual((record["path"], record["method"], record["removed_on"]), ("/v3/widgets/", "get", "2026-10-17"))
         self.assertNotIn("operation", record, "the alias calls the live operation")
         self.assertIn(("GET /v3/widgets/ (renamed from widgets.list)", "widgets.list"), report.deprecated)
-        self.assertIn("the old method stays as an `[Obsolete]` alias", self.section(summary, "Breaking"))
+        self.assertIn("the old method stays as an `[Obsolete]` alias", self.section(summary, "SDK naming changes"))
         self.assertIn("renamed from widgets.list", self.section(summary, "Deprecated SDK methods"))
 
         # Renamed back: the first alias is no longer needed, the name it replaced gets one.
@@ -346,7 +401,7 @@ class SpecSyncTest(unittest.TestCase):
         self.assertFalse((self.openapi / "deprecated-operations.json").exists())
         self.assertNotIn("DELETE /v3/gadgets/{gadget_id}/", self.overlay_ops())
         self.assertIn("`DELETE /v3/gadgets/{gadget_id}/` to `DELETE /v3/parts/{gadget_id}/`: gadgets.delete", self.section(summary, "Operations"))
-        self.assertIn("None.", self.section(summary, "Breaking"))
+        self.assertEqual(self.changes(report), [("DELETE /v3/gadgets/{gadget_id}/", "operation", "", "removed", "")], "the API removed that path")
 
     def test_breaking_section(self) -> None:
         verification = base_verification()
@@ -362,15 +417,270 @@ class SpecSyncTest(unittest.TestCase):
 
         report, summary = self.sync()
 
-        breaking = self.section(summary, "Breaking")
-        self.assertIn("Removed property `color` from schema `Widget` (verification)", breaking)
-        self.assertIn("Removed schema `GadgetPart` (verification)", breaking)
-        self.assertIn("Newly required query parameter `limit` on `GET /v3/widgets/` (widgets.list)", breaking)
-        self.assertIn("Newly required query parameter `expand` on `GET /v3/widgets/{widget_id}/` (widgets.retrieve)", breaking)
-        self.assertIn("Newly required request property `color` on `POST /v3/widgets/` (widgets.create)", breaking)
+        self.assertEqual(
+            self.changes(report),
+            [
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "part", "type", "object->string"),
+                ("GET /v3/widgets/", "query parameter", "limit", "now-required", ""),
+                ("GET /v3/widgets/", "response", "results[].color", "removed", ""),
+                ("GET /v3/widgets/{widget_id}/", "query parameter", "expand", "now-required", ""),
+                ("GET /v3/widgets/{widget_id}/", "response", "color", "removed", ""),
+                ("POST /v3/widgets/", "request", "color", "now-required", ""),
+                ("POST /v3/widgets/", "response", "color", "removed", ""),
+            ],
+        )
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `DELETE /v3/gadgets/{gadget_id}/` response `part`: type changed from object to string", breaking)
+        self.assertIn("- `GET /v3/widgets/` query parameter `limit`: now required", breaking)
+        self.assertIn("- `GET /v3/widgets/` response `results[].color`: removed", breaking)
+        self.assertIn("- `POST /v3/widgets/` request `color`: now required", breaking)
         self.assertNotIn("parameter `widget_id`", breaking, "an unchanged path-level parameter is not newly required")
         self.assertIn("`Widget` (verification)", self.section(summary, "Schemas"))
         self.assertEqual(sorted(key for key, _ in report.changed_ops), ["GET /v3/widgets/", "GET /v3/widgets/{widget_id}/", "POST /v3/widgets/"])
+
+    def test_type_null_and_enum_changes_through_refs_and_arrays(self) -> None:
+        verification = base_verification()
+        schemas = verification["components"]["schemas"]
+        widget = schemas["Widget"]["properties"]
+        widget["name"] = {"type": "integer"}
+        widget["color"] = {"type": "string", "nullable": True}  # OpenAPI 3.0
+        widget["status"] = {"type": "string", "enum": ["active"]}
+        schemas["GadgetPart"]["properties"]["sku"] = {"type": ["string", "null"]}  # OpenAPI 3.1
+        schemas["WidgetList"]["properties"]["count"] = {"anyOf": [{"type": "integer"}, {"type": "null"}]}
+        verification["paths"]["/v3/widgets/"]["get"]["parameters"][0]["schema"] = {"type": "string"}
+        del verification["paths"]["/v3/widgets/"]["post"]["requestBody"]["content"]["application/json"]["schema"]["properties"]["color"]
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        expected = [("DELETE /v3/gadgets/{gadget_id}/", "response", "part.sku", "now-null", ""), ("GET /v3/widgets/", "query parameter", "limit", "type", "integer->string")]
+        for key, prefix in (("GET /v3/widgets/", "results[]."), ("GET /v3/widgets/{widget_id}/", ""), ("POST /v3/widgets/", "")):
+            if key == "GET /v3/widgets/":
+                expected.append((key, "response", "count", "now-null", ""))
+            if key == "POST /v3/widgets/":
+                expected.append((key, "request", "color", "removed", ""))
+            expected += [
+                (key, "response", f"{prefix}color", "now-null", ""),
+                (key, "response", f"{prefix}name", "type", "string->integer"),
+                (key, "response", f"{prefix}status", "enum-value-removed", '"archived"'),
+            ]
+        self.assertEqual(self.changes(report), expected)
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `status`: enum value `\"archived\"` removed", breaking)
+        self.assertIn("- `GET /v3/widgets/` response `count`: can now be null", breaking)
+        self.assertEqual(report.commit_type, "feat")
+
+    def test_every_success_response_is_compared(self) -> None:
+        verification = base_verification()
+        responses = verification["paths"]["/v3/widgets/"]["post"]["responses"]
+        responses["201"] = {"description": "Created", "content": {"application/json": {"schema": ref("Widget")}}}
+        responses["202"] = {"description": "Accepted", "content": {"application/json": {"schema": {"type": "object", "properties": {"request_id": {"type": "string"}}}}}}
+        self.install(verification)
+        del verification["components"]["schemas"]["Widget"]["properties"]["color"]  # in 200 and 201: reported once
+        responses["202"]["content"]["application/json"]["schema"]["properties"]["request_id"] = {"type": "integer"}
+        gadget = verification["paths"]["/v3/gadgets/{gadget_id}/"]["delete"]["responses"]
+        gadget["202"] = gadget.pop("200")  # the only success status changed: its body is still compared
+        verification["components"]["schemas"]["GadgetPart"]["properties"]["sku"] = {"type": "integer"}
+        self.publish(verification)
+
+        report, _ = self.sync()
+
+        self.assertEqual(
+            self.changes(report),
+            [
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "part.sku", "type", "string->integer"),
+                ("GET /v3/widgets/", "response", "results[].color", "removed", ""),
+                ("GET /v3/widgets/{widget_id}/", "response", "color", "removed", ""),
+                ("POST /v3/widgets/", "response", "color", "removed", ""),
+                ("POST /v3/widgets/", "response", "request_id", "type", "string->integer"),
+            ],
+        )
+
+    def test_body_whose_media_type_changed_or_that_was_removed(self) -> None:
+        verification = base_verification()
+        paths = verification["paths"]
+        paths["/v3/widgets/{widget_id}/"]["get"]["responses"] = {"200": {"description": "PDF", "content": {"application/pdf": {"schema": {"type": "string", "format": "binary"}}}}}
+        paths["/v3/gadgets/{gadget_id}/"]["delete"]["responses"]["204"] = {"description": "Deleted"}
+        del paths["/v3/gadgets/{gadget_id}/"]["delete"]["responses"]["200"]
+        del paths["/v3/widgets/"]["post"]["requestBody"]
+        # A media type added next to JSON changes nothing typed code reads.
+        paths["/v3/widgets/"]["get"]["responses"]["200"]["content"]["text/csv"] = {"schema": {"type": "string"}}
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        self.assertEqual(
+            self.changes(report),
+            [
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "", "type", "application/json->none"),
+                ("GET /v3/widgets/{widget_id}/", "response", "", "type", "application/json->application/pdf"),
+                ("POST /v3/widgets/", "request", "", "removed", ""),
+            ],
+        )
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response body: type changed from application/json to application/pdf", breaking)
+        self.assertIn("- `POST /v3/widgets/` request body: removed", breaking)
+
+    def test_union_and_format_changes_that_change_the_generated_type(self) -> None:
+        verification = base_verification()
+        schemas = verification["components"]["schemas"]
+        widget = schemas["Widget"]["properties"]
+        widget["size"] = {"oneOf": [{"type": "integer"}, {"type": "string"}]}
+        self.install(verification)
+        widget["name"] = {"oneOf": [{"type": "integer"}, {"type": "boolean"}]}  # a string becomes a union
+        widget["size"]["oneOf"].append({"type": "boolean"})  # a union gains a variant
+        widget["id"] = {"type": "string", "format": "date-time"}  # a string becomes a date and time
+        widget["color"] = {"type": "string", "format": "uri"}  # a format no SDK maps to a type of its own
+        # Object variants merge into one object, so a variant that only adds fields breaks nothing; one variant and null is
+        # the same type, now nullable.
+        schemas["Gadget"]["properties"]["part"] = {"oneOf": [ref("GadgetPart"), {"type": "object", "properties": {"serial": {"type": "string"}}}]}
+        schemas["GadgetPart"]["properties"]["sku"] = {"oneOf": [{"type": "string"}, {"type": "null"}]}
+        create = verification["paths"]["/v3/widgets/"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        create["properties"]["color"] = {"type": "string", "format": "binary"}
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        expected = [("DELETE /v3/gadgets/{gadget_id}/", "response", "part.sku", "now-null", "")]
+        for key, prefix in (("GET /v3/widgets/", "results[]."), ("GET /v3/widgets/{widget_id}/", ""), ("POST /v3/widgets/", "")):
+            if key == "POST /v3/widgets/":
+                expected.append((key, "request", "color", "type", "string->string(binary)"))
+            expected += [
+                (key, "response", f"{prefix}id", "type", "string->string(date-time)"),
+                (key, "response", f"{prefix}name", "type", "string->boolean|integer"),
+                (key, "response", f"{prefix}size", "type", "integer|string->boolean|integer|string"),
+            ]
+        self.assertEqual(self.changes(report), expected)
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `name`: type changed from string to boolean|integer", breaking)
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `id`: type changed from string to string(date-time)", breaking)
+
+    def test_renamed_component_unconstrained_type_and_enum_inside_all_of(self) -> None:
+        verification = base_verification()
+        schemas = verification["components"]["schemas"]
+        schemas["WidgetStatus"] = {"type": "string", "enum": ["active", "archived"]}
+        schemas["Widget"]["properties"]["status"] = {"allOf": [ref("WidgetStatus")], "default": "active"}  # as drf-spectacular wraps a $ref
+        self.install(verification)
+        schemas["WidgetStatus"]["enum"] = ["active"]
+        schemas["Widget"]["properties"]["color"] = {}  # a string becomes any JSON value
+        schemas["GadgetPartV2"] = schemas.pop("GadgetPart")  # renamed, every reference follows: the SDK type is renamed too
+        schemas["Gadget"]["properties"]["part"] = ref("GadgetPartV2")
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        expected = [("DELETE /v3/gadgets/{gadget_id}/", "response", "part", "type", "GadgetPart->GadgetPartV2")]
+        for key, prefix in (("GET /v3/widgets/", "results[]."), ("GET /v3/widgets/{widget_id}/", ""), ("POST /v3/widgets/", "")):
+            expected += [
+                (key, "response", f"{prefix}color", "type", "string->any"),
+                (key, "response", f"{prefix}status", "enum-value-removed", '"archived"'),
+            ]
+        self.assertEqual(self.changes(report), expected)
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `DELETE /v3/gadgets/{gadget_id}/` response `part`: type changed from GadgetPart to GadgetPartV2", breaking)
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `color`: type changed from string to any", breaking)
+        self.assertEqual(report.commit_type, "feat")
+
+    def test_property_named_like_a_documentation_key_is_compared(self) -> None:
+        verification = base_verification()
+        verification["components"]["schemas"]["GadgetPart"]["properties"]["description"] = {"type": "string"}
+        self.install(verification)
+        del verification["components"]["schemas"]["GadgetPart"]["properties"]["description"]
+        self.publish(verification)
+
+        report, _ = self.sync()
+
+        self.assertEqual(self.changes(report), [("DELETE /v3/gadgets/{gadget_id}/", "response", "part.description", "removed", "")])
+        self.assertEqual(report.commit_type, "feat")
+
+    def test_documentation_only_change_is_chore(self) -> None:
+        verification = base_verification()
+        verification["info"]["version"] = "1.0.1"
+        widgets = verification["paths"]["/v3/widgets/"]
+        widgets["get"]["summary"] = "List widgets"
+        widgets["get"]["description"] = "Every widget of the application."
+        widgets["get"]["tags"] = ["Widgets"]
+        widgets["get"]["x-codeSamples"] = [{"lang": "csharp", "source": "await client.Widgets.ListAsync();"}]
+        widgets["get"]["parameters"][0]["description"] = "Page size."
+        widgets["get"]["parameters"][0]["example"] = 10
+        widgets["post"]["requestBody"]["content"]["application/json"]["examples"] = {"basic": {"value": {"name": "Gizmo"}}}
+        verification["components"]["schemas"]["Widget"]["properties"]["name"]["title"] = "Name"
+        verification["components"]["schemas"]["Widget"]["properties"]["name"]["example"] = "Gizmo"
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        self.assertTrue(report.changed)
+        self.assertEqual(report.commit_type, "chore")
+        self.assertEqual(report.breaking, [])
+        self.assertIn("None detected.", self.section(summary, "Breaking changes"))
+        self.assertIn("`chore(spec)`: only descriptions, examples or other documentation changed", self.section(summary, "Release"))
+        self.assertEqual(self.commit_message(), "chore(spec): sync API spec 2026-10-17\n")
+        self.assertEqual(self.outputs()["type"], "chore")
+
+    def test_observable_change_without_breaking_change_is_feat(self) -> None:
+        verification = base_verification()
+        verification["components"]["schemas"]["Widget"]["properties"]["size"] = {"type": "integer"}
+        verification["components"]["schemas"]["Widget"]["properties"]["status"]["enum"].append("deleted")
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        self.assertEqual(report.commit_type, "feat")
+        self.assertIn("None detected.", self.section(summary, "Breaking changes"))
+        self.assertEqual(self.commit_message(), "feat(spec): sync API spec 2026-10-17\n")
+
+    def test_commit_message_lists_each_breaking_change_for_the_release_notes(self) -> None:
+        verification = base_verification()
+        del verification["components"]["schemas"]["Widget"]["properties"]["color"]
+        self.publish(verification)
+
+        report, _ = self.sync()
+
+        message = self.commit_message()
+        self.assertEqual(
+            message,
+            "feat(spec): sync API spec 2026-10-17\n"
+            "\n"
+            "api(spec): `GET /v3/widgets/` response `results[].color`: removed\n"
+            "api(spec): `GET /v3/widgets/{widget_id}/` response `color`: removed\n"
+            "api(spec): `POST /v3/widgets/` response `color`: removed\n",
+        )
+        self.assertNotIn("!", message.splitlines()[0], "an API change is never a major version (DESIGN.md 13)")
+        self.assertNotIn("BREAKING", message)
+        self.assertNotRegex(message, "[<>]", "release-please escapes angle brackets in the release notes")
+
+        with mock.patch.object(spec_sync, "MAX_RELEASE_NOTES", 2):
+            capped = spec_sync.commit_message(report)
+        self.assertEqual(capped.splitlines()[-1], "api(spec): 1 more, listed in the spec sync pull request")
+        self.assertEqual(len(capped.splitlines()), 5)
+
+    def test_authentication_document_is_reported_but_never_deprecated(self) -> None:
+        authentication = base_authentication()
+        del authentication["paths"]["/session/"]["delete"]
+        authentication["paths"]["/session/"]["get"]["x-didit-sdk"]["method"] = "retrieve_session"
+        authentication["paths"]["/step-up/"] = {"post": {"operationId": "createStepUp", "responses": ok({"type": "object"})}}
+        overlay_before = (self.openapi / "overlay.json").read_bytes()
+        self.publish(base_verification(), authentication=authentication)
+
+        report, summary = self.sync()
+
+        self.assertIn(("authentication DELETE /session/", "authentication.revoke_session"), report.removed)
+        self.assertIn(("authentication POST /step-up/", "no SDK naming"), report.added)
+        self.assertEqual(self.changes(report), [("authentication DELETE /session/", "operation", "", "removed", "")])
+        self.assertEqual(report.needs_naming, [], "the generator does not read authentication.json")
+        self.assertEqual(report.deprecated, [])
+        self.assertFalse((self.openapi / "deprecated-operations.json").exists())
+        self.assertEqual(overlay_before, (self.openapi / "overlay.json").read_bytes())
+        notes = self.section(summary, "Authentication module")
+        self.assertIn("Added `authentication POST /step-up/`: no SDK naming", notes)
+        self.assertIn("Removed `authentication DELETE /session/`: authentication.revoke_session", notes)
+        self.assertIn("SDK naming of `authentication GET /session/` changes from `authentication.get_session` to `authentication.retrieve_session`", notes)
+        self.assertEqual(report.commit_type, "feat")
+        source = json.loads((self.openapi / "SOURCE.json").read_text("utf-8"))
+        self.assertEqual(source["authentication.json"]["url"], AUTHENTICATION_URL)
+        self.assertEqual(source["authentication.json"]["sha256"], hashlib.sha256((self.openapi / "authentication.json").read_bytes()).hexdigest())
+        self.assertIn("`openapi/authentication.json`", summary)
 
     def test_without_write_nothing_changes(self) -> None:
         verification = base_verification()
@@ -399,17 +709,24 @@ class SpecSyncTest(unittest.TestCase):
         verification["paths"]["/v3/gizmos/"] = {"get": {"operationId": "listGizmos", "responses": ok({"type": "object"})}}
         self.publish(verification)
         summary = self.tmp / "cli-summary.md"
+        message = self.tmp / "cli-message.txt"
         result = subprocess.run(
-            [sys.executable, str(CODEGEN / "spec_sync.py"), "--root", str(self.root), "--offline", str(self.offline), "--write", "--summary", str(summary)],
+            [
+                sys.executable, str(CODEGEN / "spec_sync.py"), "--root", str(self.root), "--offline", str(self.offline), "--write",
+                "--summary", str(summary), "--commit-message", str(message),
+            ],
             capture_output=True,
             text=True,
             check=False,
-        )
+        )  # fmt: skip
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("1 added", result.stdout)
+        self.assertIn("Commit type: feat(spec).", result.stdout)
         self.assertIn("`GET /v3/gizmos/`: no SDK naming", summary.read_text("utf-8"))
+        self.assertEqual(message.read_text("utf-8"), "feat(spec): sync API spec " + self.outputs()["date"] + "\n")
         self.assertEqual(self.outputs()["changed"], "true")
         self.assertEqual(self.outputs()["needs_naming"], "true")
+        self.assertEqual(self.outputs()["type"], "feat")
 
 
 class RepositorySpecTest(unittest.TestCase):
@@ -421,13 +738,113 @@ class RepositorySpecTest(unittest.TestCase):
         shutil.copytree(REPO / "openapi", tmp / "openapi")
         upstream = tmp / "upstream"
         upstream.mkdir()
-        for name in ("verification.json", "account.json"):
+        for name in ("verification.json", "account.json", "authentication.json"):
             shutil.copyfile(REPO / "openapi" / name, upstream / name)
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("GITHUB_OUTPUT", None)
             os.environ.pop("GITHUB_STEP_SUMMARY", None)
             report = spec_sync.run(tmp, offline=upstream, write=True, now=NOW)
         self.assertFalse(report.changed, "openapi/SOURCE.json does not match the committed upstream files")
+
+
+
+FIXTURES = CODEGEN / "tests" / "fixtures"
+# openapi/verification.json of didit-protocol/sdk-python at these commits, byte for byte (the same pairs in all seven SDKs).
+PINNED = {
+    "9fe57fc69299601e59cc7a64c1db370fea5c7461": "12b2fdb05572755d61b93791f6964b7d883ba7b20f7ea9b31543903b6edab8a9",  # v1.0.1
+    "e002a815773bbd1599256e2774046ee76520c6c8": "d1783bd862848198f7e5275c28f6a1bcdd59737c0d92f72bba3f6f3cf8b8ae3e",
+    "fe9f57a1dfb6374bfd391750d2044fc7a206e4ea": "9f8cdf8be8157588facc8059c9bd306f3f516a3a5b66b78c8e63cf595ddb6627",
+    "ccc799410f82eee1c25c7ce5abc6caa53846be6b": "1b0c7bdd8d7957bdf314651ebd7ecc491457810dd7a1430bce84feac9caea305",
+}
+# The API change of 2026-11-04 as (operation, field, kind): the list sdk-python #14 and sdk-go #8 printed for this pair.
+API_CHANGE_2026_11_04 = [
+    ("GET /v3/session/{sessionId}/decision/", "registry_checks[].company.registry_data", "now-null"),
+    ("GET /v3/session/{sessionId}/decision/", "registry_checks[].ownership_structure", "now-null"),
+    ("GET /v3/session/{sessionId}/decision/", "signatures[].confirmation.channel", "now-null"),
+    ("POST /v3/email/risk/", "email.email_intelligence.reason_codes[]", "string->object"),
+    ("POST /v3/email/risk/", "email.enrichment.reason_codes[]", "string->object"),
+    ("POST /v3/kyb/select/", "kyb_registry.registry_data", "now-null"),
+    ("POST /v3/kyb/shareholders/", "kyb_registry.registry_data", "now-null"),
+    ("POST /v3/kyb/ubo/", "kyb_registry.registry_data", "now-null"),
+    ("POST /v3/phone/risk/", "phone.enrichment.reason_codes[]", "string->object"),
+    ("POST /v3/phone/risk/", "phone.phone_intelligence.reason_codes[]", "string->object"),
+    ("POST /v3/session/import-shared/", "registry_checks[].company.registry_data", "now-null"),
+    ("POST /v3/session/import-shared/", "registry_checks[].ownership_structure", "now-null"),
+    ("POST /v3/session/import-shared/", "signatures[].confirmation.channel", "now-null"),
+    ("POST /v3/session/{sessionId}/signatures/{nodeId}/validate/", "signatures[].confirmation.channel", "now-null"),
+]
+
+
+class PinnedUpstreamChangeTest(unittest.TestCase):
+    """DESIGN.md 3.1 on two real upstream changes: every server SDK reports the same type and breaking changes for them."""
+
+    def sync_pair(self, before: str, after: str) -> tuple[spec_sync.Report, str, str]:
+        tmp = Path(tempfile.mkdtemp(prefix="spec-sync-pinned-"))
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        openapi, upstream = tmp / "openapi", tmp / "upstream"
+        openapi.mkdir()
+        upstream.mkdir()
+        shutil.copyfile(FIXTURES / f"verification-{before}.json", openapi / "verification.json")
+        shutil.copyfile(FIXTURES / f"verification-{after}.json", upstream / "verification.json")
+        source: dict[str, Any] = {"verification.json": {"url": VERIFICATION_URL, "sha256": PINNED[before]}}
+        for name, url, document in (("account.json", ACCOUNT_URL, base_account()), ("authentication.json", AUTHENTICATION_URL, base_authentication())):
+            (openapi / name).write_bytes(encode(document))
+            (upstream / name).write_bytes(encode(document))
+            source[name] = {"url": url, "sha256": hashlib.sha256(encode(document)).hexdigest()}
+        (openapi / "SOURCE.json").write_text(json.dumps(source, indent=1), "utf-8")
+        (openapi / "overlay.json").write_text(json.dumps({"description": "Empty.", "version": 1, "operations": {}}), "utf-8")
+        summary, message = tmp / "summary.md", tmp / "commit-message.txt"
+        with mock.patch.dict(os.environ, {}, clear=False), redirect_stdout(io.StringIO()):
+            os.environ.pop("GITHUB_OUTPUT", None)
+            os.environ.pop("GITHUB_STEP_SUMMARY", None)
+            report = spec_sync.run(tmp, offline=upstream, summary_path=summary, commit_message_path=message, now=NOW)
+        return report, summary.read_text("utf-8"), message.read_text("utf-8")
+
+    def test_fixtures_are_the_pinned_upstream_documents(self) -> None:
+        for commit, digest in PINNED.items():
+            self.assertEqual(hashlib.sha256((FIXTURES / f"verification-{commit}.json").read_bytes()).hexdigest(), digest, commit)
+
+    def test_api_change_of_2026_11_04_is_a_minor_release_listing_every_breaking_change(self) -> None:
+        report, summary, message = self.sync_pair("9fe57fc69299601e59cc7a64c1db370fea5c7461", "e002a815773bbd1599256e2774046ee76520c6c8")
+
+        self.assertEqual(report.commit_type, "feat")
+        found = [(c.operation, c.field, c.detail if c.kind == spec_sync.TYPE_CHANGED else c.kind) for c in report.breaking]
+        self.assertEqual(found, API_CHANGE_2026_11_04)
+        self.assertEqual({c.location for c in report.breaking}, {"response"})
+        self.assertTrue(summary.startswith("### Breaking changes\n"))
+        self.assertIn(
+            "- `POST /v3/email/risk/` response `email.enrichment.reason_codes[]`: type changed from string to object",
+            summary,
+        )
+        lines = message.splitlines()
+        self.assertEqual(lines[0], "feat(spec): sync API spec 2026-10-17", "feat without ! is a minor version")
+        self.assertEqual(lines[1], "")
+        self.assertEqual(lines[2:], [f"api(spec): {c.describe()}" for c in report.breaking])
+        self.assertNotIn("BREAKING", message)
+
+    def test_documentation_only_change_of_2026_11_06_releases_nothing(self) -> None:
+        report, summary, message = self.sync_pair("fe9f57a1dfb6374bfd391750d2044fc7a206e4ea", "ccc799410f82eee1c25c7ce5abc6caa53846be6b")
+
+        self.assertTrue(report.changed)
+        self.assertEqual([key for key, _ in report.changed_ops], ["POST /v3/poa/"], "only the descriptions of POST /v3/poa/ changed")
+        self.assertEqual(report.commit_type, "chore")
+        self.assertEqual(report.breaking, [])
+        self.assertIn("### Breaking changes\n\nChanges that can break typed code.", summary)
+        self.assertIn("\n\nNone detected.\n", summary)
+        self.assertEqual(message, "chore(spec): sync API spec 2026-10-17\n")
+
+
+class ReleaseConfigTest(unittest.TestCase):
+    """release-please-config.json turns the spec sync commit into the release DESIGN.md section 13 describes."""
+
+    def test_breaking_api_changes_have_their_own_release_notes_section(self) -> None:
+        config = json.loads((REPO / "release-please-config.json").read_text("utf-8"))
+        sections = {entry["type"]: entry for entry in config["changelog-sections"]}
+        self.assertEqual(sections["api"]["section"], "API changes that can break typed code")
+        self.assertFalse(sections["api"].get("hidden", False))
+        self.assertEqual(sections["feat"]["section"], "Features")
+        # release-please hides types without a visible section, so a chore(spec) sync on its own proposes no release.
+        self.assertFalse("chore" in sections and not sections["chore"].get("hidden", False))
 
 
 if __name__ == "__main__":

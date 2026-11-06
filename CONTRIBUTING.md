@@ -20,7 +20,7 @@ The files in `openapi/`:
 
 | File | Owner |
 |---|---|
-| `verification.json`, `account.json` | Upstream copies from docs.didit.me, updated only by the spec sync. Never edit by hand. |
+| `verification.json`, `account.json`, `authentication.json` | Upstream copies from docs.didit.me, updated only by the spec sync. Never edit by hand. The generator reads the first two; `authentication.json` holds the hand-written Authentication module to its contract (`tests/Didit.Tests/Authentication/AuthenticationContractTests.cs`). |
 | `webhook-vectors.json` | Upstream copy of the backend's webhook signing vectors. Never edit by hand. |
 | `SOURCE.json` | URL, SHA-256 and fetch time of each upstream file, written by the spec sync. |
 | `overlay.json` | SDK naming for operations whose upstream definition has no `x-didit-sdk` yet. Edited in this repository. |
@@ -90,20 +90,23 @@ Smoke tests do not run in default CI and create nothing that costs money beyond 
 ## Spec sync
 
 `.github/workflows/spec-sync.yml` runs daily and on demand (DESIGN.md section 3.1).
-`codegen/spec_sync.py` downloads the upstream documents; when they changed, the workflow regenerates the SDK, builds it, runs the tests on `net8.0` and opens or updates the pull request `chore(spec): sync API spec YYYY-MM-DD` on branch `chore/spec-sync`.
-Its body lists added, removed and changed operations and schemas, the breaking changes, and the result of each step.
+`codegen/spec_sync.py` downloads the upstream documents; when they changed, the workflow regenerates the SDK, builds it, runs the tests on `net8.0` and opens or updates the pull request `<type>(spec): sync API spec YYYY-MM-DD` on branch `chore/spec-sync`.
+The type is `feat(spec)` when a caller can observe the change (a minor release, even when it can break typed code) and `chore(spec)` when only descriptions, examples or other documentation changed (no release on its own); never `!` or a `BREAKING CHANGE:` footer (DESIGN.md sections 3.1 and 13).
+Its body opens with "Breaking changes" (every type change, field or parameter that can now be null, removed operation, field, parameter or enum value, and newly required parameter or request field, in parameters, request bodies and every 2xx response, or "None detected"; a string gaining or losing the `date-time` or `binary` format, a union gaining or losing a variant of another type and a body whose media type changed, such as JSON to a PDF or to no body, are type changes, and a request body that disappeared is a removal), then lists added, removed and changed operations and schemas and the result of each step.
+It ends with a `BEGIN_COMMIT_OVERRIDE` block that release-please reads instead of the merge commit: the sync line plus one `api(spec):` line per breaking change, which `release-please-config.json` lists under "API changes that can break typed code".
 
 - **`needs-naming` label**: a new operation has no SDK naming. Add the overlay entry (above), regenerate, and push to `chore/spec-sync`. The sync does not overwrite that branch while it has commits from people.
 - **Removed operations** are never deleted silently. The spec sync copies them, with the schemas they reference, into `openapi/deprecated-operations.json`; the generator keeps their SDK methods, marked `[Obsolete]`, until the next minor release. Delete the entries in that release.
 - **Renamed operations** (upstream `x-didit-sdk` with a new resource or method) keep their old method as an `[Obsolete]` alias of the same endpoint until the next minor release: the spec sync records the old name in `openapi/deprecated-operations.json` (key suffix ` (renamed from <resource>.<method>)`). Delete the entry in that release.
 - **Moved endpoints**: when an operation's path changes, give the new path the old naming (upstream or in `overlay.json`). The method keeps its name and calls the new path; a deprecated copy of the old path with the same name is ignored by the generator, and the spec sync reports the pair under "Moved" instead of deprecating it.
-- **Release impact**: `chore` commits do not trigger a release. When a sync adds or changes public SDK surface, set the squash commit title to `feat(spec): sync API spec YYYY-MM-DD` (or `fix(spec):`, with `!` when it is breaking) when merging.
+- **Authentication**: `openapi/authentication.json` is synced like the others, but the `Didit.Authentication` module stays hand-written (DESIGN.md section 10). When the sync adds, removes or renames one of its server operations, the body says so under "Authentication module" and the contract test fails until the module follows on the sync branch.
+- **Merging**: use **Squash and merge** and keep the override block in the description. With a merge commit release-please reads the block once per commit, so every line would appear twice in the release notes.
 
 Preview a sync locally without writing anything with `python3 codegen/spec_sync.py`.
 
 ## Commits and releases
 
-- Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org/). The type must match the semver impact: `feat` for new public API, `fix` for bug fixes, `perf`, `deps`, `docs`; `!` or a `BREAKING CHANGE:` footer for breaking changes. While the version is `0.x`, a breaking change bumps the minor version and a feature bumps the patch version.
+- Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org/). The type must match the semver impact: `feat` for new public API, `fix` for bug fixes, `perf`, `deps`, `docs`. `!` or a `BREAKING CHANGE:` footer (a major version) is only for a change to the SDK's own design: renaming or removing a method or resource the API still has, client configuration, errors, retries, pagination or webhook verification behaviour, or a dropped runtime version. A change that mirrors the API is a minor version even when it can break typed code (DESIGN.md section 13); the spec sync lists those under "API changes that can break typed code".
 - [release-please](https://github.com/googleapis/release-please) keeps a release pull request open on `main`. Merging it updates `CHANGELOG.md`, `.release-please-manifest.json` and the version in `Directory.Build.props`, tags `vX.Y.Z`, creates the GitHub release and starts `.github/workflows/release.yml` for the tag.
 - `CHANGELOG.md` is generated from the commits. Never edit it by hand.
 - `.github/workflows/release.yml` checks that the tag matches the version, builds, tests, packs, and then (in the `nuget` environment, no required reviewers) pushes `Didit` and `Didit.Extensions.DependencyInjection` (with symbols) to nuget.org through trusted publishing and attaches the packages to the release.
@@ -119,6 +122,6 @@ Preview a sync locally without writing anything with `python3 codegen/spec_sync.
 
 - Fill in the pull request template, including the parity line.
 - Public API changes need tests, README updates and a conventional commit type that matches their semver impact.
-- Never commit secrets, API keys or real customer data; fixtures are synthetic. CI scans the full history with gitleaks (`.gitleaks.toml`), which allows only the upstream copies in `openapi/` and `whsec_test_` webhook secrets: when it flags a fake value, change the value rather than the allowlist.
+- Never commit secrets, API keys or real customer data; fixtures are synthetic. CI scans the full history with gitleaks (`.gitleaks.toml`), which allows only the upstream copies in `openapi/`, the pinned upstream copies in `codegen/tests/fixtures/` and `whsec_test_` webhook secrets: when it flags a fake value, change the value rather than the allowlist.
 
 Report security issues privately as described in [SECURITY.md](SECURITY.md).
