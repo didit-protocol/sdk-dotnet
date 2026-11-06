@@ -427,7 +427,7 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("- `GET /v3/widgets/` query parameter `limit`: now required", breaking)
         self.assertIn("- `GET /v3/widgets/` response `results[].color`: removed", breaking)
         self.assertIn("- `POST /v3/widgets/` request `color`: now required", breaking)
-        self.assertNotIn("widget_id", breaking, "an unchanged path-level parameter is not newly required")
+        self.assertNotIn("parameter `widget_id`", breaking, "an unchanged path-level parameter is not newly required")
         self.assertIn("`Widget` (verification)", self.section(summary, "Schemas"))
         self.assertEqual(sorted(key for key, _ in report.changed_ops), ["GET /v3/widgets/", "GET /v3/widgets/{widget_id}/", "POST /v3/widgets/"])
 
@@ -629,6 +629,106 @@ class RepositorySpecTest(unittest.TestCase):
             os.environ.pop("GITHUB_STEP_SUMMARY", None)
             report = spec_sync.run(tmp, offline=upstream, write=True, now=NOW)
         self.assertFalse(report.changed, "openapi/SOURCE.json does not match the committed upstream files")
+
+
+
+FIXTURES = CODEGEN / "tests" / "fixtures"
+# openapi/verification.json of didit-protocol/sdk-python at these commits, byte for byte (the same pairs in all seven SDKs).
+PINNED = {
+    "9fe57fc69299601e59cc7a64c1db370fea5c7461": "12b2fdb05572755d61b93791f6964b7d883ba7b20f7ea9b31543903b6edab8a9",  # v1.0.1
+    "e002a815773bbd1599256e2774046ee76520c6c8": "d1783bd862848198f7e5275c28f6a1bcdd59737c0d92f72bba3f6f3cf8b8ae3e",
+    "fe9f57a1dfb6374bfd391750d2044fc7a206e4ea": "9f8cdf8be8157588facc8059c9bd306f3f516a3a5b66b78c8e63cf595ddb6627",
+    "ccc799410f82eee1c25c7ce5abc6caa53846be6b": "1b0c7bdd8d7957bdf314651ebd7ecc491457810dd7a1430bce84feac9caea305",
+}
+# The API change of 2026-11-04 as (operation, field, kind): the list sdk-python #14 and sdk-go #8 printed for this pair.
+API_CHANGE_2026_11_04 = [
+    ("GET /v3/session/{sessionId}/decision/", "registry_checks[].company.registry_data", "now-null"),
+    ("GET /v3/session/{sessionId}/decision/", "registry_checks[].ownership_structure", "now-null"),
+    ("GET /v3/session/{sessionId}/decision/", "signatures[].confirmation.channel", "now-null"),
+    ("POST /v3/email/risk/", "email.email_intelligence.reason_codes[]", "string->object"),
+    ("POST /v3/email/risk/", "email.enrichment.reason_codes[]", "string->object"),
+    ("POST /v3/kyb/select/", "kyb_registry.registry_data", "now-null"),
+    ("POST /v3/kyb/shareholders/", "kyb_registry.registry_data", "now-null"),
+    ("POST /v3/kyb/ubo/", "kyb_registry.registry_data", "now-null"),
+    ("POST /v3/phone/risk/", "phone.enrichment.reason_codes[]", "string->object"),
+    ("POST /v3/phone/risk/", "phone.phone_intelligence.reason_codes[]", "string->object"),
+    ("POST /v3/session/import-shared/", "registry_checks[].company.registry_data", "now-null"),
+    ("POST /v3/session/import-shared/", "registry_checks[].ownership_structure", "now-null"),
+    ("POST /v3/session/import-shared/", "signatures[].confirmation.channel", "now-null"),
+    ("POST /v3/session/{sessionId}/signatures/{nodeId}/validate/", "signatures[].confirmation.channel", "now-null"),
+]
+
+
+class PinnedUpstreamChangeTest(unittest.TestCase):
+    """DESIGN.md 3.1 on two real upstream changes: every server SDK reports the same type and breaking changes for them."""
+
+    def sync_pair(self, before: str, after: str) -> tuple[spec_sync.Report, str, str]:
+        tmp = Path(tempfile.mkdtemp(prefix="spec-sync-pinned-"))
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        openapi, upstream = tmp / "openapi", tmp / "upstream"
+        openapi.mkdir()
+        upstream.mkdir()
+        shutil.copyfile(FIXTURES / f"verification-{before}.json", openapi / "verification.json")
+        shutil.copyfile(FIXTURES / f"verification-{after}.json", upstream / "verification.json")
+        source: dict[str, Any] = {"verification.json": {"url": VERIFICATION_URL, "sha256": PINNED[before]}}
+        for name, url, document in (("account.json", ACCOUNT_URL, base_account()), ("authentication.json", AUTHENTICATION_URL, base_authentication())):
+            (openapi / name).write_bytes(encode(document))
+            (upstream / name).write_bytes(encode(document))
+            source[name] = {"url": url, "sha256": hashlib.sha256(encode(document)).hexdigest()}
+        (openapi / "SOURCE.json").write_text(json.dumps(source, indent=1), "utf-8")
+        (openapi / "overlay.json").write_text(json.dumps({"description": "Empty.", "version": 1, "operations": {}}), "utf-8")
+        summary, message = tmp / "summary.md", tmp / "commit-message.txt"
+        with mock.patch.dict(os.environ, {}, clear=False), redirect_stdout(io.StringIO()):
+            os.environ.pop("GITHUB_OUTPUT", None)
+            os.environ.pop("GITHUB_STEP_SUMMARY", None)
+            report = spec_sync.run(tmp, offline=upstream, summary_path=summary, commit_message_path=message, now=NOW)
+        return report, summary.read_text("utf-8"), message.read_text("utf-8")
+
+    def test_fixtures_are_the_pinned_upstream_documents(self) -> None:
+        for commit, digest in PINNED.items():
+            self.assertEqual(hashlib.sha256((FIXTURES / f"verification-{commit}.json").read_bytes()).hexdigest(), digest, commit)
+
+    def test_api_change_of_2026_11_04_is_a_minor_release_listing_every_breaking_change(self) -> None:
+        report, summary, message = self.sync_pair("9fe57fc69299601e59cc7a64c1db370fea5c7461", "e002a815773bbd1599256e2774046ee76520c6c8")
+
+        self.assertEqual(report.commit_type, "feat")
+        found = [(c.operation, c.field, c.detail if c.kind == spec_sync.TYPE_CHANGED else c.kind) for c in report.breaking]
+        self.assertEqual(found, API_CHANGE_2026_11_04)
+        self.assertEqual({c.location for c in report.breaking}, {"response"})
+        self.assertTrue(summary.startswith("### Breaking changes\n"))
+        self.assertIn(
+            "- `POST /v3/email/risk/` response `email.enrichment.reason_codes[]`: type changed from string to object",
+            summary,
+        )
+        lines = message.splitlines()
+        self.assertEqual(lines[0], "feat(spec): sync API spec 2026-10-17", "feat without ! is a minor version")
+        self.assertEqual(lines[1], "")
+        self.assertEqual(lines[2:], [f"api(spec): {c.describe()}" for c in report.breaking])
+        self.assertNotIn("BREAKING", message)
+
+    def test_documentation_only_change_of_2026_11_06_releases_nothing(self) -> None:
+        report, summary, message = self.sync_pair("fe9f57a1dfb6374bfd391750d2044fc7a206e4ea", "ccc799410f82eee1c25c7ce5abc6caa53846be6b")
+
+        self.assertTrue(report.changed)
+        self.assertEqual([key for key, _ in report.changed_ops], ["POST /v3/poa/"], "only the descriptions of POST /v3/poa/ changed")
+        self.assertEqual(report.commit_type, "chore")
+        self.assertEqual(report.breaking, [])
+        self.assertIn("### Breaking changes\n\nChanges that can break typed code.", summary)
+        self.assertIn("\n\nNone detected.\n", summary)
+        self.assertEqual(message, "chore(spec): sync API spec 2026-10-17\n")
+
+
+class ReleaseConfigTest(unittest.TestCase):
+    """release-please-config.json turns the spec sync commit into the release DESIGN.md section 13 describes."""
+
+    def test_breaking_api_changes_have_their_own_release_notes_section(self) -> None:
+        config = json.loads((REPO / "release-please-config.json").read_text("utf-8"))
+        sections = {entry["type"]: entry for entry in config["changelog-sections"]}
+        self.assertEqual(sections["api"]["section"], "API changes that can break typed code")
+        self.assertFalse(sections["api"].get("hidden", False))
+        self.assertEqual(sections["feat"]["section"], "Features")
+        # release-please hides types without a visible section, so a chore(spec) sync on its own proposes no release.
+        self.assertFalse("chore" in sections and not sections["chore"].get("hidden", False))
 
 
 if __name__ == "__main__":
