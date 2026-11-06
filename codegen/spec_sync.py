@@ -562,6 +562,13 @@ def object_properties(schema: dict[str, Any]) -> tuple[dict[str, Any], set[str]]
     return properties, required
 
 
+def named_type(schema: Any) -> str | None:
+    """The component a schema's type is named after: an object or a string enum from components/schemas, else None."""
+    if not isinstance(schema, dict) or not isinstance(schema.get("$component"), str):
+        return None
+    return schema["$component"] if string_enum(schema) or object_properties(schema)[0] else None
+
+
 def join_field(prefix: str, name: str) -> str:
     return f"{prefix}.{name}" if prefix else name
 
