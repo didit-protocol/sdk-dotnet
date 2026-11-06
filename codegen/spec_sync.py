@@ -4,15 +4,24 @@
     python3 codegen/spec_sync.py                         report only, write nothing
     python3 codegen/spec_sync.py --write                 update openapi/ in place
     python3 codegen/spec_sync.py --write --summary FILE  also write the Markdown report to FILE
-    python3 codegen/spec_sync.py --offline DIR           read verification.json and account.json from DIR
+    python3 codegen/spec_sync.py --commit-message FILE   write the commit message release-please reads to FILE
+    python3 codegen/spec_sync.py --offline DIR           read verification.json, account.json and authentication.json from DIR
 
 With --write it copies the upstream files byte for byte, records their URL, SHA-256 and fetch time in
 openapi/SOURCE.json, deletes overlay entries whose operation now carries x-didit-sdk upstream, and copies removed
 server operations into openapi/deprecated-operations.json so their SDK methods stay, marked [Obsolete], until the next
 minor release. A renamed server operation is recorded there too, so its old method stays as an [Obsolete] alias; a
 removed operation whose naming an added one carries (the endpoint moved) keeps its method on the new path instead.
-Writes changed=true|false, needs_naming=true|false and date=YYYY-MM-DD to $GITHUB_OUTPUT when that variable is set.
-Exit code 0 on success (changed or not), 2 when a download or validation fails.
+authentication.json is synced and reported like the others, but the Authentication module is hand-written (DESIGN.md
+section 10): nothing is deprecated for it, and its contract test fails until the module follows.
+
+The sync is feat(spec) when any document changed something a caller can observe and chore(spec) when only documentation
+changed (descriptions, summaries, titles, examples, tags, docs-only vendor extensions). The report opens with every
+change that can break typed code (a type change, a field or parameter that can now be null, a removed operation, field,
+parameter or enum value, a newly required parameter or request field), and the commit message repeats each one as an
+`api(spec):` line, which release-please-config.json lists under "API changes that can break typed code".
+Writes changed=true|false, needs_naming=true|false, type=feat|chore and date=YYYY-MM-DD to $GITHUB_OUTPUT when that
+variable is set. Exit code 0 on success (changed or not), 2 when a download or validation fails.
 
 Standard library only, Python 3.10+.
 """
@@ -38,8 +47,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from didit_codegen.spec import HTTP_METHODS, operation_key  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-UPSTREAM_FILES = (("verification", "verification.json"), ("account", "account.json"))
-APIS = ("verification", "account")
+UPSTREAM_FILES = (("verification", "verification.json"), ("account", "account.json"), ("authentication", "authentication.json"))
+APIS = ("verification", "account")  # the documents the generator reads
+HAND_WRITTEN = "authentication"  # the document the hand-written Authentication module follows (DESIGN.md section 10)
+DOCUMENTS = (*APIS, HAND_WRITTEN)
 DEPRECATED_FILE = "deprecated-operations.json"
 DEPRECATED_DESCRIPTION = (
     "Server operations removed or renamed upstream. Their SDK methods stay, marked [Obsolete], until the next minor release "
@@ -52,9 +63,34 @@ DEPRECATED_DESCRIPTION = (
 SCHEMA_REF = "#/components/schemas/"
 DOWNLOAD_ATTEMPTS = 3
 DOWNLOAD_TIMEOUT = 60
-MAX_DEPTH = 12
+MAX_SCHEMA_DEPTH = 32
+MAX_REF_DEPTH = 64
 MAX_LIST = 200
+MAX_RELEASE_NOTES = 100
 SUMMARY_LIMIT = 50_000
+CHECKS_MARKER = "<!-- spec-sync:checks -->"  # .github/workflows/spec-sync.yml puts the results of its checks here
+
+# What only the documentation shows. A sync that changes nothing else is chore(spec) and releases nothing (DESIGN.md 3.1).
+DOCUMENTATION_KEYS = frozenset({"description", "summary", "title", "example", "examples", "externalDocs", "tags"})
+# Vendor extensions are documentation too, except the SDK naming and the webhook payloads.
+OBSERVABLE_EXTENSIONS = frozenset({"x-didit-sdk", "x-webhooks"})
+# Objects whose keys are names (properties, paths, status codes, media types), so a property called "description" stays.
+NAME_MAPS = frozenset(
+    {
+        "properties", "patternProperties", "definitions", "$defs", "dependentSchemas", "paths", "webhooks", "x-webhooks",
+        "schemas", "responses", "parameters", "requestBodies", "headers", "securitySchemes", "links", "callbacks",
+        "content", "encoding", "variables", "mapping",
+    }
+)  # fmt: skip
+# Keywords whose value is data, compared as it is.
+VALUE_KEYS = frozenset({"default", "enum", "const"})
+
+# The kinds of change that can break typed code (DESIGN.md 3.1); every server SDK reports exactly these.
+REMOVED = "removed"
+TYPE_CHANGED = "type"
+NOW_NULL = "now-null"
+ENUM_VALUE_REMOVED = "enum-value-removed"
+NOW_REQUIRED = "now-required"
 
 
 class SyncError(Exception):
@@ -84,19 +120,49 @@ class Operation:
     effective: dict[str, Any]  # the operation with path-level parameters merged
 
 
+@dataclass(frozen=True)
+class BreakingChange:
+    """A change that can break typed code: the operation, where in it, and what changed."""
+
+    operation: str  # the operation key: "GET /v3/session/{sessionId}/decision/", "account GET /...", "authentication POST /token/"
+    location: str  # "operation", "request", "response" or "<in> parameter"
+    field: str  # "registry_checks[].company.registry_data", a parameter name, or "" for the operation or a whole body
+    kind: str  # REMOVED, TYPE_CHANGED, NOW_NULL, ENUM_VALUE_REMOVED or NOW_REQUIRED
+    detail: str = ""  # "string->object" for TYPE_CHANGED, the JSON value for ENUM_VALUE_REMOVED
+
+    def describe(self) -> str:
+        """One Markdown line. No angle brackets: release-please escapes them in the release notes."""
+        if self.location == "operation":
+            return f"`{self.operation}`: operation removed"
+        where = f"`{self.operation}` {self.location} " + (f"`{self.field}`" if self.field else "body")
+        if self.kind == TYPE_CHANGED:
+            before, _, after = self.detail.partition("->")
+            return f"{where}: type changed from {before} to {after}"
+        if self.kind == NOW_NULL:
+            return f"{where}: can now be null"
+        if self.kind == ENUM_VALUE_REMOVED:
+            return f"{where}: enum value `{self.detail}` removed"
+        if self.kind == NOW_REQUIRED:
+            return f"{where}: now required"
+        return f"{where}: removed"
+
+
 @dataclass
 class Report:
     date: str
     write: bool
     files: list[Upstream]
     changed: bool = False
+    commit_type: str = "chore"  # "feat" when a caller can observe the change, "chore" when only documentation changed
     added: list[tuple[str, str]] = field(default_factory=list)
     removed: list[tuple[str, str]] = field(default_factory=list)
     changed_ops: list[tuple[str, str]] = field(default_factory=list)
     schemas_added: list[str] = field(default_factory=list)
     schemas_removed: list[str] = field(default_factory=list)
     schemas_changed: list[str] = field(default_factory=list)
-    breaking: list[str] = field(default_factory=list)
+    breaking: list[BreakingChange] = field(default_factory=list)
+    naming_changes: list[str] = field(default_factory=list)
+    authentication_notes: list[str] = field(default_factory=list)
     overlay_notes: list[str] = field(default_factory=list)
     deprecated: list[tuple[str, str]] = field(default_factory=list)
     moved: list[tuple[str, str, str]] = field(default_factory=list)  # old key, new key, SDK name
