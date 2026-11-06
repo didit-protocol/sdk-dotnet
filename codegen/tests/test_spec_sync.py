@@ -204,6 +204,13 @@ class SpecSyncTest(unittest.TestCase):
         (self.offline / "authentication.json").write_bytes(encode(authentication or base_authentication()))
         return raw
 
+    def install(self, verification: dict[str, Any]) -> None:
+        """Makes `verification` the committed document the next sync starts from."""
+        raw = encode(verification)
+        (self.openapi / "verification.json").write_bytes(raw)
+        self.source["verification.json"]["sha256"] = hashlib.sha256(raw).hexdigest()
+        (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
+
     def sync(self, write: bool = True) -> tuple[spec_sync.Report, str]:
         summary = self.tmp / "summary.md"
         self.message = self.tmp / "commit-message.txt"
@@ -463,12 +470,70 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("- `GET /v3/widgets/` response `count`: can now be null", breaking)
         self.assertEqual(report.commit_type, "feat")
 
+    def test_every_success_response_is_compared(self) -> None:
+        verification = base_verification()
+        responses = verification["paths"]["/v3/widgets/"]["post"]["responses"]
+        responses["201"] = {"description": "Created", "content": {"application/json": {"schema": ref("Widget")}}}
+        responses["202"] = {"description": "Accepted", "content": {"application/json": {"schema": {"type": "object", "properties": {"request_id": {"type": "string"}}}}}}
+        self.install(verification)
+        del verification["components"]["schemas"]["Widget"]["properties"]["color"]  # in 200 and 201: reported once
+        responses["202"]["content"]["application/json"]["schema"]["properties"]["request_id"] = {"type": "integer"}
+        gadget = verification["paths"]["/v3/gadgets/{gadget_id}/"]["delete"]["responses"]
+        gadget["202"] = gadget.pop("200")  # the only success status changed: its body is still compared
+        verification["components"]["schemas"]["GadgetPart"]["properties"]["sku"] = {"type": "integer"}
+        self.publish(verification)
+
+        report, _ = self.sync()
+
+        self.assertEqual(
+            self.changes(report),
+            [
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "part.sku", "type", "string->integer"),
+                ("GET /v3/widgets/", "response", "results[].color", "removed", ""),
+                ("GET /v3/widgets/{widget_id}/", "response", "color", "removed", ""),
+                ("POST /v3/widgets/", "response", "color", "removed", ""),
+                ("POST /v3/widgets/", "response", "request_id", "type", "string->integer"),
+            ],
+        )
+
+    def test_union_and_format_changes_that_change_the_generated_type(self) -> None:
+        verification = base_verification()
+        schemas = verification["components"]["schemas"]
+        widget = schemas["Widget"]["properties"]
+        widget["size"] = {"oneOf": [{"type": "integer"}, {"type": "string"}]}
+        self.install(verification)
+        widget["name"] = {"oneOf": [{"type": "integer"}, {"type": "boolean"}]}  # a string becomes a union
+        widget["size"]["oneOf"].append({"type": "boolean"})  # a union gains a variant
+        widget["id"] = {"type": "string", "format": "date-time"}  # a string becomes a date and time
+        widget["color"] = {"type": "string", "format": "uri"}  # a format no SDK maps to a type of its own
+        # Object variants merge into one object, so a variant that only adds fields breaks nothing; one variant and null is
+        # the same type, now nullable.
+        schemas["Gadget"]["properties"]["part"] = {"oneOf": [ref("GadgetPart"), {"type": "object", "properties": {"serial": {"type": "string"}}}]}
+        schemas["GadgetPart"]["properties"]["sku"] = {"oneOf": [{"type": "string"}, {"type": "null"}]}
+        create = verification["paths"]["/v3/widgets/"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        create["properties"]["color"] = {"type": "string", "format": "binary"}
+        self.publish(verification)
+
+        report, summary = self.sync()
+
+        expected = [("DELETE /v3/gadgets/{gadget_id}/", "response", "part.sku", "now-null", "")]
+        for key, prefix in (("GET /v3/widgets/", "results[]."), ("GET /v3/widgets/{widget_id}/", ""), ("POST /v3/widgets/", "")):
+            if key == "POST /v3/widgets/":
+                expected.append((key, "request", "color", "type", "string->string(binary)"))
+            expected += [
+                (key, "response", f"{prefix}id", "type", "string->string(date-time)"),
+                (key, "response", f"{prefix}name", "type", "string->boolean|integer"),
+                (key, "response", f"{prefix}size", "type", "integer|string->boolean|integer|string"),
+            ]
+        self.assertEqual(self.changes(report), expected)
+        breaking = self.section(summary, "Breaking changes")
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `name`: type changed from string to boolean|integer", breaking)
+        self.assertIn("- `GET /v3/widgets/{widget_id}/` response `id`: type changed from string to string(date-time)", breaking)
+
     def test_property_named_like_a_documentation_key_is_compared(self) -> None:
         verification = base_verification()
         verification["components"]["schemas"]["GadgetPart"]["properties"]["description"] = {"type": "string"}
-        (self.openapi / "verification.json").write_bytes(encode(verification))
-        self.source["verification.json"]["sha256"] = hashlib.sha256(encode(verification)).hexdigest()
-        (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
+        self.install(verification)
         del verification["components"]["schemas"]["GadgetPart"]["properties"]["description"]
         self.publish(verification)
 

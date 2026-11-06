@@ -92,6 +92,8 @@ TYPE_CHANGED = "type"
 NOW_NULL = "now-null"
 ENUM_VALUE_REMOVED = "enum-value-removed"
 NOW_REQUIRED = "now-required"
+# String formats the SDKs map to a type of their own (a date and time, a file), so adding or removing one changes a type.
+TYPED_FORMATS = frozenset({"date-time", "binary"})
 
 
 class SyncError(Exception):
@@ -431,6 +433,54 @@ def null_variant(schema: Any) -> bool:
     return isinstance(schema, dict) and (schema.get("type") == "null" or schema.get("enum") == [None])
 
 
+def union_variants(schema: dict[str, Any]) -> list[Any]:
+    """The oneOf and anyOf variants other than null."""
+    return [variant for keyword in ("oneOf", "anyOf") for variant in schema.get(keyword) or [] if not null_variant(variant)]
+
+
+def string_enum(schema: Any) -> bool:
+    values = schema.get("enum") if isinstance(schema, dict) else None
+    return (
+        isinstance(values, list)
+        and schema.get("type") in (None, "string")
+        and any(isinstance(value, str) for value in values)
+        and all(value is None or isinstance(value, str) for value in values)
+    )
+
+
+def single(schema: Any, depth: int = 0) -> Any:
+    """The one type a oneOf/anyOf stands for, read like the generator: its only non-null variant, one object merging object
+    variants, or one enum merging string enum variants. Other schemas, a union of different types included, stay as they
+    are. Nullability is read from the schema itself (can_be_null), because merging drops the null variants."""
+    if not isinstance(schema, dict) or "allOf" in schema or depth > MAX_SCHEMA_DEPTH:
+        return schema
+    variants = [single(variant, depth + 1) for variant in union_variants(schema)]
+    if not variants or not all(isinstance(variant, dict) for variant in variants):
+        return schema
+    rest = {key: value for key, value in schema.items() if key not in ("oneOf", "anyOf")}
+    if len(variants) == 1:
+        return {**variants[0], **rest}
+    parts = [object_properties(variant) for variant in variants]
+    if all(properties for properties, _ in parts):
+        merged: dict[str, Any] = {}
+        for properties, _ in parts:
+            for name, value in properties.items():
+                merged.setdefault(name, value)
+        required = set.intersection(*(names for _, names in parts))
+        return {**rest, "type": "object", "properties": merged, "required": sorted(required)}
+    if all(string_enum(variant) for variant in variants):
+        values = list(dict.fromkeys(value for variant in variants for value in variant["enum"] if value is not None))
+        return {**rest, "type": "string", "enum": values}
+    return schema
+
+
+def can_be_null(schema: Any, depth: int = 0) -> bool:
+    """Whether the schema accepts null: a null type, nullable, null in its enum, or a null or nullable union variant."""
+    if not isinstance(schema, dict) or depth > MAX_SCHEMA_DEPTH:
+        return False
+    return "null" in schema_types(schema) or any(can_be_null(variant, depth + 1) for variant in union_variants(schema))
+
+
 def schema_types(schema: dict[str, Any]) -> set[str]:
     """The JSON types a schema allows, "null" included; an untyped schema is inferred from its keywords or allOf."""
     raw = schema.get("type")
@@ -453,17 +503,20 @@ def schema_types(schema: dict[str, Any]) -> set[str]:
     return types
 
 
-def type_label(schema: Any) -> str:
+def type_kind(schema: Any) -> str:
+    """The type typed code sees, "" when the schema does not say: its JSON types without null, a string format the SDKs
+    map to a type of its own in parentheses, or for a union of different types the kinds of its variants, so that a
+    variant of another kind added or removed changes it."""
+    schema = single(schema)
     if not isinstance(schema, dict):
-        return "any"
-    variants = [variant for keyword in ("oneOf", "anyOf") for variant in schema_variants(schema, keyword)]
+        return ""
+    variants = union_variants(schema) if "allOf" not in schema else []
     if variants:
-        return "|".join(type_label(variant) for variant in variants)
-    return "/".join(sorted(schema_types(schema) - {"null"})) or "any"
-
-
-def schema_variants(schema: dict[str, Any], keyword: str) -> list[Any]:
-    return [variant for variant in schema.get(keyword) or [] if not null_variant(variant)]
+        return "|".join(sorted({type_kind(variant) or "any" for variant in variants}))
+    kind = "/".join(sorted(schema_types(schema) - {"null"}))
+    if kind == "string" and schema.get("format") in TYPED_FORMATS:
+        kind += f"({schema['format']})"
+    return kind
 
 
 def object_properties(schema: dict[str, Any]) -> tuple[dict[str, Any], set[str]]:
@@ -491,15 +544,15 @@ def compare_schemas(old: Any, new: Any, operation: str, location: str, path: str
     if depth > MAX_SCHEMA_DEPTH or observable(old) == observable(new):
         return
     if not isinstance(old, dict) or not isinstance(new, dict):
-        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{type_label(old)}->{type_label(new)}"))
+        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{type_kind(old) or 'any'}->{type_kind(new) or 'any'}"))
         return
-    old_types, new_types = schema_types(old), schema_types(new)
-    old_plain, new_plain = old_types - {"null"}, new_types - {"null"}
-    if old_plain and new_plain and old_plain != new_plain:
-        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{'/'.join(sorted(old_plain))}->{'/'.join(sorted(new_plain))}"))
+    old_kind, new_kind = type_kind(old), type_kind(new)
+    if old_kind and new_kind and old_kind != new_kind:
+        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{old_kind}->{new_kind}"))
         return
-    if "null" in new_types and "null" not in old_types:
+    if can_be_null(new) and not can_be_null(old):
         found.append(BreakingChange(operation, location, path, NOW_NULL))
+    old, new = single(old), single(new)
     old_enum, new_enum = old.get("enum"), new.get("enum")
     if isinstance(old_enum, list) and isinstance(new_enum, list):
         for value in old_enum:
@@ -521,14 +574,12 @@ def compare_schemas(old: Any, new: Any, operation: str, location: str, path: str
             old_sub = old_sub if isinstance(old_sub, dict) else {}
             new_sub = new_sub if isinstance(new_sub, dict) else {}
             compare_schemas(old_sub, new_sub, operation, location, path + suffix, found, depth + 1)
-    for keyword in ("oneOf", "anyOf"):
-        old_variants, new_variants = schema_variants(old, keyword), schema_variants(new, keyword)
-        if len(new_variants) < len(old_variants):
-            detail = f"{'|'.join(map(type_label, old_variants))}->{'|'.join(map(type_label, new_variants)) or 'any'}"
-            found.append(BreakingChange(operation, location, path, TYPE_CHANGED, detail))
-        elif len(new_variants) == len(old_variants):
-            for index, (old_variant, new_variant) in enumerate(zip(old_variants, new_variants)):
-                compare_schemas(old_variant, new_variant, operation, location, f"{path}({keyword} {index + 1})", found, depth + 1)
+    # A union of different types left: its kinds match (type_kind), so compare the variants of the same kind in order.
+    old_variants = sorted(union_variants(old), key=type_kind) if "allOf" not in old else []
+    new_variants = sorted(union_variants(new), key=type_kind) if "allOf" not in new else []
+    if old_variants and len(old_variants) == len(new_variants):
+        for index, (old_variant, new_variant) in enumerate(zip(old_variants, new_variants)):
+            compare_schemas(old_variant, new_variant, operation, location, f"{path}(variant {index + 1})", found, depth + 1)
 
 
 def parameters_of(data: Any, op: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
@@ -549,19 +600,19 @@ def request_body(data: Any, op: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
     return body.get("required") is True, schemas
 
 
-def success_schema(data: Any, op: dict[str, Any]) -> Any:
-    """The schema of the first 2xx response with a body (JSON preferred), or None."""
+def success_schemas(data: Any, op: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """The schema of every 2xx response body, by status and media type."""
     responses = op.get("responses") if isinstance(op.get("responses"), dict) else {}
-    for status in sorted(responses):
+    found: dict[str, dict[str, Any]] = {}
+    for status in sorted(responses, key=str):
         if not str(status).startswith("2"):
             continue
         response = dereference(data, responses[status])
         content = response.get("content") if isinstance(response, dict) and isinstance(response.get("content"), dict) else {}
-        entries = [content["application/json"]] if isinstance(content.get("application/json"), dict) else list(content.values())
-        for entry in entries:
-            if isinstance(entry, dict) and isinstance(entry.get("schema"), dict):
-                return entry["schema"]
-    return None
+        schemas = {media: entry["schema"] for media, entry in content.items() if isinstance(entry, dict) and isinstance(entry.get("schema"), dict)}
+        if schemas:
+            found[str(status)] = schemas
+    return found
 
 
 def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operation) -> list[BreakingChange]:
@@ -586,10 +637,15 @@ def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operat
     for media in sorted(old_bodies.keys() & new_bodies.keys()):
         compare_schemas(old_bodies[media], new_bodies[media], key, "request", "", found)
 
-    old_response, new_response = success_schema(old_data, old.op), success_schema(new_data, new.op)
-    if old_response is not None and new_response is not None:
-        compare_schemas(old_response, new_response, key, "response", "", found)
-    return list(dict.fromkeys(found))  # one entry per change, even when two media types share the schema
+    # Every 2xx response both versions have; when the only success status changed (200 to 201), the old body against the new.
+    old_responses, new_responses = success_schemas(old_data, old.op), success_schemas(new_data, new.op)
+    statuses = [(status, status) for status in old_responses if status in new_responses]
+    if not statuses and len(old_responses) == 1 and len(new_responses) == 1:
+        statuses = [(next(iter(old_responses)), next(iter(new_responses)))]
+    for before, after in statuses:
+        for media in sorted(old_responses[before].keys() & new_responses[after].keys()):
+            compare_schemas(old_responses[before][media], new_responses[after][media], key, "response", "", found)
+    return list(dict.fromkeys(found))  # one entry per change, even when several responses or media types share it
 
 
 def breaking_changes(old_docs: dict[str, Any], new_docs: dict[str, Any], old_ops: dict[str, Operation], new_ops: dict[str, Operation]) -> list[BreakingChange]:
