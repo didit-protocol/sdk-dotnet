@@ -505,14 +505,14 @@ def schema_types(schema: dict[str, Any]) -> set[str]:
 
 def type_kind(schema: Any) -> str:
     """The type typed code sees, "" when the schema does not say: its JSON types without null, a string format the SDKs
-    map to a type of its own in parentheses, or for a union of different types the kind of every variant, so that a
-    variant more or less changes it."""
+    map to a type of its own in parentheses, or for a union of different types the kinds of its variants, so that a
+    variant of another kind added or removed changes it."""
     schema = single(schema)
     if not isinstance(schema, dict):
         return ""
     variants = union_variants(schema) if "allOf" not in schema else []
     if variants:
-        return "|".join(sorted(type_kind(variant) or "any" for variant in variants))
+        return "|".join(sorted({type_kind(variant) or "any" for variant in variants}))
     kind = "/".join(sorted(schema_types(schema) - {"null"}))
     if kind == "string" and schema.get("format") in TYPED_FORMATS:
         kind += f"({schema['format']})"
