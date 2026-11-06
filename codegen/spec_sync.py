@@ -72,8 +72,9 @@ CHECKS_MARKER = "<!-- spec-sync:checks -->"  # .github/workflows/spec-sync.yml p
 
 # What only the documentation shows. A sync that changes nothing else is chore(spec) and releases nothing (DESIGN.md 3.1).
 DOCUMENTATION_KEYS = frozenset({"description", "summary", "title", "example", "examples", "externalDocs", "tags"})
-# Vendor extensions are documentation too, except the SDK naming and the webhook payloads.
-OBSERVABLE_EXTENSIONS = frozenset({"x-didit-sdk", "x-webhooks"})
+# Vendor extensions are documentation too, except the webhook payloads. The SDK naming (x-didit-sdk) is compared per
+# operation together with overlay.json, so upstream adopting an overlay entry as it is changes nothing.
+OBSERVABLE_EXTENSIONS = frozenset({"x-webhooks"})
 # Objects whose keys are names (properties, paths, status codes, media types), so a property called "description" stays.
 NAME_MAPS = frozenset(
     {
@@ -394,9 +395,9 @@ def observable_document(data: dict[str, Any]) -> Any:
     return observable({key: value for key, value in data.items() if key != "info"})
 
 
-def commit_type(files: list[Upstream], breaking: list[BreakingChange]) -> str:
+def commit_type(files: list[Upstream], naming_changed: bool, breaking: list[BreakingChange]) -> str:
     """feat when a synced document changed anything a caller can observe; chore when only documentation changed."""
-    if breaking:
+    if breaking or naming_changed:
         return "feat"
     for item in files:
         if item.changed and observable_document(item.old_data) != observable_document(item.data):
@@ -770,7 +771,11 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
         deprecated["schemas"][api] = keep
 
     report.breaking = breaking_changes(old_docs, new_docs, {**old_ops, **old_auth}, {**new_ops, **new_auth})
-    report.commit_type = commit_type(files, report.breaking)
+    naming_changed = any(
+        canonical(naming_of(old_ops[key], original_overlay)) != canonical(naming_of(new_ops[key], overlay_ops))
+        for key in old_ops.keys() & new_ops.keys()
+    ) or any(canonical(naming_of(old_auth[key], {})) != canonical(naming_of(new_auth[key], {})) for key in old_auth.keys() & new_auth.keys())
+    report.commit_type = commit_type(files, naming_changed, report.breaking)
 
 
 def bullet_list(items: list[str]) -> list[str]:
