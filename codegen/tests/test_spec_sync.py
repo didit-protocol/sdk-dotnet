@@ -26,6 +26,7 @@ import spec_sync  # noqa: E402
 NOW = datetime(2026, 10, 17, 6, 17, 30, tzinfo=timezone.utc)
 VERIFICATION_URL = "https://docs.didit.me/openapi-25.json"
 ACCOUNT_URL = "https://docs.didit.me/openapi-auth.json"
+AUTHENTICATION_URL = "https://docs.didit.me/openapi-authentication.json"
 
 
 def ref(name: str) -> dict[str, str]:
@@ -83,7 +84,12 @@ def base_verification() -> dict[str, Any]:
             "schemas": {
                 "Widget": {
                     "type": "object",
-                    "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "color": {"type": "string"}},
+                    "properties": {
+                        "id": {"type": "string"},
+                        "name": {"type": "string"},
+                        "color": {"type": "string"},
+                        "status": {"type": "string", "enum": ["active", "archived"]},
+                    },
                 },
                 "WidgetList": {
                     "type": "object",
@@ -111,6 +117,29 @@ def base_account() -> dict[str, Any]:
                     "requestBody": json_body({"type": "object", "properties": {"email": {"type": "string"}}}),
                     "responses": ok({"type": "object", "properties": {"access_token": {"type": "string"}}}),
                 }
+            }
+        },
+        "components": {"schemas": {}},
+    }
+
+
+def base_authentication() -> dict[str, Any]:
+    """A small synthetic Authentication document: its naming is upstream, there is no overlay for it."""
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": "Synthetic authentication API", "version": "1.0.0"},
+        "paths": {
+            "/session/": {
+                "get": {
+                    "operationId": "getSession",
+                    "x-didit-sdk": {"resource": "authentication", "method": "get_session", "auth": "access_token", "server": True},
+                    "responses": ok({"type": "object", "properties": {"sid": {"type": "string"}}}),
+                },
+                "delete": {
+                    "operationId": "revokeSession",
+                    "x-didit-sdk": {"resource": "authentication", "method": "revoke_session", "auth": "access_token", "server": True},
+                    "responses": {"204": {"description": "Revoked"}},
+                },
             }
         },
         "components": {"schemas": {}},
@@ -152,12 +181,14 @@ class SpecSyncTest(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-        verification, account = encode(base_verification()), encode(base_account())
+        verification, account, authentication = encode(base_verification()), encode(base_account()), encode(base_authentication())
         (self.openapi / "verification.json").write_bytes(verification)
         (self.openapi / "account.json").write_bytes(account)
+        (self.openapi / "authentication.json").write_bytes(authentication)
         self.source = {
             "verification.json": {"url": VERIFICATION_URL, "sha256": hashlib.sha256(verification).hexdigest(), "fetched_at": "2026-10-16T06:17:00Z"},
             "account.json": {"url": ACCOUNT_URL, "sha256": hashlib.sha256(account).hexdigest(), "fetched_at": "2026-10-16T06:17:00Z"},
+            "authentication.json": {"url": AUTHENTICATION_URL, "sha256": hashlib.sha256(authentication).hexdigest(), "fetched_at": "2026-10-16T06:17:00Z"},
             "webhook-vectors.json": {"generator": "synthetic", "source": "synthetic"},
         }
         (self.openapi / "SOURCE.json").write_text(json.dumps(self.source, indent=1), "utf-8")
@@ -166,17 +197,22 @@ class SpecSyncTest(unittest.TestCase):
 
     # helpers
 
-    def publish(self, verification: dict[str, Any], account: dict[str, Any] | None = None) -> bytes:
+    def publish(self, verification: dict[str, Any], account: dict[str, Any] | None = None, authentication: dict[str, Any] | None = None) -> bytes:
         raw = encode(verification)
         (self.offline / "verification.json").write_bytes(raw)
         (self.offline / "account.json").write_bytes(encode(account or base_account()))
+        (self.offline / "authentication.json").write_bytes(encode(authentication or base_authentication()))
         return raw
 
     def sync(self, write: bool = True) -> tuple[spec_sync.Report, str]:
         summary = self.tmp / "summary.md"
+        self.message = self.tmp / "commit-message.txt"
         with redirect_stdout(io.StringIO()):
-            report = spec_sync.run(self.root, offline=self.offline, write=write, summary_path=summary, now=NOW)
+            report = spec_sync.run(self.root, offline=self.offline, write=write, summary_path=summary, now=NOW, commit_message_path=self.message)
         return report, summary.read_text("utf-8")
+
+    def commit_message(self) -> str:
+        return self.message.read_text("utf-8")
 
     def snapshot(self) -> dict[str, bytes]:
         return {path.name: path.read_bytes() for path in sorted(self.openapi.iterdir())}
@@ -194,6 +230,10 @@ class SpecSyncTest(unittest.TestCase):
         end = summary.find("\n### ", start + 1)
         return summary[start : end if end != -1 else len(summary)]
 
+    @staticmethod
+    def changes(report: spec_sync.Report) -> list[tuple[str, str, str, str, str]]:
+        return [(c.operation, c.location, c.field, c.kind, c.detail) for c in report.breaking]
+
     # tests
 
     def test_no_change_writes_nothing(self) -> None:
@@ -202,7 +242,8 @@ class SpecSyncTest(unittest.TestCase):
         self.assertFalse(report.changed)
         self.assertEqual(before, self.snapshot())
         self.assertIn("No upstream changes.", summary)
-        self.assertEqual(self.outputs(), {"changed": "false", "needs_naming": "false", "date": "2026-10-17"})
+        self.assertNotIn("Breaking changes", summary)
+        self.assertEqual(self.outputs(), {"changed": "false", "needs_naming": "false", "type": "chore", "date": "2026-10-17"})
 
     def test_added_operations(self) -> None:
         verification = base_verification()
@@ -237,8 +278,11 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("`GET /v3/sprockets/`: sprockets.list", added)
         self.assertIn("`createGizmo`", self.section(summary, "Needs SDK naming"))
         self.assertIn("`Sprocket` (verification)", self.section(summary, "Schemas"))
-        self.assertIn("None.", self.section(summary, "Breaking"))
-        self.assertEqual(self.outputs(), {"changed": "true", "needs_naming": "true", "date": "2026-10-17"})
+        self.assertTrue(summary.startswith("### Breaking changes\n"), "the pull request body opens with the breaking changes")
+        self.assertIn("None detected.", self.section(summary, "Breaking changes"))
+        self.assertIn("`feat(spec)`", self.section(summary, "Release"))
+        self.assertEqual(self.commit_message(), "feat(spec): sync API spec 2026-10-17\n")
+        self.assertEqual(self.outputs(), {"changed": "true", "needs_naming": "true", "type": "feat", "date": "2026-10-17"})
 
     def test_removed_operation_is_deprecated(self) -> None:
         verification = base_verification()
@@ -262,10 +306,11 @@ class SpecSyncTest(unittest.TestCase):
         self.assertEqual(deprecated["schemas"]["account"], {})
         self.assertNotIn("DELETE /v3/gadgets/{gadget_id}/", self.overlay_ops(), "the naming moves to deprecated-operations.json")
 
-        breaking = self.section(summary, "Breaking")
-        self.assertIn("Removed operation `DELETE /v3/gadgets/{gadget_id}/` (gadgets.delete)", breaking)
-        self.assertIn("`[Obsolete]`", breaking)
-        self.assertIn("until the next minor release", self.section(summary, "Deprecated SDK methods"))
+        self.assertEqual(self.changes(report), [("DELETE /v3/gadgets/{gadget_id}/", "operation", "", "removed", "")])
+        self.assertIn("- `DELETE /v3/gadgets/{gadget_id}/`: operation removed", self.section(summary, "Breaking changes"))
+        deprecated_section = self.section(summary, "Deprecated SDK methods")
+        self.assertIn("`[Obsolete]`, until the next minor release", deprecated_section)
+        self.assertIn("`DELETE /v3/gadgets/{gadget_id}/`: gadgets.delete", deprecated_section)
 
     def test_deprecated_operation_restored_when_it_returns(self) -> None:
         verification = base_verification()
@@ -286,13 +331,14 @@ class SpecSyncTest(unittest.TestCase):
         verification["paths"]["/v3/widgets/"]["get"]["x-didit-sdk"] = dict(base_overlay()["operations"]["GET /v3/widgets/"])
         self.publish(verification)
 
-        _, summary = self.sync()
+        report, summary = self.sync()
 
         expected = base_overlay()
         del expected["operations"]["GET /v3/widgets/"]
         self.assertEqual((self.openapi / "overlay.json").read_text("utf-8"), json.dumps(expected, indent=1), "1-space indent, sorted keys, entries keep their key order")
         self.assertIn("Deleted `GET /v3/widgets/`: upstream now carries the same `x-didit-sdk`.", self.section(summary, "Overlay"))
-        self.assertIn("None.", self.section(summary, "Breaking"))
+        self.assertIn("None detected.", self.section(summary, "Breaking changes"))
+        self.assertEqual(report.commit_type, "chore", "upstream adopting the overlay naming as it is changes nothing a caller sees")
 
     def test_upstream_naming_wins_over_a_different_overlay_entry(self) -> None:
         verification = base_verification()
@@ -304,7 +350,9 @@ class SpecSyncTest(unittest.TestCase):
         self.assertNotIn("GET /v3/widgets/", self.overlay_ops())
         self.assertIn(("GET /v3/widgets/", "widgets.list_all"), report.changed_ops)
         self.assertIn("Naming change `GET /v3/widgets/`: overlay `widgets.list`, upstream `widgets.list_all`", self.section(summary, "Overlay"))
-        self.assertIn("SDK naming of `GET /v3/widgets/` changes from `widgets.list` to `widgets.list_all`", self.section(summary, "Breaking"))
+        self.assertIn("SDK naming of `GET /v3/widgets/` changes from `widgets.list` to `widgets.list_all`", self.section(summary, "SDK naming changes"))
+        self.assertEqual(report.breaking, [], "a new SDK name for the same endpoint is not an API change")
+        self.assertEqual(report.commit_type, "feat")
 
     def test_renamed_operation_keeps_an_obsolete_alias(self) -> None:
         verification = base_verification()
@@ -320,7 +368,7 @@ class SpecSyncTest(unittest.TestCase):
         self.assertEqual((record["path"], record["method"], record["removed_on"]), ("/v3/widgets/", "get", "2026-10-17"))
         self.assertNotIn("operation", record, "the alias calls the live operation")
         self.assertIn(("GET /v3/widgets/ (renamed from widgets.list)", "widgets.list"), report.deprecated)
-        self.assertIn("the old method stays as an `[Obsolete]` alias", self.section(summary, "Breaking"))
+        self.assertIn("the old method stays as an `[Obsolete]` alias", self.section(summary, "SDK naming changes"))
         self.assertIn("renamed from widgets.list", self.section(summary, "Deprecated SDK methods"))
 
         # Renamed back: the first alias is no longer needed, the name it replaced gets one.
@@ -346,7 +394,7 @@ class SpecSyncTest(unittest.TestCase):
         self.assertFalse((self.openapi / "deprecated-operations.json").exists())
         self.assertNotIn("DELETE /v3/gadgets/{gadget_id}/", self.overlay_ops())
         self.assertIn("`DELETE /v3/gadgets/{gadget_id}/` to `DELETE /v3/parts/{gadget_id}/`: gadgets.delete", self.section(summary, "Operations"))
-        self.assertIn("None.", self.section(summary, "Breaking"))
+        self.assertEqual(self.changes(report), [("DELETE /v3/gadgets/{gadget_id}/", "operation", "", "removed", "")], "the API removed that path")
 
     def test_breaking_section(self) -> None:
         verification = base_verification()
