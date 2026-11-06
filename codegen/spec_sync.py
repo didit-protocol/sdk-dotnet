@@ -431,6 +431,54 @@ def null_variant(schema: Any) -> bool:
     return isinstance(schema, dict) and (schema.get("type") == "null" or schema.get("enum") == [None])
 
 
+def union_variants(schema: dict[str, Any]) -> list[Any]:
+    """The oneOf and anyOf variants other than null."""
+    return [variant for keyword in ("oneOf", "anyOf") for variant in schema.get(keyword) or [] if not null_variant(variant)]
+
+
+def string_enum(schema: Any) -> bool:
+    values = schema.get("enum") if isinstance(schema, dict) else None
+    return (
+        isinstance(values, list)
+        and schema.get("type") in (None, "string")
+        and any(isinstance(value, str) for value in values)
+        and all(value is None or isinstance(value, str) for value in values)
+    )
+
+
+def single(schema: Any, depth: int = 0) -> Any:
+    """The one type a oneOf/anyOf stands for, read like the generator: its only non-null variant, one object merging object
+    variants, or one enum merging string enum variants. Other schemas, a union of different types included, stay as they
+    are. Nullability is read from the schema itself (can_be_null), because merging drops the null variants."""
+    if not isinstance(schema, dict) or "allOf" in schema or depth > MAX_SCHEMA_DEPTH:
+        return schema
+    variants = [single(variant, depth + 1) for variant in union_variants(schema)]
+    if not variants or not all(isinstance(variant, dict) for variant in variants):
+        return schema
+    rest = {key: value for key, value in schema.items() if key not in ("oneOf", "anyOf")}
+    if len(variants) == 1:
+        return {**variants[0], **rest}
+    parts = [object_properties(variant) for variant in variants]
+    if all(properties for properties, _ in parts):
+        merged: dict[str, Any] = {}
+        for properties, _ in parts:
+            for name, value in properties.items():
+                merged.setdefault(name, value)
+        required = set.intersection(*(names for _, names in parts))
+        return {**rest, "type": "object", "properties": merged, "required": sorted(required)}
+    if all(string_enum(variant) for variant in variants):
+        values = list(dict.fromkeys(value for variant in variants for value in variant["enum"] if value is not None))
+        return {**rest, "type": "string", "enum": values}
+    return schema
+
+
+def can_be_null(schema: Any, depth: int = 0) -> bool:
+    """Whether the schema accepts null: a null type, nullable, null in its enum, or a null or nullable union variant."""
+    if not isinstance(schema, dict) or depth > MAX_SCHEMA_DEPTH:
+        return False
+    return "null" in schema_types(schema) or any(can_be_null(variant, depth + 1) for variant in union_variants(schema))
+
+
 def schema_types(schema: dict[str, Any]) -> set[str]:
     """The JSON types a schema allows, "null" included; an untyped schema is inferred from its keywords or allOf."""
     raw = schema.get("type")
