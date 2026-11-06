@@ -590,29 +590,39 @@ def parameters_of(data: Any, op: dict[str, Any]) -> dict[tuple[str, str], dict[s
     return found
 
 
+def body_schemas(body: Any) -> dict[str, Any]:
+    """The schema of a request or response body per media type (None when a media type has none); empty without a body."""
+    content = body.get("content") if isinstance(body, dict) and isinstance(body.get("content"), dict) else {}
+    return {media: entry.get("schema") if isinstance(entry, dict) and isinstance(entry.get("schema"), dict) else None for media, entry in content.items()}
+
+
+def main_media(schemas: dict[str, Any]) -> str:
+    """The media type typed code reads a body as: JSON when the body offers it, else its first one, "none" without a body."""
+    return "application/json" if "application/json" in schemas else next(iter(schemas), "none")
+
+
 def request_body(data: Any, op: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
     """Whether the request body is required, and its schema per media type."""
     body = dereference(data, op.get("requestBody"))
     if not isinstance(body, dict):
         return False, {}
-    content = body.get("content") if isinstance(body.get("content"), dict) else {}
-    schemas = {media: entry.get("schema") for media, entry in content.items() if isinstance(entry, dict) and isinstance(entry.get("schema"), dict)}
-    return body.get("required") is True, schemas
+    return body.get("required") is True, body_schemas(body)
 
 
 def success_schemas(data: Any, op: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """The schema of every 2xx response body, by status and media type."""
+    """Every 2xx response: its body schema per media type, empty when it has no body."""
     responses = op.get("responses") if isinstance(op.get("responses"), dict) else {}
-    found: dict[str, dict[str, Any]] = {}
-    for status in sorted(responses, key=str):
-        if not str(status).startswith("2"):
-            continue
-        response = dereference(data, responses[status])
-        content = response.get("content") if isinstance(response, dict) and isinstance(response.get("content"), dict) else {}
-        schemas = {media: entry["schema"] for media, entry in content.items() if isinstance(entry, dict) and isinstance(entry.get("schema"), dict)}
-        if schemas:
-            found[str(status)] = schemas
-    return found
+    return {str(status): body_schemas(dereference(data, responses[status])) for status in sorted(responses, key=str) if str(status).startswith("2")}
+
+
+def compare_bodies(old: dict[str, Any], new: dict[str, Any], operation: str, location: str, found: list[BreakingChange]) -> None:
+    """A body whose media type changed (JSON to a PDF, a body to none) changes type; otherwise every shared media type is compared."""
+    if main_media(old) != main_media(new):
+        found.append(BreakingChange(operation, location, "", TYPE_CHANGED, f"{main_media(old)}->{main_media(new)}"))
+        return
+    for media in sorted(old.keys() & new.keys()):
+        if old[media] is not None and new[media] is not None:
+            compare_schemas(old[media], new[media], operation, location, "", found)
 
 
 def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operation) -> list[BreakingChange]:
