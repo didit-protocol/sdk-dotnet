@@ -1,0 +1,17 @@
+# Secret scan configuration for gitleaks (the "Secret scan" job in .github/workflows/ci.yml).
+# The default rules apply everywhere; only the two exceptions below are allowed. Never widen them: change the
+# fixture instead (tests generate keys at run time, and fake values do not look like real credentials).
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Upstream copies under openapi/ and the synthetic whsec_test_ webhook secrets"
+# Copies of the published API documents and of the backend's webhook vectors; only the spec sync updates them.
+paths = [
+  '''^openapi/(verification|account|webhook-vectors)\.json$''',
+]
+# Synthetic webhook signing secrets used by the tests and examples.
+regexes = [
+  '''^whsec_test_[A-Za-z0-9_]+$''',
+]

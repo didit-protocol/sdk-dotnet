@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+
+# Generated from openapi/ by codegen/generate.py; collapsed in pull request diffs.
+src/Didit/Generated/** linguist-generated=true
+tests/Didit.Tests/Generated/** linguist-generated=true
+openapi/verification.json linguist-generated=true
+openapi/account.json linguist-generated=true
+openapi/webhook-vectors.json linguist-generated=true
