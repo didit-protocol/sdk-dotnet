@@ -368,132 +368,235 @@ def schema_label(api: str, name: str) -> str:
     return f"`{name}` ({api})"
 
 
-# Breaking-change detection
+# Classification: documentation-only or observable
 
 
-def item_prefix(prefix: str) -> str:
-    return prefix[:-1] + "[]." if prefix else "[]."
+def documentation_key(key: str) -> bool:
+    return key in DOCUMENTATION_KEYS or (key.startswith("x-") and key not in OBSERVABLE_EXTENSIONS)
 
 
-def property_paths(data: Any, schema: Any, follow: bool, prefix: str = "", seen: frozenset[str] = frozenset(), depth: int = 0) -> set[str]:
-    """Dotted paths of every property in `schema`, through inline objects, arrays and allOf/oneOf/anyOf."""
-    if depth > MAX_DEPTH or not isinstance(schema, dict):
-        return set()
-    ref = schema.get("$ref")
-    if isinstance(ref, str):
-        if not follow or ref in seen:
-            return set()
-        target = resolve(data, schema)
-        return property_paths(data, target, follow, prefix, seen | {ref}, depth + 1)
-    found: set[str] = set()
-    properties = schema.get("properties")
-    if isinstance(properties, dict):
-        for name, sub in properties.items():
-            found.add(prefix + name)
-            found |= property_paths(data, sub, follow, f"{prefix}{name}.", seen, depth + 1)
-    for combiner in ("allOf", "oneOf", "anyOf"):
-        members = schema.get(combiner)
-        if isinstance(members, list):
-            for sub in members:
-                found |= property_paths(data, sub, follow, prefix, seen, depth + 1)
-    if isinstance(schema.get("items"), dict):
-        found |= property_paths(data, schema["items"], follow, item_prefix(prefix), seen, depth + 1)
-    return found
+def observable(node: Any, names: bool = False) -> Any:
+    """`node` without its documentation, so that only what a caller can observe compares."""
+    if isinstance(node, dict):
+        if names:
+            return {key: observable(value) for key, value in node.items()}
+        return {
+            key: value if key in VALUE_KEYS else observable(value, key in NAME_MAPS)
+            for key, value in node.items()
+            if not documentation_key(key)
+        }
+    if isinstance(node, list):
+        return [observable(item) for item in node]
+    return node
 
 
-def required_paths(data: Any, schema: Any, prefix: str = "", seen: frozenset[str] = frozenset(), depth: int = 0) -> set[str]:
-    """Dotted paths of every required property in `schema`, following $refs and allOf."""
-    if depth > MAX_DEPTH or not isinstance(schema, dict):
-        return set()
-    ref = schema.get("$ref")
-    if isinstance(ref, str):
-        if ref in seen:
-            return set()
-        return required_paths(data, resolve(data, schema), prefix, seen | {ref}, depth + 1)
-    found: set[str] = set()
-    required = schema.get("required")
-    if isinstance(required, list):
-        found |= {prefix + name for name in required if isinstance(name, str)}
-    properties = schema.get("properties")
-    if isinstance(properties, dict):
-        for name, sub in properties.items():
-            found |= required_paths(data, sub, f"{prefix}{name}.", seen, depth + 1)
-    members = schema.get("allOf")
-    if isinstance(members, list):
-        for sub in members:
-            found |= required_paths(data, sub, prefix, seen, depth + 1)
-    if isinstance(schema.get("items"), dict):
-        found |= required_paths(data, schema["items"], item_prefix(prefix), seen, depth + 1)
-    return found
+def observable_document(data: dict[str, Any]) -> Any:
+    return observable({key: value for key, value in data.items() if key != "info"})
+
+
+def commit_type(files: list[Upstream], breaking: list[BreakingChange]) -> str:
+    """feat when a synced document changed anything a caller can observe; chore when only documentation changed."""
+    if breaking:
+        return "feat"
+    for item in files:
+        if item.changed and observable_document(item.old_data) != observable_document(item.data):
+            return "feat"
+    return "chore"
+
+
+# Breaking-change detection (DESIGN.md 3.1): the same list in every server SDK
+
+
+def dereference(data: Any, node: Any, stack: tuple[str, ...] = ()) -> Any:
+    """A copy of `node` with every local $ref replaced by its target; a $ref's siblings override the target's keys."""
+    if isinstance(node, dict):
+        ref = node.get("$ref")
+        if isinstance(ref, str):
+            if ref in stack or len(stack) >= MAX_REF_DEPTH:
+                return {"$cycle": ref}
+            try:
+                target = dereference(data, pointer(data, ref), stack + (ref,))
+            except SyncError:
+                return {"$unresolved": ref}
+            siblings = {key: dereference(data, value, stack) for key, value in node.items() if key != "$ref"}
+            return {**target, **siblings} if isinstance(target, dict) else target
+        return {key: dereference(data, value, stack) for key, value in node.items()}
+    if isinstance(node, list):
+        return [dereference(data, item, stack) for item in node]
+    return node
+
+
+def null_variant(schema: Any) -> bool:
+    return isinstance(schema, dict) and (schema.get("type") == "null" or schema.get("enum") == [None])
+
+
+def schema_types(schema: dict[str, Any]) -> set[str]:
+    """The JSON types a schema allows, "null" included; an untyped schema is inferred from its keywords or allOf."""
+    raw = schema.get("type")
+    types = set(raw) if isinstance(raw, list) else ({raw} if isinstance(raw, str) else set())
+    if not types - {"null"}:
+        if any(key in schema for key in ("properties", "additionalProperties", "patternProperties")):
+            types.add("object")
+        elif "items" in schema:
+            types.add("array")
+        else:
+            for member in schema.get("allOf") or []:
+                if isinstance(member, dict):
+                    types |= schema_types(member) - {"null"}
+    if schema.get("nullable") is True:
+        types.add("null")
+    if any(null_variant(variant) for variant in (schema.get("anyOf") or []) + (schema.get("oneOf") or [])):
+        types.add("null")
+    if isinstance(schema.get("enum"), list) and None in schema["enum"]:
+        types.add("null")
+    return types
+
+
+def type_label(schema: Any) -> str:
+    if not isinstance(schema, dict):
+        return "any"
+    variants = [variant for keyword in ("oneOf", "anyOf") for variant in schema_variants(schema, keyword)]
+    if variants:
+        return "|".join(type_label(variant) for variant in variants)
+    return "/".join(sorted(schema_types(schema) - {"null"})) or "any"
+
+
+def schema_variants(schema: dict[str, Any], keyword: str) -> list[Any]:
+    return [variant for variant in schema.get(keyword) or [] if not null_variant(variant)]
+
+
+def object_properties(schema: dict[str, Any]) -> tuple[dict[str, Any], set[str]]:
+    """The properties and required names of an object schema, merged through allOf."""
+    properties: dict[str, Any] = {}
+    required: set[str] = set()
+    stack = [schema]
+    while stack:
+        current = stack.pop()
+        if not isinstance(current, dict):
+            continue
+        if isinstance(current.get("properties"), dict):
+            properties.update(current["properties"])
+        required |= {name for name in current.get("required") or [] if isinstance(name, str)}
+        stack.extend(current.get("allOf") or [])
+    return properties, required
+
+
+def join_field(prefix: str, name: str) -> str:
+    return f"{prefix}.{name}" if prefix else name
+
+
+def compare_schemas(old: Any, new: Any, operation: str, location: str, path: str, found: list[BreakingChange], depth: int = 0) -> None:
+    """Appends every change from `old` to `new` (both dereferenced) that can break typed code."""
+    if depth > MAX_SCHEMA_DEPTH or observable(old) == observable(new):
+        return
+    if not isinstance(old, dict) or not isinstance(new, dict):
+        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{type_label(old)}->{type_label(new)}"))
+        return
+    old_types, new_types = schema_types(old), schema_types(new)
+    old_plain, new_plain = old_types - {"null"}, new_types - {"null"}
+    if old_plain and new_plain and old_plain != new_plain:
+        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{'/'.join(sorted(old_plain))}->{'/'.join(sorted(new_plain))}"))
+        return
+    if "null" in new_types and "null" not in old_types:
+        found.append(BreakingChange(operation, location, path, NOW_NULL))
+    old_enum, new_enum = old.get("enum"), new.get("enum")
+    if isinstance(old_enum, list) and isinstance(new_enum, list):
+        for value in old_enum:
+            if value is not None and value not in new_enum:
+                found.append(BreakingChange(operation, location, path, ENUM_VALUE_REMOVED, json.dumps(value, ensure_ascii=False)))
+
+    old_properties, old_required = object_properties(old)
+    new_properties, new_required = object_properties(new)
+    for name in sorted(old_properties.keys() - new_properties.keys()):
+        found.append(BreakingChange(operation, location, join_field(path, name), REMOVED))
+    if location != "response":
+        for name in sorted(new_required - old_required):
+            found.append(BreakingChange(operation, location, join_field(path, name), NOW_REQUIRED))
+    for name in sorted(old_properties.keys() & new_properties.keys()):
+        compare_schemas(old_properties[name], new_properties[name], operation, location, join_field(path, name), found, depth + 1)
+    for key, suffix in (("items", "[]"), ("additionalProperties", "{}")):
+        old_sub, new_sub = old.get(key), new.get(key)
+        if isinstance(old_sub, dict) or isinstance(new_sub, dict):
+            old_sub = old_sub if isinstance(old_sub, dict) else {}
+            new_sub = new_sub if isinstance(new_sub, dict) else {}
+            compare_schemas(old_sub, new_sub, operation, location, path + suffix, found, depth + 1)
+    for keyword in ("oneOf", "anyOf"):
+        old_variants, new_variants = schema_variants(old, keyword), schema_variants(new, keyword)
+        if len(new_variants) < len(old_variants):
+            detail = f"{'|'.join(map(type_label, old_variants))}->{'|'.join(map(type_label, new_variants)) or 'any'}"
+            found.append(BreakingChange(operation, location, path, TYPE_CHANGED, detail))
+        elif len(new_variants) == len(old_variants):
+            for index, (old_variant, new_variant) in enumerate(zip(old_variants, new_variants)):
+                compare_schemas(old_variant, new_variant, operation, location, f"{path}({keyword} {index + 1})", found, depth + 1)
 
 
 def parameters_of(data: Any, op: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
     found: dict[tuple[str, str], dict[str, Any]] = {}
-    for parameter in op.get("parameters") or []:
-        resolved = resolve(data, parameter)
-        if isinstance(resolved, dict):
-            found[parameter_key(data, parameter)] = resolved
+    for parameter in dereference(data, op.get("parameters") or []):
+        if isinstance(parameter, dict):
+            found[(str(parameter.get("in", "")), str(parameter.get("name", "")))] = parameter
     return found
 
 
-def request_schemas(data: Any, op: dict[str, Any]) -> dict[str, Any]:
-    body = resolve(data, op.get("requestBody"))
+def request_body(data: Any, op: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    """Whether the request body is required, and its schema per media type."""
+    body = dereference(data, op.get("requestBody"))
     if not isinstance(body, dict):
-        return {}
-    content = body.get("content") or {}
-    return {media: entry["schema"] for media, entry in content.items() if isinstance(entry, dict) and isinstance(entry.get("schema"), dict)}
+        return False, {}
+    content = body.get("content") if isinstance(body.get("content"), dict) else {}
+    schemas = {media: entry.get("schema") for media, entry in content.items() if isinstance(entry, dict) and isinstance(entry.get("schema"), dict)}
+    return body.get("required") is True, schemas
 
 
-def response_schemas(data: Any, op: dict[str, Any]) -> dict[str, Any]:
-    found: dict[str, Any] = {}
-    for status, response in (op.get("responses") or {}).items():
-        if not str(status).startswith("2"):
+def success_schema(data: Any, op: dict[str, Any]) -> Any:
+    """The schema of the first 2xx response with a body (JSON preferred), or None."""
+    responses = op.get("responses") if isinstance(op.get("responses"), dict) else {}
+    for status in sorted(str(code) for code in responses):
+        if not status.startswith("2"):
             continue
-        resolved = resolve(data, response)
-        if not isinstance(resolved, dict):
-            continue
-        for media, entry in (resolved.get("content") or {}).items():
+        response = dereference(data, responses.get(status, responses.get(int(status) if status.isdigit() else status)))
+        content = response.get("content") if isinstance(response, dict) and isinstance(response.get("content"), dict) else {}
+        entries = [content["application/json"]] if isinstance(content.get("application/json"), dict) else list(content.values())
+        for entry in entries:
             if isinstance(entry, dict) and isinstance(entry.get("schema"), dict):
-                found[f"{status} {media}"] = entry["schema"]
-    return found
+                return entry["schema"]
+    return None
 
 
-def body_required(data: Any, op: dict[str, Any]) -> bool:
-    body = resolve(data, op.get("requestBody"))
-    return isinstance(body, dict) and body.get("required") is True
-
-
-def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operation, name: str) -> list[str]:
-    found: list[str] = []
-    where = f"`{new.key}` ({name})"
+def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operation) -> list[BreakingChange]:
+    """The changes from `old` to `new` (the same operation key) that can break typed code, in request and response."""
+    key = new.key
+    found: list[BreakingChange] = []
     old_parameters = parameters_of(old_data, old.effective)
-    for key, parameter in sorted(parameters_of(new_data, new.effective).items()):
-        if parameter.get("required") is True and not (key in old_parameters and old_parameters[key].get("required") is True):
-            found.append(f"Newly required {key[0]} parameter `{key[1]}` on {where}")
-    if body_required(new_data, new.op) and not body_required(old_data, old.op):
-        found.append(f"Request body is now required on {where}")
-    old_bodies = request_schemas(old_data, old.op)
-    new_bodies = request_schemas(new_data, new.op)
-    old_required: set[str] = set()
-    for schema in old_bodies.values():
-        old_required |= required_paths(old_data, schema)
-    new_required: set[str] = set()
-    for schema in new_bodies.values():
-        new_required |= required_paths(new_data, schema)
-    for path in sorted(new_required - old_required):
-        found.append(f"Newly required request property `{path}` on {where}")
-    for kind, old_map, new_map in (
-        ("request", old_bodies, new_bodies),
-        ("response", response_schemas(old_data, old.op), response_schemas(new_data, new.op)),
-    ):
-        gone: set[str] = set()
-        for media in old_map.keys() & new_map.keys():
-            old_schema, new_schema = old_map[media], new_map[media]
-            if "$ref" in old_schema and "$ref" in new_schema:
-                continue  # component schemas are compared on their own
-            gone |= property_paths(old_data, old_schema, True) - property_paths(new_data, new_schema, True)
-        for path in sorted(gone):
-            found.append(f"Removed {kind} property `{path}` from {where}")
+    new_parameters = parameters_of(new_data, new.effective)
+    for place, name in sorted(old_parameters.keys() - new_parameters.keys()):
+        found.append(BreakingChange(key, f"{place} parameter", name, REMOVED))
+    for (place, name), parameter in sorted(new_parameters.items()):
+        before = old_parameters.get((place, name))
+        if parameter.get("required") is True and (before is None or before.get("required") is not True):
+            found.append(BreakingChange(key, f"{place} parameter", name, NOW_REQUIRED))
+        if before is not None:
+            compare_schemas(before.get("schema") or {}, parameter.get("schema") or {}, key, f"{place} parameter", name, found)
+
+    old_body_required, old_bodies = request_body(old_data, old.op)
+    new_body_required, new_bodies = request_body(new_data, new.op)
+    if new_body_required and not old_body_required:
+        found.append(BreakingChange(key, "request", "", NOW_REQUIRED))
+    for media in sorted(old_bodies.keys() & new_bodies.keys()):
+        compare_schemas(old_bodies[media], new_bodies[media], key, "request", "", found)
+
+    old_response, new_response = success_schema(old_data, old.op), success_schema(new_data, new.op)
+    if old_response is not None and new_response is not None:
+        compare_schemas(old_response, new_response, key, "response", "", found)
+    return list(dict.fromkeys(found))  # one entry per change, even when two media types share the schema
+
+
+def breaking_changes(old_docs: dict[str, Any], new_docs: dict[str, Any], old_ops: dict[str, Operation], new_ops: dict[str, Operation]) -> list[BreakingChange]:
+    """Every change that can break typed code, by operation: removed operations, then changes to the remaining ones."""
+    found = [BreakingChange(key, "operation", "", REMOVED) for key in sorted(old_ops.keys() - new_ops.keys())]
+    for key in sorted(old_ops.keys() & new_ops.keys()):
+        old, new = old_ops[key], new_ops[key]
+        found.extend(operation_breaking(old_docs[old.api], new_docs[new.api], old, new))
     return found
 
 
