@@ -589,6 +589,37 @@ class SpecSyncTest(unittest.TestCase):
         self.assertIn("- `GET /v3/widgets/{widget_id}/` response `id`: type changed from string to string (date-time)", breaking)
         self.assertIn("- `DELETE /v3/gadgets/{gadget_id}/` response `part(oneOf 1).sku`: can now be null", breaking)
 
+    def test_fields_declared_beside_union_variants(self) -> None:
+        verification = base_verification()
+        gadget = verification["components"]["schemas"]["Gadget"]["properties"]
+        serial = {"type": "object", "properties": {"serial": {"type": "string"}}}
+        gadget["part"] = {"properties": {"vendor": {"type": "string"}}, "oneOf": [ref("GadgetPart"), serial]}
+        gadget["owner"] = {"type": "object", "properties": {"id": {"type": "string"}, "name": {"type": "string"}}}
+        gadget["label"] = {"properties": {"lang": {"type": "string"}}, "anyOf": [{"type": "object", "properties": {"text": {"type": "string"}}}, {"type": "null"}]}
+        create = verification["paths"]["/v3/widgets/"]["post"]["requestBody"]["content"]["application/json"]
+        create["schema"] = {"oneOf": [create["schema"], serial]}
+        self.install(verification)
+        del gadget["part"]["properties"]  # the last field beside the variants
+        # The same fields, now split between the union and its variants: nothing typed code reads changed.
+        gadget["owner"] = {
+            "properties": {"id": {"type": "string"}},
+            "oneOf": [{"type": "object", "properties": {"name": {"type": "string"}}}, {"type": "object", "properties": {"team": {"type": "string"}}}],
+        }
+        del gadget["label"]["anyOf"][0]["properties"]["text"]  # one variant and null keeps its own fields and the union's
+        create["schema"].update({"properties": {"vendor": {"type": "string"}}, "required": ["vendor"]})  # the first one
+        self.publish(verification)
+
+        report, _ = self.sync()
+
+        self.assertEqual(
+            self.changes(report),
+            [
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "label.text", "removed", ""),
+                ("DELETE /v3/gadgets/{gadget_id}/", "response", "part.vendor", "removed", ""),
+                ("POST /v3/widgets/", "request", "vendor", "now-required", ""),
+            ],
+        )
+
     def test_unconstrained_type_enum_inside_all_of_and_renamed_component(self) -> None:
         verification = base_verification()
         schemas = verification["components"]["schemas"]
