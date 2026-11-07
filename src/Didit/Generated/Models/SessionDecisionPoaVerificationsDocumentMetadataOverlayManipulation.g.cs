@@ -27,6 +27,12 @@ namespace Didit
         public bool? Analyzed { get; init; }
 
         /// <summary>
+        /// Present and true only when the file could not be checked in full. What was checked keeps its findings where it can, and the document raises the unproven text replacement warning.
+        /// </summary>
+        [JsonPropertyName("analysis_incomplete")]
+        public bool? AnalysisIncomplete { get; init; }
+
+        /// <summary>
         /// Forensic signals that fired, such as duplicate_font_subset or glyph_fragmentation.
         /// </summary>
         [JsonPropertyName("signals")]
