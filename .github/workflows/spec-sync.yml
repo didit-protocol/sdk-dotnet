@@ -6,7 +6,9 @@
 # footer (DESIGN.md section 13). The body opens with "Breaking changes" and ends with a BEGIN_COMMIT_OVERRIDE block
 # that release-please reads instead of the merge commit: the sync line plus one api(spec) line per breaking change,
 # which release-please-config.json lists under "API changes that can break typed code". Merge with Squash and merge:
-# with a merge commit release-please reads the block once per commit, so every line would appear twice.
+# with a merge commit release-please reads the block once per commit, so every line would appear twice. The lines are
+# never capped (DESIGN.md 3.1): when they do not fit the description, it has no block and the sync commit's message,
+# which holds every line, becomes the squashed commit's message.
 # A failed regeneration (for example a new operation without SDK naming) still opens the pull request, with the
 # failure in its body, so a person can add the overlay entry on that branch.
 #
@@ -176,6 +178,20 @@ jobs:
             cat "$RUNNER_TEMP/commit-message.txt"
             echo "END_COMMIT_OVERRIDE"
           } > "$override"
+
+          # Hundreds of breaking changes do not fit a pull request description at all. Then it has no override block, and
+          # release-please reads the squashed commit, whose message must be the sync commit's: that holds every line.
+          if [ "$(wc -c < "$override")" -gt 60000 ]; then
+            count="$(grep -c '^api(spec): ' "$RUNNER_TEMP/commit-message.txt" || true)"
+            {
+              echo "---"
+              echo
+              echo "### Release notes"
+              echo
+              echo "The ${count} lines for \"API changes that can break typed code\" do not fit this description, so it has no commit override block and release-please reads the merged commit instead. Merge with **Squash and merge** and use the message of this branch's sync commit (\`${TYPE}(spec)\`) as the commit message: it holds every line."
+            } > "$override"
+            echo "::warning::${count} breaking changes do not fit the pull request description; squash with the sync commit's message so that the release notes list them all."
+          fi
 
           # A pull request description holds 65536 characters: shorten the report, never the block release-please reads.
           limit=$((65000 - $(wc -c < "$override")))
