@@ -78,7 +78,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: python3 codegen/spec_sync.py --write --summary "$RUNNER_TEMP/spec-sync-summary.md" --commit-message "$RUNNER_TEMP/commit-message.txt"
 
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         if: steps.sync.outputs.changed == 'true'
         with:
           dotnet-version: |
