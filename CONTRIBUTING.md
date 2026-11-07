@@ -97,7 +97,6 @@ It ends with a `BEGIN_COMMIT_OVERRIDE` block that release-please reads instead o
 When those lines do not fit the description, it has no block and says so: squash with the message of the sync commit, which holds every line.
 
 - **Breaking-change rules**: `openapi/breaking-vectors.json` holds the shared cases that pin the DESIGN.md 3.1 rules in all seven server SDKs, and `codegen/tests/test_breaking_vectors.py` runs every one through `codegen/spec_sync.py`. sdk-python generates the file and a rule change lands there first; never edit it here. Copy the new version byte for byte, record its commit and SHA-256 in `openapi/SOURCE.json`, and change `codegen/spec_sync.py` until every case passes.
-
 - **`needs-naming` label**: a new operation has no SDK naming. Add the overlay entry (above), regenerate, and push to `chore/spec-sync`. The sync does not overwrite that branch while it has commits from people.
 - **Removed operations** are never deleted silently. The spec sync copies them, with the schemas they reference, into `openapi/deprecated-operations.json`; the generator keeps their SDK methods, marked `[Obsolete]`, until the next minor release. Delete the entries in that release.
 - **Renamed operations** (upstream `x-didit-sdk` with a new resource or method) keep their old method as an `[Obsolete]` alias of the same endpoint until the next minor release: the spec sync records the old name in `openapi/deprecated-operations.json` (key suffix ` (renamed from <resource>.<method>)`). Delete the entry in that release.

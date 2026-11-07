@@ -545,11 +545,13 @@ def single(schema: Any, depth: int = 0) -> Any:
     if isinstance(members, list) and all(isinstance(member, dict) for member in members):
         merged = {key: value for key, value in schema.items() if key != "allOf"}
         for member in members:
-            for key, value in single(member, depth + 1).items():
+            one = single(member, depth + 1)
+            for key, value in one.items():
                 if key == "properties" and isinstance(value, dict):
-                    merged["properties"] = {**value, **(merged.get("properties") or {})}
-                elif key == "required" and isinstance(value, list):
-                    merged["required"] = sorted(required_names(merged) | required_names(member))
+                    own = merged.get("properties")
+                    merged["properties"] = {**value, **(own if isinstance(own, dict) else {})}
+                elif key == "required":
+                    merged["required"] = sorted(required_names(merged) | required_names(one))
                 else:
                     merged.setdefault(key, value)
         schema = merged
