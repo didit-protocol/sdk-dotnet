@@ -1,0 +1,9 @@
+# Known false positives in commit 880c5c6, which is already published on the pull request branch and cannot be
+# rewritten. Each one is a synthetic test value that a later commit replaced with a value the default rules do not
+# flag. Add nothing else here: fix the fixture instead (see .gitleaks.toml).
+880c5c68a260920831996ef04612acad169ed9a7:codegen/didit_codegen/tests.py:generic-api-key:21
+880c5c68a260920831996ef04612acad169ed9a7:tests/Didit.Tests/Authentication/AuthenticationHelperTests.cs:stripe-access-token:80
+880c5c68a260920831996ef04612acad169ed9a7:tests/Didit.Tests/Authentication/AuthenticationEndpointTests.cs:generic-api-key:259
+880c5c68a260920831996ef04612acad169ed9a7:tests/Didit.Tests/Support/MockHttpHandler.cs:generic-api-key:132
+880c5c68a260920831996ef04612acad169ed9a7:tests/Didit.Tests/Generated/SessionsOperationTests.g.cs:jwt:390
+880c5c68a260920831996ef04612acad169ed9a7:tests/Didit.Tests/Generated/SessionsOperationTests.g.cs:generic-api-key:134
