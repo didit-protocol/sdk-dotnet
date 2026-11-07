@@ -521,6 +521,19 @@ def with_union_required(variant: Any, union: dict[str, Any]) -> Any:
     return {**variant, "required": sorted(required_names(variant) | inherited)}
 
 
+def with_union_fields(variant: Any, union: dict[str, Any]) -> Any:
+    """An object (or untyped) union variant with the fields declared beside the union's variants, which every object the
+    union allows has. Its own definition of a field wins."""
+    fields = union.get("properties")
+    if not isinstance(fields, dict) or not fields or not isinstance(variant, dict):
+        return variant
+    kinds = schema_kinds(variant)
+    if kinds and "object" not in kinds:
+        return variant
+    own = variant.get("properties")
+    return {**variant, "properties": {**fields, **(own if isinstance(own, dict) else {})}}
+
+
 def can_be_null(schema: Any, depth: int = 0) -> bool:
     """Whether the schema accepts null: a null type, nullable, null in its enum, allOf members that all accept it, or a
     null or nullable union variant."""
@@ -560,8 +573,8 @@ def single(schema: Any, depth: int = 0) -> Any:
     variants = union_variants(schema)
     if len(variants) != 1 or not isinstance(variants[0], dict):
         return schema
-    rest = {key: value for key, value in schema.items() if key not in (*UNIONS, "required")}
-    return single({**with_union_required(variants[0], schema), **rest}, depth + 1)
+    rest = {key: value for key, value in schema.items() if key not in (*UNIONS, "required", "properties")}
+    return single({**with_union_fields(with_union_required(variants[0], schema), schema), **rest}, depth + 1)
 
 
 def json_type(value: Any) -> str:
@@ -678,8 +691,9 @@ def compare_schemas(old: Any, new: Any, operation: str, location: str, path: str
 
     old_properties, old_required = object_properties(old)
     new_properties, new_required = object_properties(new)
-    # A union's fields are its variants', compared below.
-    if (old_properties and new_properties) or not (union_variants(old) or union_variants(new)):
+    # Two unions compare the fields declared beside their variants here, each variant's own below; against a schema that
+    # is not a union, those fields belong to every variant (compare_variants).
+    if bool(union_variants(old)) == bool(union_variants(new)):
         for name in sorted(old_properties.keys() - new_properties.keys()):
             found.append(BreakingChange(operation, location, join_field(path, name), REMOVED))
         for name in sorted(new_properties.keys() - old_properties.keys()):
@@ -738,9 +752,13 @@ def compare_variants(
     old: dict[str, Any], new: dict[str, Any], operation: str, location: str, path: str, found: list[BreakingChange], depth: int, retyped: bool
 ) -> None:
     """Compares two unions variant by variant (DESIGN.md 3.1). A schema that is not a union is a union of itself, so that X
-    against [X', Y] compares X with X'. A changed field inside the N-th variant of the new union is "<path>(oneOf N).<field>".
-    A removed variant is a type change, unless the union's type already changed (`retyped`)."""
-    old_variants, new_variants = union_variants(old) or [old], union_variants(new) or [new]
+    against [X', Y] compares X with X', the fields declared beside X' and Y included. A changed field inside the N-th variant
+    of the new union is "<path>(oneOf N).<field>". A removed variant is a type change, unless the union's type already
+    changed (`retyped`)."""
+    old_variants, new_variants = union_variants(old), union_variants(new)
+    if not (old_variants and new_variants):  # the fields beside the variants were compared with the union (compare_schemas)
+        old_variants = [with_union_fields(variant, old) for variant in old_variants] or [old]
+        new_variants = [with_union_fields(variant, new) for variant in new_variants] or [new]
     if len(old_variants) == 1 and len(new_variants) == 1:
         return  # compared as the schema itself
     pairs, removed = pair_variants(old_variants, new_variants)
