@@ -134,3 +134,26 @@ jobs:
           gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
             "artifacts/Didit.$VERSION.nupkg" "artifacts/Didit.$VERSION.snupkg" \
             "artifacts/Didit.Extensions.DependencyInjection.$VERSION.nupkg" "artifacts/Didit.Extensions.DependencyInjection.$VERSION.snupkg"
+
+  # The release is done only when the registry serves it (docs/DESIGN.md section 13); this job
+  # fails loudly when it does not. It runs nothing from the release and holds no credentials.
+  registry:
+    name: nuget.org serves the release
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - name: Check out the scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: Wait until nuget.org serves Didit
+        run: bash .github/scripts/wait-for-registry.sh nuget Didit "$TAG" 60
+      - name: Wait until nuget.org serves Didit.Extensions.DependencyInjection
+        run: bash .github/scripts/wait-for-registry.sh nuget Didit.Extensions.DependencyInjection "$TAG" 60
