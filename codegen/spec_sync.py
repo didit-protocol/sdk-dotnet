@@ -1068,7 +1068,13 @@ def analyse(report: Report, files: list[Upstream], overlay_ops: dict[str, Any], 
                 keep.update(schema_closure(stored, record.get("operation")))
         deprecated["schemas"][api] = keep
 
-    report.breaking = breaking_changes(old_docs, new_docs, {**old_ops, **old_auth}, {**new_ops, **new_auth})
+    report.breaking = breaking_changes(
+        old_docs,
+        new_docs,
+        {key: (op, naming_of(op, original_overlay if op.api != HAND_WRITTEN else {})) for key, op in {**old_ops, **old_auth}.items()},
+        {key: (op, naming_of(op, overlay_ops if op.api != HAND_WRITTEN else {})) for key, op in {**new_ops, **new_auth}.items()},
+        report.moved,
+    )
     naming_changed = any(
         canonical(naming_of(old_ops[key], original_overlay)) != canonical(naming_of(new_ops[key], overlay_ops))
         for key in old_ops.keys() & new_ops.keys()
@@ -1094,7 +1100,8 @@ def render_summary(report: Report) -> str:
             'list them under "API changes that can break typed code" (docs/DESIGN.md sections 3.1 and 13).',
             "",
         ]
-        lines += bullet_list([change.describe() for change in report.breaking]) if report.breaking else ["None detected."]
+        # Every breaking change, never capped (DESIGN.md 3.1); the workflow shortens the rest of the report to fit.
+        lines += [f"- {change.describe()}" for change in report.breaking] if report.breaking else ["None detected."]
         lines += ["", "### Release", ""]
         if report.commit_type == "feat":
             lines.append("`feat(spec)`: this sync changes what a caller can observe, so merging it releases a minor version.")
@@ -1177,14 +1184,12 @@ def render_summary(report: Report) -> str:
 
 
 def commit_message(report: Report) -> str:
-    """What release-please reads: the sync, then one `api(spec):` line per breaking change (release-please-config.json
-    puts them under "API changes that can break typed code"). Never `!` or a BREAKING CHANGE footer (DESIGN.md 13)."""
+    """What release-please reads: the sync, then one `api(spec):` line per breaking change, every one of them
+    (release-please-config.json puts them under "API changes that can break typed code"). Never `!` or a BREAKING CHANGE
+    footer (DESIGN.md 13)."""
     lines = [f"{report.commit_type}(spec): sync API spec {report.date}"]
-    notes = [f"api(spec): {change.describe()}" for change in report.breaking[:MAX_RELEASE_NOTES]]
-    if len(report.breaking) > MAX_RELEASE_NOTES:
-        notes.append(f"api(spec): {len(report.breaking) - MAX_RELEASE_NOTES} more, listed in the spec sync pull request")
-    if notes:
-        lines += ["", *notes]
+    if report.breaking:
+        lines += ["", *(f"api(spec): {change.describe()}" for change in report.breaking)]
     return "\n".join(lines) + "\n"
 
 
