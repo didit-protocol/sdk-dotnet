@@ -756,7 +756,8 @@ def compare_variants(
     of the new union is "<path>(oneOf N).<field>". A removed variant is a type change, unless the union's type already
     changed (`retyped`)."""
     old_variants, new_variants = union_variants(old), union_variants(new)
-    if not (old_variants and new_variants):  # the fields beside the variants were compared with the union (compare_schemas)
+    # compare_schemas compared the fields declared beside the variants of two unions, unless their type changed.
+    if retyped or not (old_variants and new_variants):
         old_variants = [with_union_fields(variant, old) for variant in old_variants] or [old]
         new_variants = [with_union_fields(variant, new) for variant in new_variants] or [new]
     if len(old_variants) == 1 and len(new_variants) == 1:
