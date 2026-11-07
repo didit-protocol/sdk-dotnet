@@ -207,18 +207,20 @@ jobs:
           fi
           cat "$override" >> "$body"
 
-          delimiter="EOF_$(openssl rand -hex 16)"
-          {
-            echo "message<<$delimiter"
-            cat "$RUNNER_TEMP/commit-message.txt"
-            echo "$delimiter"
-          } >> "$GITHUB_OUTPUT"
-
           if [ "$naming_failure" = "true" ]; then
             echo "labels=needs-naming" >> "$GITHUB_OUTPUT"
           else
             echo "labels=" >> "$GITHUB_OUTPUT"
           fi
+
+      # The sync commit holds every api(spec) line, so git reads its message from the file: an action input is an
+      # environment variable, which Linux limits to 128 KiB. create-pull-request pushes this commit as it is. The bot
+      # identity lets the guard above tell it from commits by people.
+      - name: Commit the sync
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git add -- openapi src/Didit/Generated tests/Didit.Tests/Generated
+          git diff --cached --quiet || git -c user.name="github-actions[bot]" -c user.email="$BOT_EMAIL" commit --quiet --file "$RUNNER_TEMP/commit-message.txt"
 
       - name: Open or update the pull request
         if: steps.sync.outputs.changed == 'true'
@@ -228,7 +230,8 @@ jobs:
           branch: ${{ env.SYNC_BRANCH }}
           delete-branch: true
           title: "${{ steps.sync.outputs.type }}(spec): sync API spec ${{ steps.sync.outputs.date }}"
-          commit-message: ${{ steps.body.outputs.message }}
+          # The sync is committed above; this message is only for changes left uncommitted (none).
+          commit-message: "${{ steps.sync.outputs.type }}(spec): sync API spec ${{ steps.sync.outputs.date }}"
           body-path: ${{ runner.temp }}/pull-request-body.md
           labels: ${{ steps.body.outputs.labels }}
           author: ${{ env.BOT_IDENTITY }}
