@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankAccountCheckRequest
     {
         /// <summary>
-        /// The account's country, as an ISO 3166-1 alpha-3 code, for example <c>GBR</c>. Lowercase is accepted.
+        /// The account's country, as an ISO 3166-1 alpha-3 code, for example <c>NGA</c>. Lowercase is accepted.
         /// </summary>
         [JsonPropertyName("country")]
         public required string Country { get; set; }
