@@ -17,8 +17,8 @@ section 10): nothing is deprecated for it, and its contract test fails until the
 
 The sync is feat(spec) when any document changed something a caller can observe and chore(spec) when only documentation
 changed (descriptions, summaries, titles, examples, tags, docs-only vendor extensions). The report opens with every
-change that can break typed code (a type change, a field or parameter that can now be null, a removed operation, field,
-parameter or enum value, a newly required parameter or request field), and the commit message repeats each one as an
+change that can break typed code, by the rules of DESIGN.md 3.1 that openapi/breaking-vectors.json checks in all seven
+server SDKs (classify() runs one of its cases), and the commit message repeats each one, with no cap, as an
 `api(spec):` line, which release-please-config.json lists under "API changes that can break typed code".
 Writes changed=true|false, needs_naming=true|false, type=feat|chore and date=YYYY-MM-DD to $GITHUB_OUTPUT when that
 variable is set. Exit code 0 on success (changed or not), 2 when a download or validation fails.
@@ -44,6 +44,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from didit_codegen.names import pascal  # noqa: E402
 from didit_codegen.spec import HTTP_METHODS, operation_key  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -66,7 +67,6 @@ DOWNLOAD_TIMEOUT = 60
 MAX_SCHEMA_DEPTH = 32
 MAX_REF_DEPTH = 64
 MAX_LIST = 200
-MAX_RELEASE_NOTES = 100
 SUMMARY_LIMIT = 50_000
 CHECKS_MARKER = "<!-- spec-sync:checks -->"  # .github/workflows/spec-sync.yml puts the results of its checks here
 
@@ -85,6 +85,7 @@ NAME_MAPS = frozenset(
 )  # fmt: skip
 # Keywords whose value is data, compared as it is.
 VALUE_KEYS = frozenset({"default", "enum", "const"})
+UNIONS = ("oneOf", "anyOf")
 
 # The kinds of change that can break typed code (DESIGN.md 3.1); every server SDK reports exactly these.
 REMOVED = "removed"
@@ -92,13 +93,12 @@ TYPE_CHANGED = "type"
 NOW_NULL = "now-null"
 ENUM_VALUE_REMOVED = "enum-value-removed"
 NOW_REQUIRED = "now-required"
-# String formats the SDKs map to a type of their own (a date and time, a file), so adding or removing one changes a type.
-TYPED_FORMATS = frozenset({"date-time", "binary"})
-# Keywords that make an allOf member a schema of its own, as the generator reads them; "$component", "$cycle" and
-# "$unresolved" are what a $ref becomes once dereferenced.
-SCHEMA_KEYS = frozenset(
-    {"type", "properties", "allOf", "oneOf", "anyOf", "enum", "items", "additionalProperties", "$component", "$cycle", "$unresolved"}
-)
+NO_LONGER_REQUIRED = "no-longer-required"
+# String formats the SDKs map to a type of their own (a date, a date and time, a file), so gaining, losing or changing one
+# changes a type.
+TYPED_FORMATS = frozenset({"date", "date-time", "binary"})
+# A request body that appears or disappears: compared field by field, never as a type change.
+NO_BODY: Any = object()
 
 
 class SyncError(Exception):
@@ -134,8 +134,10 @@ class BreakingChange:
 
     operation: str  # the operation key: "GET /v3/session/{sessionId}/decision/", "account GET /...", "authentication POST /token/"
     location: str  # "operation", "request", "response" or "<in> parameter"
-    field: str  # "registry_checks[].company.registry_data", a parameter name, or "" for the operation or a whole body
-    kind: str  # REMOVED, TYPE_CHANGED, NOW_NULL, ENUM_VALUE_REMOVED or NOW_REQUIRED
+    # "registry_checks[].company.registry_data" ("(oneOf 2).iban" inside a union's second variant), a parameter name, or ""
+    # for the operation or a whole body
+    field: str
+    kind: str  # REMOVED, TYPE_CHANGED, NOW_NULL, ENUM_VALUE_REMOVED, NOW_REQUIRED or NO_LONGER_REQUIRED
     detail: str = ""  # "string->object" for TYPE_CHANGED, the JSON value for ENUM_VALUE_REMOVED
 
     def describe(self) -> str:
@@ -152,7 +154,28 @@ class BreakingChange:
             return f"{where}: enum value `{self.detail}` removed"
         if self.kind == NOW_REQUIRED:
             return f"{where}: now required"
+        if self.kind == NO_LONGER_REQUIRED:
+            return f"{where}: no longer required"
         return f"{where}: removed"
+
+    def normalized(self) -> str:
+        """The line openapi/breaking-vectors.json compares in all seven server SDKs: "<METHOD> <path> <where> <field>: <kind>",
+        without the field for a whole body and without where and field for the operation itself."""
+        if self.location == "operation":
+            return f"{self.operation}: operation removed"
+        if self.location == "request" and not self.field and self.kind == NOW_REQUIRED:
+            return f"{self.operation}: body now required"
+        before, _, after = self.detail.partition("->")
+        kind = {
+            REMOVED: "removed",
+            TYPE_CHANGED: f"type {before} -> {after}",
+            NOW_NULL: "can now be null",
+            ENUM_VALUE_REMOVED: f"enum value {self.detail} removed",
+            NOW_REQUIRED: "now required",
+            NO_LONGER_REQUIRED: "no longer required",
+        }[self.kind]
+        where = "request body" if self.location == "request" else self.location.removesuffix(" parameter")
+        return f"{self.operation} {' '.join(part for part in (where, self.field) if part)}: {kind}"
 
 
 @dataclass
@@ -384,18 +407,44 @@ def documentation_key(key: str) -> bool:
 
 
 def observable(node: Any, names: bool = False) -> Any:
-    """`node` without its documentation, so that only what a caller can observe compares."""
+    """`node` without its documentation, so that only what a caller can observe compares. `required` and `type` lists
+    compare in any order, and an inline union variant keeps the type name its title gives it."""
     if isinstance(node, dict):
         if names:
             return {key: observable(value) for key, value in node.items()}
-        return {
-            key: value if key in VALUE_KEYS else observable(value, key in NAME_MAPS)
-            for key, value in node.items()
-            if not documentation_key(key)
-        }
+        kept: dict[str, Any] = {}
+        for key, value in node.items():
+            if documentation_key(key):
+                continue
+            if key in VALUE_KEYS:
+                kept[key] = value
+            elif key in UNIONS and isinstance(value, list):
+                kept[key] = [observable_variant(variant) for variant in value]
+            elif key in ("required", "type") and isinstance(value, list):
+                kept[key] = sorted(value, key=str)
+            else:
+                kept[key] = observable(value, key in NAME_MAPS)
+        return kept
     if isinstance(node, list):
         return [observable(item) for item in node]
     return node
+
+
+def variant_name(schema: Any) -> str | None:
+    """The type name an inline oneOf/anyOf variant's title gives it; None without a title, or for a $ref, whose type is
+    named after its component."""
+    if not isinstance(schema, dict) or "$ref" in schema:
+        return None
+    title = schema.get("title")
+    return pascal(title) if isinstance(title, str) and title.strip() else None
+
+
+def observable_variant(variant: Any) -> Any:
+    shape = observable(variant)
+    name = variant_name(variant)
+    if name is not None and isinstance(shape, dict):
+        shape["title"] = name
+    return shape
 
 
 def observable_document(data: dict[str, Any]) -> Any:
