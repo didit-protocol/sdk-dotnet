@@ -9,5 +9,7 @@ openapi/verification.json linguist-generated=true
 openapi/account.json linguist-generated=true
 openapi/webhook-vectors.json linguist-generated=true
 openapi/authentication.json linguist-generated=true
+# The shared breaking-change vectors, copied byte for byte from sdk-python (SOURCE.json records their SHA-256).
+openapi/breaking-vectors.json -text linguist-generated=true
 # Pinned upstream documents for the spec sync classification tests.
 codegen/tests/fixtures/*.json linguist-generated=true
