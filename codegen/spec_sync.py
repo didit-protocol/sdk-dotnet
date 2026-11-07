@@ -504,7 +504,9 @@ def union_variants(schema: dict[str, Any]) -> list[Any]:
 def variant_positions(schema: dict[str, Any]) -> list[str]:
     """Each of union_variants(schema) as the breaking changes number it: its keyword and its position from 1 in that
     keyword's list, null variants counted ("anyOf 2" for the second entry of [null, X, Y])."""
-    return [f"{keyword} {number}" for keyword in UNIONS for number, variant in enumerate(list_of(schema.get(keyword)), 1) if not null_variant(variant)]  # fmt: skip
+    return [
+        f"{keyword} {number}" for keyword in UNIONS for number, variant in enumerate(list_of(schema.get(keyword)), 1) if not null_variant(variant)
+    ]
 
 
 def required_names(schema: dict[str, Any]) -> set[str]:
@@ -732,7 +734,9 @@ def pair_variants(old: list[Any], new: list[Any]) -> tuple[list[tuple[int, int]]
     return sorted(pairs, key=lambda pair: pair[1]), old_left
 
 
-def compare_variants(old: dict[str, Any], new: dict[str, Any], operation: str, location: str, path: str, found: list[BreakingChange], depth: int, retyped: bool) -> None:  # fmt: skip
+def compare_variants(
+    old: dict[str, Any], new: dict[str, Any], operation: str, location: str, path: str, found: list[BreakingChange], depth: int, retyped: bool
+) -> None:
     """Compares two unions variant by variant (DESIGN.md 3.1). A schema that is not a union is a union of itself, so that X
     against [X', Y] compares X with X'. A changed field inside the N-th variant of the new union is "<path>(oneOf N).<field>".
     A removed variant is a type change, unless the union's type already changed (`retyped`)."""
@@ -746,7 +750,8 @@ def compare_variants(old: dict[str, Any], new: dict[str, Any], operation: str, l
         old_variant, new_variant = with_union_required(old_variants[before], old), with_union_required(new_variants[after], new)
         compare_schemas(old_variant, new_variant, operation, location, variant_path, found, depth + 1)
     if removed and not retyped:
-        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, f"{variant_type_names(old_variants)}->{variant_type_names(new_variants)}"))  # fmt: skip
+        detail = f"{variant_type_names(old_variants)}->{variant_type_names(new_variants)}"
+        found.append(BreakingChange(operation, location, path, TYPE_CHANGED, detail))
 
 
 def parameters_of(data: Any, op: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
@@ -760,7 +765,9 @@ def parameters_of(data: Any, op: dict[str, Any]) -> dict[tuple[str, str], dict[s
 def body_schemas(body: Any) -> dict[str, Any]:
     """The schema of a request or response body per media type ({} when a media type has none); empty without a body."""
     content = body.get("content") if isinstance(body, dict) and isinstance(body.get("content"), dict) else {}
-    return {media: entry.get("schema") if isinstance(entry.get("schema"), dict) else {} for media, entry in content.items() if isinstance(entry, dict)}  # fmt: skip
+    return {
+        media: entry.get("schema") if isinstance(entry.get("schema"), dict) else {} for media, entry in content.items() if isinstance(entry, dict)
+    }
 
 
 def request_body(data: Any, op: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
@@ -774,7 +781,9 @@ def request_body(data: Any, op: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
 def success_schemas(data: Any, op: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Every 2xx response: its body schema per media type, empty when it has no body."""
     responses = op.get("responses") if isinstance(op.get("responses"), dict) else {}
-    return {str(status): body_schemas(dereference(data, responses[status])) for status in sorted(responses, key=str) if str(status).startswith("2")}  # fmt: skip
+    return {
+        str(status): body_schemas(dereference(data, responses[status])) for status in sorted(responses, key=str) if str(status).startswith("2")
+    }
 
 
 def compare_bodies(old: dict[str, Any], new: dict[str, Any], operation: str, location: str, found: list[BreakingChange]) -> None:
@@ -788,7 +797,9 @@ def compare_bodies(old: dict[str, Any], new: dict[str, Any], operation: str, loc
         compare_schemas(old[before], new[after], operation, location, "", found)
 
 
-def compare_statuses(old: dict[str, dict[str, Any]], new: dict[str, dict[str, Any]], removed: list[str], added: list[str], operation: str, found: list[BreakingChange]) -> None:  # fmt: skip
+def compare_statuses(
+    old: dict[str, dict[str, Any]], new: dict[str, dict[str, Any]], removed: list[str], added: list[str], operation: str, found: list[BreakingChange]
+) -> None:
     """The 2xx statuses not compared body by body: `removed` (only `old` has them, or their body disappeared) and `added`
     (only `new` has them, or their body appeared). A method returns every 2xx body, so a status without a body makes it
     nullable, and a removed status whose body no other one returns removes one of its types, "null" when no body is left
@@ -837,7 +848,8 @@ def operation_breaking(old_data: Any, new_data: Any, old: Operation, new: Operat
     # Every 2xx status both versions have, with a body on both sides or on neither; when the only success status changed
     # (200 to 201), the old body against the new. The other statuses change what the method returns.
     old_responses, new_responses = success_schemas(old_data, old.op), success_schemas(new_data, new.op)
-    statuses = [(status, status) for status in old_responses if status in new_responses and bool(old_responses[status]) == bool(new_responses[status])]  # fmt: skip
+    shared = [status for status in old_responses if status in new_responses]
+    statuses = [(status, status) for status in shared if bool(old_responses[status]) == bool(new_responses[status])]
     only_old, only_new = list(old_responses.items()), list(new_responses.items())
     if not statuses and len(only_old) == 1 == len(only_new) and bool(only_old[0][1]) == bool(only_new[0][1]):
         statuses = [(only_old[0][0], only_new[0][0])]
