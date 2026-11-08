@@ -6,7 +6,9 @@
 # footer (DESIGN.md section 13). The body opens with "Breaking changes" and ends with a BEGIN_COMMIT_OVERRIDE block
 # that release-please reads instead of the merge commit: the sync line plus one api(spec) line per breaking change,
 # which release-please-config.json lists under "API changes that can break typed code". Merge with Squash and merge:
-# with a merge commit release-please reads the block once per commit, so every line would appear twice.
+# with a merge commit release-please reads the block once per commit, so every line would appear twice. The lines are
+# never capped (DESIGN.md 3.1): when they do not fit the description, it has no block and the sync commit's message,
+# which holds every line, becomes the squashed commit's message.
 # A failed regeneration (for example a new operation without SDK naming) still opens the pull request, with the
 # failure in its body, so a person can add the overlay entry on that branch.
 #
@@ -177,6 +179,20 @@ jobs:
             echo "END_COMMIT_OVERRIDE"
           } > "$override"
 
+          # Hundreds of breaking changes do not fit a pull request description at all. Then it has no override block, and
+          # release-please reads the squashed commit, whose message must be the sync commit's: that holds every line.
+          if [ "$(wc -c < "$override")" -gt 60000 ]; then
+            count="$(grep -c '^api(spec): ' "$RUNNER_TEMP/commit-message.txt" || true)"
+            {
+              echo "---"
+              echo
+              echo "### Release notes"
+              echo
+              echo "The ${count} lines for \"API changes that can break typed code\" do not fit this description, so it has no commit override block and release-please reads the merged commit instead. Merge with **Squash and merge** and use the message of this branch's sync commit (\`${TYPE}(spec)\`) as the commit message: it holds every line."
+            } > "$override"
+            echo "::warning::${count} breaking changes do not fit the pull request description; squash with the sync commit's message so that the release notes list them all."
+          fi
+
           # A pull request description holds 65536 characters: shorten the report, never the block release-please reads.
           limit=$((65000 - $(wc -c < "$override")))
           if [ "$(wc -c < "$draft")" -gt "$limit" ]; then
@@ -191,18 +207,20 @@ jobs:
           fi
           cat "$override" >> "$body"
 
-          delimiter="EOF_$(openssl rand -hex 16)"
-          {
-            echo "message<<$delimiter"
-            cat "$RUNNER_TEMP/commit-message.txt"
-            echo "$delimiter"
-          } >> "$GITHUB_OUTPUT"
-
           if [ "$naming_failure" = "true" ]; then
             echo "labels=needs-naming" >> "$GITHUB_OUTPUT"
           else
             echo "labels=" >> "$GITHUB_OUTPUT"
           fi
+
+      # The sync commit holds every api(spec) line, so git reads its message from the file: an action input is an
+      # environment variable, which Linux limits to 128 KiB. create-pull-request pushes this commit as it is. The bot
+      # identity lets the guard above tell it from commits by people.
+      - name: Commit the sync
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git add -- openapi src/Didit/Generated tests/Didit.Tests/Generated
+          git diff --cached --quiet || git -c user.name="github-actions[bot]" -c user.email="$BOT_EMAIL" commit --quiet --file "$RUNNER_TEMP/commit-message.txt"
 
       - name: Open or update the pull request
         if: steps.sync.outputs.changed == 'true'
@@ -212,7 +230,8 @@ jobs:
           branch: ${{ env.SYNC_BRANCH }}
           delete-branch: true
           title: "${{ steps.sync.outputs.type }}(spec): sync API spec ${{ steps.sync.outputs.date }}"
-          commit-message: ${{ steps.body.outputs.message }}
+          # The sync is committed above; this message is only for changes left uncommitted (none).
+          commit-message: "${{ steps.sync.outputs.type }}(spec): sync API spec ${{ steps.sync.outputs.date }}"
           body-path: ${{ runner.temp }}/pull-request-body.md
           labels: ${{ steps.body.outputs.labels }}
           author: ${{ env.BOT_IDENTITY }}
