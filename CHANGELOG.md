@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.3.0...v1.3.1) (2026-11-08)
+
+
+### Documentation
+
+* DESIGN.md, CLAUDE.md and AGENTS.md describe the automatic merge and publish ([#30](https://github.com/didit-protocol/sdk-dotnet/issues/30)) ([908f0e9](https://github.com/didit-protocol/sdk-dotnet/commit/908f0e938bb112efea4f50b60759bcbf77e08d5f))
+
 ## [1.3.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.2.0...v1.3.0) (2026-11-07)
 
 
