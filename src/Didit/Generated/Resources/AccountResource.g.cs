@@ -87,7 +87,7 @@ namespace Didit.Resources
         /// Verify Email and Issue Credentials
         /// </summary>
         /// <remarks>
-        /// Step 2 of onboarding. Exchanges the 6-char code for a verified account, a default org+app, and a JWT pair. Persist the returned <c>api_key</c>.
+        /// Step 2 of onboarding. Exchanges the 6-char code for a verified account, a default org+app, and a JWT pair. Persist the returned <c>api_key</c>. An account that already has an authenticator app or a passkey gets the same second-factor step as the login instead: <c>2fa_required: true</c> and a <c>temp_token</c>, with no tokens and no application keys.
         /// <para/>
         /// <c>POST /programmatic/verify-email/</c> (<c>account.verify_email</c>).
         /// </remarks>
