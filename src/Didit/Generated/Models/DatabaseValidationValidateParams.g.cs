@@ -540,7 +540,7 @@ namespace Didit
         public Optional<string> Email { get; set; }
 
         /// <summary>
-        /// ISO 3166-1 alpha-2 country of residence. Used by global identity-enrichment services (e.g. <c>glb_identity_enrichment</c>) to focus the lookup.
+        /// ISO 3166-1 alpha-2 country of residence. It was used only by the retired global identity-enrichment service (<c>glb_identity_enrichment</c>), which Didit no longer offers.
         /// </summary>
         [JsonPropertyName("country_of_residence")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
