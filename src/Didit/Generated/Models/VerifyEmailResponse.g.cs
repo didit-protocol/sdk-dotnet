@@ -44,6 +44,30 @@ namespace Didit
         [JsonPropertyName("application")]
         public ApplicationCredentialsSummary? Application { get; init; }
 
+        /// <summary>
+        /// Present and <c>true</c> when the account already has an authenticator app or a passkey. The response then carries <c>temp_token</c> instead of tokens and application keys.
+        /// </summary>
+        [JsonPropertyName("2fa_required")]
+        public bool? Value2faRequired { get; init; }
+
+        /// <summary>
+        /// Short-lived token for the second-factor step, sent only with <c>2fa_required</c>. It is not an access token.
+        /// </summary>
+        [JsonPropertyName("temp_token")]
+        public string? TempToken { get; init; }
+
+        /// <summary>
+        /// With <c>2fa_required</c>: whether the account has an authenticator app.
+        /// </summary>
+        [JsonPropertyName("has_authenticator")]
+        public bool? HasAuthenticator { get; init; }
+
+        /// <summary>
+        /// With <c>2fa_required</c>: whether the account has a passkey.
+        /// </summary>
+        [JsonPropertyName("has_passkeys")]
+        public bool? HasPasskeys { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
