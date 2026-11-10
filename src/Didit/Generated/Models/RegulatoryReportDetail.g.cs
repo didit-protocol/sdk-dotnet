@@ -45,7 +45,7 @@ namespace Didit
         public string? ReportTypeDisplay { get; init; }
 
         /// <summary>
-        /// goAML report code derived from report_type, e.g. STR, CTR, BCR.
+        /// goAML report code derived from report_type and jurisdiction, e.g. STR, CTR, BCR, FFR, PNMR. For jurisdiction AE, the UAE FIU's codes: STR, SAR, CNMRA for FFR and PNMRA for PNMR.
         /// </summary>
         [JsonPropertyName("report_code")]
         public string? ReportCode { get; init; }

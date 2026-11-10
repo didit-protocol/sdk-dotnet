@@ -47,6 +47,12 @@ namespace Didit
         /// <summary><c>TFR</c></summary>
         public static RegulatoryReportsListParamsReportType Tfr { get; } = new("TFR");
 
+        /// <summary><c>FFR</c></summary>
+        public static RegulatoryReportsListParamsReportType Ffr { get; } = new("FFR");
+
+        /// <summary><c>PNMR</c></summary>
+        public static RegulatoryReportsListParamsReportType Pnmr { get; } = new("PNMR");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

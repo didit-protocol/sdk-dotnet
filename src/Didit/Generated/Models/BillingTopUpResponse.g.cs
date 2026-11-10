@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (BillingTopUpResponse).
+    /// Result of a top-up charged to the organization's saved card.
     /// </summary>
     public sealed record BillingTopUpResponse
     {
@@ -25,6 +25,24 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("checkout_session_url")]
         public string? CheckoutSessionUrl { get; init; }
+
+        /// <summary>
+        /// <c>paid</c>: the card was charged and the credit follows within seconds. <c>processing</c>: a request with the same <c>Idempotency-Key</c> is still being processed; retry with the same key.
+        /// </summary>
+        [JsonPropertyName("outcome")]
+        public BillingTopUpResponseOutcome? Outcome { get; init; }
+
+        /// <summary>
+        /// A top-up made with the organization's saved card.
+        /// </summary>
+        [JsonPropertyName("top_up")]
+        public AgentTopUp? TopUp { get; init; }
+
+        /// <summary>
+        /// On a 202: why the top-up is still being processed. Retry with the same <c>Idempotency-Key</c>.
+        /// </summary>
+        [JsonPropertyName("detail")]
+        public string? Detail { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

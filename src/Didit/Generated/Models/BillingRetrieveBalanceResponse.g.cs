@@ -38,6 +38,12 @@ namespace Didit
         [JsonPropertyName("auto_refill_threshold")]
         public string? AutoRefillThreshold { get; init; }
 
+        /// <summary>
+        /// Whether agents can top up this organization with its saved card. Off by default; a person signed in to the console turns on "Connected AI agents can top up with your saved card" in Billing &gt; Payment methods.
+        /// </summary>
+        [JsonPropertyName("agent_top_up")]
+        public AgentTopUpSettings? AgentTopUp { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

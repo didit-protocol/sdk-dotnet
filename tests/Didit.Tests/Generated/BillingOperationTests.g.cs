@@ -20,7 +20,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"balance\": \"1234.5600\", \"auto_refill_enabled\": true, \"auto_refill_amount\": \"500.00\", \"auto_refill_threshold\": \"100.00\"}");
+            handler.Enqueue(200, "{\"balance\": \"1234.5600\", \"auto_refill_enabled\": true, \"auto_refill_amount\": \"500.00\", \"auto_refill_threshold\": \"100.00\", \"agent_top_up\": {\"enabled\": true}}");
             using var client = TestClients.Create(handler);
             var result = await client.Billing.RetrieveBalanceAsync();
 
@@ -43,7 +43,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"checkout_session_id\": \"cs_test_a1B2c3D4e5F6g7H8i9J0\", \"checkout_session_url\": \"https://checkout.example.com/c/pay/cs_test_a1B2c3D4e5F6g7H8i9J0\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Billing.TopUpAsync(new BillingTopUpParams { AmountInDollars = 1.5, SuccessUrl = "https://example.com/callback", CancelUrl = "https://example.com/callback" });
+            var result = await client.Billing.TopUpAsync(new BillingTopUpParams { AmountInDollars = 1.5, SuccessUrl = "https://example.com/callback", CancelUrl = "https://example.com/callback", PaymentMethod = new BillingTopUpParamsPaymentMethod("checkout") });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -53,7 +53,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"amount_in_dollars\": 1.5, \"success_url\": \"https://example.com/callback\", \"cancel_url\": \"https://example.com/callback\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"amount_in_dollars\": 1.5, \"success_url\": \"https://example.com/callback\", \"cancel_url\": \"https://example.com/callback\", \"payment_method\": \"checkout\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("cs_test_a1B2c3D4e5F6g7H8i9J0", result.CheckoutSessionId);
         }

@@ -15,24 +15,31 @@ namespace Didit
     public sealed record BillingTopUpParams
     {
         /// <summary>
-        /// Amount to charge, in USD. Must be from 50 to 20,000. The balance receives the same amount, with no discount or bonus. Tax is added automatically at checkout based on the customer's billing address.
+        /// Amount to charge, in USD. Must be from 50 to 20,000. The balance receives the same amount, with no discount or bonus. Tax is added automatically, at checkout or to the saved card charge, based on the customer's billing address.
         /// </summary>
         [JsonPropertyName("amount_in_dollars")]
         public required double AmountInDollars { get; set; }
 
         /// <summary>
-        /// URL the hosted checkout redirects the customer to after a successful payment. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable. Append the literal placeholder <c>{CHECKOUT_SESSION_ID}</c> if you want the hosted checkout to substitute the session ID.
+        /// Checkout only. URL the hosted checkout redirects the customer to after a successful payment. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable. Append the literal placeholder <c>{CHECKOUT_SESSION_ID}</c> if you want the hosted checkout to substitute the session ID.
         /// </summary>
         [JsonPropertyName("success_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> SuccessUrl { get; set; }
 
         /// <summary>
-        /// URL the hosted checkout redirects the customer to when they abort or close the Checkout window. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable.
+        /// Checkout only. URL the hosted checkout redirects the customer to when they abort or close the Checkout window. Currently defaults to <c>https://console.didit.me</c>. Pass a working URL explicitly; the default host is unavailable.
         /// </summary>
         [JsonPropertyName("cancel_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> CancelUrl { get; set; }
+
+        /// <summary>
+        /// How the top-up is paid. <c>checkout</c> (default) creates a hosted Checkout session and answers <c>200</c>. <c>saved_card</c> charges the organization's saved primary card off-session, requires the <c>Idempotency-Key</c> header and "Connected AI agents can top up with your saved card" to be on, and answers <c>201</c> or <c>202</c>. <c>success_url</c> and <c>cancel_url</c> apply to <c>checkout</c> only.
+        /// </summary>
+        [JsonPropertyName("payment_method")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<BillingTopUpParamsPaymentMethod> PaymentMethod { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
