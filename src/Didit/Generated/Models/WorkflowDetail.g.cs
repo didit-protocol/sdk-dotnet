@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The fields below are typed; the object also carries every other column of the workflow configuration (feature toggles, thresholds, warning actions, allowed documents, callbacks) as additional properties. Fields that do not apply to the <c>workflow_type</c> are <c>null</c>.
+    /// The fields below are typed; the object also carries every other column of the workflow configuration (feature toggles, thresholds, warning actions, allowed documents, callbacks) as additional properties. Fields that do not apply to the <c>workflow_type</c> are <c>null</c>. For a workflow built from a <c>workflow_graph</c>, <c>face_match_score_decline_threshold</c> and <c>face_match_score_review_threshold</c> report the thresholds its Face Match step applies: the step's own values, or the defaults <c>30</c> and <c>60</c> when the step sets none (the step's <c>config</c> in <c>workflow_graph</c> states the same values). When the workflow has several Face Match steps with different thresholds, read each step's <c>config</c>.
     /// </summary>
     public sealed record WorkflowDetail
     {
