@@ -27,7 +27,7 @@ namespace Didit
         public DateTimeOffset? Timestamp { get; init; }
 
         /// <summary>
-        /// Event-specific payload. Send events carry <c>status</c>, <c>reason</c>, <c>channel</c>, <c>actual_channel</c>; delivery events carry <c>channel</c>, <c>status</c>; code-check events carry <c>code_tried</c>, <c>status</c>; final status events carry <c>reason</c> — or <c>null</c> when there is no reason to report (e.g. <c>PHONE_VERIFICATION_APPROVED</c>).
+        /// Event-specific payload. Send events carry <c>status</c>, <c>reason</c>, <c>channel</c>, <c>actual_channel</c>, <c>attempt</c> (the send's 0-based index, matching the order of the send events) and <c>delivery_status</c> (<c>delivered</c>, <c>undeliverable</c>, or <c>unknown</c> once no report can still arrive; absent while one can); delivery events carry <c>channel</c>, <c>status</c>, <c>attempt</c> and, on <c>PHONE_DELIVERY_UNDELIVERABLE</c>, <c>reason</c> (<c>expired</c>, <c>rejected</c>, <c>unreachable</c>, <c>blocked</c> or <c>unknown</c> for a message; <c>unreachable_number</c>, <c>no_answer</c>, <c>busy</c> or <c>undeliverable</c> for a call — always a fixed word, never a provider status or error code); code-check events carry <c>code_tried</c>, <c>status</c>; final status events carry <c>reason</c> — or <c>null</c> when there is no reason to report (e.g. <c>PHONE_VERIFICATION_APPROVED</c>).
         /// </summary>
         [JsonPropertyName("details")]
         public SessionDecisionPhoneVerificationsLifecycleDetails? Details { get; init; }
