@@ -36,7 +36,7 @@ namespace Didit
         public Optional<string?> Template { get; set; }
 
         /// <summary>
-        /// Transactions to attach; defaults to the case's linked transactions.
+        /// Transactions to attach; defaults to the case's linked transactions. For FFR and PNMR reports it defaults to none and none are required.
         /// </summary>
         [JsonPropertyName("transactions")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

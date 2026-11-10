@@ -42,9 +42,23 @@ namespace Didit.Resources
         /// Top up credits
         /// </summary>
         /// <remarks>
-        /// Add credits via a hosted Stripe Checkout session (\$50 to \$20,000 per top-up). Top-ups are available on the Free, Growth and Scale plans, added at face value with no discount or bonus, and last 12 months; Enterprise annual contracts cannot top up. Redirect the customer to the returned <c>checkout_session_url</c>.
+        /// Add credits to the organization's balance (\$50 to \$20,000 per top-up). Top-ups are available on the Free, Growth and Scale plans, added at face value with no discount or bonus, and last 12 months; Enterprise annual contracts cannot top up.
+        /// <para/>
+        /// Two payment methods, chosen with <c>payment_method</c>:
+        /// <para/>
+        /// - <c>checkout</c> (default): creates a hosted Stripe Checkout session. Redirect the customer to the returned <c>checkout_session_url</c> (<c>200</c>).
+        /// - <c>saved_card</c>: charges the organization's saved primary card off-session, now, at the normal self-serve amounts. Send an <c>Idempotency-Key</c> header (required for this method). It answers <c>201</c> when the card was charged, and <c>202</c> when a request with the same key is still being processed.
+        /// <para/>
+        /// Agent top-ups (<c>saved_card</c>). One switch controls them: "Connected AI agents can top up with your saved card". It is off by default and only a person signed in to the console can turn it on (Billing &gt; Payment methods), never an API key or an agent. While it is on, agents and API keys can top up with the primary saved card. When it is off, the request returns <c>403</c> <c>agent_top_up_not_enabled</c> with a link a person can use to top up in the console.
+        /// <para/>
+        /// The balance is credited once the payment is confirmed, usually within seconds, and tax is added to the amount charged when it applies, so <c>total</c> can be higher than <c>credit_amount</c>. Read <c>GET /v3/billing/balance/</c> to confirm.
+        /// <para/>
+        /// Idempotency. Retrying with the same <c>Idempotency-Key</c> and the same amount returns the same top-up and never charges twice. The same key with another amount returns <c>409</c> <c>idempotency_key_conflict</c>.
+        /// <para/>
+        /// Every error of a <c>saved_card</c> request carries a <c>code</c> and a <c>detail</c>, and most also a <c>next_step</c> (read it only when it is present). When the step needs a person (for example <c>authentication_required</c>, where the card's bank asks the cardholder to approve and nothing is charged), <c>next_step.url</c> is a signed link to the console that opens the Top up dialog with the amount filled in and says which agent asked; nothing is charged until the person pays. Each top-up is marked with the agent's name in billing history and in the ordinary receipt email.
         /// <para/>
         /// <c>POST /v3/billing/top-up/</c> (<c>billing.top_up</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
