@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney) and <c>mx</c> (Mexico) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
+    /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney), <c>mx</c> (Mexico) and <c>ae</c> (United Arab Emirates) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(ApplicationDataLocation.EnumJsonConverter))]
@@ -31,6 +31,9 @@ namespace Didit
 
         /// <summary><c>mx</c></summary>
         public static ApplicationDataLocation Mx { get; } = new("mx");
+
+        /// <summary><c>ae</c></summary>
+        public static ApplicationDataLocation Ae { get; } = new("ae");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
