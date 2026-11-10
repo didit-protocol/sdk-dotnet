@@ -1359,6 +1359,7 @@ namespace Didit.Internal
     [JsonSerializable(typeof(SessionDecisionPhoneVerificationsCarrier))]
     [JsonSerializable(typeof(SessionDecisionPhoneVerificationsLifecycle))]
     [JsonSerializable(typeof(SessionDecisionPhoneVerificationsLifecycleDetails))]
+    [JsonSerializable(typeof(SessionDecisionPhoneVerificationsLifecycleDetailsDeliveryStatus))]
     [JsonSerializable(typeof(SessionDecisionPhoneVerificationsMatches))]
     [JsonSerializable(typeof(SessionDecisionPhoneVerificationsMatchesSource))]
     [JsonSerializable(typeof(SessionDecisionPhoneVerificationsStatus))]

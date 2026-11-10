@@ -27,7 +27,7 @@ namespace Didit
         public DateTimeOffset? Timestamp { get; init; }
 
         /// <summary>
-        /// Event-specific payload. Send events: <c>{status, reason, channel, actual_channel}</c> (<c>actual_channel</c> is filled once delivery is confirmed). Delivery events: <c>{channel, status}</c>. Code-entry events: <c>{code_tried, status}</c>. Final-status events: <c>null</c>, or <c>{reason}</c> when declined or in review.
+        /// Event-specific payload. Send events: <c>{status, reason, channel, actual_channel, attempt, delivery_status}</c> — <c>actual_channel</c> is filled once delivery is confirmed, <c>attempt</c> is the 0-based index of the send (the order of the send events), and <c>delivery_status</c> is <c>delivered</c>, <c>undeliverable</c> or <c>unknown</c> (no report arrived before the verification ended); it is absent while a report can still arrive. Delivery events: <c>{channel, status, attempt, reason}</c> — <c>attempt</c> is the send it belongs to, and <c>reason</c> (on <c>PHONE_DELIVERY_UNDELIVERABLE</c> only) is <c>expired</c>, <c>rejected</c>, <c>unreachable</c>, <c>blocked</c> or <c>unknown</c> for a message, and <c>unreachable_number</c>, <c>no_answer</c>, <c>busy</c> or <c>undeliverable</c> for a call. Code-entry events: <c>{code_tried, status}</c>. Final-status events: <c>null</c>, or <c>{reason}</c> when declined or in review.
         /// </summary>
         [JsonPropertyName("details")]
         public JsonElement? Details { get; init; }

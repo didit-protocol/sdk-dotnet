@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Event-specific payload. Send events carry <c>status</c>, <c>reason</c>, <c>channel</c>, <c>actual_channel</c>; delivery events carry <c>channel</c>, <c>status</c>; code-check events carry <c>code_tried</c>, <c>status</c>; final status events carry <c>reason</c> — or <c>null</c> when there is no reason to report (e.g. <c>PHONE_VERIFICATION_APPROVED</c>).
+    /// Event-specific payload. Send events carry <c>status</c>, <c>reason</c>, <c>channel</c>, <c>actual_channel</c>, <c>attempt</c> (the send's 0-based index, matching the order of the send events) and <c>delivery_status</c> (<c>delivered</c>, <c>undeliverable</c>, or <c>unknown</c> once no report can still arrive; absent while one can); delivery events carry <c>channel</c>, <c>status</c>, <c>attempt</c> and, on <c>PHONE_DELIVERY_UNDELIVERABLE</c>, <c>reason</c> (<c>expired</c>, <c>rejected</c>, <c>unreachable</c>, <c>blocked</c> or <c>unknown</c> for a message; <c>unreachable_number</c>, <c>no_answer</c>, <c>busy</c> or <c>undeliverable</c> for a call — always a fixed word, never a provider status or error code); code-check events carry <c>code_tried</c>, <c>status</c>; final status events carry <c>reason</c> — or <c>null</c> when there is no reason to report (e.g. <c>PHONE_VERIFICATION_APPROVED</c>).
     /// </summary>
     public sealed record SessionDecisionPhoneVerificationsLifecycleDetails
     {
@@ -21,7 +21,7 @@ namespace Didit
         public string? Status { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;reason&lt;/c&gt; field.
+        /// Send events: why the send was blocked (<c>invalid_phone_number</c>, <c>repeated_attempts</c>, <c>suspicious</c>, <c>spam</c>, <c>unknown</c>), <c>null</c> otherwise. Delivery events on <c>PHONE_DELIVERY_UNDELIVERABLE</c>: <c>expired</c>, <c>rejected</c>, <c>unreachable</c>, <c>blocked</c> or <c>unknown</c> for a message, and <c>unreachable_number</c>, <c>no_answer</c>, <c>busy</c> or <c>undeliverable</c> for a call — a fixed customer-safe word, never the provider's status or error code.
         /// </summary>
         [JsonPropertyName("reason")]
         public string? Reason { get; init; }
@@ -37,6 +37,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("actual_channel")]
         public string? ActualChannel { get; init; }
+
+        /// <summary>
+        /// Send events and delivery events: the 0-based index of the send attempt the event belongs to, in the order of the send events.
+        /// </summary>
+        [JsonPropertyName("attempt")]
+        public long? Attempt { get; init; }
+
+        /// <summary>
+        /// Send events: how the send ended. <c>unknown</c> once no delivery report can still arrive (the verification finished without one); absent while one can.
+        /// </summary>
+        [JsonPropertyName("delivery_status")]
+        public SessionDecisionPhoneVerificationsLifecycleDetailsDeliveryStatus? DeliveryStatus { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;code_tried&lt;/c&gt; field.
