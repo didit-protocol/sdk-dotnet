@@ -51,40 +51,48 @@ namespace Didit.Internal
             return Build(status, message, json, rawBody, headers, requestId);
         }
 
+        /// <summary>The whole response of a call whose answer may echo secrets, sanitized once; see <see cref="Sanitize"/>.</summary>
+        public sealed class SanitizedResponse
+        {
+            public SanitizedResponse(string? reason, byte[] body, Dictionary<string, IReadOnlyList<string>> headers)
+            {
+                Reason = reason;
+                Body = body;
+                Headers = headers;
+            }
+
+            public string? Reason { get; }
+
+            public byte[] Body { get; }
+
+            public Dictionary<string, IReadOnlyList<string>> Headers { get; }
+        }
+
         /// <summary>
-        /// Builds the exception for an answer that may echo secrets (the agent consent calls) from the redacted response only,
-        /// never from its raw text. A body that parses as JSON is redacted structurally: every string, object key or value, that
-        /// contains a secret anywhere in it becomes <c>[redacted]</c> as a whole (strings are compared as decoded, so the spelling
-        /// of escapes in the raw text does not matter) and a redacted key that collides with another is numbered
-        /// (<c>[redacted]</c>, <c>[redacted]2</c>, ...). A body that does not parse (an HTML error page, a body cut at the size
-        /// limit) is replaced by <c>[redacted]</c>. The message derives from the redacted body.
+        /// Sanitizes the whole response of a call whose answer may echo secrets (the agent consent calls), once, on receipt: the
+        /// reason phrase is redacted, each header whose name contains a secret is dropped, the other values are redacted, and the
+        /// body is redacted structurally (every string, object key or value, that contains a secret anywhere in it becomes
+        /// <c>[redacted]</c> as a whole; colliding redacted keys are numbered; a body that is not JSON, has trailing content, was
+        /// cut at the size limit or is empty becomes <c>[redacted]</c>). Every error of these calls is built from the result only.
         /// </summary>
-        public static ApiStatusException CreateRedactedStatusException(
-            int status,
+        public static SanitizedResponse Sanitize(
             string? reason,
             byte[] body,
             IReadOnlyDictionary<string, IReadOnlyList<string>> headers,
-            string? requestId,
             params string?[] secrets)
         {
             var active = secrets.Where(secret => !string.IsNullOrEmpty(secret)).Select(secret => secret!).ToArray();
-            // The reason phrase and the request id are issuer-controlled too: one that contains a secret is replaced whole.
-            reason = reason is null ? null : RedactText(reason, active);
-            requestId = requestId is null ? null : RedactText(requestId, active);
             var clean = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
             foreach (var header in headers)
             {
-                clean[header.Key] = header.Value.Select(value => RedactText(value, active)).ToArray();
+                if (RedactText(header.Key, active) == header.Key)
+                {
+                    clean[header.Key] = header.Value.Select(value => RedactText(value, active)).ToArray();
+                }
             }
 
-            string? rawBody = null;
-            JsonElement? json = null;
-            if (body.Length == 0)
-            {
-                // An empty body is not JSON.
-                rawBody = Redacted;
-            }
-            else
+            var text = Redacted; // an empty body is not JSON
+            if (body.Length > 0)
             {
                 try
                 {
@@ -95,19 +103,16 @@ namespace Didit.Internal
                         WriteRedacted(writer, document.RootElement, active);
                     }
 
-                    rawBody = Encoding.UTF8.GetString(stream.ToArray());
-                    using var redacted = JsonDocument.Parse(rawBody);
-                    json = redacted.RootElement.Clone();
+                    text = Encoding.UTF8.GetString(stream.ToArray());
                 }
-                catch (JsonException)
+                catch (Exception ex) when (ex is JsonException or InvalidOperationException or InsufficientExecutionStackException)
                 {
-                    rawBody = Redacted;
+                    // Not JSON, trailing content, or deeper than the parser's depth limit (64): not JSON.
+                    text = Redacted;
                 }
             }
 
-            var detail = DescribeBody(json, rawBody);
-            var message = $"{status} {reason ?? StatusName(status)}" + (detail is null ? string.Empty : ": " + detail) + (requestId is null ? string.Empty : $" (request id {requestId})");
-            return Build(status, message, json, rawBody, clean, requestId);
+            return new SanitizedResponse(reason is null ? null : RedactText(reason, active), Encoding.UTF8.GetBytes(text), clean);
         }
 
         /// <summary><paramref name="text"/>, or <c>[redacted]</c> as a whole when it contains a secret anywhere.</summary>

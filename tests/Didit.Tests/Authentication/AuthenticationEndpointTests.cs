@@ -674,6 +674,44 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
+        public async Task ConsentRedactionDropsAHeaderNamedAfterASecret()
+        {
+            const string credential = "credential-string-0123456789";
+            var reply = StubHttpHandler.Json("{\"error\":\"invalid_grant\"}", HttpStatusCode.BadRequest);
+            reply.Headers.TryAddWithoutValidation("X-" + credential, credential);
+            reply.Headers.TryAddWithoutValidation("X-Keep", "fine");
+            var error = await ConsentFailureAsync(AssertionWith(credential, "s"), reply);
+
+            Assert.Contains(error.Headers, h => h.Key == "X-Keep");
+            Assert.DoesNotContain(credential, string.Join("|", error.Headers.SelectMany(h => h.Value.Append(h.Key))), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentMalformed2xxKeepsNothingOfTheSecret()
+        {
+            const string credential = "credential-string-0123456789";
+            var reply = Raw("not json " + credential, HttpStatusCode.OK, "text/html");
+            reply.Headers.TryAddWithoutValidation("X-Request-Id", "req-" + credential);
+            _issuer.Runtime = _ => reply;
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAnyAsync<Exception>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, AssertionWith(credential, "s")));
+
+            Assert.DoesNotContain(credential, error.ToString(), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionTreatsAVeryDeeplyNestedBodyAsNotJson()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("x", "s"),
+                Raw(new string('[', 10000) + new string(']', 10000), HttpStatusCode.BadRequest, "application/json"));
+
+            Assert.Equal("[redacted]", error.RawBody);
+        }
+
+        [Fact]
         public async Task ConsentRedactionReplacesANonJsonBody()
         {
             var error = await ConsentFailureAsync(

@@ -131,14 +131,24 @@ namespace Didit.Internal
                 {
                     var status = (int)response.StatusCode;
                     var headers = CollectHeaders(response);
+                    var reason = response.ReasonPhrase;
+                    var errorSecrets = secrets;
+                    if (redactStructurally)
+                    {
+                        // Sanitized once, on receipt: every error of this call is built from this response only.
+                        var sanitized = ErrorFactory.Sanitize(reason, body, headers, secrets);
+                        reason = sanitized.Reason;
+                        body = sanitized.Body;
+                        headers = sanitized.Headers;
+                        errorSecrets = Array.Empty<string?>();
+                    }
+
                     if (status >= 200 && status < 300)
                     {
                         return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
                     }
 
-                    throw redactStructurally
-                        ? ErrorFactory.CreateRedactedStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets)
-                        : ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets);
+                    throw ErrorFactory.CreateStatusException(status, reason, body, headers, FindRequestId(headers), errorSecrets);
                 }
             }
         }
