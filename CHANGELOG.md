@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.14.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.13.0...v1.14.0) (2026-11-11)
+
+
+### Features
+
+* **spec:** sync API spec 2026-11-11 ([073ba9c](https://github.com/didit-protocol/sdk-dotnet/commit/073ba9c7e2956c56f47b9fd32d9b60ad526d3a42))
+
+
+### API changes that can break typed code
+
+* **spec:** `POST /v3/organization/{organization_id}/application/{application_id}/cases/` request `links[].entity_type`: now required ([073ba9c](https://github.com/didit-protocol/sdk-dotnet/commit/073ba9c7e2956c56f47b9fd32d9b60ad526d3a42))
+* **spec:** `POST /v3/organization/{organization_id}/application/{application_id}/cases/` request `links[].entity_uuid`: now required ([073ba9c](https://github.com/didit-protocol/sdk-dotnet/commit/073ba9c7e2956c56f47b9fd32d9b60ad526d3a42))
+* **spec:** `POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/publish/` response `content_config`: type changed from any to object ([073ba9c](https://github.com/didit-protocol/sdk-dotnet/commit/073ba9c7e2956c56f47b9fd32d9b60ad526d3a42))
+
 ## [1.13.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.12.0...v1.13.0) (2026-11-11)
 
 
