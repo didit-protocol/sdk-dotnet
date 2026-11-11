@@ -49,18 +49,18 @@ namespace Didit
         public Optional<IReadOnlyList<string>> Tags { get; set; }
 
         /// <summary>
-        /// Required unless links is provided; the case's exactly-one subject.
+        /// Exactly one user or business. Supply explicitly when any network link is supplied, even alongside other link types; otherwise may be derived from links.
         /// </summary>
         [JsonPropertyName("subject")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<CasesCreateParamsSubject> Subject { get; set; }
 
         /// <summary>
-        /// Sessions/business sessions/transactions to attach on creation, e.g. [{"entity_type": "transaction", "entity_uuid": "..."}]. When subject is omitted, the subject is derived from the first link's owner.
+        /// Up to 500 session, business_session, transaction or network links; at most 20 when review_duplicates=true. When any network link is present, subject must be supplied explicitly. Otherwise the subject may be derived from a linked record.
         /// </summary>
         [JsonPropertyName("links")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<IReadOnlyList<object?>> Links { get; set; }
+        public Optional<IReadOnlyList<CasesLinksCreateParams>> Links { get; set; }
 
         /// <summary>
         /// User UUID to assign immediately.

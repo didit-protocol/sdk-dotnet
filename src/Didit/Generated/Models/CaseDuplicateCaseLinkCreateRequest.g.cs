@@ -18,6 +18,7 @@ namespace Didit
         /// * <c>session</c> - Session
         /// * <c>business_session</c> - Business Session
         /// * <c>transaction</c> - Transaction
+        /// * <c>network</c> - Network containing the selected case subject
         /// </summary>
         [JsonPropertyName("entity_type")]
         public required CaseDuplicateEntityTypeEnum EntityType { get; set; }

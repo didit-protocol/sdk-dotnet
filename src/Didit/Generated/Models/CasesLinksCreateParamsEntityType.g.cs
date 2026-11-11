@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of CasesLinksCreateParamsEntityType.
+    /// Type of record to attach. A network must be visible and contain the selected case subject.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(CasesLinksCreateParamsEntityType.EnumJsonConverter))]
@@ -31,6 +31,9 @@ namespace Didit
 
         /// <summary><c>transaction</c></summary>
         public static CasesLinksCreateParamsEntityType Transaction { get; } = new("transaction");
+
+        /// <summary><c>network</c></summary>
+        public static CasesLinksCreateParamsEntityType Network { get; } = new("network");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

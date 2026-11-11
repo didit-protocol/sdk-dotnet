@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The six togglable sections that drive which tabs and fields appear on the case page. Unknown sections or keys are rejected.
+    /// Case content sections and optional review stages. Unknown sections or keys are rejected. Cases retain the policy snapshot accepted when opened; later blueprint edits do not rewrite it.
     /// </summary>
     public sealed record CaseContentConfig
     {
@@ -55,6 +55,13 @@ namespace Didit
         [JsonPropertyName("financial")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<CaseContentConfigFinancial> Financial { get; set; }
+
+        /// <summary>
+        /// Ordered review stages. Omitted or empty items use the default Triage, Evidence review and Decision stages.
+        /// </summary>
+        [JsonPropertyName("stages")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<CaseContentConfigStages> Stages { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -98,6 +98,18 @@ namespace Didit
         [JsonPropertyName("default_deadline_hours")]
         public long? DefaultDeadlineHours { get; init; }
 
+        /// <summary>
+        /// Case types this blueprint describes. Optional on create and update; new blueprints default to an empty list. Stored in the accepted case policy snapshot.
+        /// </summary>
+        [JsonPropertyName("applies_to")]
+        public IReadOnlyList<CaseBlueprintAppliesTo>? AppliesTo { get; init; }
+
+        /// <summary>
+        /// Configured stages, or the default stages when none are configured.
+        /// </summary>
+        [JsonPropertyName("stages")]
+        public IReadOnlyList<CaseBlueprintStage>? Stages { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

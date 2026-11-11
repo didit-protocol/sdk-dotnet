@@ -33,7 +33,7 @@ namespace Didit
         public string? LinkedEntityUuid { get; init; }
 
         /// <summary>
-        /// session_id/session_number/status for session and business_session links; uuid/txn_id/status for transaction links.
+        /// session_id/session_number/status for session and business_session links; uuid/txn_id/status for transaction links. Network links return only {"uuid": "&lt;network-uuid&gt;"}, without network member details.
         /// </summary>
         [JsonPropertyName("linked_entity_summary")]
         public JsonElement? LinkedEntitySummary { get; init; }

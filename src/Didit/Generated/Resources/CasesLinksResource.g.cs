@@ -26,7 +26,7 @@ namespace Didit.Resources
         /// Add case link
         /// </summary>
         /// <remarks>
-        /// Attach a session, business session, or transaction to the case. Rejected with 400 if the entity belongs to a different subject than the case.
+        /// Attach a session, business session, transaction, or network to the case. Rejected with 400 if the entity belongs to a different subject than the case. Network links require write:cases plus read:networks, Networks access and investigation access for the network scope. The network must be visible and contain the case subject. Manually adding links to network-generated cases is not allowed.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/links/</c> (<c>cases.links.create</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.

@@ -10,21 +10,16 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (CaseBlueprintDetailContentConfigChecklistItems).
+    /// Ordered review stages. Omitted or empty items use the default Triage, Evidence review and Decision stages.
     /// </summary>
-    public sealed record CaseBlueprintDetailContentConfigChecklistItems
+    public sealed record CaseContentConfigStages
     {
         /// <summary>
-        /// The &lt;c&gt;label&lt;/c&gt; field.
+        /// At most ten stages with distinct keys. Resolving a case is a status change, not a stage.
         /// </summary>
-        [JsonPropertyName("label")]
-        public string? Label { get; init; }
-
-        /// <summary>
-        /// The &lt;c&gt;order&lt;/c&gt; field.
-        /// </summary>
-        [JsonPropertyName("order")]
-        public long? Order { get; init; }
+        [JsonPropertyName("items")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<IReadOnlyList<CaseBlueprintStage>> Items { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -33,7 +33,7 @@ namespace Didit
         public string? Description { get; init; }
 
         /// <summary>
-        /// The six togglable sections that drive which tabs and fields appear on the case page. Unknown sections or keys are rejected.
+        /// Case content sections and optional review stages. Unknown sections or keys are rejected. Cases retain the policy snapshot accepted when opened; later blueprint edits do not rewrite it.
         /// </summary>
         [JsonPropertyName("content_config")]
         public CaseContentConfig? ContentConfig { get; init; }
