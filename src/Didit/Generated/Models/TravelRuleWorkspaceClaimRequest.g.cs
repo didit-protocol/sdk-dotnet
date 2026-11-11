@@ -20,6 +20,13 @@ namespace Didit
         [JsonPropertyName("vasp_id")]
         public required string VaspId { get; set; }
 
+        /// <summary>
+        /// Optional licence or registration reference, up to 255 characters; empty clears it. Omission preserves it for the same directory entry and clears it when claiming a different entry. Applied to the VASP profile only when the claim is granted.
+        /// </summary>
+        [JsonPropertyName("licence")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Licence { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

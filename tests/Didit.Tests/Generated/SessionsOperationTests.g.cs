@@ -1241,7 +1241,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"session_id\": \"3472fb7c-8f7c-4d1a-9cf4-cf3d74ce1a60\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Sessions.UpdateStatusAsync("sessionId-1", new SessionsUpdateStatusParams { NewStatus = new SessionsUpdateStatusParamsNewStatus("Approved"), Comment = "All checks passed manual review", SendEmail = true, EmailAddress = "user@example.com", EmailLanguage = "en", EmailPreviewToken = "sample-email_preview_token" });
+            var result = await client.Sessions.UpdateStatusAsync("sessionId-1", new SessionsUpdateStatusParams { NewStatus = new SessionsUpdateStatusParamsNewStatus("Approved"), Comment = "All checks passed manual review", SendEmail = true, EmailAddress = "user@example.com", EmailLanguage = "en", EmailPreviewToken = "sample-email_preview_token", LinkToSessionId = "11111111-2222-3333-4444-555555555555", LinkReason = "Reviewed both verifications and confirmed they belong to the same person." });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -1251,7 +1251,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"new_status\": \"Approved\", \"comment\": \"All checks passed manual review\", \"send_email\": true, \"email_address\": \"user@example.com\", \"email_language\": \"en\", \"email_preview_token\": \"sample-email_preview_token\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"new_status\": \"Approved\", \"comment\": \"All checks passed manual review\", \"send_email\": true, \"email_address\": \"user@example.com\", \"email_language\": \"en\", \"email_preview_token\": \"sample-email_preview_token\", \"link_to_session_id\": \"11111111-2222-3333-4444-555555555555\", \"link_reason\": \"Reviewed both verifications and confirmed they belong to the same person.\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("3472fb7c-8f7c-4d1a-9cf4-cf3d74ce1a60", result.SessionId);
         }
