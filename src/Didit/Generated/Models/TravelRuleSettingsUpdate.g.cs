@@ -43,6 +43,13 @@ namespace Didit
         public Optional<string> Jurisdiction { get; set; }
 
         /// <summary>
+        /// Your VASP profile's own jurisdiction, up to 3 characters (for example <c>GB</c> or <c>USA</c>), shown to other Didit customers in the VASP directory. Independent of <c>jurisdiction</c>, which sets the regulatory regime Didit stamps on your transfers. Send an empty string to clear it; the directory then shows <c>jurisdiction</c>.
+        /// </summary>
+        [JsonPropertyName("vasp_jurisdiction")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> VaspJurisdiction { get; set; }
+
+        /// <summary>
         /// <c>CONTAINS</c> accepts one name whose words all appear in the other.
         /// </summary>
         [JsonPropertyName("name_matching_strictness")]

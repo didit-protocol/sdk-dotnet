@@ -21,10 +21,16 @@ namespace Didit
         public bool? IsEnabled { get; init; }
 
         /// <summary>
-        /// Your VASP's operating jurisdiction code. Default <c>"EU"</c>. Didit maps it to the regime it stamps on your Travel Rule transactions as <c>travel_rule_regime</c> (for example <c>EU</c> or an EU member code becomes <c>eu</c>), which transaction rules can key on. Other Didit customers see it as your jurisdiction in the VASP directory once the Didit network lists your profile.
+        /// Your VASP's regulatory regime code. Default <c>"EU"</c>. Didit maps it to the regime it stamps on your Travel Rule transactions as <c>travel_rule_regime</c> (for example <c>EU</c> or an EU member code becomes <c>eu</c>), which transaction rules can key on, and it decides which data fields the exchange must share. Other Didit customers see <c>vasp_jurisdiction</c> in the VASP directory; while <c>vasp_jurisdiction</c> is empty, the directory shows this value instead.
         /// </summary>
         [JsonPropertyName("jurisdiction")]
         public string? Jurisdiction { get; init; }
+
+        /// <summary>
+        /// Your VASP profile's own jurisdiction, up to 3 characters (for example <c>GB</c> or <c>USA</c>), shown to other Didit customers in the VASP directory. It is independent of <c>jurisdiction</c>, the regulatory regime Didit stamps on your transfers; while <c>vasp_jurisdiction</c> is empty, the directory shows <c>jurisdiction</c>. Empty until you set it.
+        /// </summary>
+        [JsonPropertyName("vasp_jurisdiction")]
+        public string? VaspJurisdiction { get; init; }
 
         /// <summary>
         /// How strictly beneficiary names must match before a transfer can reach COMPLETED. <c>CONTAINS</c> accepts one name whose words all appear in the other.
