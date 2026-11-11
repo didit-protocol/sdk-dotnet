@@ -407,6 +407,144 @@ namespace Didit.Tests.Authentication
             Assert.DoesNotContain("agent-request-secret", error.Message, StringComparison.Ordinal);
         }
 
+        private static readonly string[] ConsentMarkers =
+        {
+            "mk-id\"q/1+", "mk-rawid\\b/2+", "mk-cdj\"c/3+\u00e9", "mk-authdata/4+", "mk-sig\"/5+", "mk-handle/6+",
+            "mk-ext-top/7+", "mk-ext-deep\"/8+", "mk-ext-array/9+", "mk-challenge\"/10+",
+        };
+
+        private static AuthAgentPasskeyAssertion MarkedAssertion() => new()
+        {
+            Id = ConsentMarkers[0],
+            RawId = ConsentMarkers[1],
+            ClientDataJson = ConsentMarkers[2],
+            AuthenticatorData = ConsentMarkers[3],
+            Signature = ConsentMarkers[4],
+            UserHandle = ConsentMarkers[5],
+            ClientExtensionResults = JsonDocument.Parse(
+                "{\"a\":\"" + ConsentMarkers[6].Replace("/", "\\/") + "\",\"b\":{\"c\":[{\"d\":\"" + ConsentMarkers[7].Replace("\"", "\\\"") + "\"},\"" + ConsentMarkers[8] + "\"]}}").RootElement.Clone(),
+        };
+
+        private static string EscapedEcho()
+        {
+            // The same strings in three forms: decoded values, System.Text.Json escaping and the "\/" escaping other issuers use.
+            var all = string.Join(" ", ConsentMarkers);
+            var echo = new System.Text.Json.Nodes.JsonObject
+            {
+                ["detail"] = "rejected " + all,
+                ["error"] = "invalid_grant",
+                ["fields"] = new System.Text.Json.Nodes.JsonArray(ConsentMarkers.Select(m => (System.Text.Json.Nodes.JsonNode?)m).ToArray()),
+                [ConsentMarkers[2]] = new System.Text.Json.Nodes.JsonObject { ["nested"] = ConsentMarkers[4] },
+            };
+            var text = echo.ToJsonString();
+            var slashEscaped = "\"slash\":\"" + string.Join(" ", ConsentMarkers).Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("/", "\\/") + "\"";
+            return text.Substring(0, text.Length - 1) + "," + slashEscaped + "}";
+        }
+
+        private static void AssertNoConsentSecrets(Exception error, params string[] extra)
+        {
+            var visible = new List<string> { error.Message, error.ToString() };
+            for (var inner = error.InnerException; inner is not null; inner = inner.InnerException)
+            {
+                visible.Add(inner.Message);
+            }
+
+            if (error is ApiStatusException status)
+            {
+                visible.Add(status.RawBody ?? string.Empty);
+                visible.Add(status.Body?.GetRawText() ?? string.Empty);
+                visible.AddRange(status.Headers.SelectMany(h => h.Value.Append(h.Key)));
+                if (status.Body is { } body)
+                {
+                    visible.AddRange(Strings(body));
+                }
+            }
+
+            foreach (var text in visible)
+            {
+                foreach (var marker in ConsentMarkers.Concat(extra))
+                {
+                    Assert.DoesNotContain(marker, text, StringComparison.Ordinal);
+                    // The JSON-escaped forms of the marker.
+                    Assert.DoesNotContain(JsonSerializer.Serialize(marker).Trim('"'), text, StringComparison.Ordinal);
+                    Assert.DoesNotContain(JsonSerializer.Serialize(marker).Trim('"').Replace("/", "\\/"), text, StringComparison.Ordinal);
+                    Assert.DoesNotContain(marker.Replace("\"", "\\\"").Replace("/", "\\/"), text, StringComparison.Ordinal);
+                }
+            }
+        }
+
+        private static IEnumerable<string> Strings(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    yield return element.GetString()!;
+                    break;
+                case JsonValueKind.Array:
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        foreach (var text in Strings(item))
+                        {
+                            yield return text;
+                        }
+                    }
+
+                    break;
+                case JsonValueKind.Object:
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        yield return property.Name;
+                        foreach (var text in Strings(property.Value))
+                        {
+                            yield return text;
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        [Fact]
+        public async Task AgentConsentErrorNeverCarriesAnyAssertionStringTheChallengeOrTheToken()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json(EscapedEcho(), HttpStatusCode.BadRequest);
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<BadRequestException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, ConsentMarkers[9], AuthAgentConsentDecision.Approve, MarkedAssertion()));
+
+            Assert.Equal(400, error.StatusCode);
+            Assert.Equal("invalid_grant", error.Body!.Value.GetProperty("error").GetString());
+            AssertNoConsentSecrets(error, AccessToken);
+        }
+
+        [Fact]
+        public async Task AgentConsentNonJsonErrorBodyIsRedactedToo()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("upstream said: " + string.Join(" ", ConsentMarkers), HttpStatusCode.BadGateway);
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<InternalServerException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, ConsentMarkers[9], AuthAgentConsentDecision.Approve, MarkedAssertion()));
+
+            AssertNoConsentSecrets(error);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task AgentConsentMalformedSuccessNeverCarriesAnySecret(bool wellFormedButWrongShape)
+        {
+            var echo = string.Join(" ", ConsentMarkers);
+            _issuer.Runtime = _ => StubHttpHandler.Json(wellFormedButWrongShape ? "[\"" + echo.Replace("\"", "\\\"") + "\"]" : "{\"detail\":\"" + echo.Replace("\"", "\\\"") + "\"");
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<DiditException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, ConsentMarkers[9], AuthAgentConsentDecision.Approve, MarkedAssertion()));
+
+            AssertNoConsentSecrets(error, AccessToken);
+        }
+
         [Fact]
         public async Task AgentConsentPasskeyRequiredIsPermissionDenied()
         {
