@@ -735,6 +735,30 @@ namespace Didit.Tests.Authentication
             Assert.DoesNotContain("credentialstring", string.Join("|", error.Headers.Select(h => h.Key)).ToLowerInvariant(), StringComparison.Ordinal);
         }
 
+        private sealed class BrokenContent : HttpContent
+        {
+            protected override Task SerializeToStreamAsync(System.IO.Stream stream, System.Net.TransportContext? context) =>
+                throw new System.IO.IOException("credential-string-0123456789 broken stream");
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = 0;
+                return false;
+            }
+        }
+
+        [Fact]
+        public async Task ConsentBodyThatFailsMidReadIsAFixedMessageConnectionError()
+        {
+            _issuer.Runtime = _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new BrokenContent() };
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<ApiConnectionException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, AssertionWith("x", "s")));
+
+            Assert.DoesNotContain("credential-string", error.ToString(), StringComparison.Ordinal);
+        }
+
         [Fact]
         public async Task ConsentRedactionReplacesANonJsonBody()
         {
