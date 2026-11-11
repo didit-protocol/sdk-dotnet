@@ -36,7 +36,64 @@ namespace Didit
         /// <summary><c>clientExtensionResults</c>: the browser's extension results, as a JSON object, when present.</summary>
         public JsonElement? ClientExtensionResults { get; set; }
 
-        internal string?[] Secrets() => new[] { Id, RawId, ClientDataJson, AuthenticatorData, Signature, UserHandle };
+        internal string?[] Secrets()
+        {
+            var secrets = new List<string?> { Id, RawId, Type, ClientDataJson, AuthenticatorData, Signature, UserHandle };
+            if (ClientExtensionResults is { } extensions)
+            {
+                secrets.AddRange(Strings(extensions));
+            }
+
+            return secrets.ToArray();
+        }
+
+        // GetString throws on a lone escaped surrogate: redact the raw JSON spelling (without its quotes) then,
+        // since that is exactly what the request body carried.
+        private static string? SafeString(JsonElement element)
+        {
+            try
+            {
+                return element.GetString();
+            }
+            catch (InvalidOperationException)
+            {
+                var raw = element.GetRawText();
+                return raw.Length >= 2 ? raw.Substring(1, raw.Length - 2) : null;
+            }
+        }
+
+        private static IEnumerable<string?> Strings(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    var value = SafeString(element);
+                    if (value is not null)
+                    {
+                        yield return value;
+                    }
+
+                    break;
+                case JsonValueKind.Array:
+                    foreach (var text in element.EnumerateArray().SelectMany(Strings))
+                    {
+                        yield return text;
+                    }
+
+                    break;
+                case JsonValueKind.Object:
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        yield return property.Name;
+                        foreach (var text in Strings(property.Value))
+                        {
+                            yield return text;
+                        }
+                    }
+
+                    break;
+            }
+        }
 
         internal void Write(Utf8JsonWriter writer)
         {
