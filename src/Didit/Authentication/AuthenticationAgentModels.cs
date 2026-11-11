@@ -38,6 +38,7 @@ namespace Didit
 
         // Strings shorter than this are not secrets: field names such as "id" and values such as "public-key" would
         // otherwise erase error codes like "invalid_grant" (docs/DESIGN.md section 10).
+        // Sensitive values are 16+ chars: user handles are 16-byte ids (22 base64url), credential ids 16+ bytes.
         private const int MinSecretLength = 16;
 
         /// <summary>
