@@ -51,13 +51,15 @@ namespace Didit.Internal
         /// <param name="bearerToken">Sent as <c>Authorization: Bearer</c> when not <c>null</c>.</param>
         /// <param name="secrets">Removed from every error (the access token, refresh token, authorization code or code verifier).</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        /// <param name="redactStructurally">Builds an error from the redacted parsed body, never from its raw text (the agent consent calls).</param>
         public async Task<AuthHttpResponse> SendAsync(
             HttpMethod method,
             Uri url,
             Func<HttpContent>? createContent,
             string? bearerToken,
             string?[] secrets,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool redactStructurally = false)
         {
             var maxAttempts = method == HttpMethod.Get ? 2 : 1;
             for (var attempt = 1; ; attempt++)
@@ -112,7 +114,7 @@ namespace Didit.Internal
                         continue;
                     }
 
-                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {Redact(ex.Message, secrets)}", ex);
+                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {(redactStructurally ? ErrorFactory.RedactText(ex.Message, secrets.Where(secret => !string.IsNullOrEmpty(secret)).Select(secret => secret!).ToArray()) : Redact(ex.Message, secrets))}", ex);
                 }
 
                 using (response)
@@ -124,7 +126,9 @@ namespace Didit.Internal
                         return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
                     }
 
-                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets);
+                    throw redactStructurally
+                        ? ErrorFactory.CreateRedactedStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets)
+                        : ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets);
                 }
             }
         }

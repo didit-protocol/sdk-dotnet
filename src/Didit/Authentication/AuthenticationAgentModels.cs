@@ -38,9 +38,20 @@ namespace Didit
 
         internal string?[] Secrets()
         {
-            var secrets = new List<string?> { Id, RawId, Type, ClientDataJson, AuthenticatorData, Signature, UserHandle };
+            // Object keys and values, as in the request body.
+            var secrets = new List<string?>
+            {
+                "id", "rawId", "type", "response", "clientDataJSON", "authenticatorData", "signature",
+                Id, RawId, Type, ClientDataJson, AuthenticatorData, Signature, UserHandle,
+            };
+            if (UserHandle is not null)
+            {
+                secrets.Add("userHandle");
+            }
+
             if (ClientExtensionResults is { } extensions)
             {
+                secrets.Add("clientExtensionResults");
                 secrets.AddRange(Strings(extensions));
             }
 

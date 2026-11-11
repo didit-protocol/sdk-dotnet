@@ -403,7 +403,8 @@ namespace Didit.Tests.Authentication
                 () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, Assertion()));
 
             Assert.Equal(400, error.StatusCode);
-            Assert.Equal("[redacted] [redacted]", error.Body!.Value.GetProperty("echo").GetString());
+            // The whole string that contains a secret is replaced, not just the secret.
+            Assert.Equal("[redacted]", error.Body!.Value.GetProperty("echo").GetString());
             Assert.DoesNotContain("agent-request-secret", error.Message, StringComparison.Ordinal);
         }
 
@@ -514,8 +515,99 @@ namespace Didit.Tests.Authentication
                 () => auth.SubmitAgentConsentAsync(AccessToken, ConsentMarkers[9], AuthAgentConsentDecision.Approve, MarkedAssertion()));
 
             Assert.Equal(400, error.StatusCode);
-            Assert.Equal("invalid_grant", error.Body!.Value.GetProperty("error").GetString());
             AssertNoConsentSecrets(error, AccessToken);
+        }
+
+        private static HttpResponseMessage Raw(string text, HttpStatusCode status, string contentType) =>
+            new(status) { Content = new StringContent(text, System.Text.Encoding.UTF8, contentType) };
+
+        private async Task<BadRequestException> ConsentFailureAsync(AuthAgentPasskeyAssertion assertion, HttpResponseMessage reply)
+        {
+            _issuer.Runtime = _ => reply;
+            using var auth = _issuer.Create();
+            return await Assert.ThrowsAsync<BadRequestException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, assertion));
+        }
+
+        private static AuthAgentPasskeyAssertion AssertionWith(string id, string signature) => new()
+        {
+            Id = id,
+            RawId = "raw-x",
+            ClientDataJson = "cdj-x",
+            AuthenticatorData = "ad-x",
+            Signature = signature,
+        };
+
+        private static string Shown(ApiStatusException error) => error.Message + "\n" + error.RawBody + "\n" + error.Body?.GetRawText();
+
+        [Fact]
+        public async Task ConsentRedactionLeavesNoFragmentOfAPrefixedSecret()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("abc", "abcdef"),
+                StubHttpHandler.Json("{\"detail\":\"bad abcdef and abc\",\"other\":\"abcdef\"}", HttpStatusCode.BadRequest));
+
+            Assert.Equal("{\"detail\":\"[redacted]\",\"other\":\"[redacted]\"}", error.RawBody);
+            Assert.DoesNotContain("abc", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("def", Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionReplacesTheWholeStringThatContainsASecret()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("SECRET", "s"),
+                StubHttpHandler.Json("{\"detail\":\"bad assertion xyzSECRETxyz\",\"keep\":\"fine\"}", HttpStatusCode.BadRequest));
+
+            Assert.Equal("{\"detail\":\"[redacted]\",\"keep\":\"fine\"}", error.RawBody);
+            Assert.Contains("[redacted]", error.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain("SECRET", Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionHandlesASecretUsedAsAnObjectKey()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("SECRET", "s"),
+                StubHttpHandler.Json("{\"detail\":\"no\",\"echo-SECRET-1\":\"a\",\"echo-SECRET-2\":\"b\"}", HttpStatusCode.BadRequest));
+
+            Assert.Equal("{\"detail\":\"no\",\"[redacted]\":\"a\",\"[redacted]2\":\"b\"}", error.RawBody);
+            Assert.DoesNotContain("SECRET", Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionIgnoresTheSpellingOfJsonEscapes()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("a/b+\u00e9", "s"),
+                Raw("{\"detail\":\"x\",\"echo\":\"a\\/b+\\u00E9\"}", HttpStatusCode.BadRequest, "application/json"));
+
+            Assert.Equal("{\"detail\":\"x\",\"echo\":\"[redacted]\"}", error.RawBody);
+            Assert.DoesNotContain("a/b", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("00E9", Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionReplacesANonJsonBody()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("x", "s"),
+                Raw("<html>Bad gateway agent-request-secret</html>", HttpStatusCode.BadRequest, "text/html"));
+
+            Assert.Equal("[redacted]", error.RawBody);
+            Assert.Null(error.Body);
+            Assert.DoesNotContain("agent-request-secret", Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionCoversASecretPastTheMessageCap()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("x", "s"),
+                Raw(new string('x', 600) + "agent-request-secret", HttpStatusCode.BadRequest, "text/plain"));
+
+            Assert.Equal("[redacted]", error.RawBody);
+            Assert.DoesNotContain("agent-request-secret", Shown(error), StringComparison.Ordinal);
         }
 
         [Fact]

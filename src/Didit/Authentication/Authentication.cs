@@ -409,7 +409,7 @@ namespace Didit
                 secrets.AddRange(assertion.Secrets());
             }
 
-            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/"), () => JsonContent(body), accessToken, secrets.ToArray(), cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/"), () => JsonContent(body), accessToken, secrets.ToArray(), cancellationToken, redactStructurally: true).ConfigureAwait(false);
             return AuthAgentConsentResult.FromJson(AuthJson.Parse(response.Body, "agent consent response"));
         }
 
@@ -431,7 +431,7 @@ namespace Didit
             RequireText(accessToken, nameof(accessToken));
             RequireText(challenge, nameof(challenge));
             var body = WriteJson(writer => writer.WriteString("challenge", challenge));
-            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/passkey/"), () => JsonContent(body), accessToken, new[] { accessToken, challenge }, cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/passkey/"), () => JsonContent(body), accessToken, new[] { accessToken, challenge }, cancellationToken, redactStructurally: true).ConfigureAwait(false);
             return AuthAgentApprovalOptions.FromJson(AuthJson.Parse(response.Body, "agent approval options response"));
         }
 

@@ -48,6 +48,136 @@ namespace Didit.Internal
                 message = Redact(message, secret);
             }
 
+            return Build(status, message, json, rawBody, headers, requestId);
+        }
+
+        /// <summary>
+        /// Builds the exception for an answer that may echo secrets (the agent consent calls) from the redacted response only,
+        /// never from its raw text. A body that parses as JSON is redacted structurally: every string, object key or value, that
+        /// contains a secret anywhere in it becomes <c>[redacted]</c> as a whole (strings are compared as decoded, so the spelling
+        /// of escapes in the raw text does not matter) and a redacted key that collides with another is numbered
+        /// (<c>[redacted]</c>, <c>[redacted]2</c>, ...). A body that does not parse (an HTML error page, a body cut at the size
+        /// limit) is replaced by <c>[redacted]</c>. The message derives from the redacted body.
+        /// </summary>
+        public static ApiStatusException CreateRedactedStatusException(
+            int status,
+            string? reason,
+            byte[] body,
+            IReadOnlyDictionary<string, IReadOnlyList<string>> headers,
+            string? requestId,
+            params string?[] secrets)
+        {
+            var active = secrets.Where(secret => !string.IsNullOrEmpty(secret)).Select(secret => secret!).ToArray();
+            var clean = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var header in headers)
+            {
+                clean[header.Key] = header.Value.Select(value => RedactText(value, active)).ToArray();
+            }
+
+            string? rawBody = null;
+            JsonElement? json = null;
+            if (body.Length > 0)
+            {
+                try
+                {
+                    using var document = JsonDocument.Parse(body);
+                    using var stream = new System.IO.MemoryStream();
+                    using (var writer = new Utf8JsonWriter(stream))
+                    {
+                        WriteRedacted(writer, document.RootElement, active);
+                    }
+
+                    rawBody = Encoding.UTF8.GetString(stream.ToArray());
+                    using var redacted = JsonDocument.Parse(rawBody);
+                    json = redacted.RootElement.Clone();
+                }
+                catch (JsonException)
+                {
+                    rawBody = Redacted;
+                }
+            }
+
+            var detail = DescribeBody(json, rawBody);
+            var message = $"{status} {reason ?? StatusName(status)}" + (detail is null ? string.Empty : ": " + detail) + (requestId is null ? string.Empty : $" (request id {requestId})");
+            return Build(status, message, json, rawBody, clean, requestId);
+        }
+
+        /// <summary><paramref name="text"/>, or <c>[redacted]</c> as a whole when it contains a secret anywhere.</summary>
+        public static string RedactText(string text, IReadOnlyList<string> secrets)
+        {
+            foreach (var secret in secrets)
+            {
+                if (secret.Length > 0 && text.IndexOf(secret, StringComparison.Ordinal) >= 0)
+                {
+                    return Redacted;
+                }
+            }
+
+            return text;
+        }
+
+        private const string Redacted = "[redacted]";
+
+        private static string RedactString(JsonElement value, IReadOnlyList<string> secrets)
+        {
+            try
+            {
+                return RedactText(value.GetString() ?? string.Empty, secrets);
+            }
+            catch (InvalidOperationException)
+            {
+                // A lone escaped surrogate cannot be decoded, so it cannot be compared: drop it.
+                return Redacted;
+            }
+        }
+
+        private static void WriteRedacted(Utf8JsonWriter writer, JsonElement element, IReadOnlyList<string> secrets)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    writer.WriteStringValue(RedactString(element, secrets));
+                    break;
+                case JsonValueKind.Array:
+                    writer.WriteStartArray();
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        WriteRedacted(writer, item, secrets);
+                    }
+
+                    writer.WriteEndArray();
+                    break;
+                case JsonValueKind.Object:
+                    writer.WriteStartObject();
+                    var seen = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        var name = RedactText(property.Name, secrets);
+                        for (var number = 2; !seen.Add(name); number++)
+                        {
+                            name = Redacted + number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        }
+
+                        writer.WritePropertyName(name);
+                        WriteRedacted(writer, property.Value, secrets);
+                    }
+
+                    writer.WriteEndObject();
+                    break;
+                default:
+                    element.WriteTo(writer);
+                    break;
+            }
+        }
+
+        private static ApiStatusException Build(
+            int status,
+            string message,
+            JsonElement? json,
+            string? rawBody,
+            IReadOnlyDictionary<string, IReadOnlyList<string>> headers,
+            string? requestId)
+        {
             return status switch
             {
                 400 => new BadRequestException(message, status, json, rawBody, headers, requestId),
