@@ -789,6 +789,8 @@ namespace Didit.Tests.Authentication
                 () => auth.SubmitAgentConsentAsync(AccessToken, ConsentMarkers[9], AuthAgentConsentDecision.Approve, assertion));
 
             Assert.Equal(0, sent);
+            Assert.Equal("Could not encode the agent consent request.", error.Message);
+            Assert.Null(error.InnerException);
             Assert.DoesNotContain("ud800", error.Message);
         }
 

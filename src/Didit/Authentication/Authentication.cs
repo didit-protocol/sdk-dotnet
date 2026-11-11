@@ -366,7 +366,7 @@ namespace Didit
             RequireText(accessToken, nameof(accessToken));
             RequireText(challenge, nameof(challenge));
             RequireText(decision, nameof(decision));
-            var body = WriteJson(writer =>
+            var body = WriteConsentJson(writer =>
             {
                 writer.WriteString("challenge", challenge);
                 writer.WriteString("decision", decision);
@@ -510,6 +510,22 @@ namespace Didit
             {
                 throw new ArgumentException("The value must not be empty.", parameterName);
             }
+        }
+
+        // A value that cannot be written may carry a credential in its exception message: fixed message, no inner exception.
+        private static byte[] WriteConsentJson(Action<Utf8JsonWriter> write)
+        {
+            byte[]? bytes = null;
+            try
+            {
+                bytes = WriteJson(write);
+            }
+            catch (Exception)
+            {
+                bytes = null;
+            }
+
+            return bytes ?? throw new InvalidOperationException("Could not encode the agent consent request.");
         }
 
         private static byte[] WriteJson(Action<Utf8JsonWriter> write)
