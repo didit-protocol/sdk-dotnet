@@ -334,6 +334,107 @@ namespace Didit
             return AuthStepUp.FromJson(AuthJson.Parse(response.Body, "step-up response"));
         }
 
+        /// <summary>
+        /// Approves or denies a pending agent request (<c>POST agents/consent/</c>) on behalf of the signed-in person. Approval
+        /// returns the single-use code to hand back to the agent's redirect URI; denial returns status <c>denied</c>. When the
+        /// application requires humans only, approval needs a fresh passkey <paramref name="assertion"/> bound to the request
+        /// (see <see cref="CreateAgentApprovalOptionsAsync"/>); denial never does.
+        /// </summary>
+        /// <param name="accessToken">The person's access token.</param>
+        /// <param name="challenge">The pending agent request secret.</param>
+        /// <param name="decision"><see cref="AuthAgentConsentDecision.Approve"/> or <see cref="AuthAgentConsentDecision.Deny"/>.</param>
+        /// <param name="assertion">The fresh passkey assertion, required for approval when the application allows humans only.</param>
+        /// <param name="scopes">Narrows the requested scopes (<c>read</c>, <c>act</c>); omitted means all requested scopes.</param>
+        /// <param name="organizationIds">Organizations the person belongs to that the grant covers; omitted means none.</param>
+        /// <param name="lifetime">Grant lifetime in seconds (<c>86400</c>, <c>604800</c> or <c>2592000</c>); omitted means the application policy.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="BadRequestException">Invalid fields or an invalid, expired or already used <paramref name="challenge"/> (<c>invalid_grant</c>).</exception>
+        /// <exception cref="AuthenticationException">The access token or its session is no longer valid.</exception>
+        /// <exception cref="PermissionDeniedException">A fresh passkey assertion is required (<c>passkey_required</c>) or the assertion was rejected.</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached; the request is not retried.</exception>
+        public async Task<AuthAgentConsentResult> SubmitAgentConsentAsync(
+            string accessToken,
+            string challenge,
+            string decision,
+            AuthAgentPasskeyAssertion? assertion = null,
+            IReadOnlyList<string>? scopes = null,
+            IReadOnlyList<string>? organizationIds = null,
+            int? lifetime = null,
+            CancellationToken cancellationToken = default)
+        {
+            RequireText(accessToken, nameof(accessToken));
+            RequireText(challenge, nameof(challenge));
+            RequireText(decision, nameof(decision));
+            var body = WriteJson(writer =>
+            {
+                writer.WriteString("challenge", challenge);
+                writer.WriteString("decision", decision);
+                if (assertion is not null)
+                {
+                    writer.WritePropertyName("assertion");
+                    assertion.Write(writer);
+                }
+
+                if (scopes is not null)
+                {
+                    writer.WriteStartArray("scopes");
+                    foreach (var scope in scopes)
+                    {
+                        writer.WriteStringValue(scope);
+                    }
+
+                    writer.WriteEndArray();
+                }
+
+                if (organizationIds is not null)
+                {
+                    writer.WriteStartArray("organization_ids");
+                    foreach (var organizationId in organizationIds)
+                    {
+                        writer.WriteStringValue(organizationId);
+                    }
+
+                    writer.WriteEndArray();
+                }
+
+                if (lifetime is { } seconds)
+                {
+                    writer.WriteNumber("lifetime", seconds);
+                }
+            });
+            var secrets = new List<string?> { accessToken, challenge };
+            if (assertion is not null)
+            {
+                secrets.AddRange(assertion.Secrets());
+            }
+
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/"), () => JsonContent(body), accessToken, secrets.ToArray(), cancellationToken).ConfigureAwait(false);
+            return AuthAgentConsentResult.FromJson(AuthJson.Parse(response.Body, "agent consent response"));
+        }
+
+        /// <summary>
+        /// Asks for the WebAuthn request options of a fresh passkey approval, bound to a pending agent request and the signed-in
+        /// person (<c>POST agents/consent/passkey/</c>). Hand <see cref="AuthAgentApprovalOptions.Options"/> to
+        /// <c>navigator.credentials.get()</c>, then send the result to <see cref="SubmitAgentConsentAsync"/> as the assertion.
+        /// </summary>
+        /// <param name="accessToken">The person's access token.</param>
+        /// <param name="challenge">The pending agent request secret (not the WebAuthn challenge).</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        /// <exception cref="BadRequestException">An invalid, expired or already used <paramref name="challenge"/> (<c>invalid_grant</c>).</exception>
+        /// <exception cref="AuthenticationException">The access token or its session is no longer valid.</exception>
+        /// <exception cref="PermissionDeniedException">The person has no passkey that can approve.</exception>
+        /// <exception cref="ApiStatusException">Another non-2xx answer.</exception>
+        /// <exception cref="ApiConnectionException">The issuer could not be reached; the request is not retried.</exception>
+        public async Task<AuthAgentApprovalOptions> CreateAgentApprovalOptionsAsync(string accessToken, string challenge, CancellationToken cancellationToken = default)
+        {
+            RequireText(accessToken, nameof(accessToken));
+            RequireText(challenge, nameof(challenge));
+            var body = WriteJson(writer => writer.WriteString("challenge", challenge));
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/passkey/"), () => JsonContent(body), accessToken, new[] { accessToken, challenge }, cancellationToken).ConfigureAwait(false);
+            return AuthAgentApprovalOptions.FromJson(AuthJson.Parse(response.Body, "agent approval options response"));
+        }
+
         /// <summary>Disposes the <see cref="HttpClient"/> this instance created. A client passed in the options is left alone.</summary>
         public void Dispose()
         {

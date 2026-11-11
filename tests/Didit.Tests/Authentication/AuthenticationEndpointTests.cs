@@ -308,6 +308,146 @@ namespace Didit.Tests.Authentication
             Assert.Empty(_issuer.Handler.Requests);
         }
 
+        private static AuthAgentPasskeyAssertion Assertion() => new()
+        {
+            Id = "Y3JlZC1pZA",
+            RawId = "Y3JlZC1pZA",
+            ClientDataJson = "client-data-json-b64",
+            AuthenticatorData = "auth-data-b64",
+            Signature = "signature-b64",
+        };
+
+        [Fact]
+        public async Task SubmitAgentConsentApprovePostsJson()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"code\":\"agent-code\",\"redirect_uri\":\"https://agent.example/callback\",\"state\":\"s1\",\"x_future\":1}");
+            using var auth = _issuer.Create();
+
+            var result = await auth.SubmitAgentConsentAsync(
+                AccessToken,
+                "agent-request-secret",
+                AuthAgentConsentDecision.Approve,
+                Assertion(),
+                scopes: new[] { "read" },
+                organizationIds: new[] { "00000000-0000-4000-8000-000000000002" },
+                lifetime: 86400);
+
+            var request = Runtime().Single();
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal(new Uri(TestIssuer.Url + "/agents/consent/"), request.Uri);
+            Assert.Equal("application/json", request.ContentType);
+            Assert.Equal("Bearer " + AccessToken, request.Headers["Authorization"]);
+            Assert.Equal(
+                "{\"challenge\":\"agent-request-secret\",\"decision\":\"approve\",\"assertion\":{\"id\":\"Y3JlZC1pZA\",\"rawId\":\"Y3JlZC1pZA\",\"type\":\"public-key\"," +
+                "\"response\":{\"clientDataJSON\":\"client-data-json-b64\",\"authenticatorData\":\"auth-data-b64\",\"signature\":\"signature-b64\"}}," +
+                "\"scopes\":[\"read\"],\"organization_ids\":[\"00000000-0000-4000-8000-000000000002\"],\"lifetime\":86400}",
+                request.Body);
+            Assert.True(result.IsApproved);
+            Assert.False(result.IsDenied);
+            Assert.Equal("agent-code", result.Code);
+            Assert.Equal("https://agent.example/callback", result.RedirectUri);
+            Assert.Equal("s1", result.State);
+            Assert.Null(result.Status);
+            Assert.Equal(1, result.Raw.GetProperty("x_future").GetInt32());
+        }
+
+        [Fact]
+        public async Task SubmitAgentConsentDenyOmitsOptionalFields()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"status\":\"denied\"}");
+            using var auth = _issuer.Create();
+
+            var result = await auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Deny);
+
+            Assert.Equal("{\"challenge\":\"agent-request-secret\",\"decision\":\"deny\"}", Runtime().Single().Body);
+            Assert.True(result.IsDenied);
+            Assert.False(result.IsApproved);
+            Assert.Equal("denied", result.Status);
+            Assert.Null(result.Code);
+        }
+
+        [Fact]
+        public async Task CreateAgentApprovalOptionsReturnsTheWebAuthnOptions()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json(
+                "{\"options\":{\"challenge\":\"c3ludGhldGljLWNoYWxsZW5nZQ\",\"rpId\":\"acme.auth.didit.me\",\"timeout\":60000,\"userVerification\":\"required\"," +
+                "\"allowCredentials\":[{\"id\":\"Y3JlZA\",\"type\":\"public-key\",\"transports\":[\"internal\"]}]}}");
+            using var auth = _issuer.Create();
+
+            var result = await auth.CreateAgentApprovalOptionsAsync(AccessToken, "agent-request-secret");
+
+            var request = Runtime().Single();
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal(new Uri(TestIssuer.Url + "/agents/consent/passkey/"), request.Uri);
+            Assert.Equal("Bearer " + AccessToken, request.Headers["Authorization"]);
+            Assert.Equal("{\"challenge\":\"agent-request-secret\"}", request.Body);
+            Assert.Equal("c3ludGhldGljLWNoYWxsZW5nZQ", result.Options.Challenge);
+            Assert.Equal("acme.auth.didit.me", result.Options.RpId);
+            Assert.Equal(60000, result.Options.Timeout);
+            Assert.Equal("required", result.Options.UserVerification);
+            var credential = Assert.Single(result.Options.AllowCredentials);
+            Assert.Equal("Y3JlZA", credential.Id);
+            Assert.Equal("public-key", credential.Type);
+            Assert.Equal(new[] { "internal" }, credential.Transports);
+        }
+
+        [Fact]
+        public async Task AgentConsentInvalidGrantIsABadRequestWithTheChallengeAndAssertionRedacted()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json(
+                "{\"error\":\"invalid_grant\",\"echo\":\"agent-request-secret signature-b64\"}",
+                HttpStatusCode.BadRequest);
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<BadRequestException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, Assertion()));
+
+            Assert.Equal(400, error.StatusCode);
+            Assert.Equal("[redacted] [redacted]", error.Body!.Value.GetProperty("echo").GetString());
+            Assert.DoesNotContain("agent-request-secret", error.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task AgentConsentPasskeyRequiredIsPermissionDenied()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"error\":\"passkey_required\"}", HttpStatusCode.Forbidden);
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<PermissionDeniedException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve));
+
+            Assert.Equal(403, error.StatusCode);
+            Assert.Equal("passkey_required", error.Body!.Value.GetProperty("error").GetString());
+        }
+
+        [Fact]
+        public async Task AgentApprovalOptionsErrorsMapByStatus()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"detail\":\"Invalid token.\"}", HttpStatusCode.Unauthorized);
+            using var auth = _issuer.Create();
+
+            await Assert.ThrowsAsync<AuthenticationException>(() => auth.CreateAgentApprovalOptionsAsync(AccessToken, "agent-request-secret"));
+        }
+
+        [Fact]
+        public async Task AgentPostsAreNotRetriedOnConnectionErrors()
+        {
+            var calls = 0;
+            using var handler = new StubHttpHandler(_ =>
+            {
+                Interlocked.Increment(ref calls);
+                throw new HttpRequestException("connection reset agent-request-secret");
+            });
+            using var client = new HttpClient(handler);
+            using var auth = new Didit.Authentication(TestIssuer.Url, new AuthenticationOptions { HttpClient = client });
+
+            var error = await Assert.ThrowsAsync<ApiConnectionException>(() => auth.CreateAgentApprovalOptionsAsync(AccessToken, "agent-request-secret"));
+            await Assert.ThrowsAsync<ApiConnectionException>(() => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Deny));
+
+            Assert.Equal(2, calls);
+            Assert.DoesNotContain("agent-request-secret", error.Message, StringComparison.Ordinal);
+        }
+
         [Fact]
         public async Task PostIsNotRetriedOnConnectionErrors()
         {
@@ -377,6 +517,8 @@ namespace Didit.Tests.Authentication
             await Assert.ThrowsAsync<ArgumentException>(() => auth.RevokeSessionAsync(string.Empty));
             await Assert.ThrowsAsync<ArgumentNullException>(() => auth.CreateStepUpAsync(AccessToken, null!));
             await Assert.ThrowsAsync<ArgumentException>(() => auth.RetrieveStepUpAsync(AccessToken, string.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => auth.SubmitAgentConsentAsync(AccessToken, string.Empty, "approve"));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => auth.CreateAgentApprovalOptionsAsync(AccessToken, null!));
             Assert.Empty(_issuer.Handler.Requests);
         }
 
