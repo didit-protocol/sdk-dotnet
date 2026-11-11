@@ -528,6 +528,27 @@ namespace Didit.Tests.Authentication
 
             Assert.Contains("mk-after", secrets);
             Assert.Contains("mk-key-x", secrets);
+            Assert.Contains("\\ud800", secrets);
+        }
+
+        [Fact]
+        public async Task AgentConsentWithAnUndecodableExtensionStringFailsLocallyBeforeAnythingIsSent()
+        {
+            var assertion = MarkedAssertion();
+            assertion.ClientExtensionResults = JsonDocument.Parse("{\"mk-key-x\":[\"\\ud800\"]}").RootElement.Clone();
+            var sent = 0;
+            _issuer.Runtime = _ =>
+            {
+                sent++;
+                return StubHttpHandler.Json("upstream said: \\ud800 end", HttpStatusCode.BadGateway);
+            };
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, ConsentMarkers[9], AuthAgentConsentDecision.Approve, assertion));
+
+            Assert.Equal(0, sent);
+            Assert.DoesNotContain("ud800", error.Message);
         }
 
         [Fact]

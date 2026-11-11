@@ -47,7 +47,8 @@ namespace Didit
             return secrets.ToArray();
         }
 
-        // GetString throws on a lone escaped surrogate: nothing decodable to redact then.
+        // GetString throws on a lone escaped surrogate: redact the raw JSON spelling (without its quotes) then,
+        // since that is exactly what the request body carried.
         private static string? SafeString(JsonElement element)
         {
             try
@@ -56,7 +57,8 @@ namespace Didit
             }
             catch (InvalidOperationException)
             {
-                return null;
+                var raw = element.GetRawText();
+                return raw.Length >= 2 ? raw.Substring(1, raw.Length - 2) : null;
             }
         }
 
