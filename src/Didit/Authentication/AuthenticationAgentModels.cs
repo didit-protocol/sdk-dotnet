@@ -47,12 +47,30 @@ namespace Didit
             return secrets.ToArray();
         }
 
+        // GetString throws on a lone escaped surrogate: nothing decodable to redact then.
+        private static string? SafeString(JsonElement element)
+        {
+            try
+            {
+                return element.GetString();
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
+
         private static IEnumerable<string?> Strings(JsonElement element)
         {
             switch (element.ValueKind)
             {
                 case JsonValueKind.String:
-                    yield return element.GetString();
+                    var value = SafeString(element);
+                    if (value is not null)
+                    {
+                        yield return value;
+                    }
+
                     break;
                 case JsonValueKind.Array:
                     foreach (var text in element.EnumerateArray().SelectMany(Strings))
@@ -64,6 +82,7 @@ namespace Didit
                 case JsonValueKind.Object:
                     foreach (var property in element.EnumerateObject())
                     {
+                        yield return property.Name;
                         foreach (var text in Strings(property.Value))
                         {
                             yield return text;

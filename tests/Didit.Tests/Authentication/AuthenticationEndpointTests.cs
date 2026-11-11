@@ -422,7 +422,7 @@ namespace Didit.Tests.Authentication
             Signature = ConsentMarkers[4],
             UserHandle = ConsentMarkers[5],
             ClientExtensionResults = JsonDocument.Parse(
-                "{\"a\":\"" + ConsentMarkers[6].Replace("/", "\\/") + "\",\"b\":{\"c\":[{\"d\":\"" + ConsentMarkers[7].Replace("\"", "\\\"") + "\"},\"" + ConsentMarkers[8] + "\"]}}").RootElement.Clone(),
+                "{\"mk-key-a\":\"" + ConsentMarkers[6].Replace("/", "\\/") + "\",\"mk-key-b\":{\"mk-key-c\":[{\"mk-key-d\":\"" + ConsentMarkers[7].Replace("\"", "\\\"") + "\"},\"" + ConsentMarkers[8] + "\"]}}").RootElement.Clone(),
         };
 
         private static string EscapedEcho()
@@ -516,6 +516,18 @@ namespace Didit.Tests.Authentication
             Assert.Equal(400, error.StatusCode);
             Assert.Equal("invalid_grant", error.Body!.Value.GetProperty("error").GetString());
             AssertNoConsentSecrets(error, AccessToken);
+        }
+
+        [Fact]
+        public void AssertionSecretsSkipAnUndecodableExtensionStringAndKeepTheRest()
+        {
+            var assertion = MarkedAssertion();
+            assertion.ClientExtensionResults = JsonDocument.Parse("{\"mk-key-x\":[\"\\ud800\",\"mk-after\"]}").RootElement.Clone();
+
+            var secrets = assertion.Secrets();
+
+            Assert.Contains("mk-after", secrets);
+            Assert.Contains("mk-key-x", secrets);
         }
 
         [Fact]
