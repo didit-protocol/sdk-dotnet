@@ -105,7 +105,8 @@ namespace Didit.Internal
                 }
                 catch (OperationCanceledException ex)
                 {
-                    throw new ApiTimeoutException($"Request timed out: {method} {url.AbsolutePath}.", ex);
+                    // A request that carries secrets reports a fixed inner exception: a handler may quote the serialized body.
+                    throw new ApiTimeoutException($"Request timed out: {method} {url.AbsolutePath}.", redactStructurally ? new OperationCanceledException("details withheld") : ex);
                 }
                 catch (HttpRequestException ex)
                 {
@@ -114,7 +115,16 @@ namespace Didit.Internal
                         continue;
                     }
 
-                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {(redactStructurally ? ErrorFactory.RedactText(ex.Message, secrets.Where(secret => !string.IsNullOrEmpty(secret)).Select(secret => secret!).ToArray()) : Redact(ex.Message, secrets))}", ex);
+                    if (redactStructurally)
+                    {
+                        throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath} (details withheld).", new HttpRequestException("details withheld"));
+                    }
+
+                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {Redact(ex.Message, secrets)}", ex);
+                }
+                catch (Exception ex) when (redactStructurally && ex is not OperationCanceledException)
+                {
+                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath} (details withheld).", new HttpRequestException("details withheld"));
                 }
 
                 using (response)

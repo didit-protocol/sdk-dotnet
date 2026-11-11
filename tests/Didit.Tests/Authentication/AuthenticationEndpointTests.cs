@@ -616,6 +616,64 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
+        public async Task ConsentRedactionTreatsTrailingContentAsNotJson()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("x", "s"),
+                Raw("{\"detail\":\"safe\"}]", HttpStatusCode.BadRequest, "application/json"));
+
+            Assert.Equal("[redacted]", error.RawBody);
+            Assert.Null(error.Body);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionTurnsAnEmptyBodyIntoRedacted()
+        {
+            var error = await ConsentFailureAsync(AssertionWith("x", "s"), Raw(string.Empty, HttpStatusCode.BadRequest, "text/plain"));
+
+            Assert.Equal("[redacted]", error.RawBody);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionKeepsASafeKeyNamedRedactedAfterASecretKey()
+        {
+            var error = await ConsentFailureAsync(
+                AssertionWith("SECRET-0123456789abcdef", "s"),
+                StubHttpHandler.Json("{\"a-SECRET-0123456789abcdef\":\"x\",\"[redacted]\":\"safe\"}", HttpStatusCode.BadRequest));
+
+            Assert.Equal("{\"[redacted]2\":\"x\",\"[redacted]\":\"safe\"}", error.RawBody);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionCoversTheReasonPhraseAndTheRequestId()
+        {
+            const string credential = "credential-string-0123456789";
+            var reply = StubHttpHandler.Json("{\"error\":\"invalid_grant\"}", HttpStatusCode.BadRequest);
+            reply.ReasonPhrase = "bad " + credential;
+            reply.Headers.TryAddWithoutValidation("X-Request-ID", "req-" + credential);
+            var error = await ConsentFailureAsync(AssertionWith(credential, "s"), reply);
+
+            Assert.DoesNotContain(credential, error.Message, StringComparison.Ordinal);
+            Assert.Equal("[redacted]", error.RequestId);
+            Assert.DoesNotContain(credential, string.Join("|", error.Headers.SelectMany(h => h.Value.Append(h.Key))), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentTransportFailureKeepsNoUnderlyingException()
+        {
+            const string credential = "cred\"ential\\string-0123456789";
+            _issuer.Runtime = _ => throw new HttpRequestException("write failed: {\"id\":\"cred\\\"ential\\\\string-0123456789\"}");
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAsync<ApiConnectionException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, AssertionWith(credential, "s")));
+
+            var text = error.ToString();
+            Assert.DoesNotContain("ential", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("write failed", text, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task ConsentRedactionReplacesANonJsonBody()
         {
             var error = await ConsentFailureAsync(

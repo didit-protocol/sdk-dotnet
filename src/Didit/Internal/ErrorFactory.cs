@@ -68,6 +68,9 @@ namespace Didit.Internal
             params string?[] secrets)
         {
             var active = secrets.Where(secret => !string.IsNullOrEmpty(secret)).Select(secret => secret!).ToArray();
+            // The reason phrase and the request id are issuer-controlled too: one that contains a secret is replaced whole.
+            reason = reason is null ? null : RedactText(reason, active);
+            requestId = requestId is null ? null : RedactText(requestId, active);
             var clean = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
             foreach (var header in headers)
             {
@@ -76,7 +79,12 @@ namespace Didit.Internal
 
             string? rawBody = null;
             JsonElement? json = null;
-            if (body.Length > 0)
+            if (body.Length == 0)
+            {
+                // An empty body is not JSON.
+                rawBody = Redacted;
+            }
+            else
             {
                 try
                 {
@@ -149,13 +157,29 @@ namespace Didit.Internal
                     break;
                 case JsonValueKind.Object:
                     writer.WriteStartObject();
+                    // Reserve every safe key name first, so a placeholder never takes one.
                     var seen = new HashSet<string>(StringComparer.Ordinal);
                     foreach (var property in element.EnumerateObject())
                     {
-                        var name = RedactText(property.Name, secrets);
-                        for (var number = 2; !seen.Add(name); number++)
+                        if (RedactText(property.Name, secrets) == property.Name)
                         {
-                            name = Redacted + number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                            seen.Add(property.Name);
+                        }
+                    }
+
+                    var next = 1;
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        var name = property.Name;
+                        if (RedactText(name, secrets) != name)
+                        {
+                            do
+                            {
+                                name = next == 1 ? Redacted : Redacted + next.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                next++;
+                            }
+                            while (seen.Contains(name));
+                            seen.Add(name);
                         }
 
                         writer.WritePropertyName(name);
