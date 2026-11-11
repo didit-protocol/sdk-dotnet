@@ -74,6 +74,18 @@ namespace Didit
         [JsonPropertyName("settings")]
         public TravelRuleSettingsDetail? Settings { get; init; }
 
+        /// <summary>
+        /// Own-account outbound quote, or null when a flat Travel Rule quote is unavailable. Does not enable billing.
+        /// </summary>
+        [JsonPropertyName("outbound_price")]
+        public TravelRuleWorkspaceOutboundPrice? OutboundPrice { get; init; }
+
+        /// <summary>
+        /// Current profile licence for a granted claim, otherwise the submitted claim licence. Empty when not supplied.
+        /// </summary>
+        [JsonPropertyName("licence")]
+        public string? Licence { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

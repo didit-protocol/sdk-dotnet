@@ -182,6 +182,12 @@ namespace Didit
         [JsonPropertyName("didit_network")]
         public TravelRuleSettingsDetailDiditNetwork? DiditNetwork { get; init; }
 
+        /// <summary>
+        /// VASP licence or registration reference. Empty when not supplied.
+        /// </summary>
+        [JsonPropertyName("licence")]
+        public string? Licence { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

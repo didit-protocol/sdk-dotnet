@@ -15,7 +15,7 @@ namespace Didit
     public sealed record WalletScreeningResult
     {
         /// <summary>
-        /// Provider that performed the screening (e.g. <c>merklescience</c>, <c>crystal</c>).
+        /// Provider that performed the screening (e.g. <c>merklescience</c>, <c>crystal</c>). When the provider you connected in the Marketplace rejected or failed the screening and that connection's fallback to Didit is on, this names Didit's managed screening, not the provider you connected, and <c>fallback_from_provider</c> names the provider that failed.
         /// </summary>
         [JsonPropertyName("provider")]
         public required string Provider { get; set; }
@@ -183,6 +183,20 @@ namespace Didit
         [JsonPropertyName("risk_factors")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<IReadOnlyList<WalletScreeningResultRiskFactors>> RiskFactors { get; set; }
+
+        /// <summary>
+        /// Set when the provider you connected in the Marketplace rejected or failed this screening and it ran on Didit's managed provider instead, because that connection's Fall back to Didit setting is on: the key of the provider that failed (<c>crystal</c>, <c>chainalysis</c>, <c>elliptic</c> or <c>trmlabs</c>). The screening is billed at the managed rate and the failed call is not billed. <c>null</c> on every other screening.
+        /// </summary>
+        [JsonPropertyName("fallback_from_provider")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string?> FallbackFromProvider { get; set; }
+
+        /// <summary>
+        /// Why the provider you connected failed, when <c>fallback_from_provider</c> is set, for example <c>Your Crystal account has reached its call limit. Raise the limit with Crystal to screen with it again.</c> <c>null</c> on every other screening.
+        /// </summary>
+        [JsonPropertyName("fallback_reason")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string?> FallbackReason { get; set; }
 
         /// <summary>
         /// The provider's own payload. Its shape is provider-specific and can change without notice: read the normalised fields instead of parsing it.

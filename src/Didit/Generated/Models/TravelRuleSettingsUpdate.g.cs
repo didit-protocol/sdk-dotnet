@@ -182,6 +182,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<IReadOnlyList<TravelRuleSettingsUpdateDisabledNetworks>> DisabledNetworks { get; set; }
 
+        /// <summary>
+        /// VASP licence or registration reference. Empty when not supplied.
+        /// </summary>
+        [JsonPropertyName("licence")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Licence { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

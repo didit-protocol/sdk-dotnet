@@ -158,6 +158,18 @@ namespace Didit
         [JsonPropertyName("chain_details")]
         public TravelRuleChainDetails? ChainDetails { get; init; }
 
+        /// <summary>
+        /// Null when required is true. Otherwise below_threshold, the recorded chain exemption (for example LIGHTNING_NO_PAYEE_IDENTIFIER, LIGHTNING_BOLT12_BLINDED_PAYEE or LIGHTNING_LNURL_NAMES_NO_PAYEE), or unknown for legacy transfers without a recorded reason.
+        /// </summary>
+        [JsonPropertyName("not_required_reason")]
+        public string? NotRequiredReason { get; init; }
+
+        /// <summary>
+        /// not_required when the transfer is not required; otherwise confirmed or not_confirmed follows ownership_confirmed. With no verdict, requested means an active outbound ownership widget matches this transfer and subject; otherwise not_requested. A request is not completed proof.
+        /// </summary>
+        [JsonPropertyName("proof_state")]
+        public TravelRuleTransferDetailProofState? ProofState { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

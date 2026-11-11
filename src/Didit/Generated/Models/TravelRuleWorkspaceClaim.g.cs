@@ -56,6 +56,18 @@ namespace Didit
         [JsonPropertyName("vasp_name")]
         public string? VaspName { get; init; }
 
+        /// <summary>
+        /// Licence submitted with the claim. Empty when not supplied.
+        /// </summary>
+        [JsonPropertyName("licence")]
+        public string? Licence { get; init; }
+
+        /// <summary>
+        /// Structured rejection reason. Empty when none was recorded; a new claim or approval clears it. Read review_note for the explanation.
+        /// </summary>
+        [JsonPropertyName("rejection_reason")]
+        public TravelRuleWorkspaceClaimRejectionReason? RejectionReason { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
