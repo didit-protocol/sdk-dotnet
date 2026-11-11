@@ -406,7 +406,7 @@ namespace Didit
             var secrets = new List<string?> { accessToken, challenge };
             if (assertion is not null)
             {
-                secrets.AddRange(assertion.Secrets());
+                secrets.AddRange(AuthAgentPasskeyAssertion.SecretsOf(body));
             }
 
             var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/"), () => JsonContent(body), accessToken, secrets.ToArray(), cancellationToken, redactStructurally: true).ConfigureAwait(false);

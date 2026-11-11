@@ -639,11 +639,13 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
-        public void AssertionSecretsAreReadFromTheJsonTheRequestCarries()
+        public async Task AssertionSecretsAreReadFromTheBytesTheRequestSent()
         {
-            var assertion = MarkedAssertion();
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"code\":\"c\",\"redirect_uri\":\"https://a.example/cb\",\"state\":\"s\"}");
+            using var auth = _issuer.Create();
+            await auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, MarkedAssertion());
 
-            var secrets = assertion.Secrets();
+            var secrets = AuthAgentPasskeyAssertion.SecretsOf(System.Text.Encoding.UTF8.GetBytes(Runtime().Single().Body!));
 
             Assert.All(secrets, secret => Assert.True(secret!.Length >= 16));
             Assert.Contains(ConsentMarkers[4], secrets);

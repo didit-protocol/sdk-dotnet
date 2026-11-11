@@ -40,17 +40,19 @@ namespace Didit
         // otherwise erase error codes like "invalid_grant" (docs/DESIGN.md section 10).
         private const int MinSecretLength = 16;
 
-        internal string?[] Secrets()
+        /// <summary>
+        /// The secrets of a consent request: every string of 16 characters or more of the <c>assertion</c>, object keys and values at
+        /// any depth, read from the exact JSON bytes that were sent, never from a second serialization of the assertion.
+        /// </summary>
+        internal static string?[] SecretsOf(byte[] sentBody)
         {
-            // The exact JSON the request carries, decoded back: keys and values, at any depth, whatever the caller passed.
-            using var stream = new System.IO.MemoryStream();
-            using (var writer = new Utf8JsonWriter(stream))
+            using var wire = JsonDocument.Parse(sentBody);
+            if (!wire.RootElement.TryGetProperty("assertion", out var assertion))
             {
-                Write(writer);
+                return Array.Empty<string?>();
             }
 
-            using var wire = JsonDocument.Parse(stream.ToArray());
-            return Strings(wire.RootElement).Where(secret => secret is { Length: >= MinSecretLength }).ToArray();
+            return Strings(assertion).Where(secret => secret is { Length: >= MinSecretLength }).ToArray();
         }
 
         // GetString throws on a lone escaped surrogate: redact the raw JSON spelling (without its quotes) then,
