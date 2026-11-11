@@ -23,10 +23,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Draft case blueprint with AI
+        /// </summary>
+        /// <remarks>
+        /// Generate an unsaved blueprint proposal. Requires write:cases. Returns a draft object, not a blueprint UUID; no blueprint or saved policy draft is created. Review the proposal, choose assignees and any teams, approvals or routing, then create or update a blueprint separately. Invalid generated content or generation failure returns 503. See [blueprint AI drafts](/management-api/case-blueprints/ai-draft).
+        /// <para/>
+        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/ai-draft/</c> (<c>cases.blueprints.ai_draft</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<CaseBlueprintAiDraftResponse> AiDraftAsync(CaseBlueprintAiDraftRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.AiDraftAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Create blueprint
         /// </summary>
         /// <remarks>
-        /// Create a case blueprint: general settings (assignment, escalation, transfer, 4-eyes pairing) plus content_config, the six sections that drive the case page. Set publish=false to create an unpublished draft; Publish creates its first live version. Discarding a never-published draft deletes it.
+        /// Create a case blueprint: general settings (assignment, escalation, transfer, 4-eyes pairing) plus content_config, the six sections that drive the case page. Set publish=false to create an unpublished draft; Publish creates its first live version. Discarding a never-published draft deletes it. applies_to accepts the six case-type values. content_config.stages.items[].worked_by is an optional active review-team UUID from this application. These settings are preserved in case policy snapshots; later edits do not change existing snapshots.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/</c> (<c>cases.blueprints.create</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -211,7 +229,7 @@ namespace Didit.Resources
         /// Update blueprint
         /// </summary>
         /// <remarks>
-        /// Partially update a blueprint's general settings or content_config.
+        /// Partially update a blueprint's general settings or content_config. applies_to accepts the six case-type values. content_config.stages.items[].worked_by is an optional active review-team UUID from this application. These settings are preserved in case policy snapshots; later edits do not change existing snapshots.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/</c> (<c>cases.blueprints.update</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -235,6 +253,27 @@ namespace Didit.Resources
         internal CasesBlueprintsRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+        }
+
+        /// <summary>
+        /// Draft case blueprint with AI
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="CasesBlueprintsResource.AiDraftAsync"/>.</remarks>
+        public Task<DiditResponse<CaseBlueprintAiDraftResponse>> AiDraftAsync(CaseBlueprintAiDraftRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/cases/blueprints/ai-draft/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<CaseBlueprintAiDraftResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

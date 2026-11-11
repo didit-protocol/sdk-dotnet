@@ -111,10 +111,10 @@ namespace Didit
         public string? FourEyesCheckerBlueprintName { get; init; }
 
         /// <summary>
-        /// The six togglable sections that drive which tabs and fields appear on the case page. Unknown sections or keys are rejected.
+        /// Case content sections and optional review stages. Unknown sections or keys are rejected. Cases retain the policy snapshot accepted when opened; later blueprint edits do not rewrite it.
         /// </summary>
         [JsonPropertyName("content_config")]
-        public CaseBlueprintDetailContentConfig? ContentConfig { get; init; }
+        public CaseContentConfig? ContentConfig { get; init; }
 
         /// <summary>
         /// Connectors currently routing new cases into this blueprint.
@@ -145,6 +145,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("default_deadline_hours")]
         public long? DefaultDeadlineHours { get; init; }
+
+        /// <summary>
+        /// Case types this blueprint describes. Optional on create and update; new blueprints default to an empty list. Stored in the accepted case policy snapshot.
+        /// </summary>
+        [JsonPropertyName("applies_to")]
+        public IReadOnlyList<CaseBlueprintAppliesTo>? AppliesTo { get; init; }
+
+        /// <summary>
+        /// Configured stages, or the default stages when none are configured.
+        /// </summary>
+        [JsonPropertyName("stages")]
+        public IReadOnlyList<CaseBlueprintStage>? Stages { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

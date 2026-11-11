@@ -150,7 +150,7 @@ namespace Didit.Resources
         /// Create case
         /// </summary>
         /// <remarks>
-        /// Create a case anchored to exactly one subject (a user or a business), directly or by deriving the subject from an attached session/transaction link. Source is always <c>MANUAL</c> for API-created cases.
+        /// Create a case anchored to exactly one subject (a user or a business), directly or by deriving the subject from an attached session/transaction link. Source is always <c>MANUAL</c> for API-created cases. Network links require write:cases plus read:networks, Networks access and investigation access for the network scope. The network must be visible and contain the case subject. Manually adding links to network-generated cases is not allowed. An explicit subject is required whenever links includes a network.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/</c> (<c>cases.create</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.

@@ -10,21 +10,15 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (CaseBlueprintDetailContentConfigReporting).
+    /// Response object (CaseBlueprintAiDraftResponse).
     /// </summary>
-    public sealed record CaseBlueprintDetailContentConfigReporting
+    public sealed record CaseBlueprintAiDraftResponse
     {
         /// <summary>
-        /// The &lt;c&gt;enabled&lt;/c&gt; field.
+        /// Unsaved, validated proposal. Fields are optional; review the result and select assignees, teams and routing before saving.
         /// </summary>
-        [JsonPropertyName("enabled")]
-        public bool? Enabled { get; init; }
-
-        /// <summary>
-        /// The &lt;c&gt;fiu_reports&lt;/c&gt; field.
-        /// </summary>
-        [JsonPropertyName("fiu_reports")]
-        public bool? FiuReports { get; init; }
+        [JsonPropertyName("draft")]
+        public CaseBlueprintAiDraft? Draft { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

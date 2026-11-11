@@ -32,6 +32,9 @@ namespace Didit
         /// <summary><c>transaction</c></summary>
         public static CaseLinkLinkedEntityType Transaction { get; } = new("transaction");
 
+        /// <summary><c>network</c></summary>
+        public static CaseLinkLinkedEntityType Network { get; } = new("network");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

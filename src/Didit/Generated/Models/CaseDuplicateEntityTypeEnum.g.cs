@@ -12,6 +12,7 @@ namespace Didit
     /// * <c>session</c> - Session
     /// * <c>business_session</c> - Business Session
     /// * <c>transaction</c> - Transaction
+    /// * <c>network</c> - Network containing the selected case subject
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(CaseDuplicateEntityTypeEnum.EnumJsonConverter))]
@@ -33,6 +34,9 @@ namespace Didit
 
         /// <summary><c>transaction</c></summary>
         public static CaseDuplicateEntityTypeEnum Transaction { get; } = new("transaction");
+
+        /// <summary><c>network</c></summary>
+        public static CaseDuplicateEntityTypeEnum Network { get; } = new("network");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

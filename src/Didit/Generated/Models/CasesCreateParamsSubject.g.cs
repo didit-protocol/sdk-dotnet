@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Required unless links is provided; the case's exactly-one subject.
+    /// Exactly one user or business. Supply explicitly when any network link is supplied, even alongside other link types; otherwise may be derived from links.
     /// </summary>
     public sealed record CasesCreateParamsSubject
     {

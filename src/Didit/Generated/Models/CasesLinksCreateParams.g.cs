@@ -15,7 +15,7 @@ namespace Didit
     public sealed record CasesLinksCreateParams
     {
         /// <summary>
-        /// The &lt;c&gt;entity_type&lt;/c&gt; field.
+        /// Type of record to attach. A network must be visible and contain the selected case subject.
         /// </summary>
         [JsonPropertyName("entity_type")]
         public required CasesLinksCreateParamsEntityType EntityType { get; set; }
