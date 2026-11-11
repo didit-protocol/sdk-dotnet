@@ -86,6 +86,12 @@ namespace Didit
         [JsonPropertyName("products")]
         public IReadOnlyList<ApplicationProduct>? Products { get; init; }
 
+        /// <summary>
+        /// The application's environment. A <c>live</c> application bills every verification session and check created with its key. A <c>sandbox</c> application mocks every check and is never billed, so it is where you test (each sandbox application can create 500 test sessions every 24 hours). Read this field to pick the application: never infer the environment from the name.
+        /// </summary>
+        [JsonPropertyName("mode")]
+        public ApplicationMode? Mode { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

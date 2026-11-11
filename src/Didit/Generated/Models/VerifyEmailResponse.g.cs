@@ -39,10 +39,16 @@ namespace Didit
         public OrganizationSummary? Organization { get; init; }
 
         /// <summary>
-        /// Minimal application shape returned inline by <c>POST /programmatic/verify-email/</c>. Persist the <c>api_key</c> immediately.
+        /// The organization's live application (<c>mode: live</c>): the credentials a production integration ships with. Every check created with its key is billed from the organization's balance.
         /// </summary>
         [JsonPropertyName("application")]
         public ApplicationCredentialsSummary? Application { get; init; }
+
+        /// <summary>
+        /// The organization's sandbox application (<c>mode: sandbox</c>). Use its <c>api_key</c> to build and test the integration for free: every check is mocked and never billed. Switch to the live <c>application</c> key to go live.
+        /// </summary>
+        [JsonPropertyName("sandbox_application")]
+        public ApplicationCredentialsSummary? SandboxApplication { get; init; }
 
         /// <summary>
         /// Present and <c>true</c> when the account already has an authenticator app or a passkey. The response then carries <c>temp_token</c> instead of tokens and application keys.

@@ -150,7 +150,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"message\": \"Registration successful. Check your email for the verification code.\", \"email\": \"you@yourdomain.com\"}");
+            handler.Enqueue(200, "{\"message\": \"A new verification code has been sent to your email.\", \"email\": \"you@yourdomain.com\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.RegisterAsync(new RegisterRequest { Email = "user@example.com", Password = "MyStr0ng!Pass" });
 
@@ -164,7 +164,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"email\": \"user@example.com\", \"password\": \"MyStr0ng!Pass\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("Registration successful. Check your email for the verification code.", result.Message);
+            Assert.Equal("A new verification code has been sent to your email.", result.Message);
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"access_token\": \"sample-token\", \"refresh_token\": \"sample-token\", \"expires_in\": 86400, \"organization\": {\"uuid\": \"a1b2c3d4-5678-90ab-cdef-111111111111\", \"name\": \"developer\"}, \"application\": {\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"developer\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"data_location\": \"eu\"}}");
+            handler.Enqueue(200, "{\"access_token\": \"sample-token\", \"refresh_token\": \"sample-token\", \"expires_in\": 86400, \"organization\": {\"uuid\": \"a1b2c3d4-5678-90ab-cdef-111111111111\", \"name\": \"developer\"}, \"application\": {\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"developer\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"data_location\": \"eu\", \"mode\": \"live\"}, \"sandbox_application\": {\"uuid\": \"c3d4e5f6-7890-12cd-efgh-333333333333\", \"name\": \"developer (Sandbox)\", \"client_id\": \"T0MJZHTpXOvHNMItwFu0eR\", \"api_key\": \"sk_test_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"data_location\": \"eu\", \"mode\": \"sandbox\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.Account.VerifyEmailAsync(new VerifyEmailRequest { Email = "user@example.com", Code = "A3K9F2" });
 
