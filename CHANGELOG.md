@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.14.0...v1.14.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **authentication:** redact every string of the consent assertion from errors ([c1cb8ec](https://github.com/didit-protocol/sdk-dotnet/commit/c1cb8ec50b13a313821cd7d7185b3dab6a5c408b))
+
 ## [1.14.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.13.0...v1.14.0) (2026-11-11)
 
 
