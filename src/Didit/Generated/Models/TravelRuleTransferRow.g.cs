@@ -135,6 +135,18 @@ namespace Didit
         public string? MatchedTransactionId { get; init; }
 
         /// <summary>
+        /// The sandbox scenario that answered this transfer, only when <c>rail</c> is <c>TEST_VASP</c> (for example <c>accept</c>, <c>decline</c> or <c>name_mismatch</c>). <c>null</c> for every other transfer, including a live one.
+        /// </summary>
+        [JsonPropertyName("scenario")]
+        public string? Scenario { get; init; }
+
+        /// <summary>
+        /// How many webhook delivery attempts Didit recorded for this transfer's transaction, across every event type. Each retry and each manual resend is a separate attempt and counts. Scoped to the calling application; deleted transactions are not counted.
+        /// </summary>
+        [JsonPropertyName("webhooks_count")]
+        public long? WebhooksCount { get; init; }
+
+        /// <summary>
         /// When the transfer expires if it is still waiting on its counterparty. Set on every transfer you create with <c>POST /v3/transactions/</c> that needs an exchange, outbound or inbound. Null below the threshold, on a Lightning payment the Travel Rule does not apply to, and on inbound transfers Didit creates when a counterparty reaches you (an inbound TRP inquiry, a network message or the INTERNAL inbound leg).
         /// </summary>
         [JsonPropertyName("deadline_at")]

@@ -37,6 +37,8 @@ namespace Didit.Tests.Authentication
                 ["authentication.revoke_session"] = (nameof(Didit.Authentication.RevokeSessionAsync), (auth, _) => auth.RevokeSessionAsync(AccessToken)),
                 ["authentication.create_step_up"] = (nameof(Didit.Authentication.CreateStepUpAsync), (auth, _) => auth.CreateStepUpAsync(AccessToken, "payout", "250.00", "EUR", "https://app.example.com/payouts")),
                 ["authentication.retrieve_step_up"] = (nameof(Didit.Authentication.RetrieveStepUpAsync), (auth, _) => auth.RetrieveStepUpAsync(AccessToken, "00000000-0000-4000-8000-000000000001")),
+                ["authentication.submit_agent_consent"] = (nameof(Didit.Authentication.SubmitAgentConsentAsync), (auth, _) => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve)),
+                ["authentication.create_agent_approval_options"] = (nameof(Didit.Authentication.CreateAgentApprovalOptionsAsync), (auth, _) => auth.CreateAgentApprovalOptionsAsync(AccessToken, "agent-request-secret")),
             };
 
         /// <summary>Public methods that call no operation of their own: ID token verification (discovery and JWKS), helpers, Dispose.</summary>
@@ -162,8 +164,39 @@ namespace Didit.Tests.Authentication
                 return (status, example.GetRawText());
             }
 
-            var first = media.GetProperty("examples").EnumerateObject().First().Value;
-            return (status, Resolve(root, first).GetProperty("value").GetRawText());
+            if (media.TryGetProperty("examples", out var examples))
+            {
+                var first = examples.EnumerateObject().First().Value;
+                return (status, Resolve(root, first).GetProperty("value").GetRawText());
+            }
+
+            // No media-level example: use the schema's own example, or the first oneOf branch's (the agent consent response has no shared discriminator).
+            var schemaExample = SchemaExample(root, media.GetProperty("schema"));
+            Assert.True(schemaExample is not null, "A documented 2xx JSON response needs an example on its media type or its schema.");
+            return (status, schemaExample);
+        }
+
+        private static string? SchemaExample(JsonElement root, JsonElement schema)
+        {
+            var node = Resolve(root, schema);
+            if (node.TryGetProperty("example", out var example))
+            {
+                return example.GetRawText();
+            }
+
+            if (node.TryGetProperty("oneOf", out var branches))
+            {
+                foreach (var branch in branches.EnumerateArray())
+                {
+                    var found = SchemaExample(root, branch);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static JsonElement Resolve(JsonElement root, JsonElement node)

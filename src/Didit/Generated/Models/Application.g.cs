@@ -92,6 +92,12 @@ namespace Didit
         [JsonPropertyName("mode")]
         public ApplicationMode? Mode { get; init; }
 
+        /// <summary>
+        /// Application sign-in URL for an admin-sent sign-in link. Optional; an empty string disables sending. A nonempty value must use HTTPS and the exact hostname of website_url (subdomains must match), with no userinfo, query, fragment or whitespace and no port other than 443. The server also revalidates the saved URI when website_url changes; update or clear initiate_login_uri in the same PATCH if needed. The hosted handoff adds iss and login_hint, but creates no session or tokens. See /authentication/sign-in-methods#admin-sent-sign-in-link.
+        /// </summary>
+        [JsonPropertyName("initiate_login_uri")]
+        public string? InitiateLoginUri { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -28,6 +28,8 @@ namespace Didit.Resources
         /// <remarks>
         /// Create an application inside an organization, in the data location you choose (<c>data_location</c>, the European Union by default; it can't be changed afterwards). The response includes <c>api_key</c>; persist it now (recoverable via GET). Requires owner/admin JWT.
         /// <para/>
+        /// Set initiate_login_uri to your HTTPS sign-in page on the exact website_url hostname, or an empty string to disable admin-sent sign-in links. Changing website_url also revalidates the saved sign-in URI. Invalid values return 400 with an initiate_login_uri field error; hostname and URI policy failures use https_url_on_registered_website_required.
+        /// <para/>
         /// <c>POST /organizations/me/{org_id}/applications/</c> (<c>account.applications.create</c>).
         /// </remarks>
         /// <param name="orgId">UUID of the organization. Look it up with <c>GET /organizations/me/</c>.</param>
@@ -81,6 +83,8 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored. <c>data_location</c> can't be changed after the application is created, except once on the live application created with your organization, while it is unused (see the request body). Requires owner/admin JWT.
+        /// <para/>
+        /// Set initiate_login_uri to your HTTPS sign-in page on the exact website_url hostname, or an empty string to disable admin-sent sign-in links. Changing website_url also revalidates the saved sign-in URI. Invalid values return 400 with an initiate_login_uri field error; hostname and URI policy failures use https_url_on_registered_website_required.
         /// <para/>
         /// <c>PATCH /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.update</c>).
         /// </remarks>
