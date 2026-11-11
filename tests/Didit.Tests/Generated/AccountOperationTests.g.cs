@@ -22,7 +22,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"Acme Customer App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"https://acme.example/callback\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": null, \"created_at\": \"2025-06-01T10:00:00Z\", \"data_location\": \"eu\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Account.Applications.CreateAsync("org_id-1", new ApplicationCreateRequest { Name = "Acme Customer App", WebsiteUrl = "https://acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "https://acme.example/terms", PrivacyUrl = "https://acme.example/privacy", Description = "sample-description", DataLocation = new ApplicationDataLocation("eu") });
+            var result = await client.Account.Applications.CreateAsync("org_id-1", new ApplicationCreateRequest { Name = "Acme Customer App", WebsiteUrl = "https://acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "https://acme.example/terms", PrivacyUrl = "https://acme.example/privacy", Description = "sample-description", DataLocation = new ApplicationDataLocation("eu"), InitiateLoginUri = "https://acme.example/login" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -32,7 +32,7 @@ namespace Didit.Tests.Generated
             Assert.Equal("Bearer " + TestClients.AccountToken, request.Header("Authorization"));
             Assert.Null(request.Header("x-api-key"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"name\": \"Acme Customer App\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": \"sample-description\", \"data_location\": \"eu\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"name\": \"Acme Customer App\", \"website_url\": \"https://acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": \"sample-description\", \"data_location\": \"eu\", \"initiate_login_uri\": \"https://acme.example/login\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("b2c3d4e5-6789-01bc-defg-222222222222", result.Uuid);
         }
@@ -86,7 +86,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"uuid\": \"b2c3d4e5-6789-01bc-defg-222222222222\", \"name\": \"Acme Production App\", \"client_id\": \"S9LIYGSoWNuGMLHsvEt9dQ\", \"api_key\": \"sk_live_example_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"https://acme.example/callback\"], \"terms_url\": \"https://acme.example/terms\", \"privacy_url\": \"https://acme.example/privacy\", \"description\": null, \"created_at\": \"2025-06-01T10:00:00Z\", \"data_location\": \"eu\", \"products\": [{\"product\": \"identity\", \"status\": \"enabled\", \"modules\": {\"user_verification\": true, \"business_verification\": true, \"case_management\": true}}, {\"product\": \"transactions\", \"status\": \"disabled\", \"modules\": {\"travel_rule\": true, \"case_management\": true}}, {\"product\": \"authentication\", \"status\": \"disabled\", \"modules\": {}}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Account.Applications.UpdateAsync("org_id-1", "app_id-1", new ApplicationUpdateRequest { Name = "Acme Production App", WebsiteUrl = "https://app.acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "sample-terms_url", PrivacyUrl = "sample-privacy_url", Description = "sample-description", DataLocation = new ApplicationDataLocation("eu") });
+            var result = await client.Account.Applications.UpdateAsync("org_id-1", "app_id-1", new ApplicationUpdateRequest { Name = "Acme Production App", WebsiteUrl = "https://app.acme.example", RedirectUris = new string[] { "sample-redirect_uris" }, TermsUrl = "sample-terms_url", PrivacyUrl = "sample-privacy_url", Description = "sample-description", DataLocation = new ApplicationDataLocation("eu"), InitiateLoginUri = "https://acme.example/login" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -96,7 +96,7 @@ namespace Didit.Tests.Generated
             Assert.Equal("Bearer " + TestClients.AccountToken, request.Header("Authorization"));
             Assert.Null(request.Header("x-api-key"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"name\": \"Acme Production App\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"sample-terms_url\", \"privacy_url\": \"sample-privacy_url\", \"description\": \"sample-description\", \"data_location\": \"eu\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"name\": \"Acme Production App\", \"website_url\": \"https://app.acme.example\", \"redirect_uris\": [\"sample-redirect_uris\"], \"terms_url\": \"sample-terms_url\", \"privacy_url\": \"sample-privacy_url\", \"description\": \"sample-description\", \"data_location\": \"eu\", \"initiate_login_uri\": \"https://acme.example/login\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("b2c3d4e5-6789-01bc-defg-222222222222", result.Uuid);
         }
