@@ -314,7 +314,7 @@ namespace Didit.Tests.Authentication
             RawId = "Y3JlZC1pZA",
             ClientDataJson = "client-data-json-b64",
             AuthenticatorData = "auth-data-b64",
-            Signature = "signature-b64",
+            Signature = "signature-b64-padpad0123456",
         };
 
         [Fact]
@@ -339,7 +339,7 @@ namespace Didit.Tests.Authentication
             Assert.Equal("Bearer " + AccessToken, request.Headers["Authorization"]);
             Assert.Equal(
                 "{\"challenge\":\"agent-request-secret\",\"decision\":\"approve\",\"assertion\":{\"id\":\"Y3JlZC1pZA\",\"rawId\":\"Y3JlZC1pZA\",\"type\":\"public-key\"," +
-                "\"response\":{\"clientDataJSON\":\"client-data-json-b64\",\"authenticatorData\":\"auth-data-b64\",\"signature\":\"signature-b64\"}}," +
+                "\"response\":{\"clientDataJSON\":\"client-data-json-b64\",\"authenticatorData\":\"auth-data-b64\",\"signature\":\"signature-b64-padpad0123456\"}}," +
                 "\"scopes\":[\"read\"],\"organization_ids\":[\"00000000-0000-4000-8000-000000000002\"],\"lifetime\":86400}",
                 request.Body);
             Assert.True(result.IsApproved);
@@ -395,7 +395,7 @@ namespace Didit.Tests.Authentication
         public async Task AgentConsentInvalidGrantIsABadRequestWithTheChallengeAndAssertionRedacted()
         {
             _issuer.Runtime = _ => StubHttpHandler.Json(
-                "{\"error\":\"invalid_grant\",\"echo\":\"agent-request-secret signature-b64\"}",
+                "{\"error\":\"invalid_grant\",\"echo\":\"agent-request-secret signature-b64-padpad0123456\"}",
                 HttpStatusCode.BadRequest);
             using var auth = _issuer.Create();
 
@@ -410,8 +410,8 @@ namespace Didit.Tests.Authentication
 
         private static readonly string[] ConsentMarkers =
         {
-            "mk-id\"q/1+", "mk-rawid\\b/2+", "mk-cdj\"c/3+\u00e9", "mk-authdata/4+", "mk-sig\"/5+", "mk-handle/6+",
-            "mk-ext-top/7+", "mk-ext-deep\"/8+", "mk-ext-array/9+", "mk-challenge\"/10+",
+            "mk-id\"q/1+-padpad0123456", "mk-rawid\\b/2+-padpad0123456", "mk-cdj\"c/3+\u00e9-padpad0123456", "mk-authdata/4+-padpad0123456", "mk-sig\"/5+-padpad0123456", "mk-handle/6+-padpad0123456",
+            "mk-ext-top/7+-padpad0123456", "mk-ext-deep\"/8+-padpad0123456", "mk-ext-array/9+-padpad0123456", "mk-challenge\"/10+-padpad0123456",
         };
 
         private static AuthAgentPasskeyAssertion MarkedAssertion() => new()
@@ -423,7 +423,7 @@ namespace Didit.Tests.Authentication
             Signature = ConsentMarkers[4],
             UserHandle = ConsentMarkers[5],
             ClientExtensionResults = JsonDocument.Parse(
-                "{\"mk-key-a\":\"" + ConsentMarkers[6].Replace("/", "\\/") + "\",\"mk-key-b\":{\"mk-key-c\":[{\"mk-key-d\":\"" + ConsentMarkers[7].Replace("\"", "\\\"") + "\"},\"" + ConsentMarkers[8] + "\"]}}").RootElement.Clone(),
+                "{\"mk-key-a-padpad0123456\":\"" + ConsentMarkers[6].Replace("/", "\\/") + "\",\"mk-key-b-padpad0123456\":{\"mk-key-c-padpad0123456\":[{\"mk-key-d-padpad0123456\":\"" + ConsentMarkers[7].Replace("\"", "\\\"") + "\"},\"" + ConsentMarkers[8] + "\"]}}").RootElement.Clone(),
         };
 
         private static string EscapedEcho()
@@ -544,47 +544,75 @@ namespace Didit.Tests.Authentication
         public async Task ConsentRedactionLeavesNoFragmentOfAPrefixedSecret()
         {
             var error = await ConsentFailureAsync(
-                AssertionWith("abc", "abcdef"),
-                StubHttpHandler.Json("{\"detail\":\"bad abcdef and abc\",\"other\":\"abcdef\"}", HttpStatusCode.BadRequest));
+                AssertionWith("abcCREDENTIALID0123", "abcCREDENTIALID0123456"),
+                StubHttpHandler.Json("{\"detail\":\"bad abcCREDENTIALID0123456 and abcCREDENTIALID0123\",\"other\":\"abcCREDENTIALID0123456\"}", HttpStatusCode.BadRequest));
 
             Assert.Equal("{\"detail\":\"[redacted]\",\"other\":\"[redacted]\"}", error.RawBody);
-            Assert.DoesNotContain("abc", Shown(error), StringComparison.Ordinal);
-            Assert.DoesNotContain("def", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("abcCRED", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("456", Shown(error), StringComparison.Ordinal);
         }
 
         [Fact]
         public async Task ConsentRedactionReplacesTheWholeStringThatContainsASecret()
         {
             var error = await ConsentFailureAsync(
-                AssertionWith("SECRET", "s"),
-                StubHttpHandler.Json("{\"detail\":\"bad assertion xyzSECRETxyz\",\"keep\":\"fine\"}", HttpStatusCode.BadRequest));
+                AssertionWith("SECRET-0123456789abcdef", "s"),
+                StubHttpHandler.Json("{\"detail\":\"bad assertion xyzSECRET-0123456789abcdefxyz\",\"keep\":\"fine\"}", HttpStatusCode.BadRequest));
 
             Assert.Equal("{\"detail\":\"[redacted]\",\"keep\":\"fine\"}", error.RawBody);
             Assert.Contains("[redacted]", error.Message, StringComparison.Ordinal);
-            Assert.DoesNotContain("SECRET", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("SECRET-0123456789abcdef", Shown(error), StringComparison.Ordinal);
         }
 
         [Fact]
         public async Task ConsentRedactionHandlesASecretUsedAsAnObjectKey()
         {
             var error = await ConsentFailureAsync(
-                AssertionWith("SECRET", "s"),
-                StubHttpHandler.Json("{\"detail\":\"no\",\"echo-SECRET-1\":\"a\",\"echo-SECRET-2\":\"b\"}", HttpStatusCode.BadRequest));
+                AssertionWith("SECRET-0123456789abcdef", "s"),
+                StubHttpHandler.Json("{\"detail\":\"no\",\"echo-SECRET-0123456789abcdef-1\":\"a\",\"echo-SECRET-0123456789abcdef-2\":\"b\"}", HttpStatusCode.BadRequest));
 
             Assert.Equal("{\"detail\":\"no\",\"[redacted]\":\"a\",\"[redacted]2\":\"b\"}", error.RawBody);
-            Assert.DoesNotContain("SECRET", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("SECRET-0123456789abcdef", Shown(error), StringComparison.Ordinal);
         }
 
         [Fact]
         public async Task ConsentRedactionIgnoresTheSpellingOfJsonEscapes()
         {
             var error = await ConsentFailureAsync(
-                AssertionWith("a/b+\u00e9", "s"),
-                Raw("{\"detail\":\"x\",\"echo\":\"a\\/b+\\u00E9\"}", HttpStatusCode.BadRequest, "application/json"));
+                AssertionWith("a/b+\u00e9-padding0123456", "s"),
+                Raw("{\"detail\":\"x\",\"echo\":\"a\\/b+\\u00E9-padding0123456\"}", HttpStatusCode.BadRequest, "application/json"));
 
             Assert.Equal("{\"detail\":\"x\",\"echo\":\"[redacted]\"}", error.RawBody);
             Assert.DoesNotContain("a/b", Shown(error), StringComparison.Ordinal);
             Assert.DoesNotContain("00E9", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain("padding0123456", Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionKeepsErrorCodesAndShortAssertionStringsReadable()
+        {
+            const string credential = "Y3JlZGVudGlhbC1pZC0xMjM0NTY3ODkw";
+            var error = await ConsentFailureAsync(
+                AssertionWith(credential, "s"),
+                StubHttpHandler.Json("{\"error\":\"invalid_grant\",\"detail\":\"id public-key " + credential + "\"}", HttpStatusCode.BadRequest));
+
+            Assert.Equal("{\"error\":\"invalid_grant\",\"detail\":\"[redacted]\"}", error.RawBody);
+            Assert.Contains("invalid_grant", Shown(error), StringComparison.Ordinal);
+            Assert.DoesNotContain(credential, Shown(error), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ConsentRedactionCoversAStringInsideANestedExtensionObject()
+        {
+            const string nested = "nested-credential-string-0123456789";
+            var assertion = AssertionWith("id", "s");
+            assertion.ClientExtensionResults = JsonDocument.Parse("{\"credProps\":{\"deep\":[{\"value\":\"" + nested + "\"}]}}").RootElement.Clone();
+            var error = await ConsentFailureAsync(
+                assertion,
+                StubHttpHandler.Json("{\"error\":\"invalid_grant\",\"echo\":\"" + nested + "\"}", HttpStatusCode.BadRequest));
+
+            Assert.Equal("{\"error\":\"invalid_grant\",\"echo\":\"[redacted]\"}", error.RawBody);
+            Assert.DoesNotContain(nested, Shown(error), StringComparison.Ordinal);
         }
 
         [Fact]
@@ -611,23 +639,22 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
-        public void AssertionSecretsSkipAnUndecodableExtensionStringAndKeepTheRest()
+        public void AssertionSecretsAreReadFromTheJsonTheRequestCarries()
         {
             var assertion = MarkedAssertion();
-            assertion.ClientExtensionResults = JsonDocument.Parse("{\"mk-key-x\":[\"\\ud800\",\"mk-after\"]}").RootElement.Clone();
 
             var secrets = assertion.Secrets();
 
-            Assert.Contains("mk-after", secrets);
-            Assert.Contains("mk-key-x", secrets);
-            Assert.Contains("\\ud800", secrets);
+            Assert.All(secrets, secret => Assert.True(secret!.Length >= 16));
+            Assert.Contains(ConsentMarkers[4], secrets);
+            Assert.DoesNotContain("id", secrets);
         }
 
         [Fact]
         public async Task AgentConsentWithAnUndecodableExtensionStringFailsLocallyBeforeAnythingIsSent()
         {
             var assertion = MarkedAssertion();
-            assertion.ClientExtensionResults = JsonDocument.Parse("{\"mk-key-x\":[\"\\ud800\"]}").RootElement.Clone();
+            assertion.ClientExtensionResults = JsonDocument.Parse("{\"mk-key-x-padpad0123456\":[\"\\ud800\"]}").RootElement.Clone();
             var sent = 0;
             _issuer.Runtime = _ =>
             {
