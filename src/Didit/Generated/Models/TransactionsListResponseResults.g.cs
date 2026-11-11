@@ -177,10 +177,10 @@ namespace Didit
         public string? TravelRuleStatus { get; init; }
 
         /// <summary>
-        /// The transaction's Travel Rule transfer, the same block as <c>travel_rule</c> on <c>GET /v3/transactions/{transaction_id}/</c>, or <c>null</c> when the transaction has none.
+        /// Travel Rule summary with latest delivery, or null when absent. Unlike transaction detail, this block omits deliveries and deliveries_truncated.
         /// </summary>
         [JsonPropertyName("travel_rule")]
-        public TransactionTravelRule? TravelRule { get; init; }
+        public TransactionListTravelRule? TravelRule { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

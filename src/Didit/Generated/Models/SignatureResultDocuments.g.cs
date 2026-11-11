@@ -33,6 +33,24 @@ namespace Didit
         public string? Title { get; init; }
 
         /// <summary>
+        /// Language of the document version selected for this signing attempt, not necessarily the requested interface language. A complete translation matching the signer language (or session language when unset) is selected; otherwise the original is used. Null when the selected version has no language set. Frozen when the attempt starts; once signed, this is the language actually signed.
+        /// </summary>
+        [JsonPropertyName("language")]
+        public string? Language { get; init; }
+
+        /// <summary>
+        /// UUID of the source document revision copied into this signing attempt, including when a translated variant is selected. Distinct from id, which identifies the signer's document copy. Frozen when the attempt starts.
+        /// </summary>
+        [JsonPropertyName("source_revision")]
+        public string? SourceRevision { get; init; }
+
+        /// <summary>
+        /// UUID of the selected translated variant, or null when the original document is selected. Frozen with the document copy when the attempt starts; later language or translation changes do not replace it.
+        /// </summary>
+        [JsonPropertyName("translation_id")]
+        public string? TranslationId { get; init; }
+
+        /// <summary>
         /// The &lt;c&gt;file_name&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("file_name")]

@@ -26,6 +26,8 @@ namespace Didit
         /// * <c>business_document</c> - business_document
         /// * <c>confirm_details</c> - confirm_details
         /// * <c>review_in_progress</c> - review_in_progress
+        /// * <c>source_of_funds</c> - Request a document showing the source of payment funds.
+        /// * <c>purpose_of_payment</c> - Request a document explaining the payment purpose. Both are available for person and business cases.
         /// </summary>
         [JsonPropertyName("purpose")]
         public required CustomerMessagingPurposeEnum Purpose { get; set; }
@@ -44,7 +46,7 @@ namespace Didit
         public required string RequestId { get; set; }
 
         /// <summary>
-        /// The &lt;c&gt;expires_at&lt;/c&gt; field.
+        /// Use the expiry covered by the preview token. Source-of-funds and purpose-of-payment requests allow up to 14 days; other purposes allow up to seven days. The default remains seven days. Changing the expiry without a matching preview is rejected.
         /// </summary>
         [JsonPropertyName("expires_at")]
         public required DateTimeOffset ExpiresAt { get; set; }

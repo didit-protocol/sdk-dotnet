@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// A transaction's Travel Rule transfer, as <c>GET /v3/transactions/{transaction_id}/</c>, the <c>201</c> of <c>POST /v3/transactions/</c> and each row of <c>GET /v3/transactions/</c> return it. <c>direction</c>, <c>rail</c>, <c>counterparty_vasp</c>, <c>delivery</c>, <c>discovery</c>, <c>reason</c> and <c>next_actions</c> have the same shape as on <c>PATCH /v3/transactions/{transaction_id}/travel-rule/</c>, so one read of a transaction says why its transfer is stuck and what moves it on.
+    /// Travel Rule transfer on transaction detail and creation responses. Includes latest delivery and bounded delivery history. Transaction lists omit the history fields.
     /// </summary>
     public sealed record TransactionTravelRule
     {
@@ -139,6 +139,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("chain_details")]
         public TravelRuleChainDetails? ChainDetails { get; init; }
+
+        /// <summary>
+        /// Newest 100 delivery entries, presented oldest first (creation time, then identifier). Empty when no messages exist. Use the paginated delivery endpoint for complete history.
+        /// </summary>
+        [JsonPropertyName("deliveries")]
+        public IReadOnlyList<TravelRuleDeliveryLogEntry>? Deliveries { get; init; }
+
+        /// <summary>
+        /// True when older entries were omitted from deliveries. Follow GET /v3/transactions/{transaction_id}/travel-rule/deliveries/ for the complete history.
+        /// </summary>
+        [JsonPropertyName("deliveries_truncated")]
+        public bool? DeliveriesTruncated { get; init; }
 
         /// <summary>
         /// Null when required is true. Otherwise below_threshold, the recorded chain exemption (for example LIGHTNING_NO_PAYEE_IDENTIFIER, LIGHTNING_BOLT12_BLINDED_PAYEE or LIGHTNING_LNURL_NAMES_NO_PAYEE), or unknown for legacy transfers without a recorded reason.

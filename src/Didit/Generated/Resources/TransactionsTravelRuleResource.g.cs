@@ -59,6 +59,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List Travel Rule delivery history
+        /// </summary>
+        /// <remarks>
+        /// Read the complete delivery history for a transaction, oldest first. Requires transaction read permission. Unlike the newest 100 entries embedded in detail, this endpoint paginates the full history. See [delivery history](/management-api/travel-rule/list-deliveries).
+        /// <para/>
+        /// <c>GET /v3/transactions/{transaction_id}/travel-rule/deliveries/</c> (<c>transactions.travel_rule.list_deliveries</c>).
+        /// </remarks>
+        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<TravelRuleDeliveryLogEntry>> ListDeliveriesAsync(string transactionId, TransactionsTravelRuleListDeliveriesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListDeliveriesAsync(transactionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List Travel Rule messages
         /// </summary>
         /// <remarks>
@@ -182,6 +200,23 @@ namespace Didit.Resources
             }
             request.Body = form;
             return _pipeline.SendJsonAsync<TravelRuleMessage>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List Travel Rule delivery history
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.ListDeliveriesAsync"/>.</remarks>
+        public Task<DiditResponse<Page<TravelRuleDeliveryLogEntry>>> ListDeliveriesAsync(string transactionId, TransactionsTravelRuleListDeliveriesParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/transactions/" + PathParameter.Encode(transactionId, "transactionId") + "/travel-rule/deliveries/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<TravelRuleDeliveryLogEntry>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
