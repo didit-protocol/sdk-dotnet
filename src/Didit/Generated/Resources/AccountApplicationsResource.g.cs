@@ -28,7 +28,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Create an application inside an organization, in the data location you choose (<c>data_location</c>, the European Union by default; it can't be changed afterwards). The response includes <c>api_key</c>; persist it now (recoverable via GET). Requires owner/admin JWT.
         /// <para/>
-        /// Set initiate_login_uri to your HTTPS sign-in page on the exact website_url hostname, or an empty string to disable admin-sent sign-in links. Changing website_url also revalidates the saved sign-in URI. Invalid values return 400 with an initiate_login_uri field error; hostname and URI policy failures use https_url_on_registered_website_required.
+        /// Set initiate_login_uri to your HTTPS sign-in page on the exact website_url hostname, or an empty string to disable admin-sent sign-in links. Changing website_url also revalidates the saved sign-in URI. Invalid values return 400 with an initiate_login_uri field error; hostname and URI policy failures use https_url_on_registered_website_required. An MCP token (a "Log in with Didit" grant, <c>token_use</c> <c>mcp</c>) also needs the <c>didit:management</c> scope, which carries the <c>applications</c> resource; a grant limited to <c>didit:verification</c> is refused with 403 before anything is created.
         /// <para/>
         /// <c>POST /organizations/me/{org_id}/applications/</c> (<c>account.applications.create</c>).
         /// </remarks>
@@ -46,7 +46,7 @@ namespace Didit.Resources
         /// List the organization's applications
         /// </summary>
         /// <remarks>
-        /// List the organization's applications, 50 per page by default. Use this to discover <c>app_id</c> values when recovering credentials from a new machine, then call <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> for the API key. Requires an owner or admin Bearer token.
+        /// List the organization's applications, 50 per page by default. Use this to discover <c>app_id</c> values when recovering credentials from a new machine, then call <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> for the API key. Requires an owner or admin Bearer token. An MCP token (a "Log in with Didit" grant, <c>token_use</c> <c>mcp</c>) also needs the <c>didit:management</c> scope, which carries the <c>applications</c> resource; a grant limited to <c>didit:verification</c> is refused with 403 before any application is listed.
         /// <para/>
         /// <c>GET /organizations/me/{org_id}/applications/</c> (<c>account.applications.list</c>).
         /// </remarks>
@@ -64,7 +64,7 @@ namespace Didit.Resources
         /// Get Application Credentials
         /// </summary>
         /// <remarks>
-        /// Read one application's full record including <c>client_id</c> and <c>api_key</c>. Use this to recover a lost <c>api_key</c>.
+        /// Read one application's full record including <c>client_id</c> and <c>api_key</c>. Use this to recover a lost <c>api_key</c>. An MCP token (a "Log in with Didit" grant, <c>token_use</c> <c>mcp</c>) also needs the <c>didit:management</c> scope, which carries the <c>applications</c> resource; a grant limited to <c>didit:verification</c> is refused with 403 before the application is read.
         /// <para/>
         /// <c>GET /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.retrieve</c>).
         /// </remarks>
@@ -84,7 +84,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Update application metadata (name, URLs, redirect URIs). <c>api_key</c> and <c>client_id</c> are never rotated. <c>products</c> is read-only: a <c>products</c> key in the body is ignored. <c>data_location</c> can't be changed after the application is created, except once on the live application created with your organization, while it is unused (see the request body). Requires owner/admin JWT.
         /// <para/>
-        /// Set initiate_login_uri to your HTTPS sign-in page on the exact website_url hostname, or an empty string to disable admin-sent sign-in links. Changing website_url also revalidates the saved sign-in URI. Invalid values return 400 with an initiate_login_uri field error; hostname and URI policy failures use https_url_on_registered_website_required.
+        /// Set initiate_login_uri to your HTTPS sign-in page on the exact website_url hostname, or an empty string to disable admin-sent sign-in links. Changing website_url also revalidates the saved sign-in URI. Invalid values return 400 with an initiate_login_uri field error; hostname and URI policy failures use https_url_on_registered_website_required. An MCP token (a "Log in with Didit" grant, <c>token_use</c> <c>mcp</c>) also needs the <c>didit:management</c> scope, which carries the <c>applications</c> resource; a grant limited to <c>didit:verification</c> is refused with 403 before anything is changed.
         /// <para/>
         /// <c>PATCH /organizations/me/{org_id}/applications/{app_id}/</c> (<c>account.applications.update</c>).
         /// </remarks>

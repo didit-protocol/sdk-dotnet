@@ -49,6 +49,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<long> PeriodDays { get; set; }
 
+        /// <summary>
+        /// Optional ID of the rule being edited. Excludes that rule from overlap comparisons; does not change the candidate configuration.
+        /// </summary>
+        [JsonPropertyName("rule_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> RuleId { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

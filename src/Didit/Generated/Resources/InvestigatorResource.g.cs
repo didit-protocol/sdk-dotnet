@@ -128,7 +128,7 @@ namespace Didit.Resources
         /// Override a recommendation
         /// </summary>
         /// <remarks>
-        /// Takes another action with a category and a reason. Also overrides a decision the Investigator took on its own while it still stands. Restricted keys need the <c>decisions</c> scope (write); transaction alerts also need <c>transactions</c> (write). Escalating a verification or transaction opens a case.
+        /// Takes another action with a category and a reason. Also overrides a decision the Investigator took on its own while it still stands. Restricted keys need the <c>decisions</c> scope (write); transaction alerts also need <c>transactions</c> (write). Escalating a verification or transaction opens a case. Automated transaction decisions can be overridden only while the original decision still stands. The original decision remains unchanged, the override is recorded separately, and an immediate policy question is raised for its recorded situations with the original policy action. The override does not charge for another automated decision.
         /// <para/>
         /// <c>POST /v3/investigator/runs/{run_id}/override/</c> (<c>investigator.override_run</c>).
         /// </remarks>

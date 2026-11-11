@@ -159,6 +159,18 @@ namespace Didit
         public TravelRuleChainDetails? ChainDetails { get; init; }
 
         /// <summary>
+        /// Newest 100 delivery entries, presented oldest first (creation time, then identifier). Empty when no messages exist. Use the paginated delivery endpoint for complete history.
+        /// </summary>
+        [JsonPropertyName("deliveries")]
+        public IReadOnlyList<TravelRuleDeliveryLogEntry>? Deliveries { get; init; }
+
+        /// <summary>
+        /// True when older entries were omitted from deliveries. Follow GET /v3/transactions/{transaction_id}/travel-rule/deliveries/ for the complete history.
+        /// </summary>
+        [JsonPropertyName("deliveries_truncated")]
+        public bool? DeliveriesTruncated { get; init; }
+
+        /// <summary>
         /// Null when required is true. Otherwise below_threshold, the recorded chain exemption (for example LIGHTNING_NO_PAYEE_IDENTIFIER, LIGHTNING_BOLT12_BLINDED_PAYEE or LIGHTNING_LNURL_NAMES_NO_PAYEE), or unknown for legacy transfers without a recorded reason.
         /// </summary>
         [JsonPropertyName("not_required_reason")]

@@ -38,6 +38,24 @@ namespace Didit
         [JsonPropertyName("period_days")]
         public long? PeriodDays { get; init; }
 
+        /// <summary>
+        /// True only when additional transactions in the requested period were omitted by the replay cap.
+        /// </summary>
+        [JsonPropertyName("truncated")]
+        public bool? Truncated { get; init; }
+
+        /// <summary>
+        /// Active rules matching the candidate hits, excluding rule_id. Empty when none matched within the comparison bounds.
+        /// </summary>
+        [JsonPropertyName("overlapping_rules")]
+        public IReadOnlyList<TransactionRuleOverlap>? OverlappingRules { get; init; }
+
+        /// <summary>
+        /// True when the overlap comparison is partial: more than 50 eligible active rules, more than 1000 rule/transaction comparisons, or a truncated replay with candidate hits and eligible rules. False when there are no candidate hits or no eligible rules, even if truncated is true. Counts are not exhaustive when true.
+        /// </summary>
+        [JsonPropertyName("overlapping_rules_truncated")]
+        public bool? OverlappingRulesTruncated { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -14,6 +14,8 @@ namespace Didit
     /// * <c>business_document</c> - business_document
     /// * <c>confirm_details</c> - confirm_details
     /// * <c>review_in_progress</c> - review_in_progress
+    /// * <c>source_of_funds</c> - Request a document showing the source of payment funds.
+    /// * <c>purpose_of_payment</c> - Request a document explaining the payment purpose. Both are available for person and business cases.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(CustomerMessagingPurposeEnum.EnumJsonConverter))]
@@ -41,6 +43,12 @@ namespace Didit
 
         /// <summary><c>review_in_progress</c></summary>
         public static CustomerMessagingPurposeEnum ReviewInProgress { get; } = new("review_in_progress");
+
+        /// <summary><c>source_of_funds</c></summary>
+        public static CustomerMessagingPurposeEnum SourceOfFunds { get; } = new("source_of_funds");
+
+        /// <summary><c>purpose_of_payment</c></summary>
+        public static CustomerMessagingPurposeEnum PurposeOfPayment { get; } = new("purpose_of_payment");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

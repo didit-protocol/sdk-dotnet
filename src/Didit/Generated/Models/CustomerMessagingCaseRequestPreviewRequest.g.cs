@@ -26,6 +26,8 @@ namespace Didit
         /// * <c>business_document</c> - business_document
         /// * <c>confirm_details</c> - confirm_details
         /// * <c>review_in_progress</c> - review_in_progress
+        /// * <c>source_of_funds</c> - Request a document showing the source of payment funds.
+        /// * <c>purpose_of_payment</c> - Request a document explaining the payment purpose. Both are available for person and business cases.
         /// </summary>
         [JsonPropertyName("purpose")]
         public required CustomerMessagingPurposeEnum Purpose { get; set; }
