@@ -132,20 +132,28 @@ namespace Didit.Internal
                     var status = (int)response.StatusCode;
                     var headers = CollectHeaders(response);
                     var reason = response.ReasonPhrase;
+                    if (status >= 200 && status < 300)
+                    {
+                        // A successful response reaches the caller unchanged. A body that is not a JSON object is an
+                        // error, and the parser's message would quote it: parse the sanitized copy instead.
+                        if (redactStructurally && !IsJsonObject(body))
+                        {
+                            var copy = ErrorFactory.Sanitize(reason, body, headers, secrets);
+                            AuthJson.Parse(copy.Body, "agent consent response");
+                        }
+
+                        return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
+                    }
+
                     var errorSecrets = secrets;
                     if (redactStructurally)
                     {
-                        // Sanitized once, on receipt: every error of this call is built from this response only.
+                        // Every error of a consent call is built from a sanitized copy only.
                         var sanitized = ErrorFactory.Sanitize(reason, body, headers, secrets);
                         reason = sanitized.Reason;
                         body = sanitized.Body;
                         headers = sanitized.Headers;
                         errorSecrets = Array.Empty<string?>();
-                    }
-
-                    if (status >= 200 && status < 300)
-                    {
-                        return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
                     }
 
                     throw ErrorFactory.CreateStatusException(status, reason, body, headers, FindRequestId(headers), errorSecrets);
@@ -161,6 +169,19 @@ namespace Didit.Internal
             }
 
             return text;
+        }
+
+        private static bool IsJsonObject(byte[] body)
+        {
+            try
+            {
+                using var document = System.Text.Json.JsonDocument.Parse(body);
+                return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return false;
+            }
         }
 
         private static string? FindRequestId(Dictionary<string, IReadOnlyList<string>> headers)

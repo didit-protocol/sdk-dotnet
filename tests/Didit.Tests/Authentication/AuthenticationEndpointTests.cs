@@ -712,6 +712,30 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
+        public async Task ASuccessfulApprovalOptionsResponseReachesTheCallerUnchanged()
+        {
+            _issuer.Runtime = _ => StubHttpHandler.Json("{\"options\":{\"challenge\":\"agent-request-secret\",\"rpId\":\"acme.auth.didit.me\"}}");
+            using var auth = _issuer.Create();
+
+            var result = await auth.CreateAgentApprovalOptionsAsync(AccessToken, "agent-request-secret");
+
+            Assert.Equal("agent-request-secret", result.Options.Challenge);
+        }
+
+        [Fact]
+        public async Task ConsentHeaderNamesAreMatchedCaseInsensitively()
+        {
+            const string credential = "CredentialString-AbCdEf0123456789";
+            var reply = StubHttpHandler.Json("{\"error\":\"invalid_grant\"}", HttpStatusCode.BadRequest);
+            reply.Headers.TryAddWithoutValidation("X-Echo-" + credential.ToLowerInvariant(), "v");
+            reply.Headers.TryAddWithoutValidation("X-Keep", "fine");
+            var error = await ConsentFailureAsync(AssertionWith(credential, "s"), reply);
+
+            Assert.Contains(error.Headers, h => h.Key == "X-Keep");
+            Assert.DoesNotContain("credentialstring", string.Join("|", error.Headers.Select(h => h.Key)).ToLowerInvariant(), StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task ConsentRedactionReplacesANonJsonBody()
         {
             var error = await ConsentFailureAsync(

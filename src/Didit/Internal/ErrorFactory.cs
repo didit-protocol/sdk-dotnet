@@ -85,7 +85,7 @@ namespace Didit.Internal
             var clean = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
             foreach (var header in headers)
             {
-                if (RedactText(header.Key, active) == header.Key)
+                if (!active.Any(secret => header.Key.IndexOf(secret, StringComparison.OrdinalIgnoreCase) >= 0))
                 {
                     clean[header.Key] = header.Value.Select(value => RedactText(value, active)).ToArray();
                 }
