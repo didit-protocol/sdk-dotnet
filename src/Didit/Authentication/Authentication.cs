@@ -430,7 +430,7 @@ namespace Didit
         {
             RequireText(accessToken, nameof(accessToken));
             RequireText(challenge, nameof(challenge));
-            var body = WriteJson(writer => writer.WriteString("challenge", challenge));
+            var body = WriteConsentJson(writer => writer.WriteString("challenge", challenge));
             var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/passkey/"), () => JsonContent(body), accessToken, new[] { accessToken, challenge }, cancellationToken, redactStructurally: true).ConfigureAwait(false);
             return AuthAgentApprovalOptions.FromJson(AuthJson.Parse(response.Body, "agent approval options response"));
         }
