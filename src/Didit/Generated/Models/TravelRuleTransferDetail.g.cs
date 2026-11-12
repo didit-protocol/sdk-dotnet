@@ -182,6 +182,30 @@ namespace Didit
         [JsonPropertyName("proof_state")]
         public TravelRuleTransferDetailProofState? ProofState { get; init; }
 
+        /// <summary>
+        /// Recorded cancellation reason, empty when unspecified.
+        /// </summary>
+        [JsonPropertyName("cancel_reason")]
+        public TravelRuleTransferDetailCancelReason? CancelReason { get; init; }
+
+        /// <summary>
+        /// Recorded cancellation actor, or an empty string when none is recorded.
+        /// </summary>
+        [JsonPropertyName("cancelled_by")]
+        public string? CancelledBy { get; init; }
+
+        /// <summary>
+        /// Saved team notification preference. Initially false.
+        /// </summary>
+        [JsonPropertyName("notify_on_answer")]
+        public bool? NotifyOnAnswer { get; init; }
+
+        /// <summary>
+        /// Explicit user-choice state, or null when counterparty_choice=user was not requested.
+        /// </summary>
+        [JsonPropertyName("user_choice")]
+        public TravelRuleUserChoice? UserChoice { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

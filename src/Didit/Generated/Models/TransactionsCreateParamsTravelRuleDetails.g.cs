@@ -90,6 +90,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<object?> Ivms101 { get; set; }
 
+        /// <summary>
+        /// discovery uses automatic counterparty discovery. user asks the end user to choose, issues a link and attempts email when their Didit record has an address. Cannot be combined with beneficiary_data.counterparty_vasp_name or counterparty_vasp_lei. Read user_choice in the response; link or email failure does not fail creation.
+        /// </summary>
+        [JsonPropertyName("counterparty_choice")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TransactionsCreateParamsTravelRuleDetailsCounterpartyChoice> CounterpartyChoice { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

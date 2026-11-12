@@ -62,6 +62,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
+            request.Query.Add("search", parameters?.Search);
             request.Query.Add("direction", parameters?.Direction);
             request.Query.Add("status", parameters?.Status);
             request.Query.Add("rail", parameters?.Rail);

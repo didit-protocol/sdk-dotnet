@@ -15,6 +15,13 @@ namespace Didit
     public sealed record TravelRuleTransfersListParams
     {
         /// <summary>
+        /// Exact transfer or transaction UUID, or a case-insensitive fragment of txn_id, either side's declared or resolved wallet address, or VASP name. Whitespace is trimmed; only the first 255 characters are searched. Combines with the other filters.
+        /// </summary>
+        [JsonPropertyName("search")]
+        [JsonIgnore]
+        public string? Search { get; set; }
+
+        /// <summary>
         /// INBOUND, OUTBOUND, or both comma-separated. Case-sensitive.
         /// </summary>
         [JsonPropertyName("direction")]
