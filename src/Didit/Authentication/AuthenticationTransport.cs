@@ -139,7 +139,21 @@ namespace Didit.Internal
                         if (redactStructurally && !IsJsonObject(body))
                         {
                             var copy = ErrorFactory.Sanitize(reason, body, headers, secrets);
-                            AuthJson.Parse(copy.Body, "agent consent response");
+                            // The parser's error is never kept as the inner exception.
+                            string? parseFailure = null;
+                            try
+                            {
+                                AuthJson.Parse(copy.Body, "agent consent response");
+                            }
+                            catch (DiditException ex)
+                            {
+                                parseFailure = ex.Message;
+                            }
+
+                            if (parseFailure is not null)
+                            {
+                                throw new DiditException(parseFailure);
+                            }
                         }
 
                         return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);

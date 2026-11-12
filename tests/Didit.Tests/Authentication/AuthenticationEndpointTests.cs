@@ -760,6 +760,20 @@ namespace Didit.Tests.Authentication
         }
 
         [Fact]
+        public async Task ConsentMalformed2xxKeepsNoInnerException()
+        {
+            const string credential = "credential-string-0123456789";
+            _issuer.Runtime = _ => Raw("{not json " + credential, HttpStatusCode.OK, "application/json");
+            using var auth = _issuer.Create();
+
+            var error = await Assert.ThrowsAnyAsync<DiditException>(
+                () => auth.SubmitAgentConsentAsync(AccessToken, "agent-request-secret", AuthAgentConsentDecision.Approve, AssertionWith(credential, "s")));
+
+            Assert.Null(error.InnerException);
+            Assert.DoesNotContain(credential, error.ToString(), StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task ConsentRedactionReplacesANonJsonBody()
         {
             var error = await ConsentFailureAsync(
