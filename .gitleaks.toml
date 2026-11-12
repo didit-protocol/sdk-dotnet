@@ -6,7 +6,7 @@
 [extend]
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Upstream copies under openapi/, pinned upstream copies in codegen/tests/fixtures/ and the synthetic whsec_test_ webhook secrets"
 # Copies of the published API documents and of the backend's webhook vectors; only the spec sync updates them.
 # The fixtures are earlier versions of verification.json, pinned by commit, for the spec sync classification tests.
@@ -17,4 +17,16 @@ paths = [
 # Synthetic webhook signing secrets used by the tests and examples.
 regexes = [
   '''^whsec_test_[A-Za-z0-9_]+$''',
+]
+
+# Synthetic consent-redaction test value: this one value, in this one test file, for this one rule.
+[[allowlists]]
+description = "Synthetic agent consent redaction test value"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = [
+  '''^tests/Didit\.Tests/Authentication/AuthenticationEndpointTests\.cs$''',
+]
+regexes = [
+  '''^Y3JlZGVudGlhbC1pZC0xMjM0NTY3ODkw$''',
 ]
