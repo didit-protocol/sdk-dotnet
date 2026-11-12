@@ -56,6 +56,13 @@ namespace Didit
         public Optional<bool> IsDesktopAllowed { get; set; }
 
         /// <summary>
+        /// On Declined and In review results, the person being verified sees a short reference to the session, such as <c>S-20481</c>, shown on one line. This is the session number as the console shows it, so your support team can find the session in the console by typing it. When <c>false</c>, the result screens show no reference. Applies to the hosted flow and the SDKs.
+        /// </summary>
+        [JsonPropertyName("is_session_reference_enabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> IsSessionReferenceEnabled { get; set; }
+
+        /// <summary>
         /// Maximum retry attempts allowed after a declined verification. <c>0</c> blocks the user after the first decline.
         /// </summary>
         [JsonPropertyName("max_retry_attempts")]

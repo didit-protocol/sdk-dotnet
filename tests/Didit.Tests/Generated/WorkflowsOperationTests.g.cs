@@ -22,7 +22,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"uuid\": \"c3d4e5f6-7890-12cd-ef34-333333333333\", \"workflow_id\": \"c3d4e5f6-7890-12cd-ef34-333333333333\", \"workflow_label\": \"Standard KYC\", \"workflow_type\": null, \"is_default\": false, \"is_archived\": false, \"total_price\": 0.15, \"min_price\": 0.15, \"max_price\": 0.15, \"features\": \"OCR + LIVENESS + FACE_MATCH\", \"is_simple_workflow\": false, \"is_editable\": false, \"workflow_url\": \"https://verify.didit.me/u/w9TkPOx8RWG3UAz5ZRQGVQ\", \"workflow_graph\": {\"start_node\": \"ocr\", \"nodes\": \"... one node per feature plus a final status node ...\"}, \"max_retry_attempts\": 3, \"retry_window_days\": 7, \"session_expiration_time\": 604800, \"version\": 1, \"status\": \"published\", \"published_at\": \"2026-05-17T10:30:00Z\", \"created_at\": \"2026-05-17T10:30:00Z\", \"updated_at\": \"2026-05-17T10:30:00Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Workflows.CreateAsync(new SimpleWorkflowRequest { WorkflowLabel = "Standard KYC", IsDefault = true, Status = new SimpleWorkflowRequestStatus("draft"), Features = new SimpleWorkflowFeature[] { new SimpleWorkflowFeature { Feature = new SimpleWorkflowFeatureFeature("OCR") } }, IsWhiteLabelEnabled = true, IsDesktopAllowed = true, MaxRetryAttempts = 1L, RetryWindowDays = 1L, FaceLivenessMaxAttempts = 1L, FaceMatchMaxAttempts = 1L, SessionExpirationTime = 1L });
+            var result = await client.Workflows.CreateAsync(new SimpleWorkflowRequest { WorkflowLabel = "Standard KYC", IsDefault = true, Status = new SimpleWorkflowRequestStatus("draft"), Features = new SimpleWorkflowFeature[] { new SimpleWorkflowFeature { Feature = new SimpleWorkflowFeatureFeature("OCR") } }, IsWhiteLabelEnabled = true, IsDesktopAllowed = true, IsSessionReferenceEnabled = true, MaxRetryAttempts = 1L, RetryWindowDays = 1L, FaceLivenessMaxAttempts = 1L, FaceMatchMaxAttempts = 1L, SessionExpirationTime = 1L });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -32,7 +32,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"workflow_label\": \"Standard KYC\", \"is_default\": true, \"status\": \"draft\", \"features\": [{\"feature\": \"OCR\"}], \"is_white_label_enabled\": true, \"is_desktop_allowed\": true, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"face_liveness_max_attempts\": 1, \"face_match_max_attempts\": 1, \"session_expiration_time\": 1}", request.BodyText);
+            JsonAssert.Equivalent("{\"workflow_label\": \"Standard KYC\", \"is_default\": true, \"status\": \"draft\", \"features\": [{\"feature\": \"OCR\"}], \"is_white_label_enabled\": true, \"is_desktop_allowed\": true, \"is_session_reference_enabled\": true, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"face_liveness_max_attempts\": 1, \"face_match_max_attempts\": 1, \"session_expiration_time\": 1}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("c3d4e5f6-7890-12cd-ef34-333333333333", result.Uuid);
             Assert.Equal(1L, result.Version);
@@ -107,7 +107,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's schema.
             handler.Enqueue(200, "{\"uuid\": \"sample\", \"workflow_id\": \"sample\", \"workflow_label\": \"sample\", \"workflow_type\": \"kyc\", \"is_default\": true, \"is_archived\": true, \"version\": 1, \"status\": \"draft\", \"published_at\": \"2026-01-02T03:04:05Z\", \"is_simple_workflow\": true, \"is_editable\": true, \"workflow_url\": \"sample\", \"workflow_graph\": {\"key\": \"value\"}, \"features\": \"sample\", \"total_price\": 1.5, \"min_price\": 1.5, \"max_price\": 1.5, \"special_add_on_prices\": {\"key\": \"value\"}, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"session_expiration_time\": 1, \"questionnaire\": {\"key\": \"value\"}, \"kyb_role_settings\": [{\"key\": \"value\"}], \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"signature_availability\": {\"simple\": true, \"aes\": true, \"qes\": true}, \"is_bank_verification_enabled\": true, \"bank_verification_config\": {\"key\": \"value\"}, \"is_geolocation_enabled\": true, \"geolocation_config\": {\"key\": \"value\"}}");
             using var client = TestClients.Create(handler);
-            var result = await client.Workflows.UpdateAsync("settings_uuid-1", new SimpleWorkflowUpdateRequest { WorkflowLabel = "sample-workflow_label", IsDefault = true, Status = new SimpleWorkflowUpdateRequestStatus("draft"), IsWhiteLabelEnabled = true, IsDesktopAllowed = true, MaxRetryAttempts = 1L, RetryWindowDays = 1L, FaceLivenessMaxAttempts = 1L, FaceMatchMaxAttempts = 1L, SessionExpirationTime = 1L });
+            var result = await client.Workflows.UpdateAsync("settings_uuid-1", new SimpleWorkflowUpdateRequest { WorkflowLabel = "sample-workflow_label", IsDefault = true, Status = new SimpleWorkflowUpdateRequestStatus("draft"), IsWhiteLabelEnabled = true, IsDesktopAllowed = true, IsSessionReferenceEnabled = true, MaxRetryAttempts = 1L, RetryWindowDays = 1L, FaceLivenessMaxAttempts = 1L, FaceMatchMaxAttempts = 1L, SessionExpirationTime = 1L });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("PATCH", request.Method);
@@ -117,7 +117,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"workflow_label\": \"sample-workflow_label\", \"is_default\": true, \"status\": \"draft\", \"is_white_label_enabled\": true, \"is_desktop_allowed\": true, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"face_liveness_max_attempts\": 1, \"face_match_max_attempts\": 1, \"session_expiration_time\": 1}", request.BodyText);
+            JsonAssert.Equivalent("{\"workflow_label\": \"sample-workflow_label\", \"is_default\": true, \"status\": \"draft\", \"is_white_label_enabled\": true, \"is_desktop_allowed\": true, \"is_session_reference_enabled\": true, \"max_retry_attempts\": 1, \"retry_window_days\": 1, \"face_liveness_max_attempts\": 1, \"face_match_max_attempts\": 1, \"session_expiration_time\": 1}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("sample", result.Uuid);
             Assert.Equal(1L, result.Version);
