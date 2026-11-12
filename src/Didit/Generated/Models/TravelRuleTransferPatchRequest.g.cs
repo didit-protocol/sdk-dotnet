@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Provide exactly one of: payment_txn_id (finish), action=cancel, action=resend, action=update_compliance_email with compliance_email, action=update_originator_wallet with wallet_address, or action=beneficiary_vasp with beneficiary_vasp.
+    /// Provide exactly one of: payment_txn_id (finish), action=cancel, action=resend, action=update_compliance_email with compliance_email, action=update_originator_wallet with wallet_address, or action=beneficiary_vasp with beneficiary_vasp. Alternatively, provide action=add_vasp_hint with name and optional lei and country.
     /// </summary>
     public sealed record TravelRuleTransferPatchRequest
     {
@@ -22,14 +22,14 @@ namespace Didit
         public Optional<string> PaymentTxnId { get; set; }
 
         /// <summary>
-        /// "cancel" cancels a non-terminal transfer. "resend" re-runs routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA. "update_compliance_email" replaces the compliance email the request goes to, on an outbound transfer in one of those three statuses; send "resend" afterwards. "update_originator_wallet" records the wallet the funds actually left from (<c>wallet_address</c>, <c>memo</c>). "beneficiary_vasp" names the counterparty VASP yourself (requires <c>beneficiary_vasp</c>) for an outbound transfer in one of those statuses: it is routed to that VASP and sent again.
+        /// "cancel" cancels a non-terminal transfer. "resend" re-runs routing for an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA. "update_compliance_email" replaces the compliance email the request goes to, on an outbound transfer in one of those three statuses; send "resend" afterwards. "update_originator_wallet" records the wallet the funds actually left from (<c>wallet_address</c>, <c>memo</c>). "beneficiary_vasp" names the counterparty VASP yourself (requires <c>beneficiary_vasp</c>) for an outbound transfer in one of those statuses: it is routed to that VASP and sent again. "add_vasp_hint" saves a counterparty name and optional LEI and country, then re-runs discovery on an outbound transfer in a resendable status.
         /// </summary>
         [JsonPropertyName("action")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<TravelRuleTransferPatchRequestAction> Action { get; set; }
 
         /// <summary>
-        /// Required with <c>action: update_compliance_email</c>. Kept as this transfer's <c>beneficiary_data.counterparty_vasp_email</c>: it belongs to this transfer only and joins no directory entry and no contact list.
+        /// Required with action=update_compliance_email. Saved in beneficiary_data.counterparty_vasp_email. If the transfer has a known directory VASP, also saved as your application-private contact for that VASP.
         /// </summary>
         [JsonPropertyName("compliance_email")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -55,6 +55,48 @@ namespace Didit
         [JsonPropertyName("beneficiary_vasp")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> BeneficiaryVasp { get; set; }
+
+        /// <summary>
+        /// With action=cancel: your cancellation reason. Omitted or empty means unspecified.
+        /// </summary>
+        [JsonPropertyName("reason")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleTransferPatchRequestReason> Reason { get; set; }
+
+        /// <summary>
+        /// With action=resend: whether your team should be notified when the counterparty answers. Initially false; omission preserves the saved preference.
+        /// </summary>
+        [JsonPropertyName("notify_on_answer")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> NotifyOnAnswer { get; set; }
+
+        /// <summary>
+        /// Required with action=add_vasp_hint. Counterparty VASP name.
+        /// </summary>
+        [JsonPropertyName("name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Name { get; set; }
+
+        /// <summary>
+        /// With action=add_vasp_hint: optional LEI, normalized to uppercase. Empty clears the previous LEI hint.
+        /// </summary>
+        [JsonPropertyName("lei")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Lei { get; set; }
+
+        /// <summary>
+        /// With action=add_vasp_hint: optional country hint, normalized to uppercase. Empty clears the previous country hint.
+        /// </summary>
+        [JsonPropertyName("country")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Country { get; set; }
+
+        /// <summary>
+        /// With action=update_compliance_email: optional counterparty name saved with the address when nonempty.
+        /// </summary>
+        [JsonPropertyName("vasp_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> VaspName { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -68,6 +68,23 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Create a private VASP directory entry
+        /// </summary>
+        /// <remarks>
+        /// Add a VASP privately to your application and optionally invite it. Requires write access to transactions. The response uses source=added_by_you. A matching visible name or LEI returns 409 with the existing vasp_id. See [Search the directory](/management-api/travel-rule/search-vasps).
+        /// <para/>
+        /// <c>POST /v3/travel-rule/vasps/</c> (<c>travel_rule.create_vasp</c>).
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<VaspDirectoryEntry> CreateVaspAsync(TravelRuleVaspCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CreateVaspAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Mint a wallet-ownership widget session
         /// </summary>
         /// <remarks>
@@ -105,7 +122,7 @@ namespace Didit.Resources
         /// Search the VASP directory
         /// </summary>
         /// <remarks>
-        /// Paginated, name-sorted search of the VASP directory: the shared directory entries, which Didit builds from the ESMA interim MiCA register, the public TRISA directory, the global LEI register and its own curation, plus the members of the Didit network. Each row carries the routes your application has to it today. Your own application's profile is never listed. Rows also carry the shared due-diligence assessment and your application's own decision, entity screening and questionnaires.
+        /// Paginated, name-sorted search of the VASP directory: the shared directory entries, which Didit builds from the ESMA interim MiCA register, the public TRISA directory, the global LEI register and its own curation, plus the members of the Didit network. Each row carries the routes your application has to it today. Your own application's profile is never listed. Rows also carry the shared due-diligence assessment and your application's own decision, entity screening and questionnaires. Includes entries your application added privately. The optional source field distinguishes their provenance; kind=didit member results may omit source.
         /// <para/>
         /// <c>GET /v3/travel-rule/vasps/</c> (<c>travel_rule.list_vasps</c>).
         /// </remarks>
@@ -341,6 +358,27 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<TravelRuleCounterpartyDecisionResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Create a private VASP directory entry
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.CreateVaspAsync"/>.</remarks>
+        public Task<DiditResponse<VaspDirectoryEntry>> CreateVaspAsync(TravelRuleVaspCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/travel-rule/vasps/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<VaspDirectoryEntry>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

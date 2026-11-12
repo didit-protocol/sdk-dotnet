@@ -45,6 +45,12 @@ namespace Didit
         public SessionDecisionKeyPeopleChecksUboKycSummary? UboKycSummary { get; init; }
 
         /// <summary>
+        /// The company's own declaration that it is listed on a stock exchange, or owned by a listed company, made on the Key People screen instead of naming a beneficial owner. Present in every <c>key_people_checks</c> entry unless the workflow's Returned data settings leave it out, and <c>null</c> unless the company made the declaration, which it can only do where the workflow allows it (<c>kyb_key_people_allow_listed_company_declaration</c>). Didit does not check the declaration against a stock exchange: the workflow's <c>kyb_key_people_listed_company_action</c> decides the Key People outcome (Review by default) and the <c>KYB_LISTED_COMPANY_DECLARED</c> warning is added. The company must still name at least one person who manages or represents it (director, non-executive director, chairman, representative, authorized signatory or company officer).
+        /// </summary>
+        [JsonPropertyName("listed_company_declaration")]
+        public SessionDecisionKeyPeopleChecksListedCompanyDeclaration? ListedCompanyDeclaration { get; init; }
+
+        /// <summary>
         /// The &lt;c&gt;warnings&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("warnings")]

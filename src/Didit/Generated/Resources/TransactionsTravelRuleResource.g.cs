@@ -59,6 +59,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Create or email a Travel Rule end-user link
+        /// </summary>
+        /// <remarks>
+        /// Issue a new link and revoke previous open links for this transfer. Requires write access to transactions and an outbound transfer in AWAITING_COUNTERPARTY, COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, UNCONFIRMED_OWNERSHIP or ON_HOLD. channel=email uses the end user's Didit-record email and verification-session language when available. A send failure returns the link with emailed_to empty; email_available reports address availability, not delivery. See [User links](/management-api/travel-rule/create-user-link).
+        /// <para/>
+        /// <c>POST /v3/transactions/{transaction_id}/travel-rule/user-link/</c> (<c>transactions.travel_rule.create_user_link</c>).
+        /// </remarks>
+        /// <param name="transactionId">Didit-stable transaction UUID that owns the transfer.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleUserLinkResponse> CreateUserLinkAsync(string transactionId, TravelRuleUserLinkRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CreateUserLinkAsync(transactionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List Travel Rule delivery history
         /// </summary>
         /// <remarks>
@@ -111,10 +129,10 @@ namespace Didit.Resources
         }
 
         /// <summary>
-        /// Finish, cancel, resend, or update the originator wallet of a Travel Rule transfer
+        /// Update a Travel Rule transfer
         /// </summary>
         /// <remarks>
-        /// Provide <c>payment_txn_id</c> to report the on-chain hash and move an outbound COMPLETED transfer to FINISHED (its INTERNAL-rail counterpart also moves to FINISHED), <c>{"action": "cancel"}</c> to cancel a non-terminal transfer, or <c>{"action": "resend"}</c> to route an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA again (improve the counterparty data first, e.g. add a travel_address to the destination wallet entry). resend applies to outbound transfers only. <c>{"action": "update_compliance_email", "compliance_email": "desk@example.com"}</c> replaces the compliance email of an outbound transfer in one of those three statuses, the fix for <c>reason: email_undeliverable</c>: the status does not change, and the next <c>resend</c> sends the request to that address. A resend is queued, not run inside the request: the response shows the transfer back in AWAITING_COUNTERPARTY with a <c>resend queued</c> timeline entry and a queued <c>delivery</c>, and where it went arrives as a <c>travel_rule.status.updated</c> webhook. When the transfer went over GTR, VerifyVASP or Sygna Bridge, the network learns the on-chain hash or the cancellation after the response, with retries; <c>delivery</c> shows how that message stands. <c>{"action": "update_originator_wallet", "wallet_address": "..."}</c> records the wallet the funds actually left from on an outbound transfer, for example the address a UTXO withdrawal was broadcast from rather than the main wallet you declared. It changes the record only: nothing is sent to the counterparty again and the status stays. The originator becomes <c>chain_details.originator</c> with <c>source: updated</c>, the change is added to the <c>timeline</c> with the previous and the new wallet, and the INTERNAL-rail counterpart of the transfer is updated the same way. <c>{"action": "beneficiary_vasp", "beneficiary_vasp": "&lt;directory VASP id&gt;"}</c> names the counterparty yourself when discovery could not, on an outbound transfer in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE or NOT_ENOUGH_COUNTERPARTY_DATA: the transfer is routed to that VASP and sent again.
+        /// Provide <c>payment_txn_id</c> to report the on-chain hash and move an outbound COMPLETED transfer to FINISHED (its INTERNAL-rail counterpart also moves to FINISHED), <c>{"action": "cancel"}</c> to cancel a non-terminal transfer, or <c>{"action": "resend"}</c> to route an outbound transfer stuck in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE, or NOT_ENOUGH_COUNTERPARTY_DATA again (improve the counterparty data first, e.g. add a travel_address to the destination wallet entry). resend applies to outbound transfers only. <c>{"action": "update_compliance_email", "compliance_email": "desk@example.com"}</c> replaces the compliance email of an outbound transfer in one of those three statuses, the fix for <c>reason: email_undeliverable</c>: the status does not change, and the next <c>resend</c> sends the request to that address. A resend is queued, not run inside the request: the response shows the transfer back in AWAITING_COUNTERPARTY with a <c>resend queued</c> timeline entry and a queued <c>delivery</c>, and where it went arrives as a <c>travel_rule.status.updated</c> webhook. When the transfer went over GTR, VerifyVASP or Sygna Bridge, the network learns the on-chain hash or the cancellation after the response, with retries; <c>delivery</c> shows how that message stands. <c>{"action": "update_originator_wallet", "wallet_address": "..."}</c> records the wallet the funds actually left from on an outbound transfer, for example the address a UTXO withdrawal was broadcast from rather than the main wallet you declared. It changes the record only: nothing is sent to the counterparty again and the status stays. The originator becomes <c>chain_details.originator</c> with <c>source: updated</c>, the change is added to the <c>timeline</c> with the previous and the new wallet, and the INTERNAL-rail counterpart of the transfer is updated the same way. <c>{"action": "beneficiary_vasp", "beneficiary_vasp": "&lt;directory VASP id&gt;"}</c> names the counterparty yourself when discovery could not, on an outbound transfer in COUNTERPARTY_VASP_NOT_FOUND, COUNTERPARTY_VASP_NOT_REACHABLE or NOT_ENOUGH_COUNTERPARTY_DATA: the transfer is routed to that VASP and sent again. Cancellation accepts an optional reason and returns cancel_reason and cancelled_by. Resend accepts notify_on_answer; omission preserves the saved preference, initially false. Resend invalidates the previous counterparty pickup link. action=add_vasp_hint requires name, accepts lei and country, saves the hint and re-runs discovery under the same outbound/status restrictions as resend. update_compliance_email also accepts vasp_name and saves the address as an application-private contact when the transfer has a known directory VASP.
         /// <para/>
         /// <c>PATCH /v3/transactions/{transaction_id}/travel-rule/</c> (<c>transactions.travel_rule.update_transfer</c>).
         /// </remarks>
@@ -203,6 +221,27 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Create or email a Travel Rule end-user link
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.CreateUserLinkAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleUserLinkResponse>> CreateUserLinkAsync(string transactionId, TravelRuleUserLinkRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/transactions/" + PathParameter.Encode(transactionId, "transactionId") + "/travel-rule/user-link/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<TravelRuleUserLinkResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// List Travel Rule delivery history
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.ListDeliveriesAsync"/>.</remarks>
@@ -256,7 +295,7 @@ namespace Didit.Resources
         }
 
         /// <summary>
-        /// Finish, cancel, resend, or update the originator wallet of a Travel Rule transfer
+        /// Update a Travel Rule transfer
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TransactionsTravelRuleResource.UpdateTransferAsync"/>.</remarks>
         public Task<DiditResponse<TravelRuleTransferDetail>> UpdateTransferAsync(string transactionId, TravelRuleTransferPatchRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)

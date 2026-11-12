@@ -21,7 +21,7 @@ namespace Didit
         public string? Id { get; init; }
 
         /// <summary>
-        /// directory for an entry of the shared directory; didit for a member of the Didit network.
+        /// directory for a shared or application-private directory entry; didit for a Didit network member.
         /// </summary>
         [JsonPropertyName("kind")]
         public VaspDirectoryEntryKind? Kind { get; init; }
@@ -169,6 +169,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("questionnaires")]
         public IReadOnlyList<TravelRuleCounterpartyQuestionnaire>? Questionnaires { get; init; }
+
+        /// <summary>
+        /// directory for a shared directory entry, added_by_you for your application-private entry, or didit_network for a directory entry linked to a Didit customer. Separate kind=didit member results may omit this field; use kind to identify them.
+        /// </summary>
+        [JsonPropertyName("source")]
+        public VaspDirectoryEntrySource? Source { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
