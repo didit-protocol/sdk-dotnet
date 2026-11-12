@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.14.2](https://github.com/didit-protocol/sdk-dotnet/compare/v1.14.1...v1.14.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* **authentication:** a failure to encode a consent request has a fixed message ([ca9b5dd](https://github.com/didit-protocol/sdk-dotnet/commit/ca9b5dd6b2146717abedde58c2641a7efb5105a6))
+* **authentication:** a malformed 2xx consent error keeps no parser exception as its cause ([89b4d24](https://github.com/didit-protocol/sdk-dotnet/commit/89b4d2484f78730feaa333e3ba08d276acaadbc9))
+* **authentication:** read consent secrets from the bytes that were sent ([13b39fb](https://github.com/didit-protocol/sdk-dotnet/commit/13b39fbe44bf2844cb660caa82ae96d1b758073f))
+* **authentication:** redact the parsed agent-consent response structurally ([497d86b](https://github.com/didit-protocol/sdk-dotnet/commit/497d86b0c7478f6969aac2ce91bfe969658c88b3))
+* **authentication:** redact the parsed agent-consent response, not its raw text ([32085e6](https://github.com/didit-protocol/sdk-dotnet/commit/32085e6fee65b5ad95ef06930b125b73d43520b2))
+* **authentication:** sanitize the whole consent response once on receipt; deep bodies are not JSON ([f750a75](https://github.com/didit-protocol/sdk-dotnet/commit/f750a758d2425977e4e1af234af044e645662055))
+* **authentication:** successful consent responses reach the caller unchanged; fold header-name case ([873b462](https://github.com/didit-protocol/sdk-dotnet/commit/873b462ca9006a50e97ad48cd03618aee65d3061))
+* **authentication:** the approval-options call encodes through the same fixed-message wrapper ([ef8e88e](https://github.com/didit-protocol/sdk-dotnet/commit/ef8e88eec7c7c5a5341d73b89216be4b8aff6350))
+* **authentication:** treat only assertion strings of 16+ characters as secrets, read from the wire JSON ([cf1a34a](https://github.com/didit-protocol/sdk-dotnet/commit/cf1a34a0178636c141337ecd27420104367acfd5))
+* **authentication:** withhold transport exceptions, redact empty bodies, reason phrase and request id, keep safe key names ([c31380e](https://github.com/didit-protocol/sdk-dotnet/commit/c31380e57f99a1273689413b75460a839eabd289))
+
+
+### Documentation
+
+* **authentication:** cite why the secret length minimum is 16 ([e3ed1ea](https://github.com/didit-protocol/sdk-dotnet/commit/e3ed1ea9ad781a234e9cdfa2362bd18018bc29ee))
+
 ## [1.14.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.14.0...v1.14.1) (2026-11-11)
 
 
