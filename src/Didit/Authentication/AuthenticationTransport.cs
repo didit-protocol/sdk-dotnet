@@ -51,13 +51,15 @@ namespace Didit.Internal
         /// <param name="bearerToken">Sent as <c>Authorization: Bearer</c> when not <c>null</c>.</param>
         /// <param name="secrets">Removed from every error (the access token, refresh token, authorization code or code verifier).</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        /// <param name="redactStructurally">Builds an error from the redacted parsed body, never from its raw text (the agent consent calls).</param>
         public async Task<AuthHttpResponse> SendAsync(
             HttpMethod method,
             Uri url,
             Func<HttpContent>? createContent,
             string? bearerToken,
             string?[] secrets,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool redactStructurally = false)
         {
             var maxAttempts = method == HttpMethod.Get ? 2 : 1;
             for (var attempt = 1; ; attempt++)
@@ -103,7 +105,8 @@ namespace Didit.Internal
                 }
                 catch (OperationCanceledException ex)
                 {
-                    throw new ApiTimeoutException($"Request timed out: {method} {url.AbsolutePath}.", ex);
+                    // A request that carries secrets reports a fixed inner exception: a handler may quote the serialized body.
+                    throw new ApiTimeoutException($"Request timed out: {method} {url.AbsolutePath}.", redactStructurally ? new OperationCanceledException("details withheld") : ex);
                 }
                 catch (HttpRequestException ex)
                 {
@@ -112,19 +115,62 @@ namespace Didit.Internal
                         continue;
                     }
 
+                    if (redactStructurally)
+                    {
+                        throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath} (details withheld).", new HttpRequestException("details withheld"));
+                    }
+
                     throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath}: {Redact(ex.Message, secrets)}", ex);
+                }
+                catch (Exception ex) when (redactStructurally && ex is not OperationCanceledException)
+                {
+                    throw new ApiConnectionException($"Connection error: {method} {url.AbsolutePath} (details withheld).", new HttpRequestException("details withheld"));
                 }
 
                 using (response)
                 {
                     var status = (int)response.StatusCode;
                     var headers = CollectHeaders(response);
+                    var reason = response.ReasonPhrase;
                     if (status >= 200 && status < 300)
                     {
+                        // A successful response reaches the caller unchanged. A body that is not a JSON object is an
+                        // error, and the parser's message would quote it: parse the sanitized copy instead.
+                        if (redactStructurally && !IsJsonObject(body))
+                        {
+                            var copy = ErrorFactory.Sanitize(reason, body, headers, secrets);
+                            // The parser's error is never kept as the inner exception.
+                            string? parseFailure = null;
+                            try
+                            {
+                                AuthJson.Parse(copy.Body, "agent consent response");
+                            }
+                            catch (DiditException ex)
+                            {
+                                parseFailure = ex.Message;
+                            }
+
+                            if (parseFailure is not null)
+                            {
+                                throw new DiditException(parseFailure);
+                            }
+                        }
+
                         return new AuthHttpResponse(status, body, headers, response.Headers.CacheControl);
                     }
 
-                    throw ErrorFactory.CreateStatusException(status, response.ReasonPhrase, body, headers, FindRequestId(headers), secrets);
+                    var errorSecrets = secrets;
+                    if (redactStructurally)
+                    {
+                        // Every error of a consent call is built from a sanitized copy only.
+                        var sanitized = ErrorFactory.Sanitize(reason, body, headers, secrets);
+                        reason = sanitized.Reason;
+                        body = sanitized.Body;
+                        headers = sanitized.Headers;
+                        errorSecrets = Array.Empty<string?>();
+                    }
+
+                    throw ErrorFactory.CreateStatusException(status, reason, body, headers, FindRequestId(headers), errorSecrets);
                 }
             }
         }
@@ -137,6 +183,19 @@ namespace Didit.Internal
             }
 
             return text;
+        }
+
+        private static bool IsJsonObject(byte[] body)
+        {
+            try
+            {
+                using var document = System.Text.Json.JsonDocument.Parse(body);
+                return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return false;
+            }
         }
 
         private static string? FindRequestId(Dictionary<string, IReadOnlyList<string>> headers)

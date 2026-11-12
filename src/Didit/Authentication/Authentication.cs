@@ -366,7 +366,7 @@ namespace Didit
             RequireText(accessToken, nameof(accessToken));
             RequireText(challenge, nameof(challenge));
             RequireText(decision, nameof(decision));
-            var body = WriteJson(writer =>
+            var body = WriteConsentJson(writer =>
             {
                 writer.WriteString("challenge", challenge);
                 writer.WriteString("decision", decision);
@@ -406,10 +406,10 @@ namespace Didit
             var secrets = new List<string?> { accessToken, challenge };
             if (assertion is not null)
             {
-                secrets.AddRange(assertion.Secrets());
+                secrets.AddRange(AuthAgentPasskeyAssertion.SecretsOf(body));
             }
 
-            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/"), () => JsonContent(body), accessToken, secrets.ToArray(), cancellationToken).ConfigureAwait(false);
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/"), () => JsonContent(body), accessToken, secrets.ToArray(), cancellationToken, redactStructurally: true).ConfigureAwait(false);
             return AuthAgentConsentResult.FromJson(AuthJson.Parse(response.Body, "agent consent response"));
         }
 
@@ -430,8 +430,8 @@ namespace Didit
         {
             RequireText(accessToken, nameof(accessToken));
             RequireText(challenge, nameof(challenge));
-            var body = WriteJson(writer => writer.WriteString("challenge", challenge));
-            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/passkey/"), () => JsonContent(body), accessToken, new[] { accessToken, challenge }, cancellationToken).ConfigureAwait(false);
+            var body = WriteConsentJson(writer => writer.WriteString("challenge", challenge));
+            var response = await _transport.SendAsync(HttpMethod.Post, RuntimeUrl("agents/consent/passkey/"), () => JsonContent(body), accessToken, new[] { accessToken, challenge }, cancellationToken, redactStructurally: true).ConfigureAwait(false);
             return AuthAgentApprovalOptions.FromJson(AuthJson.Parse(response.Body, "agent approval options response"));
         }
 
@@ -510,6 +510,22 @@ namespace Didit
             {
                 throw new ArgumentException("The value must not be empty.", parameterName);
             }
+        }
+
+        // A value that cannot be written may carry a credential in its exception message: fixed message, no inner exception.
+        private static byte[] WriteConsentJson(Action<Utf8JsonWriter> write)
+        {
+            byte[]? bytes = null;
+            try
+            {
+                bytes = WriteJson(write);
+            }
+            catch (Exception)
+            {
+                bytes = null;
+            }
+
+            return bytes ?? throw new InvalidOperationException("Could not encode the agent consent request.");
         }
 
         private static byte[] WriteJson(Action<Utf8JsonWriter> write)

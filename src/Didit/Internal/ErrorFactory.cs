@@ -48,6 +48,165 @@ namespace Didit.Internal
                 message = Redact(message, secret);
             }
 
+            return Build(status, message, json, rawBody, headers, requestId);
+        }
+
+        /// <summary>The whole response of a call whose answer may echo secrets, sanitized once; see <see cref="Sanitize"/>.</summary>
+        public sealed class SanitizedResponse
+        {
+            public SanitizedResponse(string? reason, byte[] body, Dictionary<string, IReadOnlyList<string>> headers)
+            {
+                Reason = reason;
+                Body = body;
+                Headers = headers;
+            }
+
+            public string? Reason { get; }
+
+            public byte[] Body { get; }
+
+            public Dictionary<string, IReadOnlyList<string>> Headers { get; }
+        }
+
+        /// <summary>
+        /// Sanitizes the whole response of a call whose answer may echo secrets (the agent consent calls), once, on receipt: the
+        /// reason phrase is redacted, each header whose name contains a secret is dropped, the other values are redacted, and the
+        /// body is redacted structurally (every string, object key or value, that contains a secret anywhere in it becomes
+        /// <c>[redacted]</c> as a whole; colliding redacted keys are numbered; a body that is not JSON, has trailing content, was
+        /// cut at the size limit or is empty becomes <c>[redacted]</c>). Every error of these calls is built from the result only.
+        /// </summary>
+        public static SanitizedResponse Sanitize(
+            string? reason,
+            byte[] body,
+            IReadOnlyDictionary<string, IReadOnlyList<string>> headers,
+            params string?[] secrets)
+        {
+            var active = secrets.Where(secret => !string.IsNullOrEmpty(secret)).Select(secret => secret!).ToArray();
+            var clean = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var header in headers)
+            {
+                if (!active.Any(secret => header.Key.IndexOf(secret, StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    clean[header.Key] = header.Value.Select(value => RedactText(value, active)).ToArray();
+                }
+            }
+
+            var text = Redacted; // an empty body is not JSON
+            if (body.Length > 0)
+            {
+                try
+                {
+                    using var document = JsonDocument.Parse(body);
+                    using var stream = new System.IO.MemoryStream();
+                    using (var writer = new Utf8JsonWriter(stream))
+                    {
+                        WriteRedacted(writer, document.RootElement, active);
+                    }
+
+                    text = Encoding.UTF8.GetString(stream.ToArray());
+                }
+                catch (Exception ex) when (ex is JsonException or InvalidOperationException or InsufficientExecutionStackException)
+                {
+                    // Not JSON, trailing content, or deeper than the parser's depth limit (64): not JSON.
+                    text = Redacted;
+                }
+            }
+
+            return new SanitizedResponse(reason is null ? null : RedactText(reason, active), Encoding.UTF8.GetBytes(text), clean);
+        }
+
+        /// <summary><paramref name="text"/>, or <c>[redacted]</c> as a whole when it contains a secret anywhere.</summary>
+        public static string RedactText(string text, IReadOnlyList<string> secrets)
+        {
+            foreach (var secret in secrets)
+            {
+                if (secret.Length > 0 && text.IndexOf(secret, StringComparison.Ordinal) >= 0)
+                {
+                    return Redacted;
+                }
+            }
+
+            return text;
+        }
+
+        private const string Redacted = "[redacted]";
+
+        private static string RedactString(JsonElement value, IReadOnlyList<string> secrets)
+        {
+            try
+            {
+                return RedactText(value.GetString() ?? string.Empty, secrets);
+            }
+            catch (InvalidOperationException)
+            {
+                // A lone escaped surrogate cannot be decoded, so it cannot be compared: drop it.
+                return Redacted;
+            }
+        }
+
+        private static void WriteRedacted(Utf8JsonWriter writer, JsonElement element, IReadOnlyList<string> secrets)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    writer.WriteStringValue(RedactString(element, secrets));
+                    break;
+                case JsonValueKind.Array:
+                    writer.WriteStartArray();
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        WriteRedacted(writer, item, secrets);
+                    }
+
+                    writer.WriteEndArray();
+                    break;
+                case JsonValueKind.Object:
+                    writer.WriteStartObject();
+                    // Reserve every safe key name first, so a placeholder never takes one.
+                    var seen = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        if (RedactText(property.Name, secrets) == property.Name)
+                        {
+                            seen.Add(property.Name);
+                        }
+                    }
+
+                    var next = 1;
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        var name = property.Name;
+                        if (RedactText(name, secrets) != name)
+                        {
+                            do
+                            {
+                                name = next == 1 ? Redacted : Redacted + next.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                next++;
+                            }
+                            while (seen.Contains(name));
+                            seen.Add(name);
+                        }
+
+                        writer.WritePropertyName(name);
+                        WriteRedacted(writer, property.Value, secrets);
+                    }
+
+                    writer.WriteEndObject();
+                    break;
+                default:
+                    element.WriteTo(writer);
+                    break;
+            }
+        }
+
+        private static ApiStatusException Build(
+            int status,
+            string message,
+            JsonElement? json,
+            string? rawBody,
+            IReadOnlyDictionary<string, IReadOnlyList<string>> headers,
+            string? requestId)
+        {
             return status switch
             {
                 400 => new BadRequestException(message, status, json, rawBody, headers, requestId),

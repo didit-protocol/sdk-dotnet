@@ -36,15 +36,24 @@ namespace Didit
         /// <summary><c>clientExtensionResults</c>: the browser's extension results, as a JSON object, when present.</summary>
         public JsonElement? ClientExtensionResults { get; set; }
 
-        internal string?[] Secrets()
+        // Strings shorter than this are not secrets: field names such as "id" and values such as "public-key" would
+        // otherwise erase error codes like "invalid_grant" (docs/DESIGN.md section 10).
+        // Sensitive values are 16+ chars: user handles are 16-byte ids (22 base64url), credential ids 16+ bytes.
+        private const int MinSecretLength = 16;
+
+        /// <summary>
+        /// The secrets of a consent request: every string of 16 characters or more of the <c>assertion</c>, object keys and values at
+        /// any depth, read from the exact JSON bytes that were sent, never from a second serialization of the assertion.
+        /// </summary>
+        internal static string?[] SecretsOf(byte[] sentBody)
         {
-            var secrets = new List<string?> { Id, RawId, Type, ClientDataJson, AuthenticatorData, Signature, UserHandle };
-            if (ClientExtensionResults is { } extensions)
+            using var wire = JsonDocument.Parse(sentBody);
+            if (!wire.RootElement.TryGetProperty("assertion", out var assertion))
             {
-                secrets.AddRange(Strings(extensions));
+                return Array.Empty<string?>();
             }
 
-            return secrets.ToArray();
+            return Strings(assertion).Where(secret => secret is { Length: >= MinSecretLength }).ToArray();
         }
 
         // GetString throws on a lone escaped surrogate: redact the raw JSON spelling (without its quotes) then,
