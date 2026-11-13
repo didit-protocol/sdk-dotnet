@@ -33,6 +33,12 @@ namespace Didit
         public string? HolderName { get; init; }
 
         /// <summary>
+        /// The 0 to 100 similarity between the holder name you sent and the name on the account: the score <c>result</c> was decided on, so you can apply your own threshold. <c>result</c> stays authoritative and is decided with the default thresholds, a <c>match</c> from 85 and a <c>close_match</c> from 70 up to 84; they are the workflow settings <c>bank_name_match_threshold</c> and <c>bank_partial_match_floor</c> in a verification session. A name with nothing in common scores <c>0</c>. <c>null</c> when no name was compared: <c>cannot_verify</c>, a <c>no_match</c> for an account that does not exist, or a bank that answered with its own verdict and no holder name or score.
+        /// </summary>
+        [JsonPropertyName("name_match_score")]
+        public long? NameMatchScore { get; init; }
+
+        /// <summary>
         /// The account, masked to its last 4 characters.
         /// </summary>
         [JsonPropertyName("account")]

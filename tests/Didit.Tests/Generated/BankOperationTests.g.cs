@@ -20,7 +20,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"request_id\": \"c2f4a9e0-7b1d-4c3a-9e55-1d0a6b8f2a47\", \"result\": \"close_match\", \"holder_name\": \"MARIA R OLIVEIRA\", \"account\": \"****0001\", \"vendor_data\": \"payout_20481\", \"created_at\": \"2026-10-21T14:32:08Z\"}");
+            handler.Enqueue(200, "{\"request_id\": \"c2f4a9e0-7b1d-4c3a-9e55-1d0a6b8f2a47\", \"result\": \"close_match\", \"holder_name\": \"MARIA R OLIVEIRA\", \"name_match_score\": 83, \"account\": \"****0001\", \"vendor_data\": \"payout_20481\", \"created_at\": \"2026-10-21T14:32:08Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Bank.AccountCheckAsync(new BankAccountCheckRequest { Country = "NGA", Account = new BankAccountCheckRequestAccount(), Holder = new BankAccountCheckHolder(), VendorData = "payout_20481", Consent = true });
 
@@ -35,6 +35,7 @@ namespace Didit.Tests.Generated
             JsonAssert.Equivalent("{\"country\": \"NGA\", \"account\": {}, \"holder\": {}, \"vendor_data\": \"payout_20481\", \"consent\": true}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("c2f4a9e0-7b1d-4c3a-9e55-1d0a6b8f2a47", result.RequestId);
+            Assert.Equal(83L, result.NameMatchScore);
         }
     }
 }

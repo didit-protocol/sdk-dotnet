@@ -51,6 +51,7 @@ namespace Didit.Internal
     [JsonSerializable(typeof(AddressValidationResponse))]
     [JsonSerializable(typeof(AddressValidationResult))]
     [JsonSerializable(typeof(AddressValidationResultAddress))]
+    [JsonSerializable(typeof(AddressValidationResultAddressType))]
     [JsonSerializable(typeof(AddressValidationResultStatus))]
     [JsonSerializable(typeof(AddressValidationResultVerificationLevel))]
     [JsonSerializable(typeof(AgeEstimationEstimateParams))]
