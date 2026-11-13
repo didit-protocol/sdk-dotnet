@@ -105,8 +105,11 @@ namespace Didit
         public int? MaxRetries { get; set; }
 
         /// <summary>
-        /// Value of the <c>Idempotency-Key</c> header. Operations that accept it return the stored response when the same key is
-        /// replayed, so a <c>POST</c> can be retried safely by your own code.
+        /// Value of the <c>Idempotency-Key</c> header, 1 to 255 characters (otherwise <see cref="ConfigurationException"/> is thrown
+        /// before a request is sent). Per request only, never a client default. Sent on <c>POST</c>, <c>PUT</c>, <c>PATCH</c> and
+        /// <c>DELETE</c> only. A default header of that name on the client is ignored; a per-request <see cref="Headers"/> entry
+        /// of that name counts as the key when this option is not set. The SDK never invents a key. With a key, <c>POST</c> and
+        /// <c>PATCH</c> are retried like <c>GET</c>, sending the same key on every attempt.
         /// </summary>
         public string? IdempotencyKey { get; set; }
 

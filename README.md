@@ -137,7 +137,18 @@ catch (ApiStatusException error)
 Failed requests are retried up to `MaxRetries` times (default 2) with exponential backoff (0.5 s, doubling, capped at 8 s, full jitter), honouring `Retry-After` up to 60 s.
 `GET`, `HEAD`, `PUT` and `DELETE` are retried on connection errors, timeouts, 408, 429 and 5xx.
 `POST` and `PATCH` are never retried once the request may have reached the server: only when the connection failed before sending, or on 429.
-Operations that accept an idempotency key take it from `RequestOptions.IdempotencyKey`, so your own code can retry a `POST` safely.
+
+### Idempotency
+
+`RequestOptions.IdempotencyKey` sends an `Idempotency-Key` header (1 to 255 characters, chosen by you) so repeating an operation with the same key returns the first response instead of running it twice.
+
+```csharp
+await client.Sessions.CreateAsync(
+    new SessionsCreateParams { WorkflowId = workflowId },
+    new RequestOptions { IdempotencyKey = "order-123" });
+```
+
+With a key, POST and PATCH are retried like GET.
 
 ## Pagination
 
