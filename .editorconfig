@@ -39,6 +39,8 @@ dotnet_diagnostic.CA1865.severity = none
 dotnet_diagnostic.CA1866.severity = none
 dotnet_diagnostic.CA1867.severity = none
 dotnet_diagnostic.CA2249.severity = none
+# CA2026 (new in recent .NET 10 SDK builds) asks for JsonElement.Parse, which exists only on .NET 10; net8.0, netstandard2.0 and net472 need JsonDocument.Parse.
+dotnet_diagnostic.CA2026.severity = none
 # Interface-typed returns are part of the public contract.
 dotnet_diagnostic.CA1859.severity = none
 # Optional<T> is the name DESIGN.md section 5.1 gives the absent-or-set wrapper; Optional<T>.Unset is its absent value.
