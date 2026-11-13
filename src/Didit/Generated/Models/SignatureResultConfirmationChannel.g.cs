@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>null</c> for a Simple signature, which has no code.
+    /// <c>null</c> for a Simple signature, which has no code. Always <c>sms</c> for a Qualified (QES) signature.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultConfirmationChannel.EnumJsonConverter))]

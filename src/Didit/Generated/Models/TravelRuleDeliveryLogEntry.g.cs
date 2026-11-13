@@ -56,6 +56,36 @@ namespace Didit
         [JsonPropertyName("detail_lines")]
         public IReadOnlyList<string>? DetailLines { get; init; }
 
+        /// <summary>
+        /// Attempts made so far for this message.
+        /// </summary>
+        [JsonPropertyName("attempts")]
+        public long? Attempts { get; init; }
+
+        /// <summary>
+        /// When the delivery last changed.
+        /// </summary>
+        [JsonPropertyName("updated_at")]
+        public DateTimeOffset? UpdatedAt { get; init; }
+
+        /// <summary>
+        /// When the next attempt runs while the message is <c>QUEUED</c> or <c>RETRYING</c>.
+        /// </summary>
+        [JsonPropertyName("next_attempt_at")]
+        public DateTimeOffset? NextAttemptAt { get; init; }
+
+        /// <summary>
+        /// Why the last attempt failed, or null while the message has not failed. The message is a fixed customer-safe sentence: it never carries the counterparty's own text or a transport error.
+        /// </summary>
+        [JsonPropertyName("failure")]
+        public TravelRuleDeliveryLogEntryFailure? Failure { get; init; }
+
+        /// <summary>
+        /// Readable name of the route that carried the message: <c>Email</c>, <c>TRP</c>, <c>Didit</c>, <c>Didit Test VASP</c>, the name of a network listed in the Marketplace, or <c>Network</c> for any other network. Null until a route is chosen.
+        /// </summary>
+        [JsonPropertyName("route")]
+        public string? Route { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

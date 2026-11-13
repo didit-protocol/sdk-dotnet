@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>simple</c> (default) or <c>aes</c>. <c>qes</c> (Qualified Electronic Signature, QES) is an add-on that is not available yet.
+    /// <c>simple</c> (default), <c>aes</c> or <c>qes</c> (Qualified electronic signature, QES, an add-on: a qualified trust service provider issues the signer a qualified certificate and signs after the signer enters the code it texts them).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultLevel.EnumJsonConverter))]

@@ -39,19 +39,19 @@ namespace Didit
         public SignatureResultVerdict? Verdict { get; init; }
 
         /// <summary>
-        /// <c>simple</c> (default) or <c>aes</c>. <c>qes</c> (Qualified Electronic Signature, QES) is an add-on that is not available yet.
+        /// <c>simple</c> (default), <c>aes</c> or <c>qes</c> (Qualified electronic signature, QES, an add-on: a qualified trust service provider issues the signer a qualified certificate and signs after the signer enters the code it texts them).
         /// </summary>
         [JsonPropertyName("level")]
         public SignatureResultLevel? Level { get; init; }
 
         /// <summary>
-        /// <c>pdf</c> for a Simple signature, <c>pades</c> for Advanced (AES).
+        /// <c>pdf</c> for a Simple signature, <c>pades</c> for Advanced (AES) and Qualified (QES).
         /// </summary>
         [JsonPropertyName("format")]
         public SignatureResultFormat? Format { get; init; }
 
         /// <summary>
-        /// <c>PAdES-B-LT</c> once an Advanced (AES) signature is signed, otherwise null.
+        /// The PAdES profile of the signed documents: <c>PAdES-B-LT</c> once an Advanced (AES) or Qualified (QES) signature is signed, otherwise null.
         /// </summary>
         [JsonPropertyName("profile")]
         public string? Profile { get; init; }

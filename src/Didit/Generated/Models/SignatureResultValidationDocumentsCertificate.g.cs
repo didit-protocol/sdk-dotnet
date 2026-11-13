@@ -44,6 +44,12 @@ namespace Didit
         [JsonPropertyName("valid_until")]
         public DateTimeOffset? ValidUntil { get; init; }
 
+        /// <summary>
+        /// QES: which ETSI EN 319 412-5 statements the certificate carries.
+        /// </summary>
+        [JsonPropertyName("qualified_statements")]
+        public SignatureResultValidationDocumentsCertificateQualifiedStatements? QualifiedStatements { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
