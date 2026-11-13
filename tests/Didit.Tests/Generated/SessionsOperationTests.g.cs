@@ -109,7 +109,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"session_id\": \"11111111-2222-3333-4444-555555555555\", \"session_number\": 43762, \"session_token\": \"3FaJ9wLqX2Mz\", \"url\": \"https://verify.didit.me/en/session/3FaJ9wLqX2Mz\", \"vendor_data\": \"user-123\", \"metadata\": {\"user_type\": \"premium\", \"account_id\": \"ABC123\"}, \"status\": \"Not Started\", \"workflow_id\": \"11111111-2222-3333-4444-555555555555\", \"workflow_version\": 3, \"callback\": \"https://example.com/verification/callback\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Sessions.CreateAsync(new SessionsCreateParams { WorkflowId = "11111111-2222-3333-4444-555555555555", VendorData = "user-123", MultiAccountSegment = "business-accounts", Callback = "https://example.com/verification/callback", CallbackMethod = new SessionsCreateParamsCallbackMethod("initiator"), Tags = new string[] { "sample-tags" }, Language = new SessionsCreateParamsLanguage("en"), PortraitImage = "sample-portrait_image", SandboxScenario = "decline_document_expired", UserState = "US-IL" });
+            var result = await client.Sessions.CreateAsync(new SessionsCreateParams { WorkflowId = "11111111-2222-3333-4444-555555555555", VendorData = "user-123", MultiAccountSegment = "business-accounts", Callback = "https://example.com/verification/callback", CallbackMethod = new SessionsCreateParamsCallbackMethod("initiator"), Tags = new string[] { "sample-tags" }, SessionExpirationTime = 86400L, Language = new SessionsCreateParamsLanguage("en"), PortraitImage = "sample-portrait_image", SandboxScenario = "decline_document_expired", UserState = "US-IL" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -119,7 +119,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"workflow_id\": \"11111111-2222-3333-4444-555555555555\", \"vendor_data\": \"user-123\", \"multi_account_segment\": \"business-accounts\", \"callback\": \"https://example.com/verification/callback\", \"callback_method\": \"initiator\", \"tags\": [\"sample-tags\"], \"language\": \"en\", \"portrait_image\": \"sample-portrait_image\", \"sandbox_scenario\": \"decline_document_expired\", \"user_state\": \"US-IL\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"workflow_id\": \"11111111-2222-3333-4444-555555555555\", \"vendor_data\": \"user-123\", \"multi_account_segment\": \"business-accounts\", \"callback\": \"https://example.com/verification/callback\", \"callback_method\": \"initiator\", \"tags\": [\"sample-tags\"], \"session_expiration_time\": 86400, \"language\": \"en\", \"portrait_image\": \"sample-portrait_image\", \"sandbox_scenario\": \"decline_document_expired\", \"user_state\": \"US-IL\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("11111111-2222-3333-4444-555555555555", result.SessionId);
             Assert.Equal(43762L, result.SessionNumber);
