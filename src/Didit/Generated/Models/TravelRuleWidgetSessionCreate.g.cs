@@ -70,6 +70,27 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<long> ExpiresInMinutes { get; set; }
 
+        /// <summary>
+        /// Optional. Request the ownership proof of this address book entry instead of passing <c>wallet_address</c> and <c>chain</c>. The entry must be a customer wallet with a holder (<c>holder_vendor_data</c>), an address and a chain; the saved wallet and holder are always used and a conflicting <c>wallet_address</c>, <c>chain</c>, <c>holder_name</c> or <c>vendor_data</c> is rejected. Cannot be combined with <c>transaction_id</c>.
+        /// </summary>
+        [JsonPropertyName("wallet_entry_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> WalletEntryId { get; set; }
+
+        /// <summary>
+        /// Only with <c>wallet_entry_id</c>. <c>ensure</c> and <c>resend</c> return the entry's active link when it has one (<c>200</c>) and create one otherwise (<c>201</c>). <c>new</c> revokes the active link and creates another; it needs <c>request_key</c>.
+        /// </summary>
+        [JsonPropertyName("request_action")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<TravelRuleWidgetSessionCreateRequestAction> RequestAction { get; set; }
+
+        /// <summary>
+        /// Only with <c>request_action: new</c>. An idempotency key: repeating the call with the same key returns the same link while it is active, and <c>410</c> once it has been revoked or has expired.
+        /// </summary>
+        [JsonPropertyName("request_key")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> RequestKey { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

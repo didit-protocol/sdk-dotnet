@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// One Travel Rule transfer as the transfers list shows it: VASP names, wallets and memos only, never the originator or beneficiary person data.
+    /// One Travel Rule transfer as the transfers list shows it: VASP names, wallets, memos, the transaction's review decision, your own end user's name (masked exactly as the transaction detail masks it), the counterparty VASP's jurisdiction, the chain and the fiat amount. It never carries the counterparty's person data.
     /// </summary>
     public sealed record TravelRuleTransferRow
     {
@@ -37,6 +37,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("txn_date")]
         public DateTimeOffset? TxnDate { get; init; }
+
+        /// <summary>
+        /// The transaction's own review decision, which can differ from the transfer's <c>status</c>: a transfer may wait on its counterparty while its transaction is approved, or be stuck while its transaction is in review.
+        /// </summary>
+        [JsonPropertyName("review_status")]
+        public TravelRuleTransferRowReviewStatus? ReviewStatus { get; init; }
+
+        /// <summary>
+        /// Your own end user (the transaction's applicant), exactly as the transaction detail stores it: masked with the first letter of each name part while the transfer's data is masked, and never the counterparty's person data. Empty when the transaction has no applicant party.
+        /// </summary>
+        [JsonPropertyName("person_name")]
+        public string? PersonName { get; init; }
 
         /// <summary>
         /// withdrawal: outbound. message: an inbound transfer a rail created from a counterparty's message (a TRP inquiry, the INTERNAL inbound leg, or a GTR, VerifyVASP or Sygna Bridge message). deposit: any other inbound transfer.
@@ -75,10 +87,28 @@ namespace Didit
         public string? Asset { get; init; }
 
         /// <summary>
+        /// The chain the transfer moved on, as a canonical code for example <c>ETH</c>, <c>BTC</c> or <c>SOL</c>; empty when the transfer names no chain.
+        /// </summary>
+        [JsonPropertyName("chain")]
+        public string? Chain { get; init; }
+
+        /// <summary>
         /// The amount as a plain decimal, for example "1.25".
         /// </summary>
         [JsonPropertyName("amount")]
         public string? Amount { get; init; }
+
+        /// <summary>
+        /// The transfer's fiat value as a plain decimal, in <c>fiat_currency</c>: Didit's calculated conversion when it has one, otherwise the amount you supplied in your own default currency. Null when neither is known, for example on a sandbox transfer with no supplied conversion.
+        /// </summary>
+        [JsonPropertyName("fiat_amount")]
+        public string? FiatAmount { get; init; }
+
+        /// <summary>
+        /// The currency <c>fiat_amount</c> is expressed in, or null.
+        /// </summary>
+        [JsonPropertyName("fiat_currency")]
+        public string? FiatCurrency { get; init; }
 
         /// <summary>
         /// Outbound: your VASP's legal name. Inbound: the counterparty's name, from its directory entry, the Didit network member, the TRP sender, the Didit Test VASP, or the name the transfer declared. Empty when none is known.
@@ -91,6 +121,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("beneficiary_vasp")]
         public string? BeneficiaryVasp { get; init; }
+
+        /// <summary>
+        /// The other VASP's jurisdiction, from its directory entry or, for a Didit network member, its profile or Travel Rule settings. Empty when the transfer names no VASP or the VASP has no jurisdiction on record.
+        /// </summary>
+        [JsonPropertyName("counterparty_jurisdiction")]
+        public string? CounterpartyJurisdiction { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;originator_wallet&lt;/c&gt; field.

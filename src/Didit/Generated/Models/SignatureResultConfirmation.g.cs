@@ -15,7 +15,13 @@ namespace Didit
     public sealed record SignatureResultConfirmation
     {
         /// <summary>
-        /// <c>null</c> for a Simple signature, which has no code.
+        /// Who sent the code: <c>didit</c>, or <c>qualified_provider</c> for a Qualified (QES) signature, whose code comes by SMS from the qualified trust service provider and authorizes the signer's qualified certificate. <c>null</c> for a Simple signature.
+        /// </summary>
+        [JsonPropertyName("sent_by")]
+        public SignatureResultConfirmationSentBy? SentBy { get; init; }
+
+        /// <summary>
+        /// <c>null</c> for a Simple signature, which has no code. Always <c>sms</c> for a Qualified (QES) signature.
         /// </summary>
         [JsonPropertyName("channel")]
         public SignatureResultConfirmationChannel? Channel { get; init; }

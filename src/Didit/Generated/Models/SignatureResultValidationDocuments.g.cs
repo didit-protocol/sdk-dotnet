@@ -51,7 +51,7 @@ namespace Didit
         public bool? Revoked { get; init; }
 
         /// <summary>
-        /// EU Trusted List check. For AES: <c>{"status": "not_applicable", "reason": "aes_not_qualified"}</c>.
+        /// EU Trusted List check. AES: <c>{"status": "not_applicable", "reason": "aes_not_qualified"}</c>. QES: <c>{"status": "granted"}</c> when the certificate is a qualified certificate for electronic signatures issued under the qualified trust service provider's Trusted List entry, else <c>{"status": "not_granted", ...}</c>. A sandbox session's qualified level is sealed by Didit: <c>{"status": "not_applicable", "reason": "sandbox"}</c>.
         /// </summary>
         [JsonPropertyName("trusted_list")]
         public SignatureResultValidationDocumentsTrustedList? TrustedList { get; init; }
@@ -63,10 +63,28 @@ namespace Didit
         public SignatureResultValidationDocumentsCertificate? Certificate { get; init; }
 
         /// <summary>
-        /// The RFC 3161 timestamp in the signature, issued by Didit. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
+        /// The RFC 3161 timestamp in the signature: issued by Didit for AES, by the qualified trust service provider for QES. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
         /// </summary>
         [JsonPropertyName("timestamp")]
         public SignatureResultValidationDocumentsTimestamp? Timestamp { get; init; }
+
+        /// <summary>
+        /// QES: <c>true</c> only when every qualified check passed. <c>false</c> in the sandbox.
+        /// </summary>
+        [JsonPropertyName("qualified")]
+        public bool? Qualified { get; init; }
+
+        /// <summary>
+        /// QES: the PAdES profile of this document's signature.
+        /// </summary>
+        [JsonPropertyName("profile")]
+        public string? Profile { get; init; }
+
+        /// <summary>
+        /// QES: the checks that did not pass (empty when <c>valid</c> is <c>true</c>): the PDF signature's integrity, its chain to the qualified trust anchors, revocation, coverage of the document, the qualified time stamp, the certificate's qualified statements, the verified signer named in it, and the signed file extending exactly what was sent for signature.
+        /// </summary>
+        [JsonPropertyName("failed_checks")]
+        public IReadOnlyList<SignatureResultValidationDocumentsFailedChecks>? FailedChecks { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

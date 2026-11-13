@@ -21,7 +21,7 @@ namespace Didit
         public bool? Valid { get; init; }
 
         /// <summary>
-        /// Set when <c>valid</c> is <c>null</c>: <c>signature_provider_outcome_unknown</c>.
+        /// <c>signature_provider_outcome_unknown</c> while <c>valid</c> is <c>null</c> (the signing outcome is not known yet); <c>signature_provider_failed</c> when the qualified trust service provider ended a Qualified (QES) signing without a signature: the attempt is back at review and the signer can ask for a new code.
         /// </summary>
         [JsonPropertyName("reason")]
         public string? Reason { get; init; }
@@ -37,6 +37,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("documents")]
         public IReadOnlyList<SignatureResultValidationDocuments>? Documents { get; init; }
+
+        /// <summary>
+        /// The PAdES profile every signed document reached.
+        /// </summary>
+        [JsonPropertyName("profile")]
+        public string? Profile { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -44,6 +44,9 @@ namespace Didit
         /// <summary><c>EMAIL</c></summary>
         public static TravelRuleDeliveryRail Email { get; } = new("EMAIL");
 
+        /// <summary><c>TEST_VASP</c></summary>
+        public static TravelRuleDeliveryRail TestVasp { get; } = new("TEST_VASP");
+
         /// <summary><c></c></summary>
         public static TravelRuleDeliveryRail Empty { get; } = new("");
 
