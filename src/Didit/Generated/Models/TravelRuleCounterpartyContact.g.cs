@@ -98,6 +98,24 @@ namespace Didit
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
 
+        /// <summary>
+        /// Optional. The contact's role.
+        /// </summary>
+        [JsonPropertyName("role")]
+        public string? Role { get; init; }
+
+        /// <summary>
+        /// Optional. The contact's phone number.
+        /// </summary>
+        [JsonPropertyName("phone")]
+        public string? Phone { get; init; }
+
+        /// <summary>
+        /// Whether due-diligence requests and reminders go to this contact.
+        /// </summary>
+        [JsonPropertyName("receives_requests")]
+        public bool? ReceivesRequests { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

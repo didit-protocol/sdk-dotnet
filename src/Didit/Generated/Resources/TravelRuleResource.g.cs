@@ -21,6 +21,7 @@ namespace Didit.Resources
         {
             _raw = raw;
             CounterpartyContacts = new TravelRuleCounterpartyContactsResource(raw.CounterpartyContacts);
+            Documents = new TravelRuleDocumentsResource(raw.Documents);
             Networks = new TravelRuleNetworksResource(raw.Networks);
             Transfers = new TravelRuleTransfersResource(raw.Transfers);
             UnmatchedDeposits = new TravelRuleUnmatchedDepositsResource(raw.UnmatchedDeposits);
@@ -31,6 +32,9 @@ namespace Didit.Resources
 
         /// <summary>The <c>travel_rule.counterparty_contacts</c> resource.</summary>
         public TravelRuleCounterpartyContactsResource CounterpartyContacts { get; }
+
+        /// <summary>The <c>travel_rule.documents</c> resource.</summary>
+        public TravelRuleDocumentsResource Documents { get; }
 
         /// <summary>The <c>travel_rule.networks</c> resource.</summary>
         public TravelRuleNetworksResource Networks { get; }
@@ -120,6 +124,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List a VASP's decision history
+        /// </summary>
+        /// <remarks>
+        /// Your application's own decision changes for the counterparty, newest first. Only changes made after this history existed are listed. Needs the transactions read privilege.
+        /// <para/>
+        /// <c>GET /v3/travel-rule/vasps/{vasp_id}/decision-history/</c> (<c>travel_rule.list_vasp_decision_history</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<TravelRuleDecisionEvent>> ListVaspDecisionHistoryAsync(string vaspId, TravelRuleListVaspDecisionHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListVaspDecisionHistoryAsync(vaspId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List due-diligence questionnaires with a VASP
         /// </summary>
         /// <remarks>
@@ -149,6 +171,23 @@ namespace Didit.Resources
         public async Task<TravelRuleListVaspReviewersResponse> ListVaspReviewersAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListVaspReviewersAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List the documents shared with a VASP
+        /// </summary>
+        /// <remarks>
+        /// The documents currently shared with the counterparty.
+        /// <para/>
+        /// <c>GET /v3/travel-rule/vasps/{vasp_id}/shared-documents/</c> (<c>travel_rule.list_vasp_shared_documents</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleListVaspSharedDocumentsResponse> ListVaspSharedDocumentsAsync(string vaspId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListVaspSharedDocumentsAsync(vaspId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -324,6 +363,24 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Share documents with a VASP
+        /// </summary>
+        /// <remarks>
+        /// Emails the counterparty a private link to the selected documents. Sharing again replaces the earlier share: the earlier link stops working for good. Sharing exactly what is already shared with the same address changes nothing and answers <c>200</c> with <c>url: null</c>. Needs the transactions write privilege.
+        /// <para/>
+        /// <c>POST /v3/travel-rule/vasps/{vasp_id}/shared-documents/</c> (<c>travel_rule.share_vasp_documents</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleDocumentShare> ShareVaspDocumentsAsync(string vaspId, TravelRuleShareVaspDocumentsParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ShareVaspDocumentsAsync(vaspId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update Travel Rule settings
         /// </summary>
         /// <remarks>
@@ -357,6 +414,35 @@ namespace Didit.Resources
             var response = await _raw.UpdateVaspDecisionAsync(vaspId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Withdraw the documents shared with a VASP
+        /// </summary>
+        /// <remarks>
+        /// Revokes every active link to your documents for this counterparty. Withdrawal is permanent: the links never work again, and sharing again creates a new link.
+        /// <para/>
+        /// <c>DELETE /v3/travel-rule/vasps/{vasp_id}/shared-documents/</c> (<c>travel_rule.withdraw_vasp_documents</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public Task WithdrawVaspDocumentsAsync(string vaspId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
+            _raw.WithdrawVaspDocumentsAsync(vaspId, requestOptions, cancellationToken);
+
+        /// <summary>
+        /// Withdraw a due-diligence request
+        /// </summary>
+        /// <remarks>
+        /// Withdraws the request and erases the documents and answers collected with it. Its answer link stops working. Deletion is irreversible. Needs the transactions write privilege.
+        /// <para/>
+        /// <c>DELETE /v3/travel-rule/vasps/{vasp_id}/questionnaires/{questionnaire_id}/</c> (<c>travel_rule.withdraw_vasp_questionnaire</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="questionnaireId">Path parameter <c>questionnaire_id</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public Task WithdrawVaspQuestionnaireAsync(string vaspId, string questionnaireId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
+            _raw.WithdrawVaspQuestionnaireAsync(vaspId, questionnaireId, requestOptions, cancellationToken);
     }
 
     /// <summary>The <c>travel_rule</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -368,6 +454,7 @@ namespace Didit.Resources
         {
             _pipeline = pipeline;
             CounterpartyContacts = new TravelRuleCounterpartyContactsRawResource(pipeline);
+            Documents = new TravelRuleDocumentsRawResource(pipeline);
             Networks = new TravelRuleNetworksRawResource(pipeline);
             Transfers = new TravelRuleTransfersRawResource(pipeline);
             UnmatchedDeposits = new TravelRuleUnmatchedDepositsRawResource(pipeline);
@@ -378,6 +465,9 @@ namespace Didit.Resources
 
         /// <summary>The <c>travel_rule.counterparty_contacts</c> resource.</summary>
         public TravelRuleCounterpartyContactsRawResource CounterpartyContacts { get; }
+
+        /// <summary>The <c>travel_rule.documents</c> resource.</summary>
+        public TravelRuleDocumentsRawResource Documents { get; }
 
         /// <summary>The <c>travel_rule.networks</c> resource.</summary>
         public TravelRuleNetworksRawResource Networks { get; }
@@ -476,6 +566,23 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List a VASP's decision history
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ListVaspDecisionHistoryAsync"/>.</remarks>
+        public Task<DiditResponse<Page<TravelRuleDecisionEvent>>> ListVaspDecisionHistoryAsync(string vaspId, TravelRuleListVaspDecisionHistoryParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/decision-history/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<TravelRuleDecisionEvent>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// List due-diligence questionnaires with a VASP
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ListVaspQuestionnairesAsync"/>.</remarks>
@@ -503,6 +610,21 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<TravelRuleListVaspReviewersResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List the documents shared with a VASP
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ListVaspSharedDocumentsAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleListVaspSharedDocumentsResponse>> ListVaspSharedDocumentsAsync(string vaspId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/shared-documents/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<TravelRuleListVaspSharedDocumentsResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -685,6 +807,27 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Share documents with a VASP
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ShareVaspDocumentsAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleDocumentShare>> ShareVaspDocumentsAsync(string vaspId, TravelRuleShareVaspDocumentsParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/shared-documents/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<TravelRuleDocumentShare>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Update Travel Rule settings
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TravelRuleResource.UpdateSettingsAsync"/>.</remarks>
@@ -724,6 +867,36 @@ namespace Didit.Resources
             };
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<TravelRuleCounterpartyDecisionResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Withdraw the documents shared with a VASP
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.WithdrawVaspDocumentsAsync"/>.</remarks>
+        public Task<DiditResponse> WithdrawVaspDocumentsAsync(string vaspId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Delete, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/shared-documents/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendNoContentAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Withdraw a due-diligence request
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.WithdrawVaspQuestionnaireAsync"/>.</remarks>
+        public Task<DiditResponse> WithdrawVaspQuestionnaireAsync(string vaspId, string questionnaireId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Delete, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/questionnaires/" + PathParameter.Encode(questionnaireId, "questionnaireId") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendNoContentAsync(request, requestOptions, cancellationToken);
         }
     }
 }

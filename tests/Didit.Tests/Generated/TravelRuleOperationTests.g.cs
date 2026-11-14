@@ -64,7 +64,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"uuid\": \"6c1f9b8e-2d4a-4f7e-8b3c-5a9d0e1f2a3b\", \"counterparty\": \"0d6f3c2a-6a1e-4c55-9a39-1f2b0c7d8e91\", \"counterparty_name\": \"Example Counterparty VASP\", \"email\": \"compliance@counterparty.example\", \"name\": \"Compliance desk\", \"source\": \"application\", \"scope\": \"application\", \"created_by\": \"\", \"verified_at\": null, \"is_invalid\": false, \"invalid_reason\": \"\", \"invalid_detail\": \"\", \"invalid_at\": null, \"created_at\": \"2026-10-19T09:00:00Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.TravelRule.CounterpartyContacts.CreateAsync(new TravelRuleCounterpartyContactCreate { Counterparty = "11111111-2222-3333-4444-555555555555", Email = "user@example.com", Name = "sample-name" });
+            var result = await client.TravelRule.CounterpartyContacts.CreateAsync(new TravelRuleCounterpartyContactCreate { Counterparty = "11111111-2222-3333-4444-555555555555", Email = "user@example.com", Name = "sample-name", Role = "sample-role", Phone = "sample-phone", ReceivesRequests = true });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -74,7 +74,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"counterparty\": \"11111111-2222-3333-4444-555555555555\", \"email\": \"user@example.com\", \"name\": \"sample-name\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"counterparty\": \"11111111-2222-3333-4444-555555555555\", \"email\": \"user@example.com\", \"name\": \"sample-name\", \"role\": \"sample-role\", \"phone\": \"sample-phone\", \"receives_requests\": true}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("6c1f9b8e-2d4a-4f7e-8b3c-5a9d0e1f2a3b", result.Uuid);
         }
@@ -116,6 +116,28 @@ namespace Didit.Tests.Generated
             Assert.Empty(request.Body);
             Assert.Single(result.Results);
             Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task TravelRule_CounterpartyContacts_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"counterparty\": \"sample\", \"counterparty_name\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"created_by\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"is_invalid\": true, \"invalid_reason\": \"\", \"invalid_detail\": \"sample\", \"invalid_at\": \"2026-01-02T03:04:05Z\", \"created_at\": \"2026-01-02T03:04:05Z\", \"role\": \"sample\", \"phone\": \"sample\", \"receives_requests\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.CounterpartyContacts.UpdateAsync("contact_uuid-1", new TravelRuleCounterpartyContactsUpdateParams { Name = "sample-name", Email = "user@example.com", Role = "sample-role", Phone = "sample-phone", ReceivesRequests = true });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/counterparty-contacts/contact_uuid-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"sample-name\", \"email\": \"user@example.com\", \"role\": \"sample-role\", \"phone\": \"sample-phone\", \"receives_requests\": true}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
         }
 
         [Fact]
@@ -163,6 +185,110 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_Documents_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(201, "{\"id\": \"sample\", \"name\": \"sample\", \"kind\": \"questionnaire\", \"uploaded_at\": \"2026-01-02T03:04:05Z\", \"received_at\": \"2026-01-02T03:04:05Z\", \"content_type\": \"application/pdf\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.Documents.CreateAsync(new TravelRuleDocumentsCreateParams { Kind = new TravelRuleDocumentKind("questionnaire"), File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.Contains("name=\"kind\"", request.BodyText);
+            Assert.Contains("name=\"file\"", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Id);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.TravelRule.Documents.DeleteAsync("document_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/document_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_Download()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, new byte[] { 37, 80, 68, 70 }, "application/pdf", new Dictionary<string, string> { ["Content-Disposition"] = "attachment; filename=\"report.bin\"" });
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.Documents.DownloadAsync("document_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/document_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);
+            Assert.Equal("application/pdf", result.ContentType);
+            Assert.Equal("report.bin", result.FileName);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"name\": \"sample\", \"kind\": \"questionnaire\", \"uploaded_at\": \"2026-01-02T03:04:05Z\", \"received_at\": \"2026-01-02T03:04:05Z\", \"content_type\": \"application/pdf\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.Documents.ListAsync(new TravelRuleDocumentsListParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task TravelRule_ListVaspDecisionHistory()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"decision\": \"sample\", \"reason\": \"sample\", \"actor\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ListVaspDecisionHistoryAsync("vasp_id-1", new TravelRuleListVaspDecisionHistoryParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/decision-history/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
         public async Task TravelRule_ListVaspQuestionnaires()
         {
             var handler = new MockHttpHandler();
@@ -203,11 +329,31 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_ListVaspSharedDocuments()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"documents\": [{\"id\": \"sample\", \"name\": \"sample\", \"kind\": \"questionnaire\", \"uploaded_at\": \"2026-01-02T03:04:05Z\", \"received_at\": \"2026-01-02T03:04:05Z\", \"content_type\": \"application/pdf\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ListVaspSharedDocumentsAsync("vasp_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/shared-documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task TravelRule_ListVasps()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}}], \"source\": \"didit_network\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}, \"requested_items\": [\"questionnaire\"], \"reminder_sent_at\": \"2026-01-02T03:04:05Z\", \"documents\": [{}]}], \"source\": \"didit_network\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}}]}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.ListVaspsAsync(new TravelRuleListVaspsParams { Search = "sample-search", Network = new TravelRuleListVaspsParamsNetwork("GTR"), Jurisdiction = "sample-jurisdiction", Reachable = true, Kind = new TravelRuleListVaspsParamsKind("directory"), Risk = new TravelRuleListVaspsParamsRisk("LOW"), Responsiveness = new TravelRuleListVaspsParamsResponsiveness("RESPONSIVE"), Limit = 1L, Offset = 1L });
 
@@ -377,7 +523,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}}], \"source\": \"didit_network\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}}");
+            handler.Enqueue(200, "{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}, \"requested_items\": [\"questionnaire\"], \"reminder_sent_at\": \"2026-01-02T03:04:05Z\", \"documents\": [{}]}], \"source\": \"didit_network\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.RetrieveVaspAsync("vasp_id-1");
 
@@ -506,7 +652,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(202, "{\"id\": \"3f9e8d7c-6b5a-4c3d-9e2f-1a0b9c8d7e6f\", \"status\": \"SENT\", \"form_version\": \"1\", \"sent_to\": \"travelrule@counterparty.example\", \"sent_at\": \"2026-10-14T10:00:00Z\", \"expires_at\": \"2026-11-13T10:00:00Z\", \"answered_at\": null, \"valid_until\": null, \"current\": false, \"answers\": {}}");
             using var client = TestClients.Create(handler);
-            var result = await client.TravelRule.SendVaspQuestionnaireAsync("vasp_id-1", new TravelRuleCounterpartyQuestionnaireRequest { SentTo = "user@example.com" });
+            var result = await client.TravelRule.SendVaspQuestionnaireAsync("vasp_id-1", new TravelRuleCounterpartyQuestionnaireRequest { SentTo = "user@example.com", AnswerByDays = 1L, RequestedItems = new TravelRuleDocumentKind[] { new TravelRuleDocumentKind("questionnaire") } });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -516,9 +662,31 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"sent_to\": \"user@example.com\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"sent_to\": \"user@example.com\", \"answer_by_days\": 1, \"requested_items\": [\"questionnaire\"]}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("3f9e8d7c-6b5a-4c3d-9e2f-1a0b9c8d7e6f", result.Id);
+        }
+
+        [Fact]
+        public async Task TravelRule_ShareVaspDocuments()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"shared_with\": \"sample\", \"url\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ShareVaspDocumentsAsync("vasp_id-1", new TravelRuleShareVaspDocumentsParams { DocumentIds = new string[] { "11111111-2222-3333-4444-555555555555" }, SentTo = "user@example.com" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/shared-documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"document_ids\": [\"11111111-2222-3333-4444-555555555555\"], \"sent_to\": \"user@example.com\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.SharedWith);
         }
 
         [Fact]
@@ -817,6 +985,42 @@ namespace Didit.Tests.Generated
             Assert.Empty(request.Body);
             Assert.Single(result.Results);
             Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task TravelRule_WithdrawVaspDocuments()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.TravelRule.WithdrawVaspDocumentsAsync("vasp_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/shared-documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task TravelRule_WithdrawVaspQuestionnaire()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.TravelRule.WithdrawVaspQuestionnaireAsync("vasp_id-1", "questionnaire_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/questionnaires/questionnaire_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
         }
 
         [Fact]
