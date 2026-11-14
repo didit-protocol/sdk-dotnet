@@ -43,6 +43,13 @@ namespace Didit
         public Optional<bool> Consent { get; set; }
 
         /// <summary>
+        /// Paraguay (<c>pry_cedula</c>) only. Set to <c>true</c> to check the cédula against the TSJE electoral roll alone. The electoral roll lists only citizens aged 18 or over, so a <c>MATCH</c> also confirms that the holder is an adult, and a cédula that is not on the roll returns <c>DOCUMENT_NOT_FOUND</c>. Defaults to <c>false</c>, which also checks the DNIT taxpayer register for wider identity coverage but cannot confirm age. Any other service rejects it with <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("electoral_roll_only")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> ElectoralRollOnly { get; set; }
+
+        /// <summary>
         /// Universal identification number — automatically mapped to the correct country-specific field, so you can use it instead of <c>personal_number</c>/<c>tax_number</c>/<c>document_number</c>: ARG→document_number (DNI), BOL→document_number (CI), BRA→tax_number (CPF, 11 digits), CHL→personal_number (RUT), COL→personal_number (Cédula), CRI→personal_number (Cédula), DOM→personal_number (Cédula, 11 digits), ECU→personal_number (Cédula, 10 digits), ESP→personal_number (DNI/NIE), GTM→document_number (DPI), HND→document_number (DNI), MEX→personal_number (CURP, 18 chars), PAN→personal_number (Cédula), PER→personal_number (DNI, 8 digits), PRY→document_number (CI), SLV→document_number (DUI), URY→personal_number (CI), VEN→document_number (Cédula). It never overrides an explicitly provided country-specific field.
         /// </summary>
         [JsonPropertyName("identification_number")]
