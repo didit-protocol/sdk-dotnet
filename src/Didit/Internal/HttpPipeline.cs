@@ -253,7 +253,7 @@ namespace Didit.Internal
         /// </summary>
         private static bool IsValidIdempotencyKey(string key)
         {
-            if (key.Length < 1 || key.Length > 255 || key[0] == ' ' || key[^1] == ' ')
+            if (key.Length < 1 || key.Length > 255 || key[0] == ' ' || key[key.Length - 1] == ' ')
             {
                 return false;
             }
