@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.23.0...v1.24.0) (2026-11-14)
+
+
+### Features
+
+* per-request idempotency key ([#66](https://github.com/didit-protocol/sdk-dotnet/issues/66)) ([39479d9](https://github.com/didit-protocol/sdk-dotnet/commit/39479d9bd3e134f141e0c64533f8b090c3803225))
+
 ## [1.23.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.22.0...v1.23.0) (2026-11-14)
 
 
