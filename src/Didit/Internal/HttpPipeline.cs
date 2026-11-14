@@ -91,6 +91,8 @@ namespace Didit.Internal
         public async Task<DiditResponse> SendAsync(ApiRequest request, RequestOptions? requestOptions, CancellationToken cancellationToken)
         {
             var settings = Resolve(request, requestOptions);
+            var idempotencyKey = ResolveIdempotencyKey(request.Method, requestOptions);
+            var retriable = IsIdempotent(request.Method) || (idempotencyKey is not null && IsKeyRetriable(request.Method));
             var url = BuildUrl(request, settings);
             var maxRetries = Math.Max(0, requestOptions?.MaxRetries ?? _options.MaxRetries);
             var timeout = requestOptions?.Timeout ?? _options.Timeout;
@@ -110,7 +112,7 @@ namespace Didit.Internal
                 byte[] body;
                 try
                 {
-                    using var message = await BuildMessageAsync(request, url, settings, requestOptions, cancellationToken).ConfigureAwait(false);
+                    using var message = await BuildMessageAsync(request, url, settings, requestOptions, idempotencyKey, cancellationToken).ConfigureAwait(false);
                     response = await _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, timeoutSource.Token).ConfigureAwait(false);
                     try
                     {
@@ -129,7 +131,7 @@ namespace Didit.Internal
                 catch (OperationCanceledException ex)
                 {
                     Log($"{request.Method} {logPath} timed out after {started.ElapsedMilliseconds} ms (attempt {attempt + 1})");
-                    if (canRetry && IsIdempotent(request.Method))
+                    if (canRetry && retriable)
                     {
                         await Delay(Backoff(attempt), cancellationToken).ConfigureAwait(false);
                         continue;
@@ -141,7 +143,7 @@ namespace Didit.Internal
                 {
                     var beforeSend = FailedBeforeSending(ex);
                     Log($"{request.Method} {logPath} connection error after {started.ElapsedMilliseconds} ms (attempt {attempt + 1})");
-                    if (canRetry && (IsIdempotent(request.Method) || beforeSend))
+                    if (canRetry && (retriable || beforeSend))
                     {
                         await Delay(Backoff(attempt), cancellationToken).ConfigureAwait(false);
                         continue;
@@ -162,7 +164,7 @@ namespace Didit.Internal
                         return new DiditResponse(status, headers, requestId, body);
                     }
 
-                    if (canRetry && ShouldRetryStatus(request.Method, status))
+                    if (canRetry && (ShouldRetryStatus(request.Method, status, idempotencyKey is not null) || (idempotencyKey is not null && IsInProgressConflict(status, body))))
                     {
                         await Delay(RetryDelay(attempt, headers), cancellationToken).ConfigureAwait(false);
                         continue;
@@ -176,14 +178,74 @@ namespace Didit.Internal
         internal static bool IsIdempotent(HttpMethod method) =>
             method == HttpMethod.Get || method == HttpMethod.Head || method == HttpMethod.Put || method == HttpMethod.Delete || method == HttpMethod.Options;
 
-        internal static bool ShouldRetryStatus(HttpMethod method, int status)
+        /// <summary>A POST or PATCH that carries an Idempotency-Key is safe to repeat, so it follows the GET rule.</summary>
+        internal static bool IsKeyRetriable(HttpMethod method) => method == HttpMethods.Post || method == HttpMethods.Patch;
+
+        internal static bool ShouldRetryStatus(HttpMethod method, int status, bool hasIdempotencyKey = false)
         {
             if (status == 429)
             {
                 return true;
             }
 
-            return IsIdempotent(method) && (status == 408 || status >= 500);
+            return (IsIdempotent(method) || (hasIdempotencyKey && IsKeyRetriable(method))) && (status == 408 || status >= 500);
+        }
+
+        /// <summary>A 409 whose JSON body has <c>"code": "idempotency_key_in_progress"</c>.</summary>
+        internal static bool IsInProgressConflict(int status, byte[] body)
+        {
+            if (status != 409 || body.Length == 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(body);
+                return document.RootElement.ValueKind == JsonValueKind.Object
+                    && document.RootElement.TryGetProperty("code", out var code)
+                    && code.ValueKind == JsonValueKind.String
+                    && code.GetString() == "idempotency_key_in_progress";
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
+        private const string IdempotencyKeyHeader = "Idempotency-Key";
+
+        /// <summary>
+        /// The effective key of one request: the <see cref="RequestOptions.IdempotencyKey"/> option, else a per-request raw header
+        /// named <c>Idempotency-Key</c> (any casing). A client-wide default header of that name never counts. The effective key must
+        /// be 1 to 255 characters (otherwise <see cref="ConfigurationException"/> is thrown before a request is sent) and is sent
+        /// only on POST, PUT, PATCH and DELETE (explicit allow-list); on any other method it is dropped and <c>null</c> is returned.
+        /// </summary>
+        private static string? ResolveIdempotencyKey(HttpMethod method, RequestOptions? requestOptions)
+        {
+            var key = requestOptions?.IdempotencyKey;
+            if (key is null && requestOptions?.Headers is not null)
+            {
+                foreach (var header in requestOptions.Headers)
+                {
+                    if (string.Equals(header.Key, IdempotencyKeyHeader, StringComparison.OrdinalIgnoreCase))
+                    {
+                        key = header.Value ?? string.Empty;
+                    }
+                }
+            }
+
+            if (key is null)
+            {
+                return null;
+            }
+
+            if (key.Length < 1 || key.Length > 255)
+            {
+                throw new ConfigurationException("The Idempotency-Key must be 1 to 255 characters.");
+            }
+
+            return method == HttpMethods.Post || method == HttpMethods.Put || method == HttpMethods.Patch || method == HttpMethods.Delete ? key : null;
         }
 
         internal TimeSpan Backoff(int attempt)
@@ -334,7 +396,7 @@ namespace Didit.Internal
             return new Uri(baseText + path + request.Query.Encode(), UriKind.Absolute);
         }
 
-        private async Task<HttpRequestMessage> BuildMessageAsync(ApiRequest request, Uri url, ResolvedSettings settings, RequestOptions? requestOptions, CancellationToken cancellationToken)
+        private async Task<HttpRequestMessage> BuildMessageAsync(ApiRequest request, Uri url, ResolvedSettings settings, RequestOptions? requestOptions, string? idempotencyKey, CancellationToken cancellationToken)
         {
             var message = new HttpRequestMessage(request.Method, url);
             try
@@ -346,21 +408,28 @@ namespace Didit.Internal
 
                 foreach (var header in _options.DefaultHeaders)
                 {
-                    SetHeader(message, header.Key, header.Value);
+                    if (!IsIdempotencyKeyHeader(header.Key))
+                    {
+                        SetHeader(message, header.Key, header.Value);
+                    }
                 }
 
                 if (requestOptions?.Headers is not null)
                 {
                     foreach (var header in requestOptions.Headers)
                     {
-                        SetHeader(message, header.Key, header.Value);
+                        if (!IsIdempotencyKeyHeader(header.Key))
+                        {
+                            SetHeader(message, header.Key, header.Value);
+                        }
                     }
                 }
 
-                if (!string.IsNullOrEmpty(requestOptions?.IdempotencyKey))
+                if (idempotencyKey is not null)
                 {
-                    SetHeader(message, "Idempotency-Key", requestOptions!.IdempotencyKey!);
+                    SetHeader(message, "Idempotency-Key", idempotencyKey);
                 }
+
 
                 // A key in DefaultHeaders or RequestOptions.Headers is never sent to another API.
                 message.Headers.Remove("x-api-key");
@@ -392,6 +461,8 @@ namespace Didit.Internal
                 throw;
             }
         }
+
+        private static bool IsIdempotencyKeyHeader(string name) => string.Equals(name, IdempotencyKeyHeader, StringComparison.OrdinalIgnoreCase);
 
         private static void SetHeader(HttpRequestMessage message, string name, string value)
         {
