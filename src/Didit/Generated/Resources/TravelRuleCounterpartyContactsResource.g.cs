@@ -69,6 +69,24 @@ namespace Didit.Resources
             var response = await _raw.ListAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Edit a counterparty contact
+        /// </summary>
+        /// <remarks>
+        /// Edits one of your application's own contacts. Changing the email address clears its verification and invalid state. Platform contacts cannot be edited.
+        /// <para/>
+        /// <c>PATCH /v3/travel-rule/counterparty-contacts/{contact_uuid}/</c> (<c>travel_rule.counterparty_contacts.update</c>).
+        /// </remarks>
+        /// <param name="contactUuid">Path parameter <c>contact_uuid</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleCounterpartyContact> UpdateAsync(string contactUuid, TravelRuleCounterpartyContactsUpdateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.UpdateAsync(contactUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
     }
 
     /// <summary>The <c>travel_rule.counterparty_contacts</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -133,6 +151,27 @@ namespace Didit.Resources
             request.Query.Add("limit", parameters?.Limit);
             request.Query.Add("offset", parameters?.Offset);
             return _pipeline.SendPageAsync<TravelRuleCounterpartyContact>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Edit a counterparty contact
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleCounterpartyContactsResource.UpdateAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleCounterpartyContact>> UpdateAsync(string contactUuid, TravelRuleCounterpartyContactsUpdateParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Patch, "/v3/travel-rule/counterparty-contacts/" + PathParameter.Encode(contactUuid, "contactUuid") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<TravelRuleCounterpartyContact>(request, requestOptions, cancellationToken);
         }
     }
 }
