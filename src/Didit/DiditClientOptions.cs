@@ -105,7 +105,7 @@ namespace Didit
         public int? MaxRetries { get; set; }
 
         /// <summary>
-        /// Value of the <c>Idempotency-Key</c> header, 1 to 255 printable ASCII characters (otherwise <see cref="ConfigurationException"/> is thrown
+        /// Value of the <c>Idempotency-Key</c> header, 1 to 255 printable ASCII characters that neither start nor end with a space (otherwise <see cref="ConfigurationException"/> is thrown
         /// before a request is sent). Per request only, never a client default. Sent on <c>POST</c>, <c>PUT</c>, <c>PATCH</c> and
         /// <c>DELETE</c> only. A default header of that name on the client is ignored; a per-request <see cref="Headers"/> entry
         /// of that name counts as the key when this option is not set. The SDK never invents a key. With a key, <c>POST</c> and

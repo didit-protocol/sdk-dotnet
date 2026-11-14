@@ -75,6 +75,9 @@ namespace Didit.Tests.Core
         [InlineData("caf\u00e9")]
         [InlineData("a\nb")]
         [InlineData("key\n")]
+        [InlineData(" order-1")]
+        [InlineData("order-1 ")]
+        [InlineData("   ")]
         public async Task A_key_that_is_not_printable_ASCII_fails_before_sending(string key)
         {
             var handler = new MockHttpHandler();
