@@ -113,6 +113,9 @@ namespace Didit
         /// <summary>The <c>report_templates</c> resource.</summary>
         public ReportTemplatesResource ReportTemplates { get; private set; } = null!;
 
+        /// <summary>The <c>reports</c> resource.</summary>
+        public ReportsResource Reports { get; private set; } = null!;
+
         /// <summary>The <c>sandbox</c> resource.</summary>
         public SandboxResource Sandbox { get; private set; } = null!;
 
@@ -181,6 +184,7 @@ namespace Didit
             Questionnaires = new QuestionnairesResource(WithRawResponse.Questionnaires);
             RegulatoryReports = new RegulatoryReportsResource(WithRawResponse.RegulatoryReports);
             ReportTemplates = new ReportTemplatesResource(WithRawResponse.ReportTemplates);
+            Reports = new ReportsResource(WithRawResponse.Reports);
             Sandbox = new SandboxResource(WithRawResponse.Sandbox);
             Sessions = new SessionsResource(WithRawResponse.Sessions);
             Transactions = new TransactionsResource(WithRawResponse.Transactions);
@@ -232,6 +236,7 @@ namespace Didit
             Questionnaires = new QuestionnairesRawResource(pipeline);
             RegulatoryReports = new RegulatoryReportsRawResource(pipeline);
             ReportTemplates = new ReportTemplatesRawResource(pipeline);
+            Reports = new ReportsRawResource(pipeline);
             Sandbox = new SandboxRawResource(pipeline);
             Sessions = new SessionsRawResource(pipeline);
             Transactions = new TransactionsRawResource(pipeline);
@@ -346,6 +351,9 @@ namespace Didit
 
         /// <summary>The <c>report_templates</c> resource.</summary>
         public ReportTemplatesRawResource ReportTemplates { get; }
+
+        /// <summary>The <c>reports</c> resource.</summary>
+        public ReportsRawResource Reports { get; }
 
         /// <summary>The <c>sandbox</c> resource.</summary>
         public SandboxRawResource Sandbox { get; }
