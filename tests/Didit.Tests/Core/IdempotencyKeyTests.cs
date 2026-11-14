@@ -70,6 +70,22 @@ namespace Didit.Tests.Core
             Assert.Empty(handler.Requests);
         }
 
+        [Theory]
+        [InlineData("\u6ce8\u6587-1")]
+        [InlineData("caf\u00e9")]
+        [InlineData("a\nb")]
+        [InlineData("key\n")]
+        public async Task A_key_that_is_not_printable_ASCII_fails_before_sending(string key)
+        {
+            var handler = new MockHttpHandler();
+            using var client = TestClients.Create(handler);
+
+            await Assert.ThrowsAsync<ConfigurationException>(() =>
+                client.Sessions.CreateAsync(new SessionsCreateParams { WorkflowId = "wf" }, new RequestOptions { IdempotencyKey = key }));
+
+            Assert.Empty(handler.Requests);
+        }
+
         [Fact]
         public async Task A_key_of_255_characters_is_accepted()
         {

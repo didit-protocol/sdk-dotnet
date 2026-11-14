@@ -218,7 +218,7 @@ namespace Didit.Internal
         /// <summary>
         /// The effective key of one request: the <see cref="RequestOptions.IdempotencyKey"/> option, else a per-request raw header
         /// named <c>Idempotency-Key</c> (any casing). A client-wide default header of that name never counts. The effective key must
-        /// be 1 to 255 characters (otherwise <see cref="ConfigurationException"/> is thrown before a request is sent) and is sent
+        /// be 1 to 255 printable ASCII characters (otherwise <see cref="ConfigurationException"/> is thrown before a request is sent) and is sent
         /// only on POST, PUT, PATCH and DELETE (explicit allow-list); on any other method it is dropped and <c>null</c> is returned.
         /// </summary>
         private static string? ResolveIdempotencyKey(HttpMethod method, RequestOptions? requestOptions)
@@ -240,12 +240,33 @@ namespace Didit.Internal
                 return null;
             }
 
-            if (key.Length < 1 || key.Length > 255)
+            if (!IsValidIdempotencyKey(key))
             {
-                throw new ConfigurationException("The Idempotency-Key must be 1 to 255 characters.");
+                throw new ConfigurationException("The Idempotency-Key must be 1 to 255 printable ASCII characters.");
             }
 
             return method == HttpMethods.Post || method == HttpMethods.Put || method == HttpMethods.Patch || method == HttpMethods.Delete ? key : null;
+        }
+
+        /// <summary>
+        /// Whether a key is 1 to 255 printable ASCII characters (space to <c>~</c>): it travels as an HTTP header value.
+        /// </summary>
+        private static bool IsValidIdempotencyKey(string key)
+        {
+            if (key.Length < 1 || key.Length > 255)
+            {
+                return false;
+            }
+
+            foreach (var c in key)
+            {
+                if (c < ' ' || c > '~')
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         internal TimeSpan Backoff(int attempt)

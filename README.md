@@ -140,7 +140,7 @@ Failed requests are retried up to `MaxRetries` times (default 2) with exponentia
 
 ### Idempotency
 
-`RequestOptions.IdempotencyKey` sends an `Idempotency-Key` header (1 to 255 characters, chosen by you) so repeating an operation with the same key returns the first response instead of running it twice.
+`RequestOptions.IdempotencyKey` sends an `Idempotency-Key` header (1 to 255 printable ASCII characters, chosen by you) so repeating an operation with the same key returns the first response instead of running it twice.
 
 ```csharp
 await client.Sessions.CreateAsync(
