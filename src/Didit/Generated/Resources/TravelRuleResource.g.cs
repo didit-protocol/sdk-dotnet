@@ -51,6 +51,24 @@ namespace Didit.Resources
         public TravelRuleWorkspaceResource Workspace { get; }
 
         /// <summary>
+        /// Assign a VASP to a member
+        /// </summary>
+        /// <remarks>
+        /// Assigns the counterparty to one application member, or unassigns it with <c>assignee_email: null</c>. Repeating the same assignment changes nothing (<c>changed: false</c>). The assignment is private to your application. Needs the transactions write privilege.
+        /// <para/>
+        /// <c>POST /v3/travel-rule/vasps/{vasp_id}/assign/</c> (<c>travel_rule.assign_vasp</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleAssignVaspResponse> AssignVaspAsync(string vaspId, TravelRuleAssignVaspParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.AssignVaspAsync(vaspId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Clear your decision on a VASP
         /// </summary>
         /// <remarks>
@@ -115,6 +133,22 @@ namespace Didit.Resources
         public async Task<TravelRuleCounterpartyQuestionnaireList> ListVaspQuestionnairesAsync(string vaspId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListVaspQuestionnairesAsync(vaspId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List the members who can be assigned a VASP
+        /// </summary>
+        /// <remarks>
+        /// The application members who can review Travel Rule counterparties. Use one <c>email</c> as <c>assignee_email</c> of <c>POST /v3/travel-rule/vasps/{vasp_id}/assign/</c>. Needs the transactions read privilege.
+        /// <para/>
+        /// <c>GET /v3/travel-rule/vasps/reviewers/</c> (<c>travel_rule.list_vasp_reviewers</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleListVaspReviewersResponse> ListVaspReviewersAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListVaspReviewersAsync(requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -216,6 +250,24 @@ namespace Didit.Resources
         public async Task<TravelRuleCounterpartyScreeningStatus> RetrieveVaspScreeningAsync(string vaspId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveVaspScreeningAsync(vaspId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Review a screening hit
+        /// </summary>
+        /// <remarks>
+        /// Records your review of one possible match of a screening. The screening score and status are recomputed from the reviewed hits, but the counterparty's decision is never changed for you: decide it with <c>PUT /v3/travel-rule/vasps/{vasp_id}/decision/</c>. Repeating the same review changes nothing (<c>changed: false</c>). Needs the transactions write privilege.
+        /// <para/>
+        /// <c>PATCH /v3/travel-rule/vasps/{vasp_id}/screening/</c> (<c>travel_rule.review_vasp_screening_hit</c>).
+        /// </remarks>
+        /// <param name="vaspId">The id of a row of GET /v3/travel-rule/vasps/: a directory entry or a Didit network member.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleReviewVaspScreeningHitResponse> ReviewVaspScreeningHitAsync(string vaspId, TravelRuleReviewVaspScreeningHitParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ReviewVaspScreeningHitAsync(vaspId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -346,6 +398,27 @@ namespace Didit.Resources
         public TravelRuleWorkspaceRawResource Workspace { get; }
 
         /// <summary>
+        /// Assign a VASP to a member
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.AssignVaspAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleAssignVaspResponse>> AssignVaspAsync(string vaspId, TravelRuleAssignVaspParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/assign/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<TravelRuleAssignVaspResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Clear your decision on a VASP
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ClearVaspDecisionAsync"/>.</remarks>
@@ -415,6 +488,21 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<TravelRuleCounterpartyQuestionnaireList>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List the members who can be assigned a VASP
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ListVaspReviewersAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleListVaspReviewersResponse>> ListVaspReviewersAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/vasps/reviewers/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<TravelRuleListVaspReviewersResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -520,6 +608,27 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<TravelRuleCounterpartyScreeningStatus>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Review a screening hit
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleResource.ReviewVaspScreeningHitAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleReviewVaspScreeningHitResponse>> ReviewVaspScreeningHitAsync(string vaspId, TravelRuleReviewVaspScreeningHitParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Patch, "/v3/travel-rule/vasps/" + PathParameter.Encode(vaspId, "vaspId") + "/screening/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<TravelRuleReviewVaspScreeningHitResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

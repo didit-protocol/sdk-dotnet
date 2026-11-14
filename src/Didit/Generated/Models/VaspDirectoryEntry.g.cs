@@ -176,6 +176,12 @@ namespace Didit
         [JsonPropertyName("source")]
         public VaspDirectoryEntrySource? Source { get; init; }
 
+        /// <summary>
+        /// The member the VASP is assigned to, or null. The assignment is private to your application.
+        /// </summary>
+        [JsonPropertyName("assignee")]
+        public TravelRuleVaspAssignee? Assignee { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -51,7 +51,7 @@ namespace Didit
         public bool? Connected { get; init; }
 
         /// <summary>
-        /// This application's own participant on the network, or null when it has none.
+        /// The &lt;c&gt;participant&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("participant")]
         public TravelRuleNetworkParticipantSummary? Participant { get; init; }
@@ -67,6 +67,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("routed_30d")]
         public long? Routed30d { get; init; }
+
+        /// <summary>
+        /// <c>error</c> when this network's row could not be loaded; the other networks are unaffected.
+        /// </summary>
+        [JsonPropertyName("load_status")]
+        public TravelRuleNetworkStateLoadStatus? LoadStatus { get; init; }
+
+        /// <summary>
+        /// Present only when <c>load_status</c> is <c>error</c>.
+        /// </summary>
+        [JsonPropertyName("load_error")]
+        public TravelRuleNetworkStateLoadError? LoadError { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
