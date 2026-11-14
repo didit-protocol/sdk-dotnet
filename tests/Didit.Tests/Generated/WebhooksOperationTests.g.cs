@@ -77,6 +77,27 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Webhooks_Destinations_ListActivity()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"type\": \"failure_alert\", \"occurred_at\": \"2026-01-02T03:04:05Z\", \"failure_count\": 1}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.Destinations.ListActivityAsync("destination_uuid-1", new WebhooksDestinationsListActivityParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/webhook/destinations/destination_uuid-1/activity/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
         public async Task Webhooks_Destinations_ListDeliveries()
         {
             var handler = new MockHttpHandler();
