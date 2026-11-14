@@ -38,6 +38,12 @@ namespace Didit
         [JsonPropertyName("networks")]
         public TravelRuleNetworksOverviewNetworks? Networks { get; init; }
 
+        /// <summary>
+        /// The verified account email of the signed-in member; null for API-key calls.
+        /// </summary>
+        [JsonPropertyName("notification_email")]
+        public string? NotificationEmail { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

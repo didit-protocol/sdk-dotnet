@@ -80,6 +80,18 @@ namespace Didit
         [JsonPropertyName("history")]
         public IReadOnlyList<TravelRuleNetworkParticipantHistory>? History { get; init; }
 
+        /// <summary>
+        /// Whether the signed-in member asked for an email when this participant's status changes. Always false for API-key calls, which cannot set the preference.
+        /// </summary>
+        [JsonPropertyName("notify_status_changes")]
+        public bool? NotifyStatusChanges { get; init; }
+
+        /// <summary>
+        /// The verified account email the notifications go to; null when there is none.
+        /// </summary>
+        [JsonPropertyName("notification_email")]
+        public string? NotificationEmail { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
