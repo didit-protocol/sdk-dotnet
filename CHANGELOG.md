@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.25.0...v1.25.1) (2026-11-14)
+
+
+### Bug Fixes
+
+* an idempotency key neither starts nor ends with a space ([#88](https://github.com/didit-protocol/sdk-dotnet/issues/88)) ([06dd6e9](https://github.com/didit-protocol/sdk-dotnet/commit/06dd6e9ea23e6dce1d540f59bd6ce557652903b7))
+
 ## [1.25.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.24.0...v1.25.0) (2026-11-14)
 
 
