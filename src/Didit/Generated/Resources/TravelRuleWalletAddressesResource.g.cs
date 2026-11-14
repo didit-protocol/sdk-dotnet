@@ -127,7 +127,7 @@ namespace Didit.Resources
         /// Update wallet address holder metadata
         /// </summary>
         /// <remarks>
-        /// Partial update of holder_name, holder_vendor_data, entity_type, and travel_address. Setting travel_address attaches a TRP routing address to the entry; invalid values are rejected with 400. The response echoes only these four fields.
+        /// Partial update of holder_name, holder_vendor_data, entity_type, and travel_address. Setting travel_address attaches a TRP routing address to the entry; invalid values are rejected with 400. The response returns the updated entry: its label, owner type, receiving travel address and ownership proof summary, with the writable fields.
         /// <para/>
         /// <c>PATCH /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.update</c>).
         /// </remarks>
@@ -135,7 +135,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<WalletAddressEntryUpdate> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<WalletAddressEntryUpdateResponse> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAsync(entryUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -282,7 +282,7 @@ namespace Didit.Resources
         /// Update wallet address holder metadata
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.UpdateAsync"/>.</remarks>
-        public Task<DiditResponse<WalletAddressEntryUpdate>> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<WalletAddressEntryUpdateResponse>> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -296,7 +296,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<WalletAddressEntryUpdate>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<WalletAddressEntryUpdateResponse>(request, requestOptions, cancellationToken);
         }
     }
 }

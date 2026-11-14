@@ -170,6 +170,12 @@ namespace Didit
         [JsonPropertyName("user_choice")]
         public TravelRuleUserChoice? UserChoice { get; init; }
 
+        /// <summary>
+        /// Latest application- and subject-scoped request if it matches this transfer counterparty wallet and chain; otherwise null. A standalone request is not attached to a transfer. Request status and proof verdict are separate from the saved transfer decision.
+        /// </summary>
+        [JsonPropertyName("proof_request")]
+        public TravelRuleTransferProofRequest? ProofRequest { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
