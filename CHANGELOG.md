@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.25.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.24.0...v1.25.0) (2026-11-14)
+
+
+### Features
+
+* **spec:** sync API spec 2026-11-14 ([e24e5cb](https://github.com/didit-protocol/sdk-dotnet/commit/e24e5cb85cea560b32c3a5b0987f6d7a6b51cdb6))
+
+
+### Bug Fixes
+
+* refuse an idempotency key that is not printable ASCII before any request ([#85](https://github.com/didit-protocol/sdk-dotnet/issues/85)) ([9a95528](https://github.com/didit-protocol/sdk-dotnet/commit/9a95528a43413ed19b2efddb1260ba4164990410))
+
 ## [1.24.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.23.0...v1.24.0) (2026-11-14)
 
 
