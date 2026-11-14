@@ -26,9 +26,10 @@ namespace Didit.Resources
         /// Create workflow
         /// </summary>
         /// <remarks>
-        /// Create a simple workflow. Send <c>features</c> in execution order (ordering rules apply); defaults to <c>published</c> v1. The body accepts ONLY the fields listed in <c>SimpleWorkflowRequest</c> — any other key (including <c>workflow_type</c>) is rejected with a 400. Not idempotent — each call creates a new workflow. Maximum 50 workflows per application.
+        /// Create a simple workflow. Send <c>features</c> in execution order (ordering rules apply); defaults to <c>published</c> v1. The body accepts ONLY the fields listed in <c>SimpleWorkflowRequest</c> — any other key (including <c>workflow_type</c>) is rejected with a 400. Without an <c>Idempotency-Key</c> each call creates a new workflow. Maximum 50 workflows per application.
         /// <para/>
         /// <c>POST /v3/workflows/</c> (<c>workflows.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Permanently delete one workflow version (no undo). Existing sessions keep their verification results but their workflow reference is cleared; other versions in the same <c>workflow_id</c> group are not deleted.
         /// <para/>
         /// <c>DELETE /v3/workflows/{settings_uuid}/</c> (<c>workflows.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="settingsUuid">Per-version UUID of the workflow to delete.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -94,6 +96,7 @@ namespace Didit.Resources
         /// Update a workflow. Versioning depends on the <c>status</c> field you send and the current state of the version: (1) no <c>status</c> on a published version → the published version is updated in place (same <c>uuid</c>, same <c>version</c>); (2) no <c>status</c> on a draft → the draft is updated and immediately published; (3) <c>status: "published"</c> on a published version → a NEW published version is created under the same <c>workflow_id</c> (new <c>uuid</c>, <c>version</c> + 1) and returned, and any existing draft in the group is deleted; (4) <c>status: "draft"</c> keeps a draft as a draft (autosave) but is rejected with 400 on a published version (<c>"Cannot revert a published version to draft."</c>). The body accepts the same strict field whitelist as create — unknown keys are rejected with 400.
         /// <para/>
         /// <c>PATCH /v3/workflows/{settings_uuid}/</c> (<c>workflows.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="settingsUuid">Per-version UUID of the workflow to update.</param>
         /// <param name="parameters">The request parameters.</param>

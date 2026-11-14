@@ -43,6 +43,7 @@ namespace Didit.Resources
         /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>phone_social</c> block: the online platforms this number is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the number was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>phone_social</c> unit per request on top of this endpoint's own price.
         /// <para/>
         /// <c>POST /v3/phone/risk/</c> (<c>phone.assess_risk</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -80,6 +81,7 @@ namespace Didit.Resources
         /// Social footprint. Set <c>enable_social</c> to <c>true</c> to add a <c>phone_social</c> block: the online platforms this number is registered on, with per-category counts and any profile details available. <c>profiles_registered: 0</c> means the platforms were checked and the number was found on none of them - a valid, billable answer. The block is absent when the add-on was not requested or the check could not be completed, and it is not billed in that case. Billing adds one <c>phone_social</c> unit per request on top of this endpoint's own price.
         /// <para/>
         /// <c>POST /v3/phone/check/</c> (<c>phone.check_code</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -115,6 +117,7 @@ namespace Didit.Resources
         /// Rate limits. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints, plus an anti-abuse cap of 4 send attempts per phone number per hour; exceeding either returns <c>429</c>.
         /// <para/>
         /// <c>POST /v3/phone/send/</c> (<c>phone.send_code</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

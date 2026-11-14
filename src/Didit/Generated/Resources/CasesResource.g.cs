@@ -61,6 +61,7 @@ namespace Didit.Resources
         /// Apply one explicit action to the case subject. Supply a unique client_reference to obtain an action receipt and make retries idempotent. Reusing that reference with a different payload returns 409. With a reference, inspect receipt.status even when HTTP status is 200: FAILED means no action was applied. Repeating a failed request does not execute it again unless retry is true. Omitting client_reference preserves the legacy response.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/entity-actions/</c> (<c>cases.apply_entity_action</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -80,6 +81,7 @@ namespace Didit.Resources
         /// Apply a resolution staged by resolve on a four-eyes blueprint. The caller must be a different officer than the one who submitted it, otherwise 403. When the resolution names a checker (the case's <c>checker</c>), only that member can approve it: any other caller, including an API key, gets 403.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/approve/</c> (<c>cases.approve_resolution</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -98,6 +100,7 @@ namespace Didit.Resources
         /// Assign the case to a user, or unassign it by sending assignee_user_id: null. assignee_email/assignee_name auto-provision a User row when the assignee does not exist yet.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/assign/</c> (<c>cases.assign</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -117,6 +120,7 @@ namespace Didit.Resources
         /// Assign (or unassign, with assignee_user_id: null) several cases at once. All cases must share the same blueprint; mismatches are reported per case without aborting the batch.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/bulk/assign/</c> (<c>cases.bulk_assign</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -135,6 +139,7 @@ namespace Didit.Resources
         /// Apply the same status transition to several cases in one call: OPEN reopens, AWAITING_USER requests info, RESOLVED resolves (resolution required). Each case is evaluated independently; gate failures (incomplete checklist, missing required note) are reported per case without aborting the batch.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/bulk/status/</c> (<c>cases.bulk_update_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -153,6 +158,7 @@ namespace Didit.Resources
         /// Create a case anchored to exactly one subject (a user or a business), directly or by deriving the subject from an attached session/transaction link. Source is always <c>MANUAL</c> for API-created cases. Network links require write:cases plus read:networks, Networks access and investigation access for the network scope. The network must be visible and contain the case subject. Manually adding links to network-generated cases is not allowed. An explicit subject is required whenever links includes a network.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/</c> (<c>cases.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -173,6 +179,7 @@ namespace Didit.Resources
         /// If the case has a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/</c> (<c>cases.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -188,6 +195,7 @@ namespace Didit.Resources
         /// Move the case to its blueprint's configured escalation_blueprint. Requires the current blueprint to have escalation_enabled and an escalation_blueprint set, otherwise 400.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/escalate/</c> (<c>cases.escalate</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -206,6 +214,7 @@ namespace Didit.Resources
         /// Review existing cases for a subject or owned source record before manual case creation. Both open and resolved investigations are returned. Each page contains at most 20 cases; use next_offset to request another page.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/duplicates/</c> (<c>cases.find_duplicates</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -333,6 +342,7 @@ namespace Didit.Resources
         /// Reject a resolution staged by resolve and return the case to its maker blueprint. The caller must be a different officer than the one who submitted it, otherwise 403. When the resolution names a checker (the case's <c>checker</c>), only that member can reject it: any other caller, including an API key, gets 403.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/reject-approval/</c> (<c>cases.reject_resolution</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -352,6 +362,7 @@ namespace Didit.Resources
         /// Move an awaiting-user or resolved case back to open, clearing resolution, resolution_notes, resolved_at, and resolved_by_email.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/reopen/</c> (<c>cases.reopen</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -370,6 +381,7 @@ namespace Didit.Resources
         /// Move an open case to awaiting_user while more information is collected from the verified user. Fails with 400 if a resolution is currently pending 4-eyes approval.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/request-info/</c> (<c>cases.request_info</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -388,6 +400,7 @@ namespace Didit.Resources
         /// Resolve the case with one of five resolutions: FALSE_POSITIVE (no concern found), VALID_THREAT (concern confirmed), INCONCLUSIVE, REQUIREMENTS_NOT_MET or REQUIREMENTS_SATISFIED. Blocked with 400 if the blueprint's checklist is not optional and items remain incomplete, or if the blueprint requires a resolution note and none is given. When the case's blueprint has a four-eyes checker step (four_eyes_checker_blueprint), the resolution is staged (case.pending_resolution) and the case moves to the checker blueprint instead of resolving immediately; a different officer must call approve or reject-approval. Submit a four-eyes resolution as a console member: a resolution an API key submits has no recorded maker, so approve and reject-approval return 403 for every caller. On a four-eyes blueprint you can name the member who must approve with <c>checker</c>: then only that member can approve or reject the resolution, and the response's <c>checker</c> names them. Without <c>checker</c>, the resolution waits on the checker blueprint's queue. Sending <c>checker</c> for a blueprint without a checker step returns 400.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/resolve/</c> (<c>cases.resolve</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -443,6 +456,7 @@ namespace Didit.Resources
         /// Retry only this failed subject action using its saved inputs. Current write permission is checked. Applied actions return their receipt without executing again. Case closure is independent.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/action-receipts/{receipt_uuid}/retry/</c> (<c>cases.retry_action_receipt</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -462,6 +476,7 @@ namespace Didit.Resources
         /// Move the case to a different, active blueprint of the same application. Requires the current blueprint to have transfer_enabled, otherwise 400.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/transfer/</c> (<c>cases.transfer</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -481,6 +496,7 @@ namespace Didit.Resources
         /// Update the case's title, priority, due date, tags, or owning review team. Send only the fields you want to change; fields you omit keep their value. <c>tags</c> replaces the whole tag list. <c>team</c> takes the uuid of an active review team of this application (list them with <c>GET .../cases/teams/</c>), or null to clear the team. Requires a full-access API key, or <c>write:cases</c> for a console member: a key with restricted access gets 403. Logs PRIORITY_CHANGED, DUE_DATE_CHANGED, TAG_ADDED, TAG_REMOVED and TEAM_CHANGED events as applicable; a title change is saved without a timeline event. Returns the updated case.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/</c> (<c>cases.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>

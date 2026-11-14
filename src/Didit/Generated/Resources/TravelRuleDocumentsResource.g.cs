@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Stores a PDF in your inventory so you can share it with counterparties. The file must be a PDF of at most 5 MiB. Uploading identical content of the same kind again returns the existing document. Needs the transactions write privilege.
         /// <para/>
         /// <c>POST /v3/travel-rule/documents/</c> (<c>travel_rule.documents.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Deletes the document and every link that shared it. Deletion is irreversible and takes effect at once: shared links stop working.
         /// <para/>
         /// <c>DELETE /v3/travel-rule/documents/{document_id}/</c> (<c>travel_rule.documents.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="documentId">Path parameter <c>document_id</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

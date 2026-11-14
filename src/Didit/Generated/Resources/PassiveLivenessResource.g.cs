@@ -49,6 +49,7 @@ namespace Didit.Resources
         /// Rate limit. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints; exceeding it returns <c>429</c>.
         /// <para/>
         /// <c>POST /v3/passive-liveness/</c> (<c>passive_liveness.check</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

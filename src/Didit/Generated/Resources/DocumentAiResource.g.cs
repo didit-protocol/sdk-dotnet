@@ -41,6 +41,7 @@ namespace Didit.Resources
         /// Persistence. With <c>save_api_request=true</c> (default) the call is stored as an API-type session: the document, the extracted values, the field definitions and the name-match snapshot are kept, the session shows up in the Business Console, and <c>request_id</c> works with <c>GET /v3/session/{sessionId}/decision/</c>.
         /// <para/>
         /// <c>POST /v3/document-ai/</c> (<c>document_ai.analyze</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

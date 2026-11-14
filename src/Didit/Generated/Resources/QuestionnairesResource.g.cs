@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Create a simple linear questionnaire. Send <c>form_elements</c> in display order; branching and repeatable groups require the Console. Defaults to <c>published</c> v1.
         /// <para/>
         /// <c>POST /v3/questionnaires/</c> (<c>questionnaires.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Permanently delete one questionnaire version (no undo). Stored questionnaire responses linked to this version are deleted with it, and sessions referencing it lose the link; other versions in the same group are not deleted. Workflows that referenced it keep running but the questionnaire step can no longer load it.
         /// <para/>
         /// <c>DELETE /v3/questionnaires/{questionnaire_uuid}/</c> (<c>questionnaires.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="questionnaireUuid">Per-version UUID of the questionnaire to delete.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -94,6 +96,7 @@ namespace Didit.Resources
         /// Update a questionnaire. Versioning depends on the <c>status</c> field you send and the current state of the version: (1) no <c>status</c> on a published version → the published version is updated in place (same <c>questionnaire_id</c>, same <c>version</c>); (2) no <c>status</c> on a draft → the draft is updated and immediately published; (3) <c>status: "published"</c> on a published version → a NEW published version is created under the same <c>questionnaire_group_id</c> (new <c>questionnaire_id</c>, <c>version</c> + 1) and returned, and any existing draft in the group is deleted; (4) <c>status: "draft"</c> keeps a draft as a draft (autosave) but is rejected with 400 on a published version (<c>"Cannot revert a published version to draft."</c>).
         /// <para/>
         /// <c>PATCH /v3/questionnaires/{questionnaire_uuid}/</c> (<c>questionnaires.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="questionnaireUuid">Per-version UUID of the questionnaire to update.</param>
         /// <param name="parameters">The request parameters.</param>

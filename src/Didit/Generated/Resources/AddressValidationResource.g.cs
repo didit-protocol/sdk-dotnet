@@ -41,6 +41,7 @@ namespace Didit.Resources
         /// Rate limit. Shared write budget of 300 requests per minute per API key across POST/PATCH/DELETE endpoints (transaction creates and event ingestion have a separate budget of 600).
         /// <para/>
         /// <c>POST /v3/address-validation/</c> (<c>address_validation.validate</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

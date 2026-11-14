@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Create a webhook destination. The response includes the auto-generated <c>secret_shared_key</c> HMAC signing secret (also readable later via <c>GET /v3/webhook/destinations/{destination_uuid}/</c>). Always send <c>subscribed_events</c> with at least one event (no wildcards): an explicit empty list is rejected with 400, and omitting the field creates a destination subscribed to nothing, which never receives a webhook. The <c>(application, url)</c> pair must be unique among the application's destinations.
         /// <para/>
         /// <c>POST /v3/webhook/destinations/</c> (<c>webhooks.destinations.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Permanently delete a webhook destination, its signing secret and its entire delivery log. This cannot be undone. No new webhook is sent to the destination's URL; other destinations subscribed to the same events keep receiving them. Afterwards the destination no longer appears in <c>GET /v3/webhook/destinations/</c>, and every route under <c>/v3/webhook/destinations/{destination_uuid}/</c>, including its deliveries, a delivery's detail and its resend, answers 404. The application's legacy <c>webhook_url</c> is set to the URL of the oldest remaining enabled destination, or cleared when no enabled destination is left. Calling DELETE again returns 404.
         /// <para/>
         /// <c>DELETE /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="destinationUuid">UUID of the destination to delete.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -113,6 +115,7 @@ namespace Didit.Resources
         /// Send a past delivery again, for example after your endpoint was down. Didit takes the stored payload, sets a fresh <c>timestamp</c>, signs it again with the destination's current <c>secret_shared_key</c> (<c>X-Signature</c>, <c>X-Signature-V2</c>, <c>X-Signature-Simple</c> and <c>X-Timestamp</c>) and posts it to the delivery's <c>request_url</c>, even if the destination's URL has changed since or the destination is disabled. <c>event_id</c> and the rest of the payload are unchanged, so deduplicate on <c>event_id</c>. The call waits up to 5 seconds for your endpoint and returns the new delivery with <c>200</c> whatever your endpoint answered: read <c>response_status</c>. A resend is not retried automatically, every call sends again and creates a new delivery, and the request has no body. A scoped API key needs <c>webhooks: write</c> and <c>decisions: read</c>; a key limited to some workflows or to approved sessions cannot use this endpoint.
         /// <para/>
         /// <c>POST /v3/webhook/destinations/{destination_uuid}/deliveries/{delivery_uuid}/resend/</c> (<c>webhooks.destinations.resend_delivery</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="destinationUuid">UUID of the destination the delivery was sent to.</param>
         /// <param name="deliveryUuid">UUID of the delivery to resend: the <c>uuid</c> of an entry returned by <c>GET /v3/webhook/destinations/{destination_uuid}/deliveries/</c>.</param>
@@ -184,6 +187,7 @@ namespace Didit.Resources
         /// Update a webhook destination. <c>subscribed_events</c> is REPLACED wholesale, not merged: fetch first, append, resend. Secret is not rotated. A <c>uuid</c> in the body is ignored: the path names the destination.
         /// <para/>
         /// <c>PATCH /v3/webhook/destinations/{destination_uuid}/</c> (<c>webhooks.destinations.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="destinationUuid">UUID of the destination to update.</param>
         /// <param name="parameters">The request parameters.</param>

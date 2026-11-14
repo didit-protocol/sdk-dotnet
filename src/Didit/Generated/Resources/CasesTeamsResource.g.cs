@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Requires <c>write:cases</c> for the requested application.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/teams/</c> (<c>cases.teams.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -83,6 +84,7 @@ namespace Didit.Resources
         /// Requires <c>write:cases</c> for the requested application.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/teams/{record_uuid}/</c> (<c>cases.teams.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>

@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Requires a console user with write:networks. The author is assigned from the authenticated user. Supply a new random UUID client_reference for each note; retry the same body and reference after an uncertain response to avoid duplicates. Reusing a reference for another body, author or network returns 409. Notes follow the surviving investigation when networks merge.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/notes/</c> (<c>networks.notes.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="networkUuid">Network UUID.</param>
@@ -48,6 +49,7 @@ namespace Didit.Resources
         /// Requires write:networks and the authenticated author of the note. Deletion is irreversible. Connected account and verification data are unaffected.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/notes/{note_uuid}/</c> (<c>networks.notes.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="networkUuid">Network UUID.</param>

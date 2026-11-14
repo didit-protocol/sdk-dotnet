@@ -45,6 +45,7 @@ namespace Didit.Resources
         /// Attach one extra image or PDF to the ID verification (<c>model_type=kyc</c>) or Proof of Address (<c>model_type=poa</c>) result of a finished User Verification (KYC) session, for example evidence collected outside the flow. The session must be <c>Approved</c>, <c>Declined</c>, <c>In Review</c> or <c>Kyc Expired</c> and carry the result named by <c>model_type</c>; Business Verification (KYB) sessions are not supported. Each call appends one file (to the most recent result when the step ran more than once), keeps the existing files and records a <c>FILE_ADDED</c> entry in the session activity log; the upload sends no webhook and does not change the session status. The file is compressed on upload and is returned in <c>extra_files</c> of the session decision. This endpoint is limited to 10 requests per minute per API key. A scoped API key needs <c>sessions: write</c>, and without <c>media: read</c> it receives the <c>extra_files</c> links as <c>null</c>.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/add-images/</c> (<c>sessions.add_images</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the User Verification (KYC) session to add the file to (the <c>session_id</c> returned by <c>POST /v3/session/</c>). A Business Verification (KYB) session ID returns <c>404</c>.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -95,6 +96,7 @@ namespace Didit.Resources
         /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>POST /v3/sessions/delete/</c> (<c>sessions.batch_delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -116,6 +118,7 @@ namespace Didit.Resources
         /// Authenticate with your API key (<c>x-api-key</c>) or a user authorization header — either must carry the <c>write:sessions</c> privilege.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/bulk-update-aml-hit-status/</c> (<c>sessions.bulk_update_aml_hit_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs — the service resolves the ID across both session types.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -138,6 +141,7 @@ namespace Didit.Resources
         /// Requires the <c>write:sessions</c> privilege; a scoped API key needs write access to decisions.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/features/overrides/{overrideId}/cancel/</c> (<c>sessions.cancel_feature_override</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
         /// <param name="overrideId">The <c>id</c> of the override to cancel.</param>
@@ -162,6 +166,7 @@ namespace Didit.Resources
         /// Side effects: the hosted verification URL is generated and stored; if <c>contact_details.send_notification_emails</c> is <c>true</c> and an email is provided, a verification invite email is sent. The session expires after <c>session_expiration_time</c> seconds when the request sets it, otherwise after the workflow's configured session expiration time. For KYB workflows, <c>contact_details.phone</c> and <c>expected_details</c> are ignored.
         /// <para/>
         /// <c>POST /v3/session/</c> (<c>sessions.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -179,6 +184,7 @@ namespace Didit.Resources
         /// Add a party (a person or a company) to the list you are preparing for this KYB session. The same fields and rules as the hosted Key People screen apply: a person needs <c>full_name</c> or <c>first_name</c> and <c>last_name</c>, at least one role and a nationality; a company needs <c>company_name</c> and the country of incorporation in <c>nationality</c>. Nothing is declared or billed until <c>POST /v3/session/{sessionId}/kyb/parties/submit/</c>. Requires <c>write:businesses</c>.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/kyb/parties/drafts/</c> (<c>sessions.create_kyb_party_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -215,7 +221,7 @@ namespace Didit.Resources
         /// <para/>
         /// Response: <c>200 OK</c> once the deletion has completed, with a JSON body reporting the <c>face_retention_outcome</c>, the retained template's expiry and, for a KYB session, <c>deleted_child_verifications</c>. Earlier versions of this endpoint returned <c>204 No Content</c>; update clients that assert on <c>204</c>. Keep your <c>instruction_id</c> in your own erasure log.
         /// <para/>
-        /// Idempotency: not idempotent at the HTTP level: the first call returns <c>200</c>; repeating it returns <c>404</c> because the session no longer resolves. After a <c>503</c> the session is still in place; repeat the same request to finish deleting it.
+        /// Idempotency: without an <c>Idempotency-Key</c>, repeating a delete returns <c>404</c> because the session no longer resolves; with the same key, a repeat of a successful delete returns the first <c>200</c> response. After a <c>503</c> the session is still in place; repeat the same request to finish deleting it.
         /// <para/>
         /// Authentication: send your application's API key in the <c>x-api-key</c> header; the session must belong to that application. Console user access tokens (<c>Authorization: Bearer ...</c>) may also call this endpoint when they carry the <c>delete:sessions</c> permission. Authentication and permission failures both return <c>403</c>; this API never returns <c>401</c>.
         /// <para/>
@@ -226,6 +232,7 @@ namespace Didit.Resources
         /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>DELETE /v3/session/{sessionId}/delete/</c> (<c>sessions.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID (<c>session_id</c>) of the User Verification (KYC) or Business Verification (KYB) session to delete, as returned when the session was created. Must be a canonical hyphenated UUID — a non-UUID value does not match the route and returns <c>404</c>.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -244,6 +251,7 @@ namespace Didit.Resources
         /// Drop one party draft. Declared parties are not affected. Requires <c>write:businesses</c>.
         /// <para/>
         /// <c>DELETE /v3/session/{sessionId}/kyb/parties/drafts/{draftId}/</c> (<c>sessions.delete_kyb_party_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
         /// <param name="draftId">UUID of the party draft (<c>draft_id</c> returned when it was created).</param>
@@ -280,6 +288,7 @@ namespace Didit.Resources
         /// The ZIP is deleted 24 hours after it is ready, and at once when the session is deleted. A deleted session cannot be exported. Every export and every download link handed out is written to the session's audit log. A scoped API key needs <c>media: read</c> and <c>decisions: read</c>; a console user needs the privilege to read sessions.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/files-export/</c> (<c>sessions.export_files</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs. A deleted session returns <c>404</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -351,9 +360,10 @@ namespace Didit.Resources
         /// Redeem a share token to clone a verification session into your application
         /// </summary>
         /// <remarks>
-        /// Redeem a share token to clone a KYC or KYB session into the calling application with a fresh <c>session_id</c>. Not idempotent — a token redeems once per receiver.
+        /// Redeem a share token to clone a KYC or KYB session into the calling application with a fresh <c>session_id</c>. Without an <c>Idempotency-Key</c> a token redeems once per receiver; repeat it with the same key to get the first response back.
         /// <para/>
         /// <c>POST /v3/session/import-shared/</c> (<c>sessions.import_shared</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -524,6 +534,7 @@ namespace Didit.Resources
         /// Works for User Verification (KYC) and Business Verification (KYB) sessions in <c>Approved</c>, <c>Declined</c>, <c>In Review</c>, <c>Kyc Expired</c>, <c>Abandoned</c> or <c>Resubmitted</c> status. The status check runs before body validation. Requires the <c>write:sessions</c> privilege; a scoped API key needs write access to decisions. Responses use <c>Cache-Control: no-store</c>: treat them as sensitive verification content.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/decision-email-preview/</c> (<c>sessions.preview_decision_email</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -548,6 +559,7 @@ namespace Didit.Resources
         /// This preview does not reserve session state or authorize delivery. After reviewing it, call [Update Session Status](/sessions-api/update-status) with <c>new_status: Resubmitted</c>, the same <c>nodes_to_resubmit</c> and <c>email_language</c> you previewed, <c>send_email: true</c>, <c>email_address</c> set to <c>recipient</c> and <c>email_preview_token</c> set to <c>preview_token</c>. The receipt expires after 15 minutes. When a receipt is supplied, changed inputs, message content, sender or session state return <c>409</c> before any mutation or send. Existing integrations may omit the receipt. Regenerate the preview after a conflict. Treat the response as sensitive verification content; responses use <c>Cache-Control: no-store</c>. Render HTML in a sandboxed frame, never directly in your application DOM.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/resubmission-preview/</c> (<c>sessions.preview_resubmission</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session to update. Accepts both user (KYC) and business (KYB) session IDs — the service resolves the ID across both session types.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -566,6 +578,7 @@ namespace Didit.Resources
         /// Give a Key People party of a Business Verification (KYB) session a new individual KYC session after its previous one was deleted or expired before the person started it, so the Key People check can finish again; send no request body. It works when the party's KYC session was deleted (<c>kyc_session_deleted: true</c>) or expired before the person started it (<c>Expired</c>, never started). A session still in progress or one that ended in any other status (<c>Approved</c>, <c>Declined</c>, <c>In Review</c>, <c>Abandoned</c>, ...) returns <c>409</c> unless it was deleted. A party that never had one or a company party always returns <c>409</c>. Didit creates a new hosted KYC session with the workflow the party was verified with (its latest published version) or, when that is no longer known, the workflow your Key People settings assign to the party's role, so its link lasts that KYC workflow's session expiration time; it emails the link to the party when an email is on file, clears <c>is_skipped</c>, and recomputes the Key People check and the business session status. It then sends a <c>data.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> for the business session with trigger <c>console_key_people_regenerate</c>; to exempt the party instead, use <c>PATCH /v3/session/{sessionId}/kyb/parties/{partyUuid}/</c>. A scoped API key needs <c>decisions: write</c>, and without <c>sessions: write</c> it receives <c>kyc_session_url</c> as <c>null</c>. Deleted sessions qualify even if the person had already started or finished verification. Imported sessions do not qualify through expiry; they must have been deleted.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/kyb/parties/{partyUuid}/regenerate/</c> (<c>sessions.regenerate_kyb_party</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the parent Business Verification (KYB) session.</param>
         /// <param name="partyUuid">UUID of the Key People party (<c>key_people_checks[].submitted.parties[].uuid</c> on the business session decision). Must belong to the session referenced by <c>sessionId</c>.</param>
@@ -633,6 +646,7 @@ namespace Didit.Resources
         /// Mint a short-lived JWT that lets a specific Didit application import this finished session. Pair with <c>POST /v3/session/import-shared/</c>.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/share/</c> (<c>sessions.share</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the source verification session to mint a token for.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -657,6 +671,7 @@ namespace Didit.Resources
         /// Requires the <c>write:sessions</c> privilege; a scoped API key needs write access to sessions. An unknown <c>session_id</c> returns <c>404</c> and another application's session returns <c>403</c>, both before the body is read; a live session returns <c>404</c> only after the body is validated. To simulate from the hosted flow with the session's own token, use <c>POST /v3/session/{sessionId}/sandbox/simulate/</c>. See [Sandbox &amp; Test Data](/integration/sandbox-testing) for the scenario catalog.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/simulate/</c> (<c>sessions.simulate</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the sandbox verification session. Accepts both user (KYC) and business (KYB) session IDs.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -675,6 +690,7 @@ namespace Didit.Resources
         /// Declare the stored drafts as the company's key people. This is the hosted Key People step under your API key: Didit decides from the role settings and ownership thresholds of the workflow which parties must be verified, creates one individual KYC session (or a KYB sub-session for a corporate owner) for each of them, sends the emails the workflow asks for, and advances the session. Each child session is billed like in the hosted flow. The drafts are consumed. Repeating the call after a successful submit changes nothing and answers <c>200</c> with <c>already_submitted: true</c> and the parties that already exist. The session must be on the Key People step. Send each person's <c>kyc_session_url</c> to them, or embed it. Requires <c>write:businesses</c>.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/kyb/parties/submit/</c> (<c>sessions.submit_kyb_parties</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -699,6 +715,7 @@ namespace Didit.Resources
         /// Authenticate with your API key (<c>x-api-key</c>) or a user authorization header — either must carry the <c>write:sessions</c> privilege.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/update-aml-hit-status/</c> (<c>sessions.update_aml_hit_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs — the service resolves the ID across both session types.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -717,6 +734,7 @@ namespace Didit.Resources
         /// Set the status of a session's AML screening check as a whole (the <c>status</c> of an <c>aml_screenings[]</c> entry in the session decision), for example <c>Approved</c> after your team cleared every hit. Works for KYC and KYB session IDs; pass <c>node_id</c> (query parameter or body field) when the session ran more than one AML step, otherwise the most recent AML check is updated. When the status actually changes, an <c>AML_STATUS_UPDATED</c> activity entry is recorded and a <c>data.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> is sent; sending the current status returns <c>200</c> and changes nothing. The session status is not recomputed: use <c>PATCH /v3/session/{sessionId}/update-status/</c> for the session decision and <c>PATCH /v3/session/{sessionId}/update-aml-hit-status/</c> for single hits. A scoped API key needs <c>decisions: write</c>.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/update-aml-status/</c> (<c>sessions.update_aml_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -743,6 +761,7 @@ namespace Didit.Resources
         /// Accepts an API key or a console user token; either way the credential needs the <c>write:sessions</c> permission. Authentication and permission failures both return <c>403</c> — this API never responds <c>401</c>. Note that the session lookup runs before credential checks, so an unknown <c>sessionId</c> returns <c>404</c> even with missing credentials. This endpoint has a dedicated rate limit of 10 requests per minute per API key (invalid requests count too); the shared write budget of 300 requests per minute also applies.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/update-data/</c> (<c>sessions.update_data</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the User Verification (KYC) session whose extracted document data you are correcting. Business (KYB) session IDs are not valid here — for company data use [Update KYB Company Data](#patch-/v3/session/-sessionId-/kyb/-companyUuid-/update-data/).</param>
         /// <param name="parameters">The request parameters.</param>
@@ -761,6 +780,7 @@ namespace Didit.Resources
         /// Correct the fields Document AI extracted from one uploaded document, set its review status, or both, on a KYC or KYB session. <c>extracted_data</c> must be a JSON object and is merged key by key: a key you send replaces the stored value (a key sent as <c>null</c> is stored as <c>null</c>) and keys you leave out keep their values. The document status feeds the Document AI result of its workflow node in the session decision; the session status itself is not recomputed. Every successful call, including one that changes nothing, sends a <c>data.updated</c> <see href="https://docs.didit.me/integration/webhooks">webhook</see> with trigger <c>manual_review</c>. A scoped API key needs <c>decisions: write</c>; see <see href="https://docs.didit.me/core-technology/document-ai/overview">Document AI</see>.
         /// <para/>
         /// <c>PATCH /v3/document-ai/{sessionId}/documents/{documentUuid}/</c> (<c>sessions.update_document_ai_data</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session (the <c>session_id</c> returned by <c>POST /v3/session/</c>). Accepts both User Verification (KYC) and Business Verification (KYB) session IDs: the server resolves the ID across both session types. Must be a well-formed UUID; a malformed value does not match the route and returns an HTML <c>404</c>.</param>
         /// <param name="documentUuid">UUID of the Document AI document (<c>document_ai_documents[].items[].uuid</c> in <c>GET /v3/session/{sessionId}/decision/</c>). It must belong to the session in the path.</param>
@@ -792,6 +812,7 @@ namespace Didit.Resources
         /// Authenticate with your API key (<c>x-api-key</c>) or a user authorization header carrying the <c>write:sessions</c> privilege; a scoped API key needs write access to decisions.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/features/{nodeId}/update-status/</c> (<c>sessions.update_feature_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session. Accepts both user (KYC) and business (KYB) session IDs — the service resolves the ID across both session types.</param>
         /// <param name="nodeId">Workflow graph node ID of the feature to update (for example <c>feature_ocr_1</c>). Use the literal value <c>default</c> for non-graph (single-step) workflows where the feature has no node ID.</param>
@@ -819,6 +840,7 @@ namespace Didit.Resources
         /// For User Verification sessions, the KYC counterpart is <c>PATCH /v3/session/{sessionId}/update-data/</c>; to change the session decision itself use <c>PATCH /v3/session/{sessionId}/update-status/</c>.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/kyb/{companyUuid}/update-data/</c> (<c>sessions.update_kyb_company_data</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the parent Business Verification (KYB) session.</param>
         /// <param name="companyUuid">UUID of the company record to update (<c>registry_checks[].company.uuid</c> on the business session decision). Must belong to the session referenced by <c>sessionId</c>.</param>
@@ -846,6 +868,7 @@ namespace Didit.Resources
         /// Accepts an API key or a console user token; either way the credential needs the <c>write:businesses</c> permission.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/kyb/parties/{partyUuid}/</c> (<c>sessions.update_kyb_party</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the parent Business Verification (KYB) session.</param>
         /// <param name="partyUuid">UUID of the Key People party to update (<c>key_people_checks[].submitted.parties[].uuid</c> on the business session decision). Must belong to the session referenced by <c>sessionId</c>.</param>
@@ -865,6 +888,7 @@ namespace Didit.Resources
         /// Change fields of one party draft. The edit is merged into the stored draft and the merged party is validated as a whole, so an edit that would leave the party incomplete is rejected. Changing <c>first_name</c> or <c>last_name</c> replaces the stored full name. Requires <c>write:businesses</c>.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/kyb/parties/drafts/{draftId}/</c> (<c>sessions.update_kyb_party_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
         /// <param name="draftId">UUID of the party draft (<c>draft_id</c> returned when it was created).</param>
@@ -894,6 +918,7 @@ namespace Didit.Resources
         /// An empty JSON body <c>{}</c> is a no-op: it returns <c>200</c> echoing the current POA record without firing the webhook (<c>has_changes</c> stays false).
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/update-poa-data/</c> (<c>sessions.update_poa_data</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the User Verification (KYC) session whose attached POA record you are correcting.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -924,6 +949,7 @@ namespace Didit.Resources
         /// Grouping does not merge person profiles, profile fields or biometric data. Each verification keeps its original profile association and deletion ownership. Deleting a verification removes it from the group. Link actions have a separate audit recording the actor, time and <c>link_reason</c>; they are not status-review entries. Group navigation and unlinking are console-only, with no public read or unlink endpoint.
         /// <para/>
         /// <c>PATCH /v3/session/{sessionId}/update-status/</c> (<c>sessions.update_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the verification session to update. Accepts both user (KYC) and business (KYB) session IDs — the service resolves the ID across both session types.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -942,6 +968,7 @@ namespace Didit.Resources
         /// Upload one or more corporate documents (articles of incorporation, shareholder register, certificate of incorporation, ...) to the KYB Documents step of a Business Verification session, from your own server instead of the hosted page. Didit runs the hosted pipeline: compression, OCR, tampering and cross-document checks, document grouping, and advances the session when the required document groups are satisfied. The step costs one flat fee however many files you send. The session must be open and on the KYB Documents step, and the company chosen at the registry step must exist. Read the people the documents name with <c>GET /v3/session/{sessionId}/kyb/extracted-parties/</c>. Requires <c>write:businesses</c>.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/kyb/documents/</c> (<c>sessions.upload_kyb_documents</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the Business Verification (KYB) session. It must belong to the application of the API key.</param>
         /// <param name="parameters">The request parameters.</param>

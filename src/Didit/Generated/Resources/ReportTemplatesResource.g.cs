@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Create a reusable per-jurisdiction, per-report-type goAML header template. Rejected with 400 if any of the template-level obligatory fields (rentity_id, submission_code, currency_code_local) is missing from field_config; an invalid template cannot be saved or used to create a report. Per-filing header fields (action, submission_date, transactions) are enforced at report validate/finalize time instead.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/report-templates/</c> (<c>report_templates.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -47,6 +48,7 @@ namespace Didit.Resources
         /// Delete a report template. Reports already created from it are unaffected.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/report-templates/{template_uuid}/</c> (<c>report_templates.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="templateUuid">Report template UUID.</param>
@@ -98,6 +100,7 @@ namespace Didit.Resources
         /// Partially update a report template. Re-validates obligatory goAML fields on save.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/report-templates/{template_uuid}/</c> (<c>report_templates.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="templateUuid">Report template UUID.</param>

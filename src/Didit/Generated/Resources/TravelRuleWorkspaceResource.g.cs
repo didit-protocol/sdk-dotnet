@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Claims the directory entry this workspace is. When the work email is at a domain the entry lists, the claim is proved and applies at once: the VASP profile and Travel Rule settings are filled from the entry and Travel Rule is turned on, so the next transfer to it routes over the Didit network. Otherwise the claim waits for review (<c>pending_review</c>).
         /// <para/>
         /// <c>POST /v3/travel-rule/workspace/claim/</c> (<c>travel_rule.workspace.claim</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Spends the emailed code and marks the email domain verified.
         /// <para/>
         /// <c>POST /v3/travel-rule/workspace/domain/confirm/</c> (<c>travel_rule.workspace.confirm_domain</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -63,6 +65,7 @@ namespace Didit.Resources
         /// Turns outbound Travel Rule billing on for the workspace. Receiving stays free. This cannot be turned back off through the API: contact Didit support.
         /// <para/>
         /// <c>POST /v3/travel-rule/workspace/billing/</c> (<c>travel_rule.workspace.enable_billing</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -96,6 +99,7 @@ namespace Didit.Resources
         /// Emails a single-use code to the workspace's work address to prove it controls the email domain. Throttled, and a limited number of wrong attempts is accepted per code. Also returns the TXT record for the DNS alternative.
         /// <para/>
         /// <c>POST /v3/travel-rule/workspace/domain/code/</c> (<c>travel_rule.workspace.send_domain_code</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -112,6 +116,7 @@ namespace Didit.Resources
         /// Checks for the <c>didit-tr-verify.&lt;domain&gt;</c> TXT record returned by the code endpoint and marks the domain verified when it matches. One of the two proofs, the emailed code or the TXT record, is enough.
         /// <para/>
         /// <c>POST /v3/travel-rule/workspace/domain/dns/</c> (<c>travel_rule.workspace.verify_domain_dns</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>

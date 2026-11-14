@@ -49,6 +49,7 @@ namespace Didit.Resources
         /// Partially update application-level settings: the legacy webhook URL, version and secret, the data and biometric-template retention policy, and the Digital ID wallet return hosts. Send only the fields to change; the response is the full configuration, the same shape as <c>GET /v3/webhook/</c>. Destinations are not managed here: create, update and delete them with the <c>/v3/webhook/destinations/</c> endpoints, and do not send an <c>endpoints</c> field to this endpoint. A <c>data_retention_months</c> change also applies to existing sessions, and sessions it deletes cannot be restored; read <see href="https://docs.didit.me/console/data-retention">Data retention</see> first. A scoped API key needs <c>webhooks: write</c>.
         /// <para/>
         /// <c>PATCH /v3/webhook/</c> (<c>webhooks.update_config</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

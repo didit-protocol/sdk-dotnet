@@ -30,6 +30,7 @@ namespace Didit.Resources
         /// <para/>
         /// <c>POST /v3/travel-rule/wallet-addresses/import/</c> (<c>travel_rule.wallet_addresses.bulk_import</c>).
         /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -47,6 +48,7 @@ namespace Didit.Resources
         /// Add an entry to your Travel Rule wallet address book so inbound INTERNAL-rail transfers can resolve against it.
         /// <para/>
         /// <c>POST /v3/travel-rule/wallet-addresses/</c> (<c>travel_rule.wallet_addresses.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -64,6 +66,7 @@ namespace Didit.Resources
         /// Deletes the entry together with its ownership proofs and the screenshots they stored. It stops matching new transfers immediately and the address is freed up for re-registration. Transfers that already used the wallet keep their own record of it and read the same. Deletion is irreversible.
         /// <para/>
         /// <c>DELETE /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="entryUuid">Path parameter <c>entry_uuid</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -130,6 +133,7 @@ namespace Didit.Resources
         /// Partial update of holder_name, holder_vendor_data, entity_type, and travel_address. Setting travel_address attaches a TRP routing address to the entry; invalid values are rejected with 400. The response returns the updated entry: its label, owner type, receiving travel address and ownership proof summary, with the writable fields.
         /// <para/>
         /// <c>PATCH /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="entryUuid">Path parameter <c>entry_uuid</c>.</param>
         /// <param name="parameters">The request parameters.</param>

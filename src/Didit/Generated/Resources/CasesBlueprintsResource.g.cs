@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Generate an unsaved blueprint proposal. Requires write:cases. Returns a draft object, not a blueprint UUID; no blueprint or saved policy draft is created. Review the proposal, choose assignees and any teams, approvals or routing, then create or update a blueprint separately. Invalid generated content or generation failure returns 503. See [blueprint AI drafts](/management-api/case-blueprints/ai-draft).
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/ai-draft/</c> (<c>cases.blueprints.ai_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -47,6 +48,7 @@ namespace Didit.Resources
         /// Create a case blueprint: general settings (assignment, escalation, transfer, 4-eyes pairing) plus content_config, the six sections that drive the case page. Set publish=false to create an unpublished draft; Publish creates its first live version. Discarding a never-published draft deletes it. applies_to accepts the six case-type values. content_config.stages.items[].worked_by is an optional active review-team UUID from this application. These settings are preserved in case policy snapshots; later edits do not change existing snapshots.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/</c> (<c>cases.blueprints.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -65,6 +67,7 @@ namespace Didit.Resources
         /// Delete a blueprint. Deletion always succeeds and does not touch the blueprint's cases: existing cases keep their blueprint reference and its settings continue to apply to them. A deleted blueprint no longer appears in blueprint lists and can no longer be chosen as a transfer target; if a maker blueprint is deleted while a resolution is pending 4-eyes approval, a rejected resolution leaves the case on the checker blueprint.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/</c> (<c>cases.blueprints.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="blueprintUuid">Blueprint UUID.</param>
@@ -78,6 +81,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/</c> (<c>cases.blueprints.discard_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
@@ -94,6 +98,7 @@ namespace Didit.Resources
         /// Copy one or more presets into the application as editable blueprints. Idempotent per preset_key; omit preset_keys to install every preset not yet installed.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/presets/install/</c> (<c>cases.blueprints.install_presets</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -162,6 +167,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/publish/</c> (<c>cases.blueprints.publish</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
@@ -213,6 +219,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>PUT /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/draft/</c> (<c>cases.blueprints.save_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="blueprintUuid">Path parameter <c>blueprint_uuid</c>.</param>
@@ -232,6 +239,7 @@ namespace Didit.Resources
         /// Partially update a blueprint's general settings or content_config. applies_to accepts the six case-type values. content_config.stages.items[].worked_by is an optional active review-team UUID from this application. These settings are preserved in case policy snapshots; later edits do not change existing snapshots.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/blueprints/{blueprint_uuid}/</c> (<c>cases.blueprints.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="blueprintUuid">Blueprint UUID.</param>

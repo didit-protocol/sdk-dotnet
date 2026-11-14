@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Decide a screenshot proof from your review queue. approve verifies the proof and the address book entry and applies the ownership to the transfer the widget session was minted for, exactly as a verified signature does. A screenshot never confirms a transfer that another Didit customer sent over the INTERNAL rail: that takes a signed message or a test deposit. reject closes the proof as REJECTED with failure_reason REVIEW_REJECTED; the end user can start a new proof from the widget. The note is kept with the proof.
         /// <para/>
         /// <c>POST /v3/travel-rule/wallet-proofs/{proof_uuid}/decision/</c> (<c>travel_rule.wallet_proofs.decide</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="proofUuid">proof_id from the review queue.</param>
         /// <param name="parameters">The request parameters.</param>

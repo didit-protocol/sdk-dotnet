@@ -33,6 +33,7 @@ namespace Didit.Resources
         /// <c>delete_all: true</c> without filters purges every biometric template in the application and cannot be undone. Run the count endpoint with the same filters first.
         /// <para/>
         /// <c>POST /v3/biometric-templates/delete/</c> (<c>biometric_templates.batch_delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -75,6 +76,7 @@ namespace Didit.Resources
         /// Templates are also purged by <c>POST /v3/users/delete/</c> for the owning User, by any deletion of that User's sessions with <c>deletion_instruction: privacy_erasure</c>, and automatically at <c>expires_at</c>.
         /// <para/>
         /// <c>DELETE /v3/biometric-templates/{template_uuid}/</c> (<c>biometric_templates.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="templateUuid">Template id, as returned in <c>biometric_template_uuid</c> by the session deletion endpoints, <c>biometric_template_id</c> on a Face Search match, or the list endpoint.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

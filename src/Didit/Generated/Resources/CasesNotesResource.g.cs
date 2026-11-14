@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Add a case-scoped note. An optional client_reference makes an unchanged retry return the same note without duplicate activity or notifications. reply_to must identify a live note in this case. The response includes a bounded parent excerpt without copying that excerpt into the saved reply.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/</c> (<c>cases.notes.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -48,6 +49,7 @@ namespace Didit.Resources
         /// Upload a file (JPEG, PNG, WebP, PDF, plain text, or CSV; max 5 MB) to attach to a note. Returns the s3_key to pass in the note's attachments array.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/presign/</c> (<c>cases.notes.create_attachment_upload</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>
@@ -65,6 +67,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/{note_uuid}/</c> (<c>cases.notes.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -117,6 +120,7 @@ namespace Didit.Resources
         /// Pin or unpin an existing note. Pinned notes appear first. Pin changes are recorded in case activity and do not change evidence or source decisions.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/notes/{note_uuid}/</c> (<c>cases.notes.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>

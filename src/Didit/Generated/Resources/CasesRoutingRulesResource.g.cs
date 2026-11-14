@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Requires <c>write:cases</c> for the requested application. Set publish=false to create an unpublished draft; Publish creates its first live version. Discarding a never-published draft deletes it.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/</c> (<c>cases.routing_rules.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -45,6 +46,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/</c> (<c>cases.routing_rules.discard_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
@@ -96,6 +98,7 @@ namespace Didit.Resources
         /// Requires <c>read:cases</c> for the requested application. Evaluates current rules or a supplied draft against current reviewer access, availability, skills and capacity. It does not save the draft or reserve reviewer capacity.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/preview/</c> (<c>cases.routing_rules.preview</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -112,6 +115,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/publish/</c> (<c>cases.routing_rules.publish</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
@@ -163,6 +167,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>PUT /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/draft/</c> (<c>cases.routing_rules.save_draft</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>
@@ -182,6 +187,7 @@ namespace Didit.Resources
         /// Requires <c>write:cases</c> for the requested application.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/routing-rules/{record_uuid}/</c> (<c>cases.routing_rules.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="recordUuid">Path parameter <c>record_uuid</c>.</param>

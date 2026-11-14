@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Withdraw a pending verification: it is declined as cancelled and never billed. A decided one is returned unchanged. Smart-ID and Mobile-ID: a cancel that arrives while a poll is checking the sign-in waits a few seconds for that poll, then declines it, or returns it verified if the user had already confirmed. A verification the user is completing right now cannot be cancelled (409 verification_in_progress with Retry-After): retry after that many seconds to read its outcome.
         /// <para/>
         /// <c>POST /v3/id-verification/wallets/verifications/{request_id}/cancel/</c> (<c>id_wallets.cancel_verification</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="requestId">The request_id the start endpoint returned.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -62,6 +63,7 @@ namespace Didit.Resources
         /// Smart-ID and Mobile-ID: ask the provider whether the user confirmed, refused or let the prompt lapse, and verify the signed identity when they confirmed. Redirect wallets complete through the user's browser, so for them this only reads the verification back. Answers the verification as it is afterwards.
         /// <para/>
         /// <c>POST /v3/id-verification/wallets/verifications/{request_id}/poll/</c> (<c>id_wallets.poll_verification</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="requestId">The request_id the start endpoint returned.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -564,6 +566,7 @@ namespace Didit.Resources
         /// Digital Credentials API wallets (Google Wallet): send what the wallet returned to your page or app for a verification whose next_action is request_digital_credential. Didit decrypts it, checks the issuer's signature against the trusted issuer roots, every returned value against its signed digest, and the device signature over your origin and this request, then decides the verification: verified (billed once) or declined with the error code. Single use: a second submit returns the decided verification.
         /// <para/>
         /// <c>POST /v3/id-verification/wallets/verifications/{request_id}/response/</c> (<c>id_wallets.submit_verification_response</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="requestId">The request_id the start endpoint returned.</param>
         /// <param name="parameters">The request parameters.</param>

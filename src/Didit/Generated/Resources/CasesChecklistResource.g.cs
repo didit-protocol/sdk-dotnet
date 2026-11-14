@@ -47,6 +47,7 @@ namespace Didit.Resources
         /// Mark a checklist item complete or incomplete. Resolution is blocked while any item is incomplete, unless the blueprint marks the checklist optional.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/checklist/{item_uuid}/</c> (<c>cases.checklist.toggle_item</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>

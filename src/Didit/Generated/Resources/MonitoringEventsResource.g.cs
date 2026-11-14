@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Send one non-monetary event (login, session, gameplay, bonus, affiliate, payment, dispute, security, responsible gambling or custom) from your backend. The event is validated against its category contract, stored, IP-enriched once per unique public address, and evaluated by your real-time event rules before the response returns; cross-subject and long-window rules run asynchronously (<c>correlation_pending: true</c>), and in a sandbox application no rules run. <c>event_id</c> is the idempotency key: the same <c>event_id</c> with the same <c>event_category</c>, <c>action_type</c>, <c>occurred_at</c>, <c>subject.vendor_data</c> and <c>payload</c> returns <c>200</c> with <c>idempotent_replay: true</c> and the stored outcome (other envelope fields are not compared), while different values return <c>409</c>. Event ingestion is opt-in per application: until it is switched on this endpoint returns <c>403</c> with <c>code: event_monitoring_disabled</c> and stores nothing. A scoped API key needs <c>transactions: write</c>. See <see href="https://docs.didit.me/transaction-monitoring/events">Event ingestion</see> and <see href="https://docs.didit.me/transaction-monitoring/event-rules">Rules on events</see>; to send events from a browser or app, use <see href="https://docs.didit.me/transaction-monitoring/sdk-event-submission">SDK event submission</see>.
         /// <para/>
         /// <c>POST /v3/events/</c> (<c>monitoring_events.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Submit 1 to 500 events in one request, each in the same envelope as <c>POST /v3/events/</c>. Every item is validated, stored and evaluated on its own and gets its own outcome (<c>accepted</c>, <c>replayed</c> or <c>rejected</c>), so one malformed event never rolls back the others: the response is <c>201</c> when no item was rejected and <c>207</c> when at least one was, and both mean the request was processed. Send <c>{"events": [...]}</c>; a bare JSON array of events is also accepted. Event ingestion must be switched on for the application, otherwise the whole request returns <c>403</c> with <c>code: event_monitoring_disabled</c> and nothing is stored. A scoped API key needs <c>transactions: write</c>. See <see href="https://docs.didit.me/transaction-monitoring/events#batches">Batches</see>.
         /// <para/>
         /// <c>POST /v3/events/batch/</c> (<c>monitoring_events.create_batch</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -63,6 +65,7 @@ namespace Didit.Resources
         /// Mint a short-lived device credential bound to one subject, so your web or mobile app can send that user's events straight to Didit without an API key. The app sends the returned <c>monitoring_token</c> in the <c>X-Monitoring-Token</c> header to the device lane (<c>POST /v1/events/</c> and <c>POST /v1/events/batch/</c>), where the subject is always overwritten with this <c>vendor_data</c>, events outside <c>allowed_event_categories</c> are rejected, each submitted event spends one use, and a request whose <c>Origin</c> does not equal <c>bind_to_origin</c> is refused. Call it from your backend only; minting creates the credential and nothing else (no user is created). Event ingestion must be switched on for the application, otherwise this endpoint returns <c>403</c> with <c>code: event_monitoring_disabled</c> instead of minting a credential that could never write. A scoped API key needs <c>transactions: write</c>. See <see href="https://docs.didit.me/transaction-monitoring/sdk-event-submission">SDK event submission</see>.
         /// <para/>
         /// <c>POST /v3/events/sdk-token/</c> (<c>monitoring_events.create_sdk_token</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -80,6 +83,7 @@ namespace Didit.Resources
         /// Permanently delete one monitoring event together with its rule runs, notes and tag links, for example an event sent by mistake. After the <c>204</c> the event is gone from every read (retrieve returns <c>404</c>, and it no longer appears in the list or the subject timeline), the deletion is irreversible, and its <c>event_id</c> is free to be used for a new event. Not affected: the user or company the event resolved to, cases a rule opened, list entries a rule added, and the scores and statuses already applied to other events. To erase everything about a person or a company, delete the user or the company instead, which also deletes their events. A scoped API key needs <c>transactions: write</c>.
         /// <para/>
         /// <c>DELETE /v3/events/{event_uuid}/delete/</c> (<c>monitoring_events.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="eventUuid">Didit identifier of the event (<c>event_uuid</c> from the create, batch, list or timeline response), not your own <c>event_id</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
