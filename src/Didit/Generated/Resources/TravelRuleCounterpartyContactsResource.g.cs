@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Adds a private compliance address for one directory entry. Only your application sees and uses it, and the EMAIL rail writes to it before any platform contact. Adding an address the entry already has among your own contacts returns that contact.
         /// <para/>
         /// <c>POST /v3/travel-rule/counterparty-contacts/</c> (<c>travel_rule.counterparty_contacts.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Deletes one of your application's own contacts. The EMAIL rail stops writing to it at once. Platform contacts cannot be deleted.
         /// <para/>
         /// <c>DELETE /v3/travel-rule/counterparty-contacts/{contact_uuid}/</c> (<c>travel_rule.counterparty_contacts.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="contactUuid">Path parameter <c>contact_uuid</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -77,6 +79,7 @@ namespace Didit.Resources
         /// Edits one of your application's own contacts. Changing the email address clears its verification and invalid state. Platform contacts cannot be edited.
         /// <para/>
         /// <c>PATCH /v3/travel-rule/counterparty-contacts/{contact_uuid}/</c> (<c>travel_rule.counterparty_contacts.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="contactUuid">Path parameter <c>contact_uuid</c>.</param>
         /// <param name="parameters">The request parameters.</param>

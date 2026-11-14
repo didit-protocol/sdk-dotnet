@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Ask for this application's own participant on a network Didit's membership carries (GTR or Sygna). Without an approved questionnaire the participant waits for it (questionnaire_pending); with one it goes to the network's onboarding (submitted_to_network) and becomes active once the network gives it a code. Idempotent: a pending, onboarding or live participant is returned unchanged. If the network refused the registration (last_error is set), requesting again retries. TRUST and VerifyVASP are reachable only through your own membership: TRUST admits members per VASP, and a VerifyVASP Enclave serves one VASP id.
         /// <para/>
         /// <c>POST /v3/travel-rule/networks/{network}/request/</c> (<c>travel_rule.networks.request_access</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="network">The network to join through Didit's membership.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -78,6 +79,7 @@ namespace Didit.Resources
         /// Send the saved questionnaire to Didit's review. The saved answers must be complete: every field except lei and data_protection_contact_email, with the three attestations true. Didit approves it, asks for changes (edit and submit again) or rejects it. Networks you requested while it was pending are handed to their onboarding when it is approved.
         /// <para/>
         /// <c>POST /v3/travel-rule/networks/questionnaire/submit/</c> (<c>travel_rule.networks.submit_questionnaire</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -94,6 +96,7 @@ namespace Didit.Resources
         /// Save answers to the questionnaire while it is draft or changes_requested. Saves are partial: answers you do not send are kept.
         /// <para/>
         /// <c>PUT /v3/travel-rule/networks/questionnaire/</c> (<c>travel_rule.networks.update_questionnaire</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Run on-demand AML screening for a single crypto wallet/address without creating a transaction. Resolves your application's configured blockchain analytics provider, screens the address synchronously, and returns the normalised risk result. LIGHTNING is available only with an Elliptic or Chainalysis BYOK connection added through Marketplace. Nothing is written to the transactions table. One AML monitoring usage is billed per successful screening (sandbox applications are not billed).
         /// <para/>
         /// <c>POST /v3/wallet-screening/</c> (<c>wallet_screening.screen</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

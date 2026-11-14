@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Create a draft FIU report from the standalone Reports page: both case and template are required (unlike the case-scoped create, which can omit template).
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/</c> (<c>regulatory_reports.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -49,6 +50,7 @@ namespace Didit.Resources
         /// A draft or validated report can be deleted without a request body. Deleting a finalized report requires <c>confirm_delete: true</c> in the request body. If the report is missing, the request returns <c>404</c>; if a finalized report is sent without confirmation, it returns <c>400</c> and nothing is deleted.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="reportUuid">Report UUID.</param>
@@ -65,6 +67,7 @@ namespace Didit.Resources
         /// Re-validate, then render the goAML XML and PDF and upload both to S3. On SAR/STR/TFR reports, this also moves the case's transaction alerts from Pending SAR to SAR filed. FFR and PNMR reports do not move alerts.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/finalize/</c> (<c>regulatory_reports.finalize</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="reportUuid">Report UUID.</param>
@@ -138,6 +141,7 @@ namespace Didit.Resources
         /// Edit a draft or validated report's fields. Finalized reports cannot be edited (409).
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="reportUuid">Report UUID.</param>
@@ -157,6 +161,7 @@ namespace Didit.Resources
         /// Check the report against the obligatory goAML header fields (reporting entity ID, submission code, local currency, action taken, submission date), plus at least one attached transaction and a 2-letter jurisdiction, without generating any files. For jurisdiction AE, once those pass, the report's goAML XML is also checked against the UAE FIU's goAML XML schema and each problem is returned as a field and a message; finalize refuses a report that fails. FFR and PNMR reports need no attached transaction: they require the case to have a subject, otherwise validation_errors contains an error with field <c>subject</c>. Also stores the result on the report: validation_errors and validated_at are updated, and a non-finalized report's status moves to VALIDATED (no errors) or back to DRAFT (errors).
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/validate/</c> (<c>regulatory_reports.validate</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="reportUuid">Report UUID.</param>

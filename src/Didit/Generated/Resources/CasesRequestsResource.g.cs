@@ -27,6 +27,7 @@ namespace Didit.Resources
         /// </summary>
         /// <remarks>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/cancel/</c> (<c>cases.requests.cancel</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Confirm the exact signed preview within 15 minutes. Only fixed templates and an OTP-verified contact belonging to the case subject are accepted. The request ID makes retries idempotent. Delivery is queued; SENT, SIMULATED and UNKNOWN are distinct outcomes. An actionable request sets the case to Awaiting user. A review update leaves its status unchanged.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/</c> (<c>cases.requests.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -82,6 +84,7 @@ namespace Didit.Resources
         /// Render the production email without sending or changing the case. Returns the exact recipient, sender, subject, body and a signed preview_token. Send the same contact_id, purpose, language, request_id, expires_at and preview_token to confirm within 15 minutes.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/preview/</c> (<c>cases.requests.preview</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Path parameter <c>case_uuid</c>.</param>
@@ -101,6 +104,7 @@ namespace Didit.Resources
         /// Send a waiting customer request's email again, to the same verified recipient, with the same content. You can remind a request at most once every 24 hours. A reminder changes nothing else: the request keeps its deadline and the case keeps its status. Each reminder is logged on the case as a CUSTOMER_REQUEST event with action <c>reminded</c>. The response's <c>delivery_status</c> is how this reminder's delivery ended: SENT, SIMULATED (the email was not sent), or UNKNOWN (the email might have been accepted; it is not sent again automatically). <c>next_reminder_at</c> is when you can remind this request again. Returns 409 with a <c>reason</c> when the customer no longer has the request to answer, and 429 with <c>retry_at</c> and a <c>Retry-After</c> header when the request was reminded in the last 24 hours. Requires <c>write:cases</c>.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/requests/{request_uuid}/remind/</c> (<c>cases.requests.remind</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="caseUuid">Case UUID.</param>

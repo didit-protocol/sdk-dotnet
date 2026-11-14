@@ -46,6 +46,7 @@ namespace Didit.Resources
         /// <para/>
         /// <c>PATCH /v3/customization/</c> (<c>customization.update</c>).
         /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

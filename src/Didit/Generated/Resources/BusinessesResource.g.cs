@@ -31,6 +31,7 @@ namespace Didit.Resources
         /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>POST /v3/businesses/delete/</c> (<c>businesses.batch_delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -45,9 +46,10 @@ namespace Didit.Resources
         /// Create business
         /// </summary>
         /// <remarks>
-        /// Pre-create a [business](/entities/businesses) *without* a KYB session. All fields are optional, but you should always send <c>vendor_data</c> — without it the record cannot be linked to sessions or transactions. When provided, <c>vendor_data</c> must be unique among non-deleted businesses (exact match; conflicts return 400). Not idempotent.
+        /// Pre-create a [business](/entities/businesses) *without* a KYB session. All fields are optional, but you should always send <c>vendor_data</c> — without it the record cannot be linked to sessions or transactions. When provided, <c>vendor_data</c> must be unique among non-deleted businesses (exact match; conflicts return 400). Not idempotent without an <c>Idempotency-Key</c>.
         /// <para/>
         /// <c>POST /v3/businesses/create/</c> (<c>businesses.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -177,6 +179,7 @@ namespace Didit.Resources
         /// Set <c>estimate_only: true</c> to preview counts and costs without writing anything. Selections of 20 profiles or fewer resolve inline and return <c>200</c> with the completed job; larger selections return <c>202</c> and run in the background - poll [Get AML monitoring job](#get-/v3/aml-monitoring/jobs/-job_id-/) with the returned <c>job_id</c>. Enabling is refused with <c>403</c> when the organization balance does not cover the estimate. Identifiers that match nothing are listed in <c>unmatched</c> and never fail the request: a selection that matches nothing completes as an empty job (<c>total</c> 0), the same convention as the batch delete endpoints.
         /// <para/>
         /// <c>POST /v3/businesses/aml-monitoring/</c> (<c>businesses.set_aml_monitoring</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -194,6 +197,7 @@ namespace Didit.Resources
         /// Business-level equivalent of the user toggle: one monitored AML screening per business, with businesses lacking any AML screening screened first (company entity). Same estimate_only, inline fast-path and async job contract.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/vendor-businesses/toggle-ongoing-monitoring/</c> (<c>businesses.set_ongoing_monitoring</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -212,6 +216,7 @@ namespace Didit.Resources
         /// Session-level toggle for KYB verifications, addressed by session number. Sessions without an AML screening get one created and attached to the session itself. Same estimate_only, inline fast-path and async job contract as the user-level endpoints. Replaces the legacy synchronous behavior that skipped sessions without an AML screening.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/businesses/toggle-ongoing-monitoring/</c> (<c>businesses.set_session_ongoing_monitoring</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -230,6 +235,7 @@ namespace Didit.Resources
         /// Partial update of a business: <c>display_name</c>, <c>legal_name</c>, <c>registration_number</c>, <c>country_code</c>, <c>status</c>, <c>metadata</c>. <c>metadata</c> fully replaces. Setting <c>status</c> to <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Every edit is recorded in the company's activity: a status change with the optional <c>reason</c>, and a change to <c>display_name</c>, <c>legal_name</c>, <c>registration_number</c>, <c>country_code</c> or <c>metadata</c> as a profile update.
         /// <para/>
         /// <c>PATCH /v3/businesses/{vendor_data}/</c> (<c>businesses.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="vendorData">Your unique identifier for the business (free-form string, NOT a UUID).</param>
         /// <param name="parameters">The request parameters.</param>
@@ -248,6 +254,7 @@ namespace Didit.Resources
         /// Flip only the lifecycle <c>status</c> of a business: <c>ACTIVE</c>, <c>FLAGGED</c> or <c>BLOCKED</c> (not session statuses). <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Each change is recorded in the company's activity, with the optional <c>reason</c>. Sending the current status changes nothing and records no <c>reason</c>. The <c>business.status.updated</c> webhook does not carry <c>reason</c>.
         /// <para/>
         /// <c>PATCH /v3/businesses/{vendor_data}/update-status/</c> (<c>businesses.update_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="vendorData">Your unique identifier for the business (free-form string, NOT a UUID).</param>
         /// <param name="parameters">The request parameters.</param>

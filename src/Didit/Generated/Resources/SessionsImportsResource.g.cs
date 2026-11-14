@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Cancel an import. What was imported stays; the uploaded file and the key are erased.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/cancel/</c> (<c>sessions.imports.cancel</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="importId">Path parameter <c>importId</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Read the provider with your key before creating a migration. Nothing is stored.
         /// <para/>
         /// <c>POST /v3/session/imports/providers/check/</c> (<c>sessions.imports.check_provider</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -64,6 +66,7 @@ namespace Didit.Resources
         /// <para/>
         /// <c>POST /v3/session/imports/</c> (<c>sessions.imports.create</c>).
         /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -148,6 +151,7 @@ namespace Didit.Resources
         /// Pause a queued or running import.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/pause/</c> (<c>sessions.imports.pause</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="importId">Path parameter <c>importId</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -165,6 +169,7 @@ namespace Didit.Resources
         /// Resume an import you paused. A job paused by the provider's rate limit resumes by itself.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/resume/</c> (<c>sessions.imports.resume</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="importId">Path parameter <c>importId</c>.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -216,6 +221,7 @@ namespace Didit.Resources
         /// Run a migration that ended again as a new job, with a new key (the old one was erased). It keeps the provider, workflow, region, status mapping and face templates choice; everything already in Didit is skipped.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/retry/</c> (<c>sessions.imports.retry</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="importId">Path parameter <c>importId</c>.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -234,6 +240,7 @@ namespace Didit.Resources
         /// Start a migration whose dry run finished (<c>READY</c>): the same job imports for real, with the status mapping and face templates choice as sent now.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/start/</c> (<c>sessions.imports.start</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="importId">Path parameter <c>importId</c>.</param>
         /// <param name="parameters">The request parameters.</param>

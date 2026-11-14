@@ -33,6 +33,7 @@ namespace Didit.Resources
         /// Note on attribution: entries created here carry no actor information. In the feed they show <c>actor_display: "Unknown"</c>, <c>actor_type: "CONSOLE_USER"</c>, and <c>activity_type: "STATUS_UPDATED"</c> (storage defaults), and the <c>201</c> body's <c>user</c> field is <c>"Unknown"</c>.
         /// <para/>
         /// <c>POST /v3/sessions/{session_id}/reviews/</c> (<c>sessions.reviews.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">UUID of the User Verification (KYC) session. Must belong to the same application as the API key — cross-application UUIDs, deleted sessions, and Business Verification (KYB) session IDs all return <c>404</c>.</param>
         /// <param name="parameters">The request parameters.</param>

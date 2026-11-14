@@ -33,6 +33,7 @@ namespace Didit.Resources
         /// Each call creates a new note, so retrying a timed-out request can add it twice: list the notes before retrying. There is no API endpoint to edit or remove a note. A scoped API key needs <c>transactions: write</c>; a key limited to some workflows or to approved sessions cannot call this endpoint.
         /// <para/>
         /// <c>POST /v3/transactions/{transaction_id}/notes/</c> (<c>transactions.notes.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="transactionId">Didit transaction UUID: the <c>uuid</c> returned by <c>POST /v3/transactions/</c> and <c>GET /v3/transactions/</c>. Your own <c>txn_id</c> is not accepted.</param>
         /// <param name="parameters">The request parameters.</param>

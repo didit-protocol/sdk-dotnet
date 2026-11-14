@@ -31,6 +31,7 @@ namespace Didit.Resources
         /// These profiles support identifier checks. Selfie-based identity binding (<c>biometric_identity</c>) requires profile version <c>2026-09-14.2</c> and a Brazilian CPF; it runs only with the user's consent and when your organization is entitled to it. Earlier versions report it as <c>not_available_in_profile_version</c>. Modules that cannot run are reported as skipped with a deterministic reason; a source that could not answer is never reported as an identity mismatch.
         /// <para/>
         /// <c>POST /v3/fraud/checks/</c> (<c>fraud_checks.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -48,6 +49,7 @@ namespace Didit.Resources
         /// Validate selected checks and estimate their price without executing, creating a session or billing.
         /// <para/>
         /// <c>POST /v3/fraud/checks/plan/</c> (<c>fraud_checks.plan</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

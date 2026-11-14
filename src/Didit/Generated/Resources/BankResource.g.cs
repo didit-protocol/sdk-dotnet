@@ -34,13 +34,14 @@ namespace Didit.Resources
         /// <para/>
         /// Billing. Each check the bank answers is billed once at the Account check price of the account's country, whatever the result: a <c>no_match</c>, an account that does not exist and a <c>cannot_verify</c> are billed too. A request answered with an error is never billed.
         /// <para/>
-        /// Every request is a new check. There is no idempotency key and no endpoint to read a check back, so a retried request runs, and is billed, again. Store the response.
+        /// Retries. Send an <c>Idempotency-Key</c> header: the same key and body return the first response, with the same <c>request_id</c>, and the check runs and is billed once. Without a key, every request is a new check and no endpoint to read a check back, so a retried request runs, and is billed, again. Store the response.
         /// <para/>
         /// Sandbox. Use a sandbox API key with the sample account details. A sandbox key calls no bank and is charged nothing. The last 4 characters of the IBAN, else of the account number, choose the answer: <c>0001</c> a <c>close_match</c> with a <c>holder_name</c>, <c>0002</c> a <c>close_match</c> without one (<c>name_match_score</c> 78), <c>0003</c> a <c>no_match</c> (<c>name_match_score</c> 0), <c>0006</c> a <c>no_match</c> for an account that does not exist (<c>name_match_score</c> null), <c>0004</c> <c>cannot_verify</c>, <c>0005</c> a <c>503</c> and <c>0009</c> a <c>400</c>. Any other ending is a <c>match</c> (<c>name_match_score</c> 100).
         /// <para/>
         /// API keys. A scoped API key needs write access to sessions.
         /// <para/>
         /// <c>POST /v3/bank/account-check/</c> (<c>bank.account_check</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

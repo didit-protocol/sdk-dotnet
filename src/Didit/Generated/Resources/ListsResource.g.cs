@@ -33,6 +33,7 @@ namespace Didit.Resources
         /// Creates an allowlist or a custom list in the application the API key belongs to. Blocklists cannot be created: Didit provisions one system blocklist per entry type, and you add to it with <see href="https://docs.didit.me/management-api/lists/create-entry">Create a list entry</see>. <c>entry_type</c> cannot change after creation and decides how entry values are validated and matched. Allowlist entries mark matching items as trusted (for example, a face allowlist skips the duplicated-face action) and never override a blocklist match; reference any list from a workflow or transaction rule condition with <c>value_type: "list"</c>. A scoped API key needs <c>workflows: write</c>.
         /// <para/>
         /// <c>POST /v3/lists/</c> (<c>lists.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -50,6 +51,7 @@ namespace Didit.Resources
         /// Deletes an allowlist or custom list together with its entries. Deletion is irreversible: the list and its entries no longer appear in any read, and workflow and transaction rule conditions that reference the list evaluate it as an empty list from then on. Sessions and transactions already evaluated keep their results, and the name can be reused for a new list. System lists cannot be deleted and return <c>400</c>; to empty one, <see href="https://docs.didit.me/management-api/lists/delete-entry">delete its entries</see>. A scoped API key needs <c>workflows: write</c>.
         /// <para/>
         /// <c>DELETE /v3/lists/{list_uuid}/</c> (<c>lists.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="listUuid">UUID of the list, as returned by List lists or Create a list.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -98,6 +100,7 @@ namespace Didit.Resources
         /// Renames a list or changes its description. Only <c>name</c> and <c>description</c> are read; any other field is ignored, so <c>list_type</c> and <c>entry_type</c> keep the values they were created with. System lists cannot be modified and return <c>400</c>. The response contains only <c>name</c> and <c>description</c>: call <see href="https://docs.didit.me/management-api/lists/get">Get a list</see> for the full list. A scoped API key needs <c>workflows: write</c>.
         /// <para/>
         /// <c>PATCH /v3/lists/{list_uuid}/</c> (<c>lists.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="listUuid">UUID of the list, as returned by List lists or Create a list.</param>
         /// <param name="parameters">The request parameters.</param>

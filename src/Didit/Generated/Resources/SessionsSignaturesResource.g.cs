@@ -92,6 +92,7 @@ namespace Didit.Resources
         /// Needs <c>write:sessions</c>; your API key works. In the console it's the Validate again button.
         /// <para/>
         /// <c>POST /v3/session/{sessionId}/signatures/{nodeId}/validate/</c> (<c>sessions.signatures.validate</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="sessionId">The User Verification (KYC) or Business Verification (KYB) session.</param>
         /// <param name="nodeId">The E-signature step: <c>node_id</c> of the item in <c>signatures[]</c>.</param>

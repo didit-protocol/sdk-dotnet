@@ -33,6 +33,7 @@ namespace Didit.Resources
         /// Filed regulatory reports: if the selected data is in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each report with <c>uuid</c>, <c>report_number</c>, <c>report_type</c> and <c>case_uuid</c>. Delete the reports, then repeat the request.
         /// <para/>
         /// <c>POST /v3/users/delete/</c> (<c>users.batch_delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -47,7 +48,7 @@ namespace Didit.Resources
         /// Create user
         /// </summary>
         /// <remarks>
-        /// Create a [user](/entities/users) by <c>vendor_data</c>, before or without a verification session. <c>vendor_data</c> must be unique among the application's users (a duplicate returns <c>400</c>). Not idempotent.
+        /// Create a [user](/entities/users) by <c>vendor_data</c>, before or without a verification session. <c>vendor_data</c> must be unique among the application's users (a duplicate returns <c>400</c>). Not idempotent without an <c>Idempotency-Key</c>.
         /// <para/>
         /// Contact details: <c>email</c> and <c>phone_number</c> are stored in <c>metadata.contact</c>, and <c>country</c> in <c>metadata.address</c>. When you send <c>first_name</c> or <c>last_name</c> without <c>full_name</c>, Didit joins them into <c>full_name</c>.
         /// <para/>
@@ -56,6 +57,7 @@ namespace Didit.Resources
         /// API key access: a scoped API key needs <c>users</c> write. With <c>send_verification_link: true</c> it also needs <c>sessions</c> write, or the call answers <c>403</c> before anything is written. Full-access keys are unaffected. See [API keys](/console/api-keys).
         /// <para/>
         /// <c>POST /v3/users/create/</c> (<c>users.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -178,6 +180,7 @@ namespace Didit.Resources
         /// Set <c>estimate_only: true</c> to preview counts and costs without writing anything. Selections of 20 profiles or fewer resolve inline and return <c>200</c> with the completed job; larger selections return <c>202</c> and run in the background - poll [Get AML monitoring job](#get-/v3/aml-monitoring/jobs/-job_id-/) with the returned <c>job_id</c>. Enabling is refused with <c>403</c> when the organization balance does not cover the estimate. Identifiers that match nothing are listed in <c>unmatched</c> and never fail the request: a selection that matches nothing completes as an empty job (<c>total</c> 0), the same convention as the batch delete endpoints.
         /// <para/>
         /// <c>POST /v3/users/aml-monitoring/</c> (<c>users.set_aml_monitoring</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -195,6 +198,7 @@ namespace Didit.Resources
         /// Enables or disables AML ongoing monitoring at the user level. Exactly one monitored AML screening is kept per user; users without any AML screening (for example imported users) get one created and screened first, billed as a regular AML screening. Set estimate_only to preview counts and costs without writing. Batches of 20 or fewer resolve inline (200, COMPLETED); larger batches return 202 and run asynchronously.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/vendor-users/toggle-ongoing-monitoring/</c> (<c>users.set_ongoing_monitoring</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -213,6 +217,7 @@ namespace Didit.Resources
         /// Partial update of a user: <c>display_name</c>, <c>full_name</c>, <c>date_of_birth</c>, <c>status</c>, <c>metadata</c>, <c>approved_emails</c>/<c>approved_phones</c>/<c>issuing_states</c>. <c>metadata</c> fully replaces. Changing <c>status</c> here works like [Update User Status](#patch-/v3/users/-vendor_data-/update-status/): it records a <c>STATUS_CHANGED</c> activity with the optional <c>reason</c>, and <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist (moving away from <c>BLOCKED</c> removes that entry). Changes to <c>display_name</c>, <c>full_name</c>, <c>date_of_birth</c> or <c>metadata</c> are recorded as a <c>PROFILE_UPDATED</c> activity.
         /// <para/>
         /// <c>PATCH /v3/users/{vendor_data}/</c> (<c>users.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="vendorData">Your unique identifier for the user (free-form string, NOT a UUID).</param>
         /// <param name="parameters">The request parameters.</param>
@@ -231,6 +236,7 @@ namespace Didit.Resources
         /// Flip only the lifecycle <c>status</c> of a user: <c>ACTIVE</c>, <c>FLAGGED</c> or <c>BLOCKED</c> (not session statuses). <c>BLOCKED</c> adds the <c>vendor_data</c> to the system blocklist; moving away from <c>BLOCKED</c> removes that entry. Each change is recorded as a <c>STATUS_CHANGED</c> activity on the user, with the optional <c>reason</c> as its <c>comment</c>. Sending the current status changes nothing and records no <c>reason</c>. The <c>user.status.updated</c> webhook does not carry <c>reason</c>.
         /// <para/>
         /// <c>PATCH /v3/users/{vendor_data}/update-status/</c> (<c>users.update_status</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="vendorData">Your unique identifier for the user.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -249,6 +255,7 @@ namespace Didit.Resources
         /// Attach a trusted imported face image to an existing User profile. Use this after creating or retrieving a User by <c>vendor_data</c> and reading its <c>didit_internal_id</c>. The uploaded face is stored on the User profile and indexed for duplicate detection and face search. It is not added to a face blocklist.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/vendor-users/by-id/{didit_internal_id}/faces/upload/</c> (<c>users.upload_face</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="diditInternalId">Didit's internal User UUID, returned as <c>didit_internal_id</c> by <c>GET /v3/users/{vendor_data}/</c> and <c>POST /v3/users/create/</c>.</param>

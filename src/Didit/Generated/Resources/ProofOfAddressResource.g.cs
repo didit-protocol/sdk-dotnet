@@ -47,6 +47,7 @@ namespace Didit.Resources
         /// Note: <c>FUTURE_ISSUE_DATE</c> and <c>POOR_DOCUMENT_QUALITY</c> exist in workflow sessions but are never produced by this standalone endpoint — a future-dated document is not auto-declined here.
         /// <para/>
         /// <c>POST /v3/poa/</c> (<c>proof_of_address.verify</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

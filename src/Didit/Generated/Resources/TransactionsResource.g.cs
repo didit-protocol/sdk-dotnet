@@ -45,6 +45,7 @@ namespace Didit.Resources
         /// If any selected transaction is listed in a finalized regulatory report, the whole request is refused with <c>409</c> and nothing is deleted. The body uses <c>code: in_filed_report</c> and names each transaction and the reports that list it. Delete those reports, then repeat the request.
         /// <para/>
         /// <c>DELETE /v3/organization/{organization_id}/application/{application_id}/transactions/delete/</c> (<c>transactions.batch_delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -60,6 +61,7 @@ namespace Didit.Resources
         /// Submit a transaction for synchronous AML/risk monitoring. The transaction is created <c>APPROVED</c>, then your rules (and crypto screening, when applicable) run inline and may flip the returned <c>status</c> to <c>IN_REVIEW</c> or <c>DECLINED</c>. <c>transaction_id</c> is your idempotency key (max 128 chars, unique per app); reusing it returns 400. A <c>transaction.created</c> webhook is dispatched on success for live applications. Sandbox applications are not billed and do not emit <c>transaction.created</c> or <c>transaction.status.updated</c> webhooks. Sandbox Travel Rule exchanges do emit <c>travel_rule.status.updated</c> webhooks with <c>environment: sandbox</c>. A Travel Rule transfer is stored and returned before any counterparty is contacted: <c>travel_rule.status</c> comes back <c>AWAITING_COUNTERPARTY</c> (or <c>NOT_APPLICABLE</c> below your threshold, <c>UNCONFIRMED_OWNERSHIP</c> for a declared self-hosted wallet, <c>COMPLETED</c> when the other wallet is your own verified wallet) and <c>travel_rule.protocol</c> is null. Didit then chooses the rail and sends the exchange, and every later status change of the transfer, including <c>COUNTERPARTY_VASP_NOT_FOUND</c> when no rail reaches the counterparty, arrives as a <c>travel_rule.status.updated</c> webhook. Your rules run again when the rail or the status changes.
         /// <para/>
         /// <c>POST /v3/transactions/</c> (<c>transactions.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -77,6 +79,7 @@ namespace Didit.Resources
         /// Mint a short-lived scoped token your app passes to the Didit SDKs so they can submit transactions directly from the end-user's device via <c>POST /v1/transactions/</c>. The token is bound to one <c>vendor_data</c> (your user id): every transaction submitted with it has its subject identity enforced server-side from that binding, so a tampered client cannot submit on behalf of another user. Mint tokens from your backend - never ship the API key itself in an app. camelCase aliases (<c>vendorData</c>, <c>ttlSeconds</c>, <c>maxUses</c>) are also accepted.
         /// <para/>
         /// <c>POST /v3/transactions/sdk-token/</c> (<c>transactions.create_sdk_token</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

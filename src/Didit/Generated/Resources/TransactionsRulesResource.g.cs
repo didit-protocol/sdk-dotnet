@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Evaluate a hypothetical rule configuration against your recent transactions (most recent first, up to the backtest cap) without creating a rule or touching any transaction. Use it before activating a rule to see how often it would have matched and how many subjects it would have affected.
         /// <para/>
         /// <c>POST /v3/transactions/rules/backtest/</c> (<c>transactions.rules.backtest</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -46,6 +47,7 @@ namespace Didit.Resources
         /// Create a CUSTOM transaction-monitoring rule. Titles are unique per application (duplicate -&gt; 400). A <c>change_status</c> action targeting <c>AWAITING_USER</c> must carry <c>workflow_id</c>. Rules created in ACTIVE mode apply to new transactions immediately - the recommended workflow is create in TEST mode, backtest, then switch mode to ACTIVE. To change a library rule, create it as a copy: send the library rule's definition with <c>metadata.based_on</c> (its library key) and <c>metadata.based_on_rule_uuid</c>.
         /// <para/>
         /// <c>POST /v3/transactions/rules/</c> (<c>transactions.rules.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -63,6 +65,7 @@ namespace Didit.Resources
         /// Delete a CUSTOM rule. Deletion is immediate and permanent: the rule stops evaluating for new transactions and disappears from listings, while past rule runs on already-evaluated transactions keep their recorded results. Library rules cannot be deleted - uninstall them via the install endpoint instead (they can always be reinstalled from the library).
         /// <para/>
         /// <c>DELETE /v3/transactions/rules/{rule_uuid}/</c> (<c>transactions.rules.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="ruleUuid">The rule's uuid from list or create.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -77,6 +80,7 @@ namespace Didit.Resources
         /// Install one or more presets onto the application, by <c>library_keys</c> or a whole <c>bundle</c>. An installed preset is active at once while transaction monitoring is on, and disabled otherwise; already-installed keys are skipped. A library rule whose conditions read data the rules engine cannot evaluate yet is withheld until it can run. A request that names one in <c>library_keys</c> answers 400 and installs nothing ("These library rules cannot run yet: their conditions read data the rules engine cannot evaluate." followed by the keys), and a <c>bundle</c> install skips it. A withheld rule comes back on its own once its conditions can be evaluated. A <c>library_keys</c> entry that is not in the library is skipped, not refused.
         /// <para/>
         /// <c>POST /v3/transactions/rules/install/</c> (<c>transactions.rules.install_library</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -145,6 +149,7 @@ namespace Didit.Resources
         /// Remove installed presets from the application, by <c>library_keys</c> or a whole <c>bundle</c>. Uninstalled presets stop evaluating immediately and can be reinstalled from the library at any time.
         /// <para/>
         /// <c>DELETE /v3/transactions/rules/install/</c> (<c>transactions.rules.uninstall_library</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -162,6 +167,7 @@ namespace Didit.Resources
         /// Partially update a rule. Custom rules accept every configuration field. Library (PRESET) rules accept only <c>mode</c> - use it to activate, disable, or switch a preset to TEST; any other field returns 400, because Didit maintains library rules and applies their updates automatically. To change a library rule's conditions, create a custom copy with <c>POST /v3/transactions/rules/</c> using the library rule's definition and <c>metadata.based_on</c> (the library key) and <c>metadata.based_on_rule_uuid</c>, then switch the library rule off with <c>mode: DISABLED</c> so a transaction does not alert twice. An installed copy of a withheld library rule is switched off: setting its <c>mode</c> to anything but <c>DISABLED</c> answers 400 ("This library rule cannot run yet: its conditions read data the rules engine cannot evaluate.").
         /// <para/>
         /// <c>PATCH /v3/transactions/rules/{rule_uuid}/</c> (<c>transactions.rules.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="ruleUuid">The rule's uuid from list or create.</param>
         /// <param name="parameters">The request parameters.</param>

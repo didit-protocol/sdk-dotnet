@@ -46,6 +46,7 @@ namespace Didit.Resources
         /// Pair an inbound deposit that is still waiting for originator data with the Travel Rule message the originating VASP sent for it. The deposit takes the message's originator data, counterparty VASP and rail, and both transfers record the match on their timelines. <c>transaction_uuid</c> is the deposit's <c>transaction_id</c> from <c>GET /v3/travel-rule/unmatched/</c>. <c>transaction_id</c> in the body is the received message's <c>transaction_id</c>, from a row of <c>GET /v3/travel-rule/transfers/?kind=message</c>; the transfer's own <c>id</c> is not found. The message must be for the same asset as the deposit. A deposit or message deleted from the Console answers <c>404</c>; one that has already moved on (matched, or no longer waiting) answers <c>409</c>.
         /// <para/>
         /// <c>POST /v3/travel-rule/unmatched/{transaction_uuid}/match/</c> (<c>travel_rule.unmatched_deposits.match</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="transactionUuid">The <c>transaction_id</c> of the unmatched deposit.</param>
         /// <param name="parameters">The request parameters.</param>

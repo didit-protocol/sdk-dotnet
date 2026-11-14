@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Blocklists the face, identity document, phone number or email address of one person verification session of the application. For each selected type, Didit takes the session's most recent record, flags it as blocklisted and adds an entry linked to the session to the matching system blocklist (<c>added_by: "api"</c>), so new sessions with a matching face, document number, phone number or email address are declined. Every selected item is checked first, so if one is missing nothing is blocklisted; repeating the call for an item already listed keeps its single entry and refreshes <c>blocklisted_at</c>. The session itself and sessions that already finished are not changed. A scoped API key needs <c>workflows: write</c>.
         /// <para/>
         /// <c>POST /v3/blocklist/add/</c> (<c>blocklist.add</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -63,6 +64,7 @@ namespace Didit.Resources
         /// Lifts the block on the face, identity document, phone number or email address of one person verification session of the application. For each selected type, Didit takes the session's most recent record, clears its blocklisted flag and deletes the system blocklist entries created from that record, so it no longer declines new sessions. Entries added to a list by value are not touched: find them with <see href="https://docs.didit.me/management-api/lists/list-entries">List list entries</see> and delete them with <see href="https://docs.didit.me/management-api/lists/delete-entry">Delete a list entry</see>. Unblocking a record that is not blocklisted succeeds and changes nothing, and sessions that already finished are not changed. A scoped API key needs <c>workflows: write</c>.
         /// <para/>
         /// <c>POST /v3/blocklist/remove/</c> (<c>blocklist.remove</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

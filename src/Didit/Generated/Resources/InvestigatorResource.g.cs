@@ -29,6 +29,7 @@ namespace Didit.Resources
         /// Applies the recommended action through the item's normal path, so your usual webhooks fire. A <c>narrative</c> makes it edited and accepted. Restricted keys need the <c>decisions</c> scope (write); transaction alerts also need <c>transactions</c> (write). Escalating a verification or transaction opens a case.
         /// <para/>
         /// <c>POST /v3/investigator/runs/{run_id}/accept/</c> (<c>investigator.accept_run</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="runId">Path parameter <c>run_id</c>.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -47,6 +48,7 @@ namespace Didit.Resources
         /// Accepts up to 50 reports marked Ready to accept. Each is its own decision: one that cannot be accepted is skipped with its reason. Restricted keys need the <c>decisions</c> scope (write); transaction alerts also need <c>transactions</c> (write). Escalating a verification or transaction opens a case.
         /// <para/>
         /// <c>POST /v3/investigator/runs/batch-accept/</c> (<c>investigator.batch_accept_runs</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -131,6 +133,7 @@ namespace Didit.Resources
         /// Takes another action with a category and a reason. Also overrides a decision the Investigator took on its own while it still stands. Restricted keys need the <c>decisions</c> scope (write); transaction alerts also need <c>transactions</c> (write). Escalating a verification or transaction opens a case. Automated transaction decisions can be overridden only while the original decision still stands. The original decision remains unchanged, the override is recorded separately, and an immediate policy question is raised for its recorded situations with the original policy action. The override does not charge for another automated decision.
         /// <para/>
         /// <c>POST /v3/investigator/runs/{run_id}/override/</c> (<c>investigator.override_run</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="runId">Path parameter <c>run_id</c>.</param>
         /// <param name="parameters">The request parameters.</param>
@@ -250,6 +253,7 @@ namespace Didit.Resources
         /// Change the stage, the monthly spend limit, or both. Moving past <c>none</c> needs a plan that includes the Investigator (Growth or higher); <c>live</c> also needs a contract that prices it, if you have one. Restricted keys need the <c>applications</c> scope (write).
         /// <para/>
         /// <c>PATCH /v3/investigator/settings/</c> (<c>investigator.update_settings</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>

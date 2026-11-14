@@ -33,6 +33,7 @@ namespace Didit.Resources
         /// Put one of your application's tags on the network. Returns the network detail, whose <c>tags</c> lists your application's tags on the network, with <c>201</c> when the tag was added and <c>200</c> when it was already on the network. A tag that belongs to another application, or does not exist, returns 404 <c>Tag not found.</c>. Requires a full-access API key, or <c>write:networks</c> for a console member.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/tags/add/</c> (<c>networks.add_tag</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="networkUuid">Network UUID.</param>
@@ -124,6 +125,7 @@ namespace Didit.Resources
         /// Remove one of your application's tags from the network. Returns the network detail. 404 when the tag is not on the network, or does not belong to your application. Requires a full-access API key, or <c>write:networks</c> for a console member.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/networks/{network_uuid}/tags/remove/</c> (<c>networks.remove_tag</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
         /// </remarks>
         /// <param name="networkUuid">Network UUID.</param>

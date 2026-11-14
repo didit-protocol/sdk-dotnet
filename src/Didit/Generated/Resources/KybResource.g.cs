@@ -37,6 +37,7 @@ namespace Didit.Resources
         /// Pending reports. When a report is still being prepared, or the ownership section has not been retrieved from the registry yet, the endpoint returns 202 Accepted, kyb_registry.fetch_status=pending, kyb_registry.registry_ownership_status=pending, and registry_tier_delivered=null. Keep request_id and retrieve GET /v3/session/{request_id}/decision/ until registry_checks[0].company.fetch_status is resolved. Didit completes the report automatically and charges the delivered tier once it is ready. Do not repeat the purchase while it is pending; every new POST creates a separate request.
         /// <para/>
         /// <c>POST /v3/kyb/shareholders/</c> (<c>kyb.list_shareholders</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -62,6 +63,7 @@ namespace Didit.Resources
         /// Pending reports. When a report is still being prepared, or the ownership section has not been retrieved from the registry yet, the endpoint returns 202 Accepted, kyb_registry.fetch_status=pending, kyb_registry.registry_ownership_status=pending, and registry_tier_delivered=null. Keep request_id and retrieve GET /v3/session/{request_id}/decision/ until registry_checks[0].company.fetch_status is resolved. Didit completes the report automatically and charges the delivered tier once it is ready. Do not repeat the purchase while it is pending; every new POST creates a separate request.
         /// <para/>
         /// <c>POST /v3/kyb/ubo/</c> (<c>kyb.list_ubos</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -95,6 +97,7 @@ namespace Didit.Resources
         /// Sandbox. Keys from sandbox applications return one static candidate without contacting any registry.
         /// <para/>
         /// <c>POST /v3/kyb/search/</c> (<c>kyb.search</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -118,6 +121,7 @@ namespace Didit.Resources
         /// Persistence is mandatory. Every select creates a business session (its id is the <c>request_id</c>) so billing and retrieval can be tracked; it appears in the console. <c>save_api_request</c> is accepted for symmetry but must be <c>true</c> (the default) — sending <c>false</c> returns <c>400</c>.
         /// <para/>
         /// <c>POST /v3/kyb/select/</c> (<c>kyb.select</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
