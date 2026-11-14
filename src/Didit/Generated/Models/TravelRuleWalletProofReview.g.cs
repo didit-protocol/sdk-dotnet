@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (TravelRuleWalletProofReview).
+    /// Uploaded screenshot proof returned by the review queue and decision endpoint. Submitter attribution is independent of the current wallet holder.
     /// </summary>
     public sealed record TravelRuleWalletProofReview
     {
@@ -45,7 +45,7 @@ namespace Didit
         public string? Chain { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;holder_name&lt;/c&gt; field.
+        /// Holder name from the submitting widget, never a reassigned holder. Empty when the submitting widget was deleted.
         /// </summary>
         [JsonPropertyName("holder_name")]
         public string? HolderName { get; init; }
@@ -75,7 +75,7 @@ namespace Didit
         public string? ContentType { get; init; }
 
         /// <summary>
-        /// Time-limited link to the uploaded screenshot. List the queue again for a fresh link.
+        /// Authorized /v3/media/preview/ URL with an expiring signed source for this proof screenshot. Returns a recompressed preview, not the original upload or an arbitrary public URL. Null when no eligible screenshot exists. Read the proof again for a fresh link.
         /// </summary>
         [JsonPropertyName("screenshot_url")]
         public string? ScreenshotUrl { get; init; }
@@ -87,7 +87,7 @@ namespace Didit
         public long? Attempts { get; init; }
 
         /// <summary>
-        /// REVIEW_REJECTED after a rejection, OWNERSHIP_CHANGED when the wallet changed holder or was deleted before a decision. Empty otherwise.
+        /// Fixed failure code for this proof or its last attempt; empty when no documented failure applies. REVIEW_REJECTED identifies a rejected screenshot. History can also carry expiry, ownership-change or abandonment codes.
         /// </summary>
         [JsonPropertyName("failure_reason")]
         public TravelRuleWalletProofFailureReason? FailureReason { get; init; }
@@ -121,6 +121,30 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
+
+        /// <summary>
+        /// Application that owns the wallet and proof.
+        /// </summary>
+        [JsonPropertyName("application_id")]
+        public string? ApplicationId { get; init; }
+
+        /// <summary>
+        /// User in this application matching the submitting widget vendor_data. Null when no matching current user exists, or the submitting widget was deleted. Never the reassigned wallet holder.
+        /// </summary>
+        [JsonPropertyName("user_id")]
+        public string? UserId { get; init; }
+
+        /// <summary>
+        /// Holder identifier from the submitting widget, not the current wallet holder. Empty when the submitting widget was deleted.
+        /// </summary>
+        [JsonPropertyName("holder_vendor_data")]
+        public string? HolderVendorData { get; init; }
+
+        /// <summary>
+        /// Exact current wallet label, including an empty string when no label is set. Not a name inferred from the holder or address.
+        /// </summary>
+        [JsonPropertyName("wallet_label")]
+        public string? WalletLabel { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
