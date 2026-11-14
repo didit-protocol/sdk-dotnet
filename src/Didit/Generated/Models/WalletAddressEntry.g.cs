@@ -86,6 +86,24 @@ namespace Didit
         [JsonPropertyName("receiving_travel_address")]
         public string? ReceivingTravelAddress { get; init; }
 
+        /// <summary>
+        /// The &lt;c&gt;ownership_proof&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("ownership_proof")]
+        public TravelRuleWalletOwnershipProof? OwnershipProof { get; init; }
+
+        /// <summary>
+        /// Current wallet label, exactly as saved.
+        /// </summary>
+        [JsonPropertyName("label")]
+        public string? Label { get; init; }
+
+        /// <summary>
+        /// Wallet owner type.
+        /// </summary>
+        [JsonPropertyName("owner_type")]
+        public WalletAddressEntryOwnerType? OwnerType { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

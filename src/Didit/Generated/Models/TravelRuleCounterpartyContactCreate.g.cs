@@ -33,6 +33,27 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> Name { get; set; }
 
+        /// <summary>
+        /// Optional. The contact's role.
+        /// </summary>
+        [JsonPropertyName("role")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Role { get; set; }
+
+        /// <summary>
+        /// Optional. The contact's phone number.
+        /// </summary>
+        [JsonPropertyName("phone")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Phone { get; set; }
+
+        /// <summary>
+        /// Whether due-diligence requests and reminders go to this contact.
+        /// </summary>
+        [JsonPropertyName("receives_requests")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> ReceivesRequests { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

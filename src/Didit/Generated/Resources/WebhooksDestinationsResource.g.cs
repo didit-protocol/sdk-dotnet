@@ -70,6 +70,25 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List webhook destination activity
+        /// </summary>
+        /// <remarks>
+        /// Lists recorded failure alerts for one destination, newest first. Requires read:webhooks. Application/API-key credentials must belong to the application in the path; member Bearer tokens must have access to that application. These are failure alert events, not individual delivery attempts or outbound webhook event types. See <see href="https://docs.didit.me/integration/webhooks#retry-policy">Webhooks</see>.
+        /// <para/>
+        /// <c>GET /v3/organization/{organization_id}/application/{application_id}/webhook/destinations/{destination_uuid}/activity/</c> (<c>webhooks.destinations.list_activity</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="destinationUuid">Destination uuid.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<WebhookDestinationActivity>> ListActivityAsync(string destinationUuid, WebhooksDestinationsListActivityParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListActivityAsync(destinationUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List webhook destination deliveries
         /// </summary>
         /// <remarks>
@@ -236,6 +255,23 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<IReadOnlyList<WebhooksDestinationsListResponse>>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List webhook destination activity
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="WebhooksDestinationsResource.ListActivityAsync"/>.</remarks>
+        public Task<DiditResponse<Page<WebhookDestinationActivity>>> ListActivityAsync(string destinationUuid, WebhooksDestinationsListActivityParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/{organization_id}/application/{application_id}/webhook/destinations/" + PathParameter.Encode(destinationUuid, "destinationUuid") + "/activity/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<WebhookDestinationActivity>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

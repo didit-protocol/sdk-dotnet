@@ -56,6 +56,24 @@ namespace Didit
         [JsonPropertyName("flagged")]
         public bool? Flagged { get; init; }
 
+        /// <summary>
+        /// What was screened: the company name only. People are never inferred from the due-diligence questionnaire.
+        /// </summary>
+        [JsonPropertyName("scope")]
+        public TravelRuleCounterpartyScreeningScope? Scope { get; init; }
+
+        /// <summary>
+        /// People screening is not run for counterparties.
+        /// </summary>
+        [JsonPropertyName("people_screening")]
+        public TravelRuleCounterpartyScreeningPeopleScreening? PeopleScreening { get; init; }
+
+        /// <summary>
+        /// The possible matches. Returned by <c>GET</c> and <c>POST</c> on <c>/v3/travel-rule/vasps/{vasp_id}/screening/</c> and by the hit review, not in the screening summary of a VASP row. Source and list details are public; no screening supplier is named.
+        /// </summary>
+        [JsonPropertyName("hits")]
+        public IReadOnlyList<TravelRuleCounterpartyScreeningHits>? Hits { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -50,6 +50,18 @@ namespace Didit
         [JsonPropertyName("longitude")]
         public double? Longitude { get; init; }
 
+        /// <summary>
+        /// The kind of delivery point the address is, for United States and Canadian addresses: <c>street</c>, <c>po_box</c> (a PO box or lock box), <c>high_rise</c> (a high-rise or business complex), <c>rural_route</c>, <c>general_delivery</c>, <c>firm</c> (a firm or company address) or <c>building</c>. <c>null</c> for addresses in other countries, when the address has no type on record, and when <c>status</c> is <c>unavailable</c>.
+        /// </summary>
+        [JsonPropertyName("address_type")]
+        public AddressValidationResultAddressType? AddressType { get; init; }
+
+        /// <summary>
+        /// <c>true</c> when the address is a residence, <c>false</c> when it is a business. <c>null</c> when this is unknown, when it is not available for the address's country, and when <c>status</c> is <c>unavailable</c>. Available for addresses in the United States, Great Britain, the Netherlands and Ireland.
+        /// </summary>
+        [JsonPropertyName("is_residential")]
+        public bool? IsResidential { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

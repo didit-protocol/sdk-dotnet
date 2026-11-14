@@ -20,7 +20,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"request_id\": \"6f7d2c1e-1c5a-4a1e-9b8f-2a1f0f4b9c3d\", \"address_validation\": {\"status\": \"verified\", \"verification_level\": \"premise\", \"address\": {\"address_line_1\": \"1600 Amphitheatre Pkwy\", \"address_line_2\": null, \"city\": \"Mountain View\", \"region\": \"CA\", \"postal_code\": \"94043-1351\", \"country\": \"US\"}, \"formatted_address\": \"1600 Amphitheatre Pkwy, Mountain View CA 94043-1351\", \"latitude\": 37.422022, \"longitude\": -122.08429}, \"created_at\": \"2026-10-27T11:20:00.000000+00:00\"}");
+            handler.Enqueue(200, "{\"request_id\": \"6f7d2c1e-1c5a-4a1e-9b8f-2a1f0f4b9c3d\", \"address_validation\": {\"status\": \"verified\", \"verification_level\": \"premise\", \"address\": {\"address_line_1\": \"1600 Amphitheatre Pkwy\", \"address_line_2\": null, \"city\": \"Mountain View\", \"region\": \"CA\", \"postal_code\": \"94043-1351\", \"country\": \"US\"}, \"formatted_address\": \"1600 Amphitheatre Pkwy, Mountain View CA 94043-1351\", \"latitude\": 37.422022, \"longitude\": -122.08429, \"address_type\": \"street\", \"is_residential\": false}, \"created_at\": \"2026-10-27T11:20:00.000000+00:00\"}");
             using var client = TestClients.Create(handler);
             var result = await client.AddressValidation.ValidateAsync(new AddressValidationRequest { Address = "Paseo de la Castellana 259, 28046 Madrid", AddressLine1 = "1600 Amphitheatre Pkwy", AddressLine2 = "sample-address_line_2", City = "Mountain View", Region = "CA", PostalCode = "94043", Country = "US" });
 

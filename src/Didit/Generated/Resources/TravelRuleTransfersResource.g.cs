@@ -26,7 +26,7 @@ namespace Didit.Resources
         /// List Travel Rule transfers
         /// </summary>
         /// <remarks>
-        /// Your application's Travel Rule transfers, newest first, paginated with <c>limit</c> (default 50) and <c>offset</c>. Rows carry VASP names, wallets and memos only, never person data. Comma-separated values select several. An unknown value answers 400 naming the parameter, for example <c>{"direction": ["Unknown value(s): inbound."]}</c>.
+        /// Your application's Travel Rule transfers, newest first, paginated with <c>limit</c> (default 50) and <c>offset</c>. Rows carry VASP names, wallets, memos, the transaction's review decision, your own end user's name (masked exactly as the transaction detail masks it), the counterparty VASP's jurisdiction, the chain and the fiat amount; they never carry the counterparty's person data. Comma-separated values select several. An unknown value answers 400 naming the parameter, for example <c>{"direction": ["Unknown value(s): inbound."]}</c>.
         /// <para/>
         /// <c>GET /v3/travel-rule/transfers/</c> (<c>travel_rule.transfers.list</c>).
         /// </remarks>

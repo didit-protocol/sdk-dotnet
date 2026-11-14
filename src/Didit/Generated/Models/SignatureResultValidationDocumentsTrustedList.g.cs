@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// EU Trusted List check. For AES: <c>{"status": "not_applicable", "reason": "aes_not_qualified"}</c>.
+    /// EU Trusted List check. AES: <c>{"status": "not_applicable", "reason": "aes_not_qualified"}</c>. QES: <c>{"status": "granted"}</c> when the certificate is a qualified certificate for electronic signatures issued under the qualified trust service provider's Trusted List entry, else <c>{"status": "not_granted", ...}</c>. A sandbox session's qualified level is sealed by Didit: <c>{"status": "not_applicable", "reason": "sandbox"}</c>.
     /// </summary>
     public sealed record SignatureResultValidationDocumentsTrustedList
     {

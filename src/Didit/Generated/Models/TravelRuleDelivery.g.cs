@@ -39,8 +39,7 @@ namespace Didit
         public long? Attempts { get; init; }
 
         /// <summary>
-        /// The kind of failure the last attempt hit, <c>""</c> when none did: for example <c>email undeliverable</c>, <c>trp identity endpoint unreachable</c> or <c>trp transfer inquiry delivery failed</c>. It never carries the counterparty's own answer, which stays on the transfer's <c>timeline</c>.
-        /// When GTR answers with an error, its own status code and message are included. Response bodies are never included.
+        /// A short customer-safe reason for the last failure, <c>""</c> when there is none: <c>email undeliverable</c>, <c>trp identity endpoint unreachable</c>, <c>trp transfer inquiry delivery failed</c> or <c>The message could not be delivered.</c> It never carries the counterparty's own answer, which stays on the transfer's <c>timeline</c>, and never a response body.
         /// </summary>
         [JsonPropertyName("last_error")]
         public string? LastError { get; init; }
@@ -56,6 +55,24 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("delivered_at")]
         public DateTimeOffset? DeliveredAt { get; init; }
+
+        /// <summary>
+        /// When the delivery last changed.
+        /// </summary>
+        [JsonPropertyName("updated_at")]
+        public DateTimeOffset? UpdatedAt { get; init; }
+
+        /// <summary>
+        /// Why the last attempt failed, or null while the message has not failed. The message is a fixed customer-safe sentence: it never carries the counterparty's own text or a transport error.
+        /// </summary>
+        [JsonPropertyName("failure")]
+        public TravelRuleDeliveryFailure? Failure { get; init; }
+
+        /// <summary>
+        /// Readable name of the route that carried the message: <c>Email</c>, <c>TRP</c>, <c>Didit</c>, <c>Didit Test VASP</c>, the name of a network listed in the Marketplace, or <c>Network</c> for any other network. Null until a route is chosen.
+        /// </summary>
+        [JsonPropertyName("route")]
+        public string? Route { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

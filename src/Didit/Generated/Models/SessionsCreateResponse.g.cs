@@ -57,7 +57,13 @@ namespace Didit
         public IReadOnlyList<string>? Tags { get; init; }
 
         /// <summary>
-        /// Current status of the session. Newly created sessions return <c>Not Started</c>. If a non-finished session already existed for the same <c>vendor_data</c> on the workflow's latest published version, the returned status reflects that existing session.
+        /// When the session's link stops being valid: the start of its current validity window (its creation, or the last reset by <c>session_expiration_time</c>) plus the lifetime in force.
+        /// </summary>
+        [JsonPropertyName("expires_at")]
+        public DateTimeOffset? ExpiresAt { get; init; }
+
+        /// <summary>
+        /// Current status of the session. Newly created sessions return <c>Not Started</c>. For a User Verification workflow, if a non-finished session already existed for the same <c>vendor_data</c> on the workflow's latest published version, the returned status reflects that existing session.
         /// </summary>
         [JsonPropertyName("status")]
         public SessionsCreateResponseStatus? Status { get; init; }

@@ -30,13 +30,13 @@ namespace Didit.Resources
         /// <para/>
         /// What you send. The account's <c>country</c> (ISO 3166-1 alpha-3), the <c>account</c> the way that country writes it, and the <c>holder</c> name: <c>full_name</c> for a person or <c>business_name</c> for a company. A business name checks a business account.
         /// <para/>
-        /// What you get back. <c>result</c> is <c>match</c>, <c>close_match</c>, <c>no_match</c> or <c>cannot_verify</c>. On a <c>close_match</c>, <c>holder_name</c> is the name the bank holds the account under, when the bank returned it. <c>account</c> comes back masked to its last 4 characters.
+        /// What you get back. <c>result</c> is <c>match</c>, <c>close_match</c>, <c>no_match</c> or <c>cannot_verify</c>. On a <c>close_match</c>, <c>holder_name</c> is the name the bank holds the account under, when the bank returned it. <c>name_match_score</c> is the 0 to 100 similarity <c>result</c> was decided on, so you can apply your own threshold; <c>result</c> stays authoritative, decided with the default thresholds (a <c>match</c> from 85, a <c>close_match</c> from 70). It is <c>null</c> when no name was compared: a <c>cannot_verify</c>, or a <c>no_match</c> for an account that does not exist. <c>account</c> comes back masked to its last 4 characters.
         /// <para/>
         /// Billing. Each check the bank answers is billed once at the Account check price of the account's country, whatever the result: a <c>no_match</c>, an account that does not exist and a <c>cannot_verify</c> are billed too. A request answered with an error is never billed.
         /// <para/>
         /// Every request is a new check. There is no idempotency key and no endpoint to read a check back, so a retried request runs, and is billed, again. Store the response.
         /// <para/>
-        /// Sandbox. Use a sandbox API key with the sample account details. A sandbox key calls no bank and is charged nothing. The last 4 characters of the IBAN, else of the account number, choose the answer: <c>0001</c> a <c>close_match</c> with a <c>holder_name</c>, <c>0002</c> a <c>close_match</c> without one, <c>0003</c> and <c>0006</c> a <c>no_match</c>, <c>0004</c> <c>cannot_verify</c>, <c>0005</c> a <c>503</c> and <c>0009</c> a <c>400</c>. Any other ending is a <c>match</c>.
+        /// Sandbox. Use a sandbox API key with the sample account details. A sandbox key calls no bank and is charged nothing. The last 4 characters of the IBAN, else of the account number, choose the answer: <c>0001</c> a <c>close_match</c> with a <c>holder_name</c>, <c>0002</c> a <c>close_match</c> without one (<c>name_match_score</c> 78), <c>0003</c> a <c>no_match</c> (<c>name_match_score</c> 0), <c>0006</c> a <c>no_match</c> for an account that does not exist (<c>name_match_score</c> null), <c>0004</c> <c>cannot_verify</c>, <c>0005</c> a <c>503</c> and <c>0009</c> a <c>400</c>. Any other ending is a <c>match</c> (<c>name_match_score</c> 100).
         /// <para/>
         /// API keys. A scoped API key needs write access to sessions.
         /// <para/>

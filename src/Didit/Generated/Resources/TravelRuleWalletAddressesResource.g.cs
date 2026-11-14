@@ -89,10 +89,45 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List the transfers that used a wallet address
+        /// </summary>
+        /// <remarks>
+        /// Paginated list of your Travel Rule transfers whose originator or beneficiary wallet is this address book entry, newest first. The endpoint answers 404 once the entry is deleted.
+        /// <para/>
+        /// <c>GET /v3/travel-rule/wallet-addresses/{entry_uuid}/transfers/</c> (<c>travel_rule.wallet_addresses.list_transfers</c>).
+        /// </remarks>
+        /// <param name="entryUuid">Path parameter <c>entry_uuid</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<Page<TravelRuleWalletTransfer>> ListTransfersAsync(string entryUuid, TravelRuleWalletAddressesListTransfersParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ListTransfersAsync(entryUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Look up a wallet address
+        /// </summary>
+        /// <remarks>
+        /// Checks one exact address, chain and memo against your own wallet address book and then against wallets proven by other Didit Travel Rule participants. It never screens the wallet, never sends a message and never returns holder data from another application. <c>directory_checked</c> is always <c>false</c>: the lookup does not search a public directory, so <c>none</c> means the wallet is neither in your book nor proven on Didit, not that it is unknown elsewhere.
+        /// <para/>
+        /// <c>GET /v3/travel-rule/wallet-addresses/lookup/</c> (<c>travel_rule.wallet_addresses.lookup</c>).
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<TravelRuleWalletLookup> LookupAsync(TravelRuleWalletAddressesLookupParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.LookupAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Update wallet address holder metadata
         /// </summary>
         /// <remarks>
-        /// Partial update of holder_name, holder_vendor_data, entity_type, and travel_address. Setting travel_address attaches a TRP routing address to the entry; invalid values are rejected with 400. The response echoes only these four fields.
+        /// Partial update of holder_name, holder_vendor_data, entity_type, and travel_address. Setting travel_address attaches a TRP routing address to the entry; invalid values are rejected with 400. The response returns the updated entry: its label, owner type, receiving travel address and ownership proof summary, with the writable fields.
         /// <para/>
         /// <c>PATCH /v3/travel-rule/wallet-addresses/{entry_uuid}/</c> (<c>travel_rule.wallet_addresses.update</c>).
         /// </remarks>
@@ -100,7 +135,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<WalletAddressEntryUpdate> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<WalletAddressEntryUpdateResponse> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAsync(entryUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
@@ -204,10 +239,50 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List the transfers that used a wallet address
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.ListTransfersAsync"/>.</remarks>
+        public Task<DiditResponse<Page<TravelRuleWalletTransfer>>> ListTransfersAsync(string entryUuid, TravelRuleWalletAddressesListTransfersParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/wallet-addresses/" + PathParameter.Encode(entryUuid, "entryUuid") + "/transfers/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("limit", parameters?.Limit);
+            request.Query.Add("offset", parameters?.Offset);
+            return _pipeline.SendPageAsync<TravelRuleWalletTransfer>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Look up a wallet address
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.LookupAsync"/>.</remarks>
+        public Task<DiditResponse<TravelRuleWalletLookup>> LookupAsync(TravelRuleWalletAddressesLookupParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Get, "/v3/travel-rule/wallet-addresses/lookup/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Query.Add("address", parameters.Address);
+            request.Query.Add("chain", parameters.Chain);
+            request.Query.Add("memo", parameters.Memo);
+            return _pipeline.SendJsonAsync<TravelRuleWalletLookup>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Update wallet address holder metadata
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="TravelRuleWalletAddressesResource.UpdateAsync"/>.</remarks>
-        public Task<DiditResponse<WalletAddressEntryUpdate>> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<WalletAddressEntryUpdateResponse>> UpdateAsync(string entryUuid, WalletAddressEntryUpdate parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
             {
@@ -221,7 +296,7 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<WalletAddressEntryUpdate>(request, requestOptions, cancellationToken);
+            return _pipeline.SendJsonAsync<WalletAddressEntryUpdateResponse>(request, requestOptions, cancellationToken);
         }
     }
 }

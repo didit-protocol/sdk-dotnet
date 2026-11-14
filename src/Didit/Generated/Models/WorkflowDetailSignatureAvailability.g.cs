@@ -27,7 +27,7 @@ namespace Didit
         public bool? Aes { get; init; }
 
         /// <summary>
-        /// Whether Qualified (QES) can sign now. It is <c>false</c> until a qualified provider is connected.
+        /// Whether Qualified (QES) can be chosen now. While it is <c>false</c>, saving a new <c>qes</c> step returns <c>400</c> <c>qes_not_available</c> or <c>qes_provider_not_configured</c>.
         /// </summary>
         [JsonPropertyName("qes")]
         public bool? Qes { get; init; }

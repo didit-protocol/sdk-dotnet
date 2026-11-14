@@ -63,6 +63,13 @@ namespace Didit
         public Optional<IReadOnlyList<string>> Tags { get; set; }
 
         /// <summary>
+        /// Seconds this session's link stays valid, overriding the workflow's <c>session_expiration_time</c> for this session only. Whole number between 3600 (1 hour) and 2419200 (4 weeks), the same bounds as the workflow setting. Omit it to use the workflow's setting. A value outside the range, or one that is not a whole number, returns <c>400</c> on <c>session_expiration_time</c>. A session created by this call takes this lifetime from creation. When the call returns an existing unfinished session instead of creating one, sending this field resets that session's expiry to now plus this value, and omitting it leaves that session's expiry as it is. The response returns the resulting <c>expires_at</c>.
+        /// </summary>
+        [JsonPropertyName("session_expiration_time")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> SessionExpirationTime { get; set; }
+
+        /// <summary>
         /// Language code (ISO 639-1) for the verification process interface. Controls the language displayed to the end user during verification. If not provided, the browser's language will be automatically detected and used. Check all the supported languages [here](/integration/supported-languages).
         /// </summary>
         [JsonPropertyName("language")]

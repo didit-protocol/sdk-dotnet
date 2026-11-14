@@ -39,7 +39,7 @@ namespace Didit
         public string? ApiKey { get; init; }
 
         /// <summary>
-        /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney), <c>mx</c> (Mexico) and <c>ae</c> (United Arab Emirates) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
+        /// Where the application's verification data is stored and processed, chosen when the application is created. <c>eu</c> is the European Union (Ireland), the default. <c>au</c> (Australia, Sydney), <c>mx</c> (Mexico), <c>ae</c> (United Arab Emirates) and <c>us</c> (United States, N. Virginia) are coming soon: a request that names them answers 400 <c>This data location is not available yet.</c> An organization's Sandbox application is always in the European Union.
         /// </summary>
         [JsonPropertyName("data_location")]
         public ApplicationDataLocation? DataLocation { get; init; }

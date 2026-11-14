@@ -16,6 +16,28 @@ namespace Didit.Tests.Generated
     public sealed class TravelRuleOperationTests
     {
         [Fact]
+        public async Task TravelRule_AssignVasp()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"id\": \"sample\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}, \"changed\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.AssignVaspAsync("vasp_id-1", new TravelRuleAssignVaspParams { AssigneeEmail = "sample-assignee_email" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/assign/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"assignee_email\": \"sample-assignee_email\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Id);
+        }
+
+        [Fact]
         public async Task TravelRule_ClearVaspDecision()
         {
             var handler = new MockHttpHandler();
@@ -42,7 +64,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(201, "{\"uuid\": \"6c1f9b8e-2d4a-4f7e-8b3c-5a9d0e1f2a3b\", \"counterparty\": \"0d6f3c2a-6a1e-4c55-9a39-1f2b0c7d8e91\", \"counterparty_name\": \"Example Counterparty VASP\", \"email\": \"compliance@counterparty.example\", \"name\": \"Compliance desk\", \"source\": \"application\", \"scope\": \"application\", \"created_by\": \"\", \"verified_at\": null, \"is_invalid\": false, \"invalid_reason\": \"\", \"invalid_detail\": \"\", \"invalid_at\": null, \"created_at\": \"2026-10-19T09:00:00Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.TravelRule.CounterpartyContacts.CreateAsync(new TravelRuleCounterpartyContactCreate { Counterparty = "11111111-2222-3333-4444-555555555555", Email = "user@example.com", Name = "sample-name" });
+            var result = await client.TravelRule.CounterpartyContacts.CreateAsync(new TravelRuleCounterpartyContactCreate { Counterparty = "11111111-2222-3333-4444-555555555555", Email = "user@example.com", Name = "sample-name", Role = "sample-role", Phone = "sample-phone", ReceivesRequests = true });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -52,7 +74,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"counterparty\": \"11111111-2222-3333-4444-555555555555\", \"email\": \"user@example.com\", \"name\": \"sample-name\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"counterparty\": \"11111111-2222-3333-4444-555555555555\", \"email\": \"user@example.com\", \"name\": \"sample-name\", \"role\": \"sample-role\", \"phone\": \"sample-phone\", \"receives_requests\": true}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("6c1f9b8e-2d4a-4f7e-8b3c-5a9d0e1f2a3b", result.Uuid);
         }
@@ -97,6 +119,28 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_CounterpartyContacts_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"counterparty\": \"sample\", \"counterparty_name\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"created_by\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"is_invalid\": true, \"invalid_reason\": \"\", \"invalid_detail\": \"sample\", \"invalid_at\": \"2026-01-02T03:04:05Z\", \"created_at\": \"2026-01-02T03:04:05Z\", \"role\": \"sample\", \"phone\": \"sample\", \"receives_requests\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.CounterpartyContacts.UpdateAsync("contact_uuid-1", new TravelRuleCounterpartyContactsUpdateParams { Name = "sample-name", Email = "user@example.com", Role = "sample-role", Phone = "sample-phone", ReceivesRequests = true });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/counterparty-contacts/contact_uuid-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"sample-name\", \"email\": \"user@example.com\", \"role\": \"sample-role\", \"phone\": \"sample-phone\", \"receives_requests\": true}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Uuid);
+        }
+
+        [Fact]
         public async Task TravelRule_CreateVasp()
         {
             var handler = new MockHttpHandler();
@@ -123,9 +167,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(201, "{\"widget_session_id\": \"sample\", \"token\": \"sample\", \"url\": \"sample\", \"expires_at\": \"2026-01-02T03:04:05Z\"}");
+            handler.Enqueue(200, "{\"widget_session_id\": \"sample\", \"token\": \"sample\", \"url\": \"sample\", \"expires_at\": \"2026-01-02T03:04:05Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.TravelRule.CreateWidgetSessionAsync(new TravelRuleWidgetSessionCreate { WalletAddress = "sample-wallet_address", Chain = "sample-chain", HolderName = "sample-holder_name", VendorData = "sample-vendor_data", TransactionId = "11111111-2222-3333-4444-555555555555", SatoshiDepositAddress = "sample-satoshi_deposit_address", CallbackUrl = "sample-callback_url", ExpiresInMinutes = 1L });
+            var result = await client.TravelRule.CreateWidgetSessionAsync(new TravelRuleWidgetSessionCreate { WalletAddress = "sample-wallet_address", Chain = "sample-chain", HolderName = "sample-holder_name", VendorData = "sample-vendor_data", TransactionId = "11111111-2222-3333-4444-555555555555", SatoshiDepositAddress = "sample-satoshi_deposit_address", CallbackUrl = "sample-callback_url", ExpiresInMinutes = 1L, WalletEntryId = "11111111-2222-3333-4444-555555555555", RequestAction = new TravelRuleWidgetSessionCreateRequestAction("ensure"), RequestKey = "11111111-2222-3333-4444-555555555555" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -135,9 +179,113 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"wallet_address\": \"sample-wallet_address\", \"chain\": \"sample-chain\", \"holder_name\": \"sample-holder_name\", \"vendor_data\": \"sample-vendor_data\", \"transaction_id\": \"11111111-2222-3333-4444-555555555555\", \"satoshi_deposit_address\": \"sample-satoshi_deposit_address\", \"callback_url\": \"sample-callback_url\", \"expires_in_minutes\": 1}", request.BodyText);
+            JsonAssert.Equivalent("{\"wallet_address\": \"sample-wallet_address\", \"chain\": \"sample-chain\", \"holder_name\": \"sample-holder_name\", \"vendor_data\": \"sample-vendor_data\", \"transaction_id\": \"11111111-2222-3333-4444-555555555555\", \"satoshi_deposit_address\": \"sample-satoshi_deposit_address\", \"callback_url\": \"sample-callback_url\", \"expires_in_minutes\": 1, \"wallet_entry_id\": \"11111111-2222-3333-4444-555555555555\", \"request_action\": \"ensure\", \"request_key\": \"11111111-2222-3333-4444-555555555555\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("sample", result.WidgetSessionId);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(201, "{\"id\": \"sample\", \"name\": \"sample\", \"kind\": \"questionnaire\", \"uploaded_at\": \"2026-01-02T03:04:05Z\", \"received_at\": \"2026-01-02T03:04:05Z\", \"content_type\": \"application/pdf\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.Documents.CreateAsync(new TravelRuleDocumentsCreateParams { Kind = new TravelRuleDocumentKind("questionnaire"), File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.Contains("name=\"kind\"", request.BodyText);
+            Assert.Contains("name=\"file\"", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.Id);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.TravelRule.Documents.DeleteAsync("document_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/document_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_Download()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, new byte[] { 37, 80, 68, 70 }, "application/pdf", new Dictionary<string, string> { ["Content-Disposition"] = "attachment; filename=\"report.bin\"" });
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.Documents.DownloadAsync("document_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/document_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);
+            Assert.Equal("application/pdf", result.ContentType);
+            Assert.Equal("report.bin", result.FileName);
+        }
+
+        [Fact]
+        public async Task TravelRule_Documents_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"name\": \"sample\", \"kind\": \"questionnaire\", \"uploaded_at\": \"2026-01-02T03:04:05Z\", \"received_at\": \"2026-01-02T03:04:05Z\", \"content_type\": \"application/pdf\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.Documents.ListAsync(new TravelRuleDocumentsListParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/documents/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task TravelRule_ListVaspDecisionHistory()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"decision\": \"sample\", \"reason\": \"sample\", \"actor\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ListVaspDecisionHistoryAsync("vasp_id-1", new TravelRuleListVaspDecisionHistoryParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/decision-history/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
         }
 
         [Fact]
@@ -161,11 +309,51 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_ListVaspReviewers()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"results\": [{\"user_id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"role\": \"sample\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ListVaspReviewersAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/reviewers/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task TravelRule_ListVaspSharedDocuments()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"documents\": [{\"id\": \"sample\", \"name\": \"sample\", \"kind\": \"questionnaire\", \"uploaded_at\": \"2026-01-02T03:04:05Z\", \"received_at\": \"2026-01-02T03:04:05Z\", \"content_type\": \"application/pdf\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ListVaspSharedDocumentsAsync("vasp_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/shared-documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task TravelRule_ListVasps()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}}], \"source\": \"didit_network\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}, \"requested_items\": [\"questionnaire\"], \"reminder_sent_at\": \"2026-01-02T03:04:05Z\", \"documents\": [{}]}], \"source\": \"didit_network\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}}]}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.ListVaspsAsync(new TravelRuleListVaspsParams { Search = "sample-search", Network = new TravelRuleListVaspsParamsNetwork("GTR"), Jurisdiction = "sample-jurisdiction", Reachable = true, Kind = new TravelRuleListVaspsParamsKind("directory"), Risk = new TravelRuleListVaspsParamsRisk("LOW"), Responsiveness = new TravelRuleListVaspsParamsResponsiveness("RESPONSIVE"), Limit = 1L, Offset = 1L });
 
@@ -186,7 +374,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"network\": \"gtr\", \"rail\": \"GTR\", \"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"submitted_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"suspended_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"history\": [{\"at\": \"2026-01-02T03:04:05Z\", \"from\": \"sample\", \"to\": \"sample\", \"note\": \"sample\"}]}");
+            handler.Enqueue(200, "{\"network\": \"gtr\", \"rail\": \"GTR\", \"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"submitted_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"suspended_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"history\": [{\"at\": \"2026-01-02T03:04:05Z\", \"from\": \"sample\", \"to\": \"sample\", \"note\": \"sample\"}], \"notify_status_changes\": true, \"notification_email\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.Networks.RequestAccessAsync("network-1");
 
@@ -291,7 +479,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"transaction_id\": \"sample\", \"txn_id\": \"sample\", \"created\": true, \"travel_rule\": {\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\", \"name_match\": {}, \"reason\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1, \"dd_score_breakdown\": {\"key\": {}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\"}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [\"sample\"], \"mismatched_names\": [\"sample\"]}, \"data_match\": {\"matched\": true, \"mismatched_fields\": [\"name\"], \"fields\": {\"key\": {}}}, \"mismatched_fields\": [\"sample\"], \"data_unmasked\": {\"at\": \"2026-01-02T03:04:05Z\", \"reason\": \"ownership_confirmed\", \"actor\": \"sample\"}, \"data_masked\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"delivery\": {\"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"INTERNAL\", \"attempts\": 1, \"last_error\": \"sample\", \"next_attempt_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\"}, \"discovery\": [{\"step\": \"internal_address_book\", \"outcome\": \"match\", \"reason\": \"sample\", \"vasp\": \"sample\", \"rail\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\"}], \"reason\": \"sample\", \"next_actions\": [{\"action\": \"select_counterparty_vasp\", \"url\": \"sample\"}], \"chain_details\": {\"chain\": \"sample\", \"shape\": \"utxo\", \"originator\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"beneficiary\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"utxo\": {\"inputs\": [], \"outputs\": [], \"change_output_indexes\": [], \"beneficiary_output_index\": 1}, \"lightning\": {\"key\": \"value\"}, \"warnings\": [\"declared_originator_not_an_input\"], \"not_applicable_reason\": \"LIGHTNING_NO_PAYEE_IDENTIFIER\"}, \"deliveries\": [{\"uuid\": \"sample\", \"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"EMAIL\", \"created_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\", \"detail_lines\": []}], \"deliveries_truncated\": true, \"not_required_reason\": \"sample\", \"proof_state\": \"not_required\", \"cancel_reason\": \"\", \"cancelled_by\": \"sample\", \"notify_on_answer\": true, \"user_choice\": {\"active\": true, \"waiting\": true, \"end_user_link\": \"sample\", \"link_expires_at\": \"2026-01-02T03:04:05Z\", \"emailed_to\": \"sample\", \"email_available\": true}}}");
+            handler.Enqueue(200, "{\"transaction_id\": \"sample\", \"txn_id\": \"sample\", \"created\": true, \"travel_rule\": {\"uuid\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"direction\": \"INBOUND\", \"rail\": \"INTERNAL\", \"protocol\": \"sample\", \"ivms_version\": \"sample\", \"required\": true, \"ownership_confirmed\": true, \"deadline_at\": \"2026-01-02T03:04:05Z\", \"timeline\": [{\"status\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\", \"detail\": \"sample\", \"name_match\": {}, \"reason\": \"sample\"}], \"counterparty_vasp\": {\"name\": \"sample\", \"lei\": \"sample\", \"dd_score\": 1, \"dd_score_breakdown\": {\"key\": {}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\"}, \"originator_data\": {\"key\": \"value\"}, \"beneficiary_data\": {\"key\": \"value\"}, \"name_match\": {\"score\": 1, \"matched\": true, \"method\": \"none\", \"strictness\": \"NONE\", \"compared_with\": \"wallet_holder\", \"transfer_name\": \"sample\", \"compared_name\": \"sample\", \"matched_names\": [\"sample\"], \"mismatched_names\": [\"sample\"]}, \"data_match\": {\"matched\": true, \"mismatched_fields\": [\"name\"], \"fields\": {\"key\": {}}}, \"mismatched_fields\": [\"sample\"], \"data_unmasked\": {\"at\": \"2026-01-02T03:04:05Z\", \"reason\": \"ownership_confirmed\", \"actor\": \"sample\"}, \"data_masked\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"delivery\": {\"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"INTERNAL\", \"attempts\": 1, \"last_error\": \"sample\", \"next_attempt_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"failure\": {\"code\": \"email_undeliverable\", \"message\": \"sample\"}, \"route\": \"sample\"}, \"discovery\": [{\"step\": \"internal_address_book\", \"outcome\": \"match\", \"reason\": \"sample\", \"vasp\": \"sample\", \"rail\": \"sample\", \"at\": \"2026-01-02T03:04:05Z\"}], \"reason\": \"sample\", \"next_actions\": [{\"action\": \"select_counterparty_vasp\", \"url\": \"sample\"}], \"chain_details\": {\"chain\": \"sample\", \"shape\": \"utxo\", \"originator\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"beneficiary\": {\"address\": \"sample\", \"memo\": \"sample\", \"source\": \"declared\"}, \"utxo\": {\"inputs\": [], \"outputs\": [], \"change_output_indexes\": [], \"beneficiary_output_index\": 1}, \"lightning\": {\"key\": \"value\"}, \"warnings\": [\"declared_originator_not_an_input\"], \"not_applicable_reason\": \"LIGHTNING_NO_PAYEE_IDENTIFIER\"}, \"deliveries\": [{\"uuid\": \"sample\", \"kind\": \"SEND\", \"status\": \"QUEUED\", \"rail\": \"EMAIL\", \"created_at\": \"2026-01-02T03:04:05Z\", \"delivered_at\": \"2026-01-02T03:04:05Z\", \"detail_lines\": [], \"attempts\": 1, \"updated_at\": \"2026-01-02T03:04:05Z\", \"next_attempt_at\": \"2026-01-02T03:04:05Z\", \"failure\": {}, \"route\": \"sample\"}], \"deliveries_truncated\": true, \"not_required_reason\": \"sample\", \"proof_state\": \"not_required\", \"cancel_reason\": \"\", \"cancelled_by\": \"sample\", \"notify_on_answer\": true, \"user_choice\": {\"active\": true, \"waiting\": true, \"end_user_link\": \"sample\", \"link_expires_at\": \"2026-01-02T03:04:05Z\", \"emailed_to\": \"sample\", \"email_available\": true}, \"proof_request\": {\"request_id\": \"sample\", \"status\": \"PENDING\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"proof\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"wallet_address\": \"sample\", \"chain\": \"sample\", \"holder_name\": \"sample\", \"is_ownership_verified\": true, \"transaction_id\": \"sample\", \"file_name\": \"sample\", \"content_type\": \"sample\", \"screenshot_url\": \"sample\", \"attempts\": 1, \"failure_reason\": \"\", \"method_chosen_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"decided_by\": \"sample\", \"review_note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"application_id\": \"sample\", \"user_id\": \"sample\", \"holder_vendor_data\": \"sample\", \"wallet_label\": \"sample\"}}}}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.RegisterInboundAsync(new TravelRuleInboundRequest { Chain = "sample-chain", Txid = "sample-txid", WalletAddress = "sample-wallet_address", Amount = "sample-amount", Currency = "sample-currency", Memo = "sample-memo" });
 
@@ -335,7 +523,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}}], \"source\": \"didit_network\"}");
+            handler.Enqueue(200, "{\"id\": \"sample\", \"kind\": \"directory\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"domains\": [\"sample\"], \"reachable\": true, \"aliases\": [{\"name\": \"sample\", \"kind\": \"trading_name\"}], \"networks\": [{\"network\": \"GTR\", \"code\": \"sample\", \"listed_name\": \"sample\", \"country\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\", \"source\": \"trisa_directory\"}], \"routes\": [{\"rail\": \"INTERNAL\", \"status\": \"available\", \"reason\": \"\", \"via\": \"\"}], \"umbrella\": {\"id\": \"sample\", \"name\": \"sample\"}, \"entities\": [{\"id\": \"sample\", \"name\": \"sample\", \"lei\": \"sample\", \"jurisdiction\": \"sample\", \"reachable\": true}], \"contacts\": [{\"id\": \"sample\", \"email\": \"sample\", \"name\": \"sample\", \"source\": \"staff\", \"scope\": \"platform\", \"verified_at\": \"2026-01-02T03:04:05Z\"}], \"dd_status\": \"NOT_STARTED\", \"dd_score\": 1, \"reachable_rails\": [\"INTERNAL\"], \"is_didit_customer\": true, \"dd_score_breakdown\": {\"key\": {\"points\": 1.5, \"max\": 1, \"reason\": \"sample\", \"detail\": \"sample\"}}, \"dd_assessed_at\": \"2026-01-02T03:04:05Z\", \"dd_score_semantic\": \"higher_is_safer\", \"risk_level\": \"LOW\", \"responsiveness\": {\"status\": \"RESPONSIVE\", \"answered\": 1, \"total\": 1, \"computed_at\": \"2026-01-02T03:04:05Z\"}, \"essential_checks\": {\"level\": \"essential\", \"checked_at\": \"2026-01-02T03:04:05Z\", \"checks\": [{\"id\": \"registration\", \"status\": \"pass\", \"reason\": \"sample\", \"detail\": \"sample\"}], \"passed\": 1, \"failed\": 1, \"unknown\": 1, \"total\": 1}, \"decision\": {\"decision\": \"APPROVED\", \"reason\": \"sample\", \"decided_by\": \"sample\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"inherited_from\": {\"id\": \"sample\", \"name\": \"sample\"}}, \"entity_screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"questionnaires\": [{\"id\": \"sample\", \"status\": \"SENT\", \"form_version\": \"sample\", \"sent_to\": \"sample\", \"sent_at\": \"2026-01-02T03:04:05Z\", \"expires_at\": \"2026-01-02T03:04:05Z\", \"answered_at\": \"2026-01-02T03:04:05Z\", \"valid_until\": \"2026-01-02T03:04:05Z\", \"current\": true, \"answers\": {\"key\": \"sample\"}, \"requested_items\": [\"questionnaire\"], \"reminder_sent_at\": \"2026-01-02T03:04:05Z\", \"documents\": [{}]}], \"source\": \"didit_network\", \"assignee\": {\"uuid\": \"sample\", \"full_name\": \"sample\", \"email\": \"sample\", \"assigned_at\": \"2026-01-02T03:04:05Z\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.RetrieveVaspAsync("vasp_id-1");
 
@@ -395,6 +583,27 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_ReviewVaspScreeningHit()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"screening\": {\"id\": \"sample\", \"status\": \"Approved\", \"total_hits\": 1, \"score\": 1.5, \"screened_at\": \"2026-01-02T03:04:05Z\", \"fresh\": true, \"flagged\": true, \"scope\": \"company\", \"people_screening\": {\"status\": \"not_run\", \"reason\": \"people_not_provided\"}, \"hits\": [{\"id\": \"sample\", \"review\": {}, \"dismissed\": true}]}, \"changed\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ReviewVaspScreeningHitAsync("vasp_id-1", new TravelRuleReviewVaspScreeningHitParams { ScreeningId = "11111111-2222-3333-4444-555555555555", HitId = "sample-hit_id", ReviewStatus = new TravelRuleReviewVaspScreeningHitParamsReviewStatus("Unreviewed"), Reason = "sample-reason" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/screening/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"screening_id\": \"11111111-2222-3333-4444-555555555555\", \"hit_id\": \"sample-hit_id\", \"review_status\": \"Unreviewed\", \"reason\": \"sample-reason\"}", request.BodyText);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task TravelRule_ScreenVasp()
         {
             var handler = new MockHttpHandler();
@@ -443,7 +652,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(202, "{\"id\": \"3f9e8d7c-6b5a-4c3d-9e2f-1a0b9c8d7e6f\", \"status\": \"SENT\", \"form_version\": \"1\", \"sent_to\": \"travelrule@counterparty.example\", \"sent_at\": \"2026-10-14T10:00:00Z\", \"expires_at\": \"2026-11-13T10:00:00Z\", \"answered_at\": null, \"valid_until\": null, \"current\": false, \"answers\": {}}");
             using var client = TestClients.Create(handler);
-            var result = await client.TravelRule.SendVaspQuestionnaireAsync("vasp_id-1", new TravelRuleCounterpartyQuestionnaireRequest { SentTo = "user@example.com" });
+            var result = await client.TravelRule.SendVaspQuestionnaireAsync("vasp_id-1", new TravelRuleCounterpartyQuestionnaireRequest { SentTo = "user@example.com", AnswerByDays = 1L, RequestedItems = new TravelRuleDocumentKind[] { new TravelRuleDocumentKind("questionnaire") } });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -453,9 +662,31 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"sent_to\": \"user@example.com\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"sent_to\": \"user@example.com\", \"answer_by_days\": 1, \"requested_items\": [\"questionnaire\"]}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("3f9e8d7c-6b5a-4c3d-9e2f-1a0b9c8d7e6f", result.Id);
+        }
+
+        [Fact]
+        public async Task TravelRule_ShareVaspDocuments()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"shared_with\": \"sample\", \"url\": \"sample\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.ShareVaspDocumentsAsync("vasp_id-1", new TravelRuleShareVaspDocumentsParams { DocumentIds = new string[] { "11111111-2222-3333-4444-555555555555" }, SentTo = "user@example.com" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/shared-documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"document_ids\": [\"11111111-2222-3333-4444-555555555555\"], \"sent_to\": \"user@example.com\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("sample", result.SharedWith);
         }
 
         [Fact]
@@ -526,7 +757,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}");
+            handler.Enqueue(200, "{\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {\"code\": \"network_state_unavailable\", \"retryable\": true}}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {\"code\": \"network_state_unavailable\", \"retryable\": true}}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {\"code\": \"network_state_unavailable\", \"retryable\": true}}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {\"mode\": \"platform\", \"status\": \"not_requested\", \"participant_code\": \"sample\", \"requested_at\": \"2026-01-02T03:04:05Z\", \"activated_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\"}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {\"code\": \"network_state_unavailable\", \"retryable\": true}}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.UpdateSettingsAsync(new TravelRuleSettingsUpdate { IsEnabled = true, LegalName = "sample-legal_name", Lei = "sample-lei", Jurisdiction = "sample-jurisdiction", VaspJurisdiction = "sample-vasp_jurisdiction", NameMatchingStrictness = new TravelRuleSettingsUpdateNameMatchingStrictness("NONE"), ConfirmationTimeoutHours = 1L, TimeoutOutcome = new TravelRuleSettingsUpdateTimeoutOutcome("HOLD"), ComplianceEmail = "user@example.com", IsDiscoverable = true, ThresholdAmount = "sample-threshold_amount", OwnershipValidationMode = new TravelRuleSettingsUpdateOwnershipValidationMode("FULL"), SimplifiedValidationThreshold = "sample-simplified_validation_threshold", InboundAutoAccept = true, AllowSelfDeclaration = true, AllowScreenshotProof = true, AutoWalletVerification = true, VaspAttributionEnabled = true, CounterpartyScreeningEnabled = true, SunrisePolicy = new TravelRuleSettingsUpdateSunrisePolicy(""), NonResponsivePolicy = new TravelRuleSettingsUpdateNonResponsivePolicy(""), DisabledNetworks = new TravelRuleSettingsUpdateDisabledNetworks[] { new TravelRuleSettingsUpdateDisabledNetworks("GTR") }, Licence = "REG-EXAMPLE" });
 
@@ -592,7 +823,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(201, "{\"uuid\": \"sample\", \"address\": \"sample\", \"chain\": \"sample\", \"holder_vendor_data\": \"sample\", \"holder_name\": \"sample\", \"entity_type\": \"sample\", \"is_ownership_verified\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"travel_address\": \"sample\", \"address_hash\": \"sample\", \"memo\": \"sample\", \"receiving_travel_address\": \"sample\"}");
+            handler.Enqueue(201, "{\"uuid\": \"sample\", \"address\": \"sample\", \"chain\": \"sample\", \"holder_vendor_data\": \"sample\", \"holder_name\": \"sample\", \"entity_type\": \"sample\", \"is_ownership_verified\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"travel_address\": \"sample\", \"address_hash\": \"sample\", \"memo\": \"sample\", \"receiving_travel_address\": \"sample\", \"ownership_proof\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"failure_reason\": \"\", \"latest_attempt\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"failure_reason\": \"\"}, \"network_eligible\": true, \"reuse_status\": \"NOT_LINKED\"}, \"label\": \"sample\", \"owner_type\": \"customer\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.WalletAddresses.CreateAsync(new WalletAddressEntryCreate { Address = "sample-address", Chain = "sample-chain", HolderVendorData = "sample-holder_vendor_data", HolderName = "sample-holder_name", EntityType = "sample-entity_type", SelfDeclared = true, TravelAddress = "sample-travel_address", Memo = "sample-memo" });
 
@@ -632,7 +863,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"sample\", \"address\": \"sample\", \"chain\": \"sample\", \"holder_vendor_data\": \"sample\", \"holder_name\": \"sample\", \"entity_type\": \"sample\", \"is_ownership_verified\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"travel_address\": \"sample\", \"address_hash\": \"sample\", \"memo\": \"sample\", \"receiving_travel_address\": \"sample\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"uuid\": \"sample\", \"address\": \"sample\", \"chain\": \"sample\", \"holder_vendor_data\": \"sample\", \"holder_name\": \"sample\", \"entity_type\": \"sample\", \"is_ownership_verified\": true, \"created_at\": \"2026-01-02T03:04:05Z\", \"travel_address\": \"sample\", \"address_hash\": \"sample\", \"memo\": \"sample\", \"receiving_travel_address\": \"sample\", \"ownership_proof\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"failure_reason\": \"\", \"latest_attempt\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"failure_reason\": \"\"}, \"network_eligible\": true, \"reuse_status\": \"NOT_LINKED\"}, \"label\": \"sample\", \"owner_type\": \"customer\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.WalletAddresses.ListAsync(new TravelRuleWalletAddressesListParams { Limit = 1L, Offset = 1L });
 
@@ -649,11 +880,53 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_WalletAddresses_ListTransfers()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"transfer_id\": \"sample\", \"status\": \"AWAITING_COUNTERPARTY\", \"created_at\": \"2026-01-02T03:04:05Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.WalletAddresses.ListTransfersAsync("entry_uuid-1", new TravelRuleWalletAddressesListTransfersParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/wallet-addresses/entry_uuid-1/transfers/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task TravelRule_WalletAddresses_Lookup()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"match\": \"book\", \"directory_checked\": false, \"entry_id\": \"11111111-2222-4333-8444-555555555555\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.TravelRule.WalletAddresses.LookupAsync(new TravelRuleWalletAddressesLookupParams { Address = "sample-address", Chain = "sample-chain", Memo = "sample-memo" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/wallet-addresses/lookup/", request.Path);
+            Assert.Equal("?address=sample-address&chain=sample-chain&memo=sample-memo", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("11111111-2222-4333-8444-555555555555", result.EntryId);
+        }
+
+        [Fact]
         public async Task TravelRule_WalletAddresses_Update()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"holder_name\": \"sample\", \"holder_vendor_data\": \"sample\", \"entity_type\": \"sample\", \"travel_address\": \"sample\"}");
+            handler.Enqueue(200, "{\"holder_name\": \"sample\", \"holder_vendor_data\": \"sample\", \"entity_type\": \"sample\", \"travel_address\": \"sample\", \"receiving_travel_address\": \"sample\", \"label\": \"sample\", \"owner_type\": \"customer\", \"ownership_proof\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"failure_reason\": \"\", \"latest_attempt\": {\"proof_id\": \"sample\", \"method\": \"MESSAGE_SIGNING\", \"status\": \"PENDING\", \"failure_reason\": \"\"}, \"network_eligible\": true, \"reuse_status\": \"NOT_LINKED\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.WalletAddresses.UpdateAsync("entry_uuid-1", new WalletAddressEntryUpdate { HolderName = "sample-holder_name", HolderVendorData = "sample-holder_vendor_data", EntityType = "sample-entity_type", TravelAddress = "sample-travel_address" });
 
@@ -675,7 +948,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"proof_id\": \"sample\", \"method\": \"SCREENSHOT\", \"status\": \"PENDING\", \"wallet_address\": \"sample\", \"chain\": \"sample\", \"holder_name\": \"sample\", \"is_ownership_verified\": true, \"transaction_id\": \"sample\", \"file_name\": \"sample\", \"content_type\": \"sample\", \"screenshot_url\": \"sample\", \"attempts\": 1, \"failure_reason\": \"\", \"method_chosen_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"decided_by\": \"sample\", \"review_note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\"}");
+            handler.Enqueue(200, "{\"proof_id\": \"sample\", \"method\": \"SCREENSHOT\", \"status\": \"PENDING\", \"wallet_address\": \"sample\", \"chain\": \"sample\", \"holder_name\": \"sample\", \"is_ownership_verified\": true, \"transaction_id\": \"sample\", \"file_name\": \"sample\", \"content_type\": \"sample\", \"screenshot_url\": \"sample\", \"attempts\": 1, \"failure_reason\": \"\", \"method_chosen_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"decided_by\": \"sample\", \"review_note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"application_id\": \"sample\", \"user_id\": \"sample\", \"holder_vendor_data\": \"sample\", \"wallet_label\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.WalletProofs.DecideAsync("proof_uuid-1", new TravelRuleWalletProofDecision { Decision = new TravelRuleWalletProofDecisionDecision("approve"), Note = "sample-note" });
 
@@ -698,7 +971,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"proof_id\": \"sample\", \"method\": \"SCREENSHOT\", \"status\": \"PENDING\", \"wallet_address\": \"sample\", \"chain\": \"sample\", \"holder_name\": \"sample\", \"is_ownership_verified\": true, \"transaction_id\": \"sample\", \"file_name\": \"sample\", \"content_type\": \"sample\", \"screenshot_url\": \"sample\", \"attempts\": 1, \"failure_reason\": \"\", \"method_chosen_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"decided_by\": \"sample\", \"review_note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"proof_id\": \"sample\", \"method\": \"SCREENSHOT\", \"status\": \"PENDING\", \"wallet_address\": \"sample\", \"chain\": \"sample\", \"holder_name\": \"sample\", \"is_ownership_verified\": true, \"transaction_id\": \"sample\", \"file_name\": \"sample\", \"content_type\": \"sample\", \"screenshot_url\": \"sample\", \"attempts\": 1, \"failure_reason\": \"\", \"method_chosen_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"decided_by\": \"sample\", \"review_note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"application_id\": \"sample\", \"user_id\": \"sample\", \"holder_vendor_data\": \"sample\", \"wallet_label\": \"sample\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.WalletProofs.ListAsync(new TravelRuleWalletProofsListParams { Status = new TravelRuleWalletProofsListParamsStatus("PENDING"), Limit = 1L, Offset = 1L });
 
@@ -715,11 +988,47 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task TravelRule_WithdrawVaspDocuments()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.TravelRule.WithdrawVaspDocumentsAsync("vasp_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/shared-documents/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task TravelRule_WithdrawVaspQuestionnaire()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.TravelRule.WithdrawVaspQuestionnaireAsync("vasp_id-1", "questionnaire_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/travel-rule/vasps/vasp_id-1/questionnaires/questionnaire_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
         public async Task TravelRule_Workspace_Claim()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
+            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.Workspace.ClaimAsync(new TravelRuleWorkspaceClaimRequest { VaspId = "11111111-2222-3333-4444-555555555555", Licence = "REG-EXAMPLE" });
 
@@ -741,7 +1050,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
+            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.Workspace.ConfirmDomainAsync(new TravelRuleWorkspaceDomainConfirmRequest { Code = "sample-code" });
 
@@ -763,7 +1072,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
+            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.Workspace.EnableBillingAsync(new TravelRuleWorkspaceBillingRequest { Enabled = true });
 
@@ -785,7 +1094,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
+            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.Workspace.GetAsync();
 
@@ -827,7 +1136,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
+            handler.Enqueue(200, "{\"joined_free\": true, \"work_email\": \"sample\", \"joined_at\": \"2026-01-02T03:04:05Z\", \"claim\": {\"status\": \"unclaimed\", \"proved_by_domain\": true, \"claimed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"review_note\": \"sample\", \"vasp_id\": \"sample\", \"vasp_name\": \"sample\", \"licence\": \"sample\", \"rejection_reason\": \"\"}, \"prefill\": {\"key\": \"value\"}, \"domain\": {\"domain\": \"sample\", \"status\": \"unverified\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"txt\": {\"host\": \"sample\", \"value\": \"sample\"}}, \"billing_enabled\": true, \"billing_enabled_at\": \"2026-01-02T03:04:05Z\", \"didit_network\": {\"key\": \"value\"}, \"settings\": {\"is_enabled\": true, \"jurisdiction\": \"sample\", \"vasp_jurisdiction\": \"sample\", \"name_matching_strictness\": \"NONE\", \"confirmation_timeout_hours\": 1, \"timeout_outcome\": \"HOLD\", \"threshold_amount\": \"sample\", \"ownership_validation_mode\": \"FULL\", \"simplified_validation_threshold\": \"sample\", \"data_sharing_fields\": {\"individual\": [\"name\"], \"company\": [\"name\"]}, \"matching_rules\": {\"individual\": {\"name\": \"NONE\", \"date_of_birth\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}, \"company\": {\"name\": \"NONE\", \"address\": \"NONE\", \"account\": \"NONE\"}}, \"legal_name\": \"sample\", \"lei\": \"sample\", \"compliance_email\": \"sample\", \"is_discoverable\": true, \"inbound_auto_accept\": true, \"allow_self_declaration\": true, \"allow_screenshot_proof\": true, \"auto_wallet_verification\": true, \"vasp_attribution_enabled\": true, \"counterparty_screening_enabled\": true, \"sunrise_policy\": \"\", \"sunrise_jurisdictions\": [\"sample\"], \"non_responsive_policy\": \"\", \"travel_address\": \"sample\", \"disabled_networks\": [\"GTR\"], \"networks\": {\"gtr\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"trust\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"verifyvasp\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}, \"sygna\": {\"rail\": \"GTR\", \"mode\": \"own\", \"state\": \"own_membership\", \"reason\": \"own_membership_connected\", \"platform_available\": true, \"connected\": true, \"participant\": {}, \"vasps_reachable\": 1, \"routed_30d\": 1, \"load_status\": \"loaded\", \"load_error\": {}}}, \"didit_network\": {\"listed\": true, \"missing\": [\"travel_rule_off\"], \"compliance_email_confirmed\": true}, \"licence\": \"sample\"}, \"outbound_price\": {\"list_price\": \"sample\", \"effective_price\": \"sample\", \"currency\": \"sample\", \"discount_pct\": 1.5, \"product\": \"sample\", \"source\": \"plan\"}, \"licence\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.TravelRule.Workspace.VerifyDomainDnsAsync();
 

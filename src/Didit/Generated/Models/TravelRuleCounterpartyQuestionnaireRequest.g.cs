@@ -21,6 +21,20 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> SentTo { get; set; }
 
+        /// <summary>
+        /// Optional. Days the counterparty has to answer. Default: the standard answer window.
+        /// </summary>
+        [JsonPropertyName("answer_by_days")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> AnswerByDays { get; set; }
+
+        /// <summary>
+        /// Optional. What the counterparty must provide: the questionnaire answers and/or PDF documents.
+        /// </summary>
+        [JsonPropertyName("requested_items")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<IReadOnlyList<TravelRuleDocumentKind>> RequestedItems { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

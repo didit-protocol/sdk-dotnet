@@ -74,6 +74,24 @@ namespace Didit
         [JsonPropertyName("answers")]
         public IReadOnlyDictionary<string, string>? Answers { get; init; }
 
+        /// <summary>
+        /// What the request asked for.
+        /// </summary>
+        [JsonPropertyName("requested_items")]
+        public IReadOnlyList<TravelRuleDocumentKind>? RequestedItems { get; init; }
+
+        /// <summary>
+        /// When Didit last reminded the counterparty, or null.
+        /// </summary>
+        [JsonPropertyName("reminder_sent_at")]
+        public DateTimeOffset? ReminderSentAt { get; init; }
+
+        /// <summary>
+        /// The documents the counterparty uploaded.
+        /// </summary>
+        [JsonPropertyName("documents")]
+        public IReadOnlyList<TravelRuleCounterpartyQuestionnaireDocuments>? Documents { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -34,7 +34,7 @@ namespace Didit.Resources
         /// <para/>
         /// Billing. A live call costs $0.10 per validated address. An <c>unavailable</c> result is not charged. Nothing is stored apart from the usage record: no session is created and the result is returned only in this response.
         /// <para/>
-        /// Sandbox. Sandbox keys validate the request and always return a deterministic <c>verified</c> result that echoes the address sent, without consuming credits.
+        /// Sandbox. Sandbox keys validate the request and always return a deterministic <c>verified</c> result that echoes the address sent, with <c>address_type</c> and <c>is_residential</c> always <c>null</c> (the keys are present), without consuming credits.
         /// <para/>
         /// Authentication. Send your application's API key in <c>x-api-key</c>. Missing or invalid credentials return <c>403</c> - this API never returns <c>401</c>.
         /// <para/>

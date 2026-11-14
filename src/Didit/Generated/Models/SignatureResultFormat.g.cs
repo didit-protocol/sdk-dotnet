@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>pdf</c> for a Simple signature, <c>pades</c> for Advanced (AES).
+    /// <c>pdf</c> for a Simple signature, <c>pades</c> for Advanced (AES) and Qualified (QES).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultFormat.EnumJsonConverter))]

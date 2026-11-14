@@ -101,6 +101,10 @@ namespace Didit.Resources
                 {
                     form.Add("consent", parameters.Consent.Value);
                 }
+                if (parameters.ElectoralRollOnly.IsSet)
+                {
+                    form.Add("electoral_roll_only", parameters.ElectoralRollOnly.Value);
+                }
                 if (parameters.IdentificationNumber.IsSet)
                 {
                     form.Add("identification_number", parameters.IdentificationNumber.Value);

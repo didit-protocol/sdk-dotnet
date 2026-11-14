@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The RFC 3161 timestamp in the signature, issued by Didit. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
+    /// The RFC 3161 timestamp in the signature: issued by Didit for AES, by the qualified trust service provider for QES. <c>null</c> until signed, and always <c>null</c> for a Simple signature.
     /// </summary>
     public sealed record SignatureResultValidationDocumentsTimestamp
     {
@@ -21,7 +21,7 @@ namespace Didit
         public DateTimeOffset? Time { get; init; }
 
         /// <summary>
-        /// Always <c>false</c> for AES.
+        /// <c>false</c> for AES; <c>true</c> for a valid QES time stamp.
         /// </summary>
         [JsonPropertyName("qualified")]
         public bool? Qualified { get; init; }

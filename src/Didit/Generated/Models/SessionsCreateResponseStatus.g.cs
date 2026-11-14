@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Current status of the session. Newly created sessions return <c>Not Started</c>. If a non-finished session already existed for the same <c>vendor_data</c> on the workflow's latest published version, the returned status reflects that existing session.
+    /// Current status of the session. Newly created sessions return <c>Not Started</c>. For a User Verification workflow, if a non-finished session already existed for the same <c>vendor_data</c> on the workflow's latest published version, the returned status reflects that existing session.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SessionsCreateResponseStatus.EnumJsonConverter))]
