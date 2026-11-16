@@ -1505,6 +1505,8 @@ namespace Didit.Internal
     [JsonSerializable(typeof(SessionsDeleteResponse))]
     [JsonSerializable(typeof(SessionsDeleteResponseFaceRetentionOutcome))]
     [JsonSerializable(typeof(SessionsExportAmlScreeningHistoryParams))]
+    [JsonSerializable(typeof(SessionsGeneratePdfParams))]
+    [JsonSerializable(typeof(SessionsGeneratePdfParamsLanguage))]
     [JsonSerializable(typeof(SessionsImportSharedParams))]
     [JsonSerializable(typeof(SessionsImportsCheckProviderParams))]
     [JsonSerializable(typeof(SessionsImportsCheckProviderParamsOptions))]

@@ -317,7 +317,7 @@ namespace Didit.Resources
         /// - KYC — rolled-up session status, the warnings list, and one section per executed feature: ID Verification (document images plus extracted fields), NFC, Liveness, Face Match, Email Verification, Phone Verification, Proof of Address, Questionnaire answers, Database Validation, AML Screening, and IP Analysis — followed by session tags, console review activity (comments and status changes), and the session event timeline.
         /// - KYB — registry checks (company data), AML screenings, business document verifications, key-people checks, questionnaire responses, phone/email verifications, IP analyses, and the session event timeline, followed by tags and review activity.
         /// <para/>
-        /// Branding. If your application has white-label customization, the report is rendered with your logo and links to your privacy-policy URL; otherwise it carries Didit branding. Reports are rendered in English — there is no language parameter.
+        /// Branding. If your application has white-label customization, the report is rendered with your logo and links to your privacy-policy URL; otherwise it carries Didit branding. Reports are rendered in English by default; pass the <c>language</c> query parameter to print every word the report writes itself (section titles, labels, statuses, check names, notes, footers, dates and country names) in one of 16 languages, while values the end user submitted or a source returned print exactly as captured.
         /// <para/>
         /// No caching. Every call re-renders the PDF from the current session data, so a report generated after a manual review reflects the reviewer’s decision. Two calls for the same session can produce byte-different files — archive the downloaded file if you need an immutable copy.
         /// <para/>
@@ -330,11 +330,12 @@ namespace Didit.Resources
         /// <c>GET /v3/session/{sessionId}/generate-pdf/</c> (<c>sessions.generate_pdf</c>).
         /// </remarks>
         /// <param name="sessionId">UUID of the User Verification (KYC) or Business Verification (KYB) session to render — the <c>session_id</c> returned by <c>POST /v3/session/</c>. The same path works for both session kinds; use the <c>Content-Disposition</c> filename on the response to tell which report type you received. <para/> Must be a well-formed, lowercase UUID. The route only matches valid UUIDs, so a malformed value is rejected by the URL router before any application code runs and the response is a <c>404</c> HTML page rather than the JSON <c>{"detail": ...}</c> envelope shown below. The route's UUID converter only matches the canonical lowercase form — uppercase-hex UUIDs are rejected with the HTML 404.</param>
+        /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<BinaryResponse> GeneratePdfAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<BinaryResponse> GeneratePdfAsync(string sessionId, SessionsGeneratePdfParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            var response = await _raw.GeneratePdfAsync(sessionId, requestOptions, cancellationToken).ConfigureAwait(false);
+            var response = await _raw.GeneratePdfAsync(sessionId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -1207,7 +1208,7 @@ namespace Didit.Resources
         /// Download a PDF report for a verification session
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsResource.GeneratePdfAsync"/>.</remarks>
-        public Task<DiditResponse<BinaryResponse>> GeneratePdfAsync(string sessionId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<BinaryResponse>> GeneratePdfAsync(string sessionId, SessionsGeneratePdfParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/session/" + PathParameter.Encode(sessionId, "sessionId") + "/generate-pdf/")
             {
@@ -1215,6 +1216,7 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
+            request.Query.Add("language", parameters?.Language?.Value);
             return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
         }
 
