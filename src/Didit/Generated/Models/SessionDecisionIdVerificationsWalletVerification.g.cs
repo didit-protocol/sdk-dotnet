@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Credential evidence. Present only when <c>verification_method</c> is <c>wallet</c>; <c>null</c> otherwise.
+    /// Credential evidence. Present only when <c>verification_method</c> is <c>wallet</c>; <c>null</c> otherwise. UAE PASS (<c>provider</c> <c>uae_pass</c>) is outcome only: the identity fields of this ID verification (<c>full_name</c>, <c>first_name</c>, <c>last_name</c>, <c>date_of_birth</c>, <c>nationality</c>, the document numbers) stay <c>null</c>, <c>attributes</c> holds only whether each detail declared in <c>expected_details</c> matched, and nothing UAE PASS shared about the person is returned or kept.
     /// </summary>
     public sealed record SessionDecisionIdVerificationsWalletVerification
     {
@@ -63,7 +63,7 @@ namespace Didit
         public bool? SignatureValid { get; init; }
 
         /// <summary>
-        /// The attributes the wallet shared, keyed as the wallet's catalog entry lists them.
+        /// The attributes the wallet shared, keyed as the wallet's catalog entry lists them. For UAE PASS only the comparison with <c>expected_details</c>, one key per declared detail, each <c>match</c> or <c>no_match</c>: <c>name_match</c> (<c>first_name</c> / <c>last_name</c>), <c>date_of_birth_match</c> and <c>identification_number_match</c> (the Emirates ID number). A declared detail that does not match also raises the expected-details warning (<c>FULL_NAME_MISMATCH_WITH_PROVIDED</c>, <c>DOB_MISMATCH_WITH_PROVIDED</c> or <c>IDENTIFICATION_NUMBER_MISMATCH_WITH_PROVIDED</c>), handled by the workflow's expected-details mismatch action.
         /// </summary>
         [JsonPropertyName("attributes")]
         public JsonElement? Attributes { get; init; }
