@@ -84,7 +84,7 @@ namespace Didit
         public Optional<SessionsCreateParamsContactDetails> ContactDetails { get; set; }
 
         /// <summary>
-        /// Expected user details used to cross-validate against the data extracted from the user's ID document, Proof of Address, and other verification steps. Mismatches are surfaced as warnings on the decision; some fields (e.g. <c>id_country</c>, <c>expected_document_types</c>) also alter the user-facing flow. For Business Verification (KYB) workflows only the business fields (<c>company_name</c>, <c>registry_country</c>, <c>registration_number</c>) are used — they pre-fill the company registry search for the user — and all person-level fields are ignored.
+        /// Expected user details used to cross-validate against the data extracted from the user's ID document, Proof of Address, and other verification steps. Mismatches are surfaced as warnings on the decision; some fields (e.g. <c>id_country</c>, <c>expected_document_types</c>) also alter the user-facing flow. For Business Verification (KYB) workflows only the business fields (<c>company_name</c>, <c>registry_country</c>, <c>registration_number</c>) are used — they pre-fill the company registry search for the user — and all person-level fields are ignored. UAE PASS (an ID Verification wallet) only confirms these details and never returns the person's identity: it is offered only when they include <c>identification_number</c> (the Emirates ID number), or a name (<c>first_name</c> and/or <c>last_name</c>) with <c>date_of_birth</c>.
         /// </summary>
         [JsonPropertyName("expected_details")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

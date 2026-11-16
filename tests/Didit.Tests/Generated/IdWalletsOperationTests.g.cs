@@ -630,8 +630,8 @@ namespace Didit.Tests.Generated
         public async Task IdWallets_StartUaePass()
         {
             var handler = new MockHttpHandler();
-            // Response body from the spec's example.
-            handler.Enqueue(201, "{\"request_id\": \"00000000-0000-4000-8000-000000000001\", \"wallet_verification\": {\"wallet\": {\"id\": \"uae_pass\", \"name\": \"UAE PASS\", \"issuing_authority\": \"UAE Digital Government Authority\"}, \"country\": \"ARE\", \"status\": \"Not Finished\", \"outcome\": \"pending\", \"error\": null, \"interaction\": \"redirect\", \"simulated\": false, \"expires_at\": \"2026-01-01T10:10:00Z\", \"next_action\": {\"type\": \"redirect\", \"url\": \"https://wallet.example.com/authorize\"}, \"identity\": null, \"attributes\": null, \"level_of_assurance\": null, \"verified_at\": null, \"signature_valid\": null, \"credential_type\": \"person_identification\"}, \"vendor_data\": \"your-customer-reference\", \"metadata\": {\"reference\": \"example\"}, \"created_at\": \"2026-01-01T10:00:00Z\"}");
+            // Response body from the spec's schema.
+            handler.Enqueue(201, "{\"request_id\": \"sample\", \"wallet_verification\": {\"wallet\": {\"id\": \"sample\", \"name\": \"sample\", \"issuing_authority\": \"sample\"}, \"country\": \"sample\", \"status\": \"sample\", \"outcome\": \"pending\", \"error\": \"sample\", \"interaction\": \"redirect\", \"simulated\": true, \"expires_at\": \"2026-01-02T03:04:05Z\", \"next_action\": {\"type\": \"redirect\", \"url\": \"sample\", \"digital_credentials\": {\"protocol\": \"sample\", \"request\": {\"key\": \"value\"}}, \"verification_code\": \"sample\", \"poll_interval_seconds\": 1}, \"identity\": {\"full_name\": \"sample\", \"first_name\": \"sample\", \"last_name\": \"sample\", \"date_of_birth\": \"sample\", \"nationality\": \"sample\", \"issuing_state\": \"sample\"}, \"attributes\": {\"key\": \"value\"}, \"level_of_assurance\": \"sample\", \"verified_at\": \"2026-01-02T03:04:05Z\", \"signature_valid\": true, \"credential_type\": \"sample\"}, \"vendor_data\": \"sample\", \"metadata\": {\"key\": \"value\"}, \"created_at\": \"2026-01-02T03:04:05Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.IdWallets.StartUaePassAsync(new DigitalIdWalletApiUaePassWalletVerificationStartRequest { VendorData = "sample-vendor_data", SandboxScenario = "sample-sandbox_scenario", Country = new DigitalIdWalletApiUaePassWalletVerificationStartCountryEnum("ARE"), ReturnUrl = "https://example.com/callback", Device = new DigitalIdWalletApiDeviceEnum("same_device") });
 
@@ -645,7 +645,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"vendor_data\": \"sample-vendor_data\", \"sandbox_scenario\": \"sample-sandbox_scenario\", \"country\": \"ARE\", \"return_url\": \"https://example.com/callback\", \"device\": \"same_device\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("00000000-0000-4000-8000-000000000001", result.RequestId);
+            Assert.Equal("sample", result.RequestId);
         }
 
         [Fact]
