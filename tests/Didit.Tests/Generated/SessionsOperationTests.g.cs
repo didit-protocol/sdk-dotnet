@@ -236,13 +236,13 @@ namespace Didit.Tests.Generated
             var handler = new MockHttpHandler();
             handler.Enqueue(200, new byte[] { 37, 80, 68, 70 }, "application/pdf", new Dictionary<string, string> { ["Content-Disposition"] = "attachment; filename=\"report.bin\"" });
             using var client = TestClients.Create(handler);
-            var result = await client.Sessions.GeneratePdfAsync("sessionId-1");
+            var result = await client.Sessions.GeneratePdfAsync("sessionId-1", new SessionsGeneratePdfParams { Language = new SessionsGeneratePdfParamsLanguage("en") });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("GET", request.Method);
             Assert.Equal("verification.didit.me", request.Uri.Host);
             Assert.Equal("/v3/session/sessionId-1/generate-pdf/", request.Path);
-            Assert.Equal("", request.Query);
+            Assert.Equal("?language=en", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
