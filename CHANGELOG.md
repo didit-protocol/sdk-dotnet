@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.26.0...v1.26.1) (2026-11-16)
+
+
+### Dependencies
+
+* Bump the test group with 1 update ([#83](https://github.com/didit-protocol/sdk-dotnet/issues/83)) ([7d86329](https://github.com/didit-protocol/sdk-dotnet/commit/7d8632902214620232b84d8137dfa16d2e537736))
+
 ## [1.26.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.25.1...v1.26.0) (2026-11-16)
 
 
