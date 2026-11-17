@@ -129,6 +129,12 @@ namespace Didit
         public string? City { get; init; }
 
         /// <summary>
+        /// Street address at the device fix, reverse geocoded. <c>country_code</c>, <c>region_code</c> and <c>city</c> stay the offline place used by geofences; this is the address for reviewers and for comparison with <c>kyc.parsed_address</c> or <c>poa.parsed_address</c> in workflow rules. See the schema for when it is <c>null</c>.
+        /// </summary>
+        [JsonPropertyName("parsed_address")]
+        public GeolocationParsedAddress? ParsedAddress { get; init; }
+
+        /// <summary>
         /// Result of the country and area rules of the step.
         /// </summary>
         [JsonPropertyName("geofence")]
