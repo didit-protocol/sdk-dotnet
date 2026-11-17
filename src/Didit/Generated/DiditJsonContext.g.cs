@@ -646,6 +646,8 @@ namespace Didit.Internal
     [JsonSerializable(typeof(GeolocationCheckStatus))]
     [JsonSerializable(typeof(GeolocationCheckWarnings))]
     [JsonSerializable(typeof(GeolocationCheckWarningsFeature))]
+    [JsonSerializable(typeof(GeolocationParsedAddress))]
+    [JsonSerializable(typeof(GeolocationParsedAddressDocumentLocation))]
     [JsonSerializable(typeof(IPRiskRequest))]
     [JsonSerializable(typeof(IPRiskResponse))]
     [JsonSerializable(typeof(IPRiskResponseIp))]
