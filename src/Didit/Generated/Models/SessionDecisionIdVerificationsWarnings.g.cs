@@ -21,7 +21,7 @@ namespace Didit
         public SessionDecisionIdVerificationsWarningsFeature? Feature { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;risk&lt;/c&gt; field.
+        /// Machine-readable risk code. In ID verification warnings, <c>SELFIE_MATCH_NOT_COMPUTED</c> means document selfie matching is enabled but the front-camera comparison never ran because the client reported no front-camera frame (<c>front_camera_image_unavailable</c>); it resolves to <c>In Review</c> by default or <c>Declined</c> when <c>document_selfie_portrait_match_not_computed_action</c> is <c>DECLINE</c>.
         /// </summary>
         [JsonPropertyName("risk")]
         public string? Risk { get; init; }
