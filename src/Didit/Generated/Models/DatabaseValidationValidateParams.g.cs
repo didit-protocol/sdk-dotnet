@@ -71,7 +71,7 @@ namespace Didit
         public Optional<string> LastName { get; set; }
 
         /// <summary>
-        /// Middle name, used by some country services (AUS, NZL, …).
+        /// Middle name, used by some country services (NZL, …).
         /// </summary>
         [JsonPropertyName("middle_name")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -197,21 +197,21 @@ namespace Didit
         public Optional<string> PostalCode { get; set; }
 
         /// <summary>
-        /// Driver licence number for government document-verification services (AUS, NZL, IND).
+        /// Driver licence number for government document-verification services (NZL, IND).
         /// </summary>
         [JsonPropertyName("driver_license_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> DriverLicenseNumber { get; set; }
 
         /// <summary>
-        /// Physical driver licence card number, where required separately from the licence number (AUS).
+        /// Physical driver licence card number, where required separately from the licence number.
         /// </summary>
         [JsonPropertyName("driver_license_card_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> DriverLicenseCardNumber { get; set; }
 
         /// <summary>
-        /// Driver licence state or territory of issue (AUS).
+        /// Driver licence state or territory of issue.
         /// </summary>
         [JsonPropertyName("driver_license_state")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -225,7 +225,7 @@ namespace Didit
         public Optional<string> DriverLicenseVersion { get; set; }
 
         /// <summary>
-        /// Passport number for government passport-verification services (AUS, NZL, IND, CHN).
+        /// Passport number for government passport-verification services (NZL, IND, CHN).
         /// </summary>
         [JsonPropertyName("passport_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -253,77 +253,77 @@ namespace Didit
         public Optional<string> PassportIssueCountry { get; set; }
 
         /// <summary>
-        /// Medicare card number (AUS).
+        /// Medicare card number.
         /// </summary>
         [JsonPropertyName("medicare_card_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> MedicareCardNumber { get; set; }
 
         /// <summary>
-        /// Australian ImmiCard number.
+        /// The &lt;c&gt;immi_card_number&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("immi_card_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> ImmiCardNumber { get; set; }
 
         /// <summary>
-        /// Australian ImmiCard expiry date.
+        /// The &lt;c&gt;immi_card_expiry_date&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("immi_card_expiry_date")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> ImmiCardExpiryDate { get; set; }
 
         /// <summary>
-        /// Citizenship certificate number (AUS).
+        /// Citizenship certificate number.
         /// </summary>
         [JsonPropertyName("citizenship_certificate_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> CitizenshipCertificateNumber { get; set; }
 
         /// <summary>
-        /// Birth-certificate registration number (AUS).
+        /// Birth-certificate registration number.
         /// </summary>
         [JsonPropertyName("birth_registration_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> BirthRegistrationNumber { get; set; }
 
         /// <summary>
-        /// Birth-certificate registration date (AUS).
+        /// Birth-certificate registration date.
         /// </summary>
         [JsonPropertyName("birth_registration_date")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> BirthRegistrationDate { get; set; }
 
         /// <summary>
-        /// Birth-certificate registration state (AUS).
+        /// Birth-certificate registration state.
         /// </summary>
         [JsonPropertyName("birth_registration_state")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> BirthRegistrationState { get; set; }
 
         /// <summary>
-        /// Marriage certificate number (AUS).
+        /// Marriage certificate number.
         /// </summary>
         [JsonPropertyName("marriage_certificate_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> MarriageCertificateNumber { get; set; }
 
         /// <summary>
-        /// Change-of-name certificate number (AUS).
+        /// Change-of-name certificate number.
         /// </summary>
         [JsonPropertyName("change_of_name_certificate_number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> ChangeOfNameCertificateNumber { get; set; }
 
         /// <summary>
-        /// First name of the partner on a marriage certificate (AUS).
+        /// First name of the partner on a marriage certificate.
         /// </summary>
         [JsonPropertyName("first_partner_name")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> FirstPartnerName { get; set; }
 
         /// <summary>
-        /// Last name of the partner on a marriage certificate (AUS).
+        /// Last name of the partner on a marriage certificate.
         /// </summary>
         [JsonPropertyName("last_partner_name")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
