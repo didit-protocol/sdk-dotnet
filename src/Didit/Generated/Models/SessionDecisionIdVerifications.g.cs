@@ -255,7 +255,7 @@ namespace Didit
         public IReadOnlyList<string>? ExtraFiles { get; init; }
 
         /// <summary>
-        /// Face match score between the portrait extracted from the front document image and the front camera image
+        /// Face match score between the portrait extracted from the front document image and the front camera image. <c>null</c> when the comparison did not run; when the client reported no front-camera frame and neither side has a score, the ID verification warnings carry <c>SELFIE_MATCH_NOT_COMPUTED</c>.
         /// </summary>
         [JsonPropertyName("front_image_camera_front_face_match_score")]
         public double? FrontImageCameraFrontFaceMatchScore { get; init; }
