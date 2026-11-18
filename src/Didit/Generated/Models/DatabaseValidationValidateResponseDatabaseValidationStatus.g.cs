@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>Declined</c> when the overall <c>match_type</c> triggers a <c>DECLINE</c> action (<c>no_match_action</c> defaults to <c>DECLINE</c>, <c>partial_match_action</c> to <c>NO_ACTION</c>); <c>In Review</c> when no service produced a usable comparison, for example when the only selected service came back <c>REGISTRY_UNAVAILABLE</c> or <c>INCONCLUSIVE</c>; <c>Approved</c> otherwise. A request that selected several services can be <c>Approved</c> on one service's match while another was unavailable, so check <c>errors</c> and the per-service <c>outcome_code</c>s too.
+    /// <c>Declined</c> when the overall <c>match_type</c> triggers a <c>DECLINE</c> action (<c>no_match_action</c> defaults to <c>DECLINE</c>, <c>partial_match_action</c> to <c>NO_ACTION</c>); <c>In Review</c> when no service produced a usable comparison, for example when the only selected service came back <c>REGISTRY_UNAVAILABLE</c> or <c>INCONCLUSIVE</c>, and when the registry confirmed the identification number but returned a different name while <c>partial_match_action</c> is <c>NO_ACTION</c>; <c>Approved</c> otherwise. A request that selected several services can be <c>Approved</c> on one service's match while another was unavailable, so check <c>errors</c> and the per-service <c>outcome_code</c>s too.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(DatabaseValidationValidateResponseDatabaseValidationStatus.EnumJsonConverter))]

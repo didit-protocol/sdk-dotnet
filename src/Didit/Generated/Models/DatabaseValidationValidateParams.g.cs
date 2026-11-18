@@ -554,7 +554,7 @@ namespace Didit
         public Optional<string> CountryOfResidence { get; set; }
 
         /// <summary>
-        /// What a <c>partial_match</c> does to <c>database_validation.status</c>. Defaults to <c>NO_ACTION</c> (status stays <c>Approved</c>, with a warning).
+        /// What a <c>partial_match</c> does to <c>database_validation.status</c>. Defaults to <c>NO_ACTION</c> (status stays <c>Approved</c>, with a warning). When the registry confirmed the identification number but returned a different name, <c>NO_ACTION</c> answers <c>In Review</c> instead of <c>Approved</c>; <c>DECLINE</c> still declines.
         /// </summary>
         [JsonPropertyName("partial_match_action")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
