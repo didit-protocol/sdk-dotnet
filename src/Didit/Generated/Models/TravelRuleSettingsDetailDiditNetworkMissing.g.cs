@@ -35,6 +35,12 @@ namespace Didit
         /// <summary><c>legal_name_missing</c></summary>
         public static TravelRuleSettingsDetailDiditNetworkMissing LegalNameMissing { get; } = new("legal_name_missing");
 
+        /// <summary><c>lei_missing</c></summary>
+        public static TravelRuleSettingsDetailDiditNetworkMissing LeiMissing { get; } = new("lei_missing");
+
+        /// <summary><c>lei_unverified</c></summary>
+        public static TravelRuleSettingsDetailDiditNetworkMissing LeiUnverified { get; } = new("lei_unverified");
+
         /// <summary><c>compliance_email_missing</c></summary>
         public static TravelRuleSettingsDetailDiditNetworkMissing ComplianceEmailMissing { get; } = new("compliance_email_missing");
 
@@ -46,6 +52,9 @@ namespace Didit
 
         /// <summary><c>internal_organization</c></summary>
         public static TravelRuleSettingsDetailDiditNetworkMissing InternalOrganization { get; } = new("internal_organization");
+
+        /// <summary><c>review_pending</c></summary>
+        public static TravelRuleSettingsDetailDiditNetworkMissing ReviewPending { get; } = new("review_pending");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

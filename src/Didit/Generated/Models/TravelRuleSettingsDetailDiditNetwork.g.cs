@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Whether the Didit network lists your VASP profile, so other Didit customers find it in the directory and reach it on the INTERNAL rail, and each condition it still misses.
+    /// Whether the Didit network lists your VASP profile, so other Didit customers find it in the directory and reach it on the INTERNAL rail, and each condition it still misses. Listing needs: a live (not sandbox) application with Travel Rule on, Discoverable on, a legal name, a compliance email confirmed through the emailed link, an LEI that GLEIF lists as issued to an active entity, and a review by Didit that the company is a virtual asset service provider (the review is for that LEI: changing the LEI or the legal name needs a new review).
     /// </summary>
     public sealed record TravelRuleSettingsDetailDiditNetwork
     {
@@ -21,7 +21,7 @@ namespace Didit
         public bool? Listed { get; init; }
 
         /// <summary>
-        /// Empty when listed. compliance_email_unconfirmed: send the confirmation with POST /v3/travel-rule/settings/compliance-email/confirmation/ and open the emailed link. excluded_by_staff: Didit marked the application as a test, demo or internal one.
+        /// Empty when listed, in this order when present. lei_missing: set lei with PUT /v3/travel-rule/settings/. lei_unverified: GLEIF does not list the LEI as issued to an active entity; see lei_check.reason. compliance_email_unconfirmed: send the confirmation with POST /v3/travel-rule/settings/compliance-email/confirmation/ and open the emailed link. excluded_by_staff: Didit marked the application as a test, demo, internal or not-a-VASP one. review_pending: Didit has not yet reviewed that the company is a virtual asset service provider for this LEI. A legal name or country that differs from GLEIF does not block the listing by itself: the reviewer sees it and counterparties read it in the lei check of essential_checks. Invited VASPs that joined free and proved their claim of a registered directory entry are listed through that claim.
         /// </summary>
         [JsonPropertyName("missing")]
         public IReadOnlyList<TravelRuleSettingsDetailDiditNetworkMissing>? Missing { get; init; }
@@ -31,6 +31,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("compliance_email_confirmed")]
         public bool? ComplianceEmailConfirmed { get; init; }
+
+        /// <summary>
+        /// What GLEIF said about your current LEI. null before the LEI was first checked.
+        /// </summary>
+        [JsonPropertyName("lei_check")]
+        public TravelRuleSettingsDetailDiditNetworkLeiCheck? LeiCheck { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
