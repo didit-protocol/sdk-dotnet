@@ -63,7 +63,7 @@ namespace Didit
         public DateTimeOffset? BillingEnabledAt { get; init; }
 
         /// <summary>
-        /// Whether the Didit network lists this VASP and, when not, each condition it still misses.
+        /// Whether the Didit network lists this VASP and, when not, each condition it still misses. Same shape as didit_network in GET /v3/travel-rule/settings/.
         /// </summary>
         [JsonPropertyName("didit_network")]
         public JsonElement? DiditNetwork { get; init; }
