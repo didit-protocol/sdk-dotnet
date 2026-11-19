@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// The job's state as the console shows it; <c>errors</c> is a completed job with rejected rows.
+    /// The job's state as the console shows it; <c>errors</c> is a completed job with rejected rows. <c>waiting</c>: the month's import limit is used up. <c>held</c>: a check holds the import for review by Didit. <c>declined</c>: Didit declined the held import. <c>undoing</c> and <c>undone</c>: Undo import is running or finished.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SessionImportJobState.EnumJsonConverter))]
@@ -46,6 +46,21 @@ namespace Didit
 
         /// <summary><c>cancelled</c></summary>
         public static SessionImportJobState Cancelled { get; } = new("cancelled");
+
+        /// <summary><c>waiting</c></summary>
+        public static SessionImportJobState Waiting { get; } = new("waiting");
+
+        /// <summary><c>held</c></summary>
+        public static SessionImportJobState Held { get; } = new("held");
+
+        /// <summary><c>declined</c></summary>
+        public static SessionImportJobState Declined { get; } = new("declined");
+
+        /// <summary><c>undoing</c></summary>
+        public static SessionImportJobState Undoing { get; } = new("undoing");
+
+        /// <summary><c>undone</c></summary>
+        public static SessionImportJobState Undone { get; } = new("undone");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

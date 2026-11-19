@@ -301,7 +301,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{\"code\": \"all_approved_no_media\", \"count\": 1, \"share\": 1.5, \"holds\": true}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.CancelAsync("importId-1");
 
@@ -377,7 +377,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"results\": [{\"id\": \"sample\", \"kind\": \"sessions\", \"source\": \"file\", \"provider\": \"sample\", \"provider_name\": \"sample\", \"filename\": \"sample\", \"state\": \"ready\", \"status\": \"sample\", \"is_dry_run\": true, \"credential_hint\": \"sample\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"started_by\": {\"name\": \"sample\", \"email\": \"sample\"}, \"progress\": {\"total\": 1, \"processed\": 1, \"imported\": 1, \"updated\": 1, \"already_in_didit\": 1, \"failed\": 1, \"not_finished\": 1, \"same_person\": 1}, \"face_templates\": {\"enabled\": true, \"built\": 1, \"duplicates\": 1, \"blocklisted\": 1}, \"eta_seconds\": 1, \"created_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\"}], \"running\": 1}");
+            handler.Enqueue(200, "{\"results\": [{\"id\": \"sample\", \"kind\": \"sessions\", \"source\": \"file\", \"provider\": \"sample\", \"provider_name\": \"sample\", \"filename\": \"sample\", \"state\": \"ready\", \"status\": \"sample\", \"is_dry_run\": true, \"credential_hint\": \"sample\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"started_by\": {\"name\": \"sample\", \"email\": \"sample\"}, \"progress\": {\"total\": 1, \"processed\": 1, \"imported\": 1, \"updated\": 1, \"already_in_didit\": 1, \"failed\": 1, \"not_finished\": 1, \"same_person\": 1}, \"face_templates\": {\"enabled\": true, \"built\": 1, \"duplicates\": 1, \"blocklisted\": 1}, \"eta_seconds\": 1, \"created_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}], \"running\": 1}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.ListActiveJobsAsync();
 
@@ -419,7 +419,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"results\": [{\"id\": \"sample\", \"kind\": \"sessions\", \"source\": \"file\", \"provider\": \"sample\", \"provider_name\": \"sample\", \"filename\": \"sample\", \"state\": \"ready\", \"status\": \"sample\", \"is_dry_run\": true, \"credential_hint\": \"sample\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"started_by\": {\"name\": \"sample\", \"email\": \"sample\"}, \"progress\": {\"total\": 1, \"processed\": 1, \"imported\": 1, \"updated\": 1, \"already_in_didit\": 1, \"failed\": 1, \"not_finished\": 1, \"same_person\": 1}, \"face_templates\": {\"enabled\": true, \"built\": 1, \"duplicates\": 1, \"blocklisted\": 1}, \"eta_seconds\": 1, \"created_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\"}], \"counts\": {\"all\": 1, \"running_and_waiting\": 1, \"needs_attention\": 1, \"done\": 1}}");
+            handler.Enqueue(200, "{\"results\": [{\"id\": \"sample\", \"kind\": \"sessions\", \"source\": \"file\", \"provider\": \"sample\", \"provider_name\": \"sample\", \"filename\": \"sample\", \"state\": \"ready\", \"status\": \"sample\", \"is_dry_run\": true, \"credential_hint\": \"sample\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"last_error\": \"sample\", \"started_by\": {\"name\": \"sample\", \"email\": \"sample\"}, \"progress\": {\"total\": 1, \"processed\": 1, \"imported\": 1, \"updated\": 1, \"already_in_didit\": 1, \"failed\": 1, \"not_finished\": 1, \"same_person\": 1}, \"face_templates\": {\"enabled\": true, \"built\": 1, \"duplicates\": 1, \"blocklisted\": 1}, \"eta_seconds\": 1, \"created_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}], \"counts\": {\"all\": 1, \"running_and_waiting\": 1, \"needs_attention\": 1, \"done\": 1}}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.ListJobsAsync(new SessionsImportsListJobsParams { Scope = new SessionsImportsListJobsParamsScope("all"), Limit = 1L });
 
@@ -459,7 +459,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{\"code\": \"all_approved_no_media\", \"count\": 1, \"share\": 1.5, \"holds\": true}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.PauseAsync("importId-1");
 
@@ -477,11 +477,33 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Sessions_Imports_RequestLimit()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"uuid\": \"3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b\", \"status\": \"WAITING\", \"import_type\": \"user_verification\", \"source\": \"file\", \"limit_lane\": \"file\", \"waiting_reason\": \"limit\", \"limit_request\": {\"id\": \"7d1f0c1e-2b3a-4c5d-8e9f-0a1b2c3d4e5f\", \"status\": \"pending\", \"requested_records\": 8011, \"note\": \"Migrating our full 2023-2026 history from the previous provider.\", \"created_at\": \"2026-11-18T10:15:00Z\", \"decided_at\": null, \"staff_note\": null}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.RequestLimitAsync("importId-1", new ImportLimitRequestInput { Note = "sample-note" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/request-limit/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"note\": \"sample-note\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b", result.Uuid);
+        }
+
+        [Fact]
         public async Task Sessions_Imports_Resume()
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{\"code\": \"all_approved_no_media\", \"count\": 1, \"share\": 1.5, \"holds\": true}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.ResumeAsync("importId-1");
 
@@ -503,7 +525,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{\"code\": \"all_approved_no_media\", \"count\": 1, \"share\": 1.5, \"holds\": true}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.RetrieveAsync("importId-1");
 
@@ -518,6 +540,26 @@ namespace Didit.Tests.Generated
             Assert.NotNull(result);
             Assert.Equal("sample", result.Uuid);
             Assert.Equal(1L, result.TotalRows);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_RetrieveLimits()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"mode\": \"automatic\", \"level\": \"never_paid\", \"can_import\": true, \"reason\": null, \"checks_can_hold\": true, \"period\": {\"starts_at\": \"2026-11-01T00:00:00Z\", \"resets_at\": \"2026-12-01T00:00:00Z\"}, \"lanes\": {\"provider\": {\"limit\": 2000, \"used\": 0, \"remaining\": 2000}, \"file\": {\"limit\": 500, \"used\": 0, \"remaining\": 500}}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.RetrieveLimitsAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/limits/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
         }
 
         [Fact]
@@ -546,7 +588,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(201, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            handler.Enqueue(201, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{\"code\": \"all_approved_no_media\", \"count\": 1, \"share\": 1.5, \"holds\": true}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.RetryAsync("importId-1", new SessionsImportsRetryParams { File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg") });
 
@@ -569,7 +611,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\"}");
+            handler.Enqueue(200, "{\"uuid\": \"sample\", \"status\": \"PENDING\", \"import_type\": \"user_verification\", \"source_format\": \"csv\", \"source_filename\": \"sample\", \"total_rows\": 1, \"processed_rows\": 1, \"checkpoint_row\": 1, \"created_count\": 1, \"updated_count\": 1, \"skipped_count\": 1, \"failed_count\": 1, \"total_media_bytes\": 1, \"last_error\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\", \"started_at\": \"2026-01-02T03:04:05Z\", \"completed_at\": \"2026-01-02T03:04:05Z\", \"state\": \"ready\", \"source\": \"file\", \"provider\": \"sample\", \"provider_options\": {\"key\": \"value\"}, \"credential_hint\": \"sample\", \"credentials_expires_at\": \"2026-01-02T03:04:05Z\", \"resumes_at\": \"2026-01-02T03:04:05Z\", \"status_mapping\": {\"key\": \"sample\"}, \"is_dry_run\": true, \"dry_run_summary\": {\"key\": \"value\"}, \"face_templates_enabled\": true, \"lawful_basis_confirmed_at\": \"2026-01-02T03:04:05Z\", \"not_finished_count\": 1, \"same_person_count\": 1, \"face_templates_count\": 1, \"face_duplicates_count\": 1, \"face_blocklist_hits_count\": 1, \"created_by_name\": \"sample\", \"created_by_email\": \"sample\", \"limit_lane\": \"provider\", \"waiting_reason\": \"limit\", \"checks\": [{\"code\": \"all_approved_no_media\", \"count\": 1, \"share\": 1.5, \"holds\": true}], \"review_note\": \"sample\", \"limit_request\": {\"id\": \"sample\", \"status\": \"pending\", \"requested_records\": 1, \"note\": \"sample\", \"created_at\": \"2026-01-02T03:04:05Z\", \"decided_at\": \"2026-01-02T03:04:05Z\", \"staff_note\": \"sample\"}, \"granted_records\": 1, \"can_undo\": true, \"undone_count\": 1, \"undone_at\": \"2026-01-02T03:04:05Z\", \"undone_by\": \"sample\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Sessions.Imports.StartAsync("importId-1", new SessionsImportsStartParams { FaceTemplates = true, LawfulBasisConfirmed = true });
 
@@ -585,6 +627,28 @@ namespace Didit.Tests.Generated
             Assert.NotNull(result);
             Assert.Equal("sample", result.Uuid);
             Assert.Equal(1L, result.TotalRows);
+        }
+
+        [Fact]
+        public async Task Sessions_Imports_Undo()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(202, "{\"uuid\": \"3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b\", \"status\": \"UNDOING\", \"import_type\": \"user_verification\", \"source\": \"file\", \"limit_lane\": \"file\", \"can_undo\": false, \"undone_count\": 0, \"undone_at\": null, \"undone_by\": null}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Sessions.Imports.UndoAsync("importId-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/session/imports/importId-1/undo/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("3f9c1a2b-4d5e-4f60-8a7b-9c0d1e2f3a4b", result.Uuid);
+            Assert.Equal(0L, result.UndoneCount);
         }
 
         [Fact]

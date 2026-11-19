@@ -10,16 +10,21 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Request body of SessionsImportsCreateParamsOptions.
+    /// Response object (ImportLimitsPeriod).
     /// </summary>
-    public sealed record SessionsImportsCreateParamsOptions
+    public sealed record ImportLimitsPeriod
     {
         /// <summary>
-        /// The provider region, one of its <c>regions</c> (Onfido: <c>eu</c>, <c>us</c>, <c>ca</c>).
+        /// The &lt;c&gt;starts_at&lt;/c&gt; field.
         /// </summary>
-        [JsonPropertyName("region")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<string> Region { get; set; }
+        [JsonPropertyName("starts_at")]
+        public DateTimeOffset? StartsAt { get; init; }
+
+        /// <summary>
+        /// When the monthly limits start again: the first day of the next calendar month, UTC.
+        /// </summary>
+        [JsonPropertyName("resets_at")]
+        public DateTimeOffset? ResetsAt { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
