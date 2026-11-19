@@ -51,13 +51,13 @@ namespace Didit
         public string? Filename { get; init; }
 
         /// <summary>
-        /// The job's state as the console shows it; <c>errors</c> is a completed job with rejected rows.
+        /// The job's state as the console shows it; <c>errors</c> is a completed job with rejected rows. <c>waiting</c>: the month's import limit is used up. <c>held</c>: a check holds the import for review by Didit. <c>declined</c>: Didit declined the held import. <c>undoing</c> and <c>undone</c>: Undo import is running or finished.
         /// </summary>
         [JsonPropertyName("state")]
         public ImportJobSummaryState? State { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;status&lt;/c&gt; field.
+        /// The job's status; the same values as a verification import job's <c>status</c>, including <c>WAITING</c>, <c>HELD</c>, <c>DECLINED</c>, <c>UNDOING</c> and <c>UNDONE</c>.
         /// </summary>
         [JsonPropertyName("status")]
         public string? Status { get; init; }
@@ -127,6 +127,66 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("completed_at")]
         public DateTimeOffset? CompletedAt { get; init; }
+
+        /// <summary>
+        /// The monthly limit this job counts against: <c>provider</c> for a migration read from another provider (<c>source=provider</c>), <c>file</c> for an upload or file URL.
+        /// </summary>
+        [JsonPropertyName("limit_lane")]
+        public ImportJobSummaryLimitLane? LimitLane { get; init; }
+
+        /// <summary>
+        /// Why a <c>WAITING</c> job waits. <c>null</c> otherwise.
+        /// </summary>
+        [JsonPropertyName("waiting_reason")]
+        public ImportJobSummaryWaitingReason? WaitingReason { get; init; }
+
+        /// <summary>
+        /// What the checks found in the whole file or account. Empty when nothing was flagged.
+        /// </summary>
+        [JsonPropertyName("checks")]
+        public IReadOnlyList<ImportCheck>? Checks { get; init; }
+
+        /// <summary>
+        /// The note from Didit on a <c>DECLINED</c> job.
+        /// </summary>
+        [JsonPropertyName("review_note")]
+        public string? ReviewNote { get; init; }
+
+        /// <summary>
+        /// The request for a higher limit made for this job, or <c>null</c>.
+        /// </summary>
+        [JsonPropertyName("limit_request")]
+        public ImportLimitRequest? LimitRequest { get; init; }
+
+        /// <summary>
+        /// Records Didit approved for this job beyond the monthly limit.
+        /// </summary>
+        [JsonPropertyName("granted_records")]
+        public long? GrantedRecords { get; init; }
+
+        /// <summary>
+        /// <c>true</c> when the job recorded what it created, so <c>POST /v3/session/imports/{importId}/undo/</c> can delete it. Imports made before Undo import existed did not record it.
+        /// </summary>
+        [JsonPropertyName("can_undo")]
+        public bool? CanUndo { get; init; }
+
+        /// <summary>
+        /// Records deleted by Undo import.
+        /// </summary>
+        [JsonPropertyName("undone_count")]
+        public long? UndoneCount { get; init; }
+
+        /// <summary>
+        /// The &lt;c&gt;undone_at&lt;/c&gt; field.
+        /// </summary>
+        [JsonPropertyName("undone_at")]
+        public DateTimeOffset? UndoneAt { get; init; }
+
+        /// <summary>
+        /// Who undid the import.
+        /// </summary>
+        [JsonPropertyName("undone_by")]
+        public string? UndoneBy { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of SessionImportJobStatus.
+    /// <c>WAITING</c>: the month's limit is used up. The import continues by itself when the limit goes up (a top-up, the next month, or Didit approving a limit request). <c>HELD</c>: a check held the file for review by Didit; nothing is written. <c>DECLINED</c>: Didit declined the held file (<c>review_note</c> says why); nothing was written and the source and credentials are erased. <c>UNDOING</c> and <c>UNDONE</c>: an Undo import is running or has finished.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SessionImportJobStatus.EnumJsonConverter))]
@@ -43,6 +43,21 @@ namespace Didit
 
         /// <summary><c>READY</c></summary>
         public static SessionImportJobStatus Ready { get; } = new("READY");
+
+        /// <summary><c>WAITING</c></summary>
+        public static SessionImportJobStatus Waiting { get; } = new("WAITING");
+
+        /// <summary><c>HELD</c></summary>
+        public static SessionImportJobStatus Held { get; } = new("HELD");
+
+        /// <summary><c>DECLINED</c></summary>
+        public static SessionImportJobStatus Declined { get; } = new("DECLINED");
+
+        /// <summary><c>UNDOING</c></summary>
+        public static SessionImportJobStatus Undoing { get; } = new("UNDOING");
+
+        /// <summary><c>UNDONE</c></summary>
+        public static SessionImportJobStatus Undone { get; } = new("UNDONE");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

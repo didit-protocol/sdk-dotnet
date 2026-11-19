@@ -36,7 +36,7 @@ namespace Didit
         public Optional<SessionsImportsCreateParamsSourceFormat> SourceFormat { get; set; }
 
         /// <summary>
-        /// Alternative to file upload. Must be an HTTPS URL resolving to a public address (private/loopback networks are rejected). Mutually exclusive with <c>file</c>.
+        /// HTTPS URL of the file, resolving to a public address (private/loopback networks are rejected). Required for a file import and for a provider migration whose provider is read from uploaded record IDs or an export file (<c>GET /v3/session/imports/providers/</c> gives each provider's mode). Not needed when <c>source</c> is <c>provider</c> and Didit reads the account with <c>credentials</c>.
         /// </summary>
         [JsonPropertyName("source_file_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -68,7 +68,7 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("options")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<SessionsImportsCreateParamsOptions> Options { get; set; }
+        public Optional<object?> Options { get; set; }
 
         /// <summary>
         /// Edits to the provider's default status mapping: source status to Didit status. <c>Not Finished</c> and <c>Abandoned</c> are skipped and counted, never imported.

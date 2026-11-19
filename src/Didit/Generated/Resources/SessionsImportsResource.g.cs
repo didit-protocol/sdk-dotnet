@@ -26,7 +26,7 @@ namespace Didit.Resources
         /// Cancel an import job
         /// </summary>
         /// <remarks>
-        /// Cancel an import. What was imported stays; the uploaded file and the key are erased.
+        /// Cancel an import. What was imported stays, unless you undo it with <c>POST /v3/session/imports/{importId}/undo/</c>; the uploaded file and the key are erased.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/cancel/</c> (<c>sessions.imports.cancel</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -62,7 +62,7 @@ namespace Didit.Resources
         /// Create a verification import job
         /// </summary>
         /// <remarks>
-        /// Create an asynchronous import job for historical User Verification sessions, Business Verification sessions, transaction monitoring records, or workflow custom status rules. Set <c>source=provider</c> to migrate from another provider: Didit reads Sumsub, Onfido, Persona and ComplyCube with your read-only key, reads Veriff, iDenfy and MetaMap records by the IDs you upload in <c>file</c>, and imports an export file in Didit's format for the other providers. Record IDs are namespaced by provider (<c>sumsub:&lt;id&gt;</c>) so a re-run skips everything already in Didit, and a record imported through a file with the provider's bare ID is recognised too, in both directions, so moving between a file import and a provider migration never imports a record twice. An application can run up to 4 import jobs at once; a job interrupted by a deploy or a worker restart continues from its last imported row by itself. Imports are disabled by default and must be enabled per organization by Didit.
+        /// Create an asynchronous import job for historical User Verification sessions, Business Verification sessions, transaction monitoring records, or workflow custom status rules. Set <c>source=provider</c> to migrate from another provider: <c>GET /v3/session/imports/providers/</c> lists the providers and how each is read: with your read-only key, from the record IDs you upload in <c>file</c>, or from an export file in Didit's format. Record IDs are namespaced by provider (<c>&lt;provider&gt;:&lt;id&gt;</c>) so a re-run skips everything already in Didit, and a record imported through a file with the provider's bare ID is recognised too, in both directions, so moving between a file import and a provider migration never imports a record twice. An application can run up to 4 import jobs at once; a job interrupted by a deploy or a worker restart continues from its last imported row by itself. Any organization can import without asking Didit first, within a monthly limit that follows what it pays (see <c>GET /v3/session/imports/limits/</c>): 2,000 records a month from a provider and 500 from a file or the API until the first paid top-up, then 250,000 and 25,000, and no monthly limit on a contract. A job above the limit writes what fits and then waits (<c>WAITING</c>), and continues by itself when the limit goes up; ask for a higher limit with <c>POST /v3/session/imports/{importId}/request-limit/</c>. Every source accepts <c>dry_run</c>. A job that is not a dry run first checks the whole file or account; for an organization that has never paid, a finding can hold the job (<c>HELD</c>) for review by Didit before anything is written. Imported verifications stay in their application: they cannot be shared with another application and never feed cross-organization fraud signals. <c>POST /v3/session/imports/{importId}/undo/</c> deletes what an import created.
         /// <para/>
         /// <c>POST /v3/session/imports/</c> (<c>sessions.imports.create</c>).
         /// Sent as <c>multipart/form-data</c> when a file is set, as JSON otherwise.
@@ -115,7 +115,7 @@ namespace Didit.Resources
         /// List import jobs
         /// </summary>
         /// <remarks>
-        /// Every import of the application in one shape: verification imports and migrations, people and businesses.
+        /// Every import of the application in one shape: verification imports and migrations, people and businesses. <c>limit_lane</c>, <c>waiting_reason</c>, <c>checks</c>, <c>review_note</c>, <c>limit_request</c>, <c>granted_records</c> and the Undo fields apply to verification imports; they are <c>null</c>, empty or <c>false</c> for people and company imports.
         /// <para/>
         /// <c>GET /v3/import-jobs/</c> (<c>sessions.imports.list_jobs</c>).
         /// </remarks>
@@ -163,6 +163,25 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Request a higher import limit
+        /// </summary>
+        /// <remarks>
+        /// Ask Didit to let one import go past the monthly limit. Allowed on a job that is <c>READY</c>, <c>PENDING</c>, <c>PROCESSING</c> or <c>WAITING</c> and whose lane has a limit; one request can be pending per job. <c>requested_records</c> is not sent: it is computed from the job's dry run or check pass as what the import still has to write beyond what it may write now (one month of the lane when no pass counted the file). An approval lets that job finish and does not change the organization's monthly limit. A declined request leaves the job waiting for the next month or a top-up, and the answer is in <c>limit_request.staff_note</c>. The job continues by itself when the limit goes up. A turned-off organization or a sandbox application is refused.
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/request-limit/</c> (<c>sessions.imports.request_limit</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> RequestLimitAsync(string importId, ImportLimitRequestInput? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RequestLimitAsync(importId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Resume an import job
         /// </summary>
         /// <remarks>
@@ -194,6 +213,22 @@ namespace Didit.Resources
         public async Task<SessionImportJob> RetrieveAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveAsync(importId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Get import limits
+        /// </summary>
+        /// <remarks>
+        /// Read how many verifications your organization can still import this month. Limits follow what the organization pays and are counted per organization, across all its live applications, per calendar month in UTC, in records written by imports that are not dry runs: 2,000 from a provider and 500 from a file or the API until the first paid top-up, then 250,000 and 25,000, and no monthly limit (<c>limit: null</c>) on a contract or when Didit set the organization to always allowed. Records skipped because they were already in Didit, rejected rows and dry runs do not count, and records you undo are given back. <c>can_import: false</c> with <c>reason: turned_off</c> or <c>reason: sandbox</c> means a create call would be refused. Authenticate with your application's API key, or with a console user token that has <c>write:sessions</c>.
+        /// <para/>
+        /// <c>GET /v3/session/imports/limits/</c> (<c>sessions.imports.retrieve_limits</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<ImportLimits> RetrieveLimitsAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveLimitsAsync(requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -237,7 +272,7 @@ namespace Didit.Resources
         /// Start a dry run
         /// </summary>
         /// <remarks>
-        /// Start a migration whose dry run finished (<c>READY</c>): the same job imports for real, with the status mapping and face templates choice as sent now.
+        /// Start an import whose dry run finished (<c>READY</c>): the same job imports for real, with the status mapping and face templates choice as sent now. A file or API job runs the checks again over the whole file first.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/start/</c> (<c>sessions.imports.start</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -249,6 +284,26 @@ namespace Didit.Resources
         public async Task<SessionImportJob> StartAsync(string importId, SessionsImportsStartParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.StartAsync(importId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Undo an import
+        /// </summary>
+        /// <remarks>
+        /// Delete what an import created. Every verification (User Verification, Business Verification) and transaction the job created is deleted with its images and videos, its face templates, and the blocklist entries the job added, exactly as <c>DELETE /v3/session/{sessionId}/delete/</c> deletes a session. Records that were already in Didit, and the workflow status rules an import changed, are not affected. The records you undo are given back to the month's import limit. Deletion cannot be reversed.
+        /// <para/>
+        /// Allowed when <c>can_undo</c> is <c>true</c> and the job is <c>COMPLETED</c>, <c>FAILED</c>, <c>CANCELLED</c> or <c>WAITING</c> (a waiting job is cancelled first). Imports made before Undo import existed did not record what they created and cannot be undone. The job moves to <c>UNDOING</c> and ends <c>UNDONE</c> with <c>undone_count</c>; poll <c>GET /v3/session/imports/{importId}/</c>. Undo is available for User Verification, Business Verification and transaction imports; status rules are not undone. Needs the sessions write and delete privileges (<c>write:sessions</c> and <c>delete:sessions</c> for a console user; an API key needs sessions write access and <c>delete:sessions</c>). Undoing a Business Verification import also needs <c>delete:businesses</c>, and a transactions import needs <c>write:transactions</c> (an API key needs write access to that resource).
+        /// <para/>
+        /// <c>POST /v3/session/imports/{importId}/undo/</c> (<c>sessions.imports.undo</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="importId">Path parameter <c>importId</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<SessionImportJob> UndoAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.UndoAsync(importId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
     }
@@ -349,7 +404,7 @@ namespace Didit.Resources
                 }
                 if (parameters.Options.IsSet)
                 {
-                    form.AddJson("options", parameters.Options.Value);
+                    form.AddAny("options", parameters.Options.Value);
                 }
                 if (parameters.StatusMapping.IsSet)
                 {
@@ -460,6 +515,25 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Request a higher import limit
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.RequestLimitAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> RequestLimitAsync(string importId, ImportLimitRequestInput? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/request-limit/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            if (parameters is not null)
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Resume an import job
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.ResumeAsync"/>.</remarks>
@@ -487,6 +561,21 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get import limits
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.RetrieveLimitsAsync"/>.</remarks>
+        public Task<DiditResponse<ImportLimits>> RetrieveLimitsAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/session/imports/limits/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<ImportLimits>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
@@ -549,6 +638,21 @@ namespace Didit.Resources
             {
                 request.Body = JsonRequestBody.Create(parameters);
             }
+            return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Undo an import
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="SessionsImportsResource.UndoAsync"/>.</remarks>
+        public Task<DiditResponse<SessionImportJob>> UndoAsync(string importId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/session/imports/" + PathParameter.Encode(importId, "importId") + "/undo/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
             return _pipeline.SendJsonAsync<SessionImportJob>(request, requestOptions, cancellationToken);
         }
     }
