@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// A subject node or a signal node, distinguished by kind. Subject nodes (kind: vendor_user | vendor_business | transaction_party) carry id, kind, subject, node_status (approved | in_review | declined | not_completed), and tags. Signal nodes (kind: signal) carry id, kind, uuid, signal_type, subject_count, coverage, is_hub, is_datacenter_ip, is_high_collision_device, node_status (signal_active | signal_guarded), tags, risk_evidence, first_seen_at, and last_seen_at.
+    /// A subject node or a signal node, distinguished by kind. Subject nodes (kind: vendor_user | vendor_business | transaction_party) carry id, kind, subject, node_status (approved | in_review | declined | not_completed), and tags. Signal nodes (kind: signal) carry id, kind, uuid, signal_type, subject_count, coverage, is_hub, is_datacenter_ip, is_high_collision_device, node_status (signal_active | signal_guarded), tags, risk_evidence, first_seen_at, and last_seen_at. A signal node with <c>signal_type: wallet_address</c> also carries <c>wallet</c>: where the money went through that wallet. Every other node has no <c>wallet</c> key.
     /// </summary>
     public sealed record NetworkGraphNode
     {
@@ -25,6 +25,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("kind")]
         public NetworkGraphNodeKind? Kind { get; init; }
+
+        /// <summary>
+        /// Only on a signal node of type <c>wallet_address</c>.
+        /// </summary>
+        [JsonPropertyName("wallet")]
+        public NetworkGraphNodeWallet? Wallet { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

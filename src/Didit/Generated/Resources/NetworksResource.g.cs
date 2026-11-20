@@ -211,6 +211,26 @@ namespace Didit.Resources
             var response = await _raw.RetrieveTimelineAsync(networkUuid, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Search signals
+        /// </summary>
+        /// <remarks>
+        /// Check one value against every network of your organization before you open an investigation. Choose a <c>signal_type</c> and send its value: an address, a phone number, an email, a device fingerprint, a document number with its issuing state and type, or a face image. A <c>wallet_address</c> search takes the address and optionally its destination tag or memo in <c>tag</c>, and answers with the <c>wallet</c> object: accounts, payouts, the amount paid out and the payout dates. A wallet many accounts use is a shared service: it answers <c>match_count: 0</c> and no matches, with <c>is_shared_service: true</c>.
+        /// <para/>
+        /// Requires the <c>read:networks</c> permission. Searches are limited per organization: when the budget is spent the call answers <c>429</c>.
+        /// <para/>
+        /// <c>POST /v3/organization/{organization_id}/application/{application_id}/networks/signals/search/</c> (<c>networks.search_signals</c>).
+        /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<NetworkSignalSearchResponse> SearchSignalsAsync(NetworkSignalSearchRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.SearchSignalsAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
     }
 
     /// <summary>The <c>networks</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -412,6 +432,53 @@ namespace Didit.Resources
             request.Query.Add("cursor", parameters?.Cursor);
             request.Query.Add("event_type", parameters?.EventType?.Select(v => v.Value));
             return _pipeline.SendJsonAsync<NetworksRetrieveTimelineResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Search signals
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="NetworksResource.SearchSignalsAsync"/>.</remarks>
+        public Task<DiditResponse<NetworkSignalSearchResponse>> SearchSignalsAsync(NetworkSignalSearchRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/organization/{organization_id}/application/{application_id}/networks/signals/search/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = true,
+            };
+            var form = new MultipartRequestBody();
+            form.Add("signal_type", parameters.SignalType.Value);
+            if (parameters.Value.IsSet)
+            {
+                form.Add("value", parameters.Value.Value);
+            }
+            if (parameters.Image.IsSet)
+            {
+                form.Add("image", parameters.Image.Value);
+            }
+            if (parameters.IssuingState.IsSet)
+            {
+                form.Add("issuing_state", parameters.IssuingState.Value);
+            }
+            if (parameters.DocumentType.IsSet)
+            {
+                form.Add("document_type", parameters.DocumentType.Value);
+            }
+            if (parameters.Region.IsSet)
+            {
+                form.Add("region", parameters.Region.Value);
+            }
+            if (parameters.Tag.IsSet)
+            {
+                form.Add("tag", parameters.Tag.Value);
+            }
+            request.Body = form;
+            return _pipeline.SendJsonAsync<NetworkSignalSearchResponse>(request, requestOptions, cancellationToken);
         }
     }
 }

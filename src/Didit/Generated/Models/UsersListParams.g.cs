@@ -28,6 +28,13 @@ namespace Didit
         [JsonIgnore]
         public long? Offset { get; set; }
 
+        /// <summary>
+        /// A <c>lookup_id</c> returned by <c>POST /v3/users/lookup/</c>. The list returns only the users that lookup matched, ordered by the position of their identifier in the list you submitted, paginated with <c>limit</c> and <c>offset</c>. An expired or unknown <c>lookup_id</c> returns <c>404</c> with <c>code: lookup_not_found</c>; submit the list again.
+        /// </summary>
+        [JsonPropertyName("lookup")]
+        [JsonIgnore]
+        public string? Lookup { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

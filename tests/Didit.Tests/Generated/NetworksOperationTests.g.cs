@@ -231,7 +231,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"network\": {\"uuid\": \"sample\", \"network_id\": \"sample\", \"name\": \"sample\", \"status\": \"active\", \"risk\": {\"score\": 1, \"band\": \"low\", \"bar\": 1.5}, \"pattern_types\": [\"exact_same_device\"], \"signal_types\": [\"ip_address\"], \"member_counts\": {\"key\": \"value\"}, \"member_status\": {\"key\": \"value\"}, \"signal_coverage\": {\"key\": \"value\"}, \"first_activity_at\": \"2026-01-02T03:04:05Z\", \"last_activity_at\": \"2026-01-02T03:04:05Z\", \"stats\": {\"key\": \"value\"}, \"fraud_tags\": [{\"key\": \"value\"}], \"risk_signals\": {\"key\": \"value\"}, \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_by\": \"sample\", \"review_reason\": \"sample\", \"notes_count\": 1}, \"depth\": 1, \"truncated\": true, \"nodes\": [{\"id\": \"sample\", \"kind\": \"vendor_user\"}], \"edges\": [{\"id\": \"sample\", \"source\": \"sample\", \"target\": \"sample\", \"subject_kind\": \"vendor_user\", \"signal_type\": \"ip_address\", \"confidence\": 1.5, \"observation_count\": 1, \"first_seen_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\"}], \"metrics\": {\"node_count\": 1, \"edge_count\": 1, \"hub_signal_count\": 1}}");
+            handler.Enqueue(200, "{\"network\": {\"uuid\": \"sample\", \"network_id\": \"sample\", \"name\": \"sample\", \"status\": \"active\", \"risk\": {\"score\": 1, \"band\": \"low\", \"bar\": 1.5}, \"pattern_types\": [\"exact_same_device\"], \"signal_types\": [\"ip_address\"], \"member_counts\": {\"key\": \"value\"}, \"member_status\": {\"key\": \"value\"}, \"signal_coverage\": {\"key\": \"value\"}, \"first_activity_at\": \"2026-01-02T03:04:05Z\", \"last_activity_at\": \"2026-01-02T03:04:05Z\", \"stats\": {\"key\": \"value\"}, \"fraud_tags\": [{\"key\": \"value\"}], \"risk_signals\": {\"key\": \"value\"}, \"reviewed_at\": \"2026-01-02T03:04:05Z\", \"reviewed_by\": \"sample\", \"review_reason\": \"sample\", \"notes_count\": 1}, \"depth\": 1, \"truncated\": true, \"nodes\": [{\"id\": \"sample\", \"kind\": \"vendor_user\", \"wallet\": {\"asset\": \"sample\", \"network\": \"tron\", \"account_count\": 1, \"payout_count\": 1, \"paid_out\": {}, \"first_payout_at\": \"2026-01-02T03:04:05Z\", \"last_payout_at\": \"2026-01-02T03:04:05Z\"}}], \"edges\": [{\"id\": \"sample\", \"source\": \"sample\", \"target\": \"sample\", \"subject_kind\": \"vendor_user\", \"signal_type\": \"ip_address\", \"confidence\": 1.5, \"observation_count\": 1, \"first_seen_at\": \"2026-01-02T03:04:05Z\", \"last_seen_at\": \"2026-01-02T03:04:05Z\"}], \"metrics\": {\"node_count\": 1, \"edge_count\": 1, \"hub_signal_count\": 1}}");
             using var client = TestClients.Create(handler);
             var result = await client.Networks.RetrieveGraphAsync("network_uuid-1", new NetworksRetrieveGraphParams { Depth = new NetworksRetrieveGraphParamsDepth("1"), FocusKind = new NetworksRetrieveGraphParamsFocusKind("vendor_user"), FocusId = "11111111-2222-3333-4444-555555555555" });
 
@@ -286,6 +286,28 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Networks_SearchSignals()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"signal_type\": \"wallet_address\", \"match_count\": 1, \"matches\": [], \"cross_organization\": {\"available\": false, \"signals_checked\": 0, \"insights\": []}, \"wallet\": {\"signal_id\": \"8f1f6b0e-2f64-4f0b-9e0d-3c5b9a2f7d10\", \"is_shared_service\": false, \"account_count\": 3, \"payout_count\": 14, \"paid_out\": {\"amount\": \"5950.00\", \"currency\": \"USD\"}, \"first_payout_at\": \"2026-09-02T10:14:00Z\", \"last_payout_at\": \"2026-11-16T18:02:00Z\", \"recent_payouts\": []}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Networks.SearchSignalsAsync(new NetworkSignalSearchRequest { SignalType = new NetworkSignalSearchRequestSignalType("ip_address"), Value = "sample-value", Image = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg"), IssuingState = "sample-issuing_state", DocumentType = "sample-document_type", Region = "sample-region", Tag = "sample-tag" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/org-test/application/app-test/networks/signals/search/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.NotNull(result);
+            Assert.Equal("wallet_address", result.SignalType);
+            Assert.Equal(1L, result.MatchCount);
         }
     }
 }

@@ -102,10 +102,27 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Get a user lookup
+        /// </summary>
+        /// <remarks>
+        /// Read back a lookup made with [Look up users](#post-/v3/users/lookup/): the same counts and <c>not_found</c> list, plus the <c>identifiers</c> you submitted after blanks and duplicates were removed, in order. A lookup lives 24 hours and belongs to the application that made it; an expired, unknown or other application's <c>lookup_id</c> returns <c>404</c> with <c>code: lookup_not_found</c>.
+        /// <para/>
+        /// <c>GET /v3/users/lookup/{lookup_id}/</c> (<c>users.get_lookup</c>).
+        /// </remarks>
+        /// <param name="lookupId">The <c>lookup_id</c> returned by Look up users.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<UsersLookupDetail> GetLookupAsync(string lookupId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.GetLookupAsync(lookupId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// List users
         /// </summary>
         /// <remarks>
-        /// List [users](/entities/users) Didit assembles from KYC sessions sharing the same <c>vendor_data</c> (free-form string, NOT a UUID), plus users created via the API. Paginated, ordered by <c>last_session_at</c> desc. This endpoint does not support filtering or search parameters — fetch pages and filter client-side.
+        /// List [users](/entities/users) Didit assembles from KYC sessions sharing the same <c>vendor_data</c> (free-form string, NOT a UUID), plus users created via the API. Paginated, ordered by <c>last_session_at</c> desc, or by the position in your list when <c>lookup</c> is set. Pass <c>lookup</c> to read only the users a list of identifiers resolved to (see [Look up users](#post-/v3/users/lookup/)). No other filter or search parameter is supported: fetch pages and filter client-side.
         /// <para/>
         /// <c>GET /v3/users/</c> (<c>users.list</c>).
         /// </remarks>
@@ -133,6 +150,25 @@ namespace Didit.Resources
         public async Task<EntityNetworkMembershipList> ListNetworksAsync(string vendorUserUuid, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListNetworksAsync(vendorUserUuid, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Look up users
+        /// </summary>
+        /// <remarks>
+        /// Resolve a list of up to 20,000 identifiers to the users of your application, in one call. Each identifier is matched, in this order, against <c>vendor_data</c> (exactly), the Didit user ID (a UUID), then a verified email (case-insensitive). An email can match several users, and all of them count. Blank entries are dropped and duplicates removed, keeping the first; 1 to 20,000 identifiers must remain, and a request sends at most 100,000 entries before that clean-up. The call only reads. It answers with a <c>lookup_id</c>, the counts and the identifiers that matched nobody, each with its 1-based <c>position</c> in the submitted list.
+        /// <para/>
+        /// Pass the <c>lookup_id</c> as <c>lookup</c> to [List users](#get-/v3/users/) to page through exactly the matched users, in the order you submitted them. The result is kept for 24 hours for your application only, then answers <c>404</c> with <c>code: lookup_not_found</c>.
+        /// <para/>
+        /// <c>POST /v3/users/lookup/</c> (<c>users.lookup</c>).
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<UsersLookupResponse> LookupAsync(UsersLookupRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.LookupAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -337,6 +373,21 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Get a user lookup
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.GetLookupAsync"/>.</remarks>
+        public Task<DiditResponse<UsersLookupDetail>> GetLookupAsync(string lookupId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/users/lookup/" + PathParameter.Encode(lookupId, "lookupId") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<UsersLookupDetail>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// List users
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="UsersResource.ListAsync"/>.</remarks>
@@ -350,6 +401,7 @@ namespace Didit.Resources
             };
             request.Query.Add("limit", parameters?.Limit);
             request.Query.Add("offset", parameters?.Offset);
+            request.Query.Add("lookup", parameters?.Lookup);
             return _pipeline.SendPageAsync<UserListItem>(request, requestOptions, cancellationToken);
         }
 
@@ -366,6 +418,27 @@ namespace Didit.Resources
                 ApplicationScoped = true,
             };
             return _pipeline.SendJsonAsync<EntityNetworkMembershipList>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Look up users
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="UsersResource.LookupAsync"/>.</remarks>
+        public Task<DiditResponse<UsersLookupResponse>> LookupAsync(UsersLookupRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/users/lookup/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<UsersLookupResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
