@@ -44,6 +44,9 @@ namespace Didit
         /// <summary><c>address</c></summary>
         public static NetworkGraphEdgeSignalType Address { get; } = new("address");
 
+        /// <summary><c>wallet_address</c></summary>
+        public static NetworkGraphEdgeSignalType WalletAddress { get; } = new("wallet_address");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 
