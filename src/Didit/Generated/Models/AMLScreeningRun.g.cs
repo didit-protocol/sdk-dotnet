@@ -39,7 +39,7 @@ namespace Didit
         public DateTimeOffset? StartedAt { get; init; }
 
         /// <summary>
-        /// <c>NO_CHANGE</c>: completed and the result did not move. <c>CHANGED</c>: completed and the score, status, hit count or hits changed. <c>FAILED</c>: no usable answer for this subject, so the check was left as it was.
+        /// <c>NO_CHANGE</c>: completed and the result did not move. <c>CHANGED</c>: completed and the score, the status or a match at or above your Match Score Threshold changed (added, removed or updated). Matches below that threshold start as False Positive and can come and go between runs without making a run <c>CHANGED</c>. <c>FAILED</c>: no usable answer for this subject, so the check was left as it was.
         /// </summary>
         [JsonPropertyName("outcome")]
         public AMLScreeningRunOutcome? Outcome { get; init; }
