@@ -98,7 +98,7 @@ namespace Didit
         public Optional<bool> IncludeAdverseMedia { get; set; }
 
         /// <summary>
-        /// Keep re-screening this profile and push changes via webhook. Requires <c>save_api_request=true</c> (else <c>400</c>).
+        /// Keep this profile under provider-driven ongoing monitoring and push the provider's updates via webhook. Requires <c>save_api_request=true</c> (else <c>400</c>).
         /// </summary>
         [JsonPropertyName("include_ongoing_monitoring")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

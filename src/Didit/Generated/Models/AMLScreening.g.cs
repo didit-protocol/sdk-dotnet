@@ -57,25 +57,25 @@ namespace Didit
         public AMLScreeningScreenedData? ScreenedData { get; init; }
 
         /// <summary>
-        /// Whether AML ongoing monitoring is enabled for this screening. When <c>true</c>, the entity is re-screened periodically and any new hits update the report.
+        /// Whether AML ongoing monitoring is enabled for this screening. When <c>true</c>, the provider watches the entity and any hit it adds, changes or withdraws updates the report. Didit does not screen the entity again.
         /// </summary>
         [JsonPropertyName("is_ongoing_monitoring_enabled")]
         public bool? IsOngoingMonitoringEnabled { get; init; }
 
         /// <summary>
-        /// Date (YYYY-MM-DD) when this ongoing-monitoring subscription will next be billed. Computed as the date of the last ongoing-monitoring billing plus 365 days when <c>is_ongoing_monitoring_enabled = true</c>; otherwise <c>null</c>. This is a billing date, not a screening date - use <c>last_ongoing_screening_at</c> for that.
+        /// Date (YYYY-MM-DD) when this ongoing-monitoring subscription will next be billed. Computed as the date of the last ongoing-monitoring billing plus 365 days when <c>is_ongoing_monitoring_enabled = true</c>; otherwise <c>null</c>. This is a billing date, not the monitoring date - use <c>last_ongoing_screening_at</c> for the daily monitoring date.
         /// </summary>
         [JsonPropertyName("next_ongoing_monitoring_bill_date")]
         public string? NextOngoingMonitoringBillDate { get; init; }
 
         /// <summary>
-        /// When ongoing monitoring last completed a re-screening of this record, whether or not the result changed. <c>null</c> when the record has never been re-screened; it is never back-filled from the enablement or billing date.
+        /// The last day ongoing monitoring was in force for this record. Didit dates it every day while monitoring is enabled and the provider is watching the subject, and again whenever the provider sends an update, whether or not any hit changed. It is not the time of a screening: ongoing monitoring waits for the provider's updates and does not screen the subject again. <c>null</c> when no monitoring day has been recorded for the record; it is never back-filled from the enablement or billing date.
         /// </summary>
         [JsonPropertyName("last_ongoing_screening_at")]
         public DateTimeOffset? LastOngoingScreeningAt { get; init; }
 
         /// <summary>
-        /// The most recent AML dataset update date the provider reported at the time of that screening. <c>null</c> when the provider reported no dataset dates; never estimated.
+        /// The most recent AML dataset update date the provider reported with a screening of this record. <c>null</c> when the provider reported no dataset dates; never estimated.
         /// </summary>
         [JsonPropertyName("last_ongoing_screening_datasets_updated_at")]
         public DateTimeOffset? LastOngoingScreeningDatasetsUpdatedAt { get; init; }
