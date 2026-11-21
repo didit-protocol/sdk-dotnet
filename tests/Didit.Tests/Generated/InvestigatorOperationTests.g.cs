@@ -126,7 +126,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"run_id\": \"sample\", \"kind\": \"session\", \"queue\": \"kyc\", \"stage\": \"shadow\", \"subject\": {\"key\": \"value\"}, \"recommendation\": \"approve\", \"recommendation_detail\": \"sample\", \"confidence\": \"high\", \"summary\": \"sample\", \"sources_count\": 1, \"ready_to_accept\": true, \"guardrails\": {\"key\": \"value\"}, \"waiting_since\": \"2026-01-02T03:04:05Z\", \"due_at\": \"2026-01-02T03:04:05Z\", \"prepared_at\": \"2026-01-02T03:04:05Z\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"run_id\": \"sample\", \"kind\": \"session\", \"queue\": \"kyc\", \"stage\": \"none\", \"subject\": {\"key\": \"value\"}, \"recommendation\": \"approve\", \"recommendation_detail\": \"sample\", \"confidence\": \"high\", \"summary\": \"sample\", \"sources_count\": 1, \"ready_to_accept\": true, \"guardrails\": {\"key\": \"value\"}, \"waiting_since\": \"2026-01-02T03:04:05Z\", \"due_at\": \"2026-01-02T03:04:05Z\", \"prepared_at\": \"2026-01-02T03:04:05Z\", \"free_report\": true, \"example\": true}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Investigator.ListQueueAsync(new InvestigatorListQueueParams { Scope = new InvestigatorListQueueParamsScope("all"), Kind = "sample-kind", Queue = new InvestigatorListQueueParamsQueue("kyc"), Recommendation = new InvestigatorListQueueParamsRecommendation("approve"), Confidence = new InvestigatorListQueueParamsConfidence("high"), Ready = true, Search = "sample-search", Limit = 1L, Offset = 1L });
 
@@ -187,6 +187,27 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Investigator_RetrieveOffer()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"show\": true, \"manual_decisions_30d\": 1, \"avg_handling_seconds\": 1, \"stopped_halfway_30d\": 1, \"stage\": \"none\", \"followups_on\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Investigator.RetrieveOfferAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/investigator/offer/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal(1L, result.ManualDecisions30d);
+        }
+
+        [Fact]
         public async Task Investigator_RetrievePerformance()
         {
             var handler = new MockHttpHandler();
@@ -213,7 +234,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"run_id\": \"sample\", \"kind\": \"session\", \"queue\": \"kyc\", \"stage\": \"shadow\", \"subject\": {\"key\": \"value\"}, \"recommendation\": \"approve\", \"recommendation_detail\": \"sample\", \"confidence\": \"high\", \"summary\": \"sample\", \"sources_count\": 1, \"ready_to_accept\": true, \"guardrails\": {\"key\": \"value\"}, \"waiting_since\": \"2026-01-02T03:04:05Z\", \"due_at\": \"2026-01-02T03:04:05Z\", \"prepared_at\": \"2026-01-02T03:04:05Z\", \"status\": \"sample\", \"is_open\": true, \"lookups\": 1, \"duration_ms\": 1, \"agent_version\": \"sample\", \"prepared_before_opened\": true, \"report\": {\"key\": \"value\"}, \"trail\": {\"key\": \"value\"}, \"decision\": {\"outcome\": \"accepted\", \"action\": \"approve\", \"actor_email\": \"sample\", \"actor_name\": \"sample\", \"override_category\": \"missing_context\", \"override_reason\": \"sample\", \"final_status\": \"sample\", \"agreed\": true, \"decided_at\": \"2026-01-02T03:04:05Z\", \"billed\": true, \"decided_by\": \"investigator\", \"original_outcome\": {\"action\": \"sample\", \"final_status\": \"sample\", \"decided_at\": \"2026-01-02T03:04:05Z\"}, \"overrides\": [{\"action\": \"sample\", \"actor_email\": \"sample\", \"actor_name\": \"sample\", \"override_category\": \"sample\", \"override_reason\": \"sample\", \"previous_status\": \"sample\", \"final_status\": \"sample\", \"agreed\": true, \"overridden_at\": \"2026-01-02T03:04:05Z\"}]}, \"autonomy\": {\"key\": \"value\"}}");
+            handler.Enqueue(200, "{\"run_id\": \"sample\", \"kind\": \"session\", \"queue\": \"kyc\", \"stage\": \"none\", \"subject\": {\"key\": \"value\"}, \"recommendation\": \"approve\", \"recommendation_detail\": \"sample\", \"confidence\": \"high\", \"summary\": \"sample\", \"sources_count\": 1, \"ready_to_accept\": true, \"guardrails\": {\"key\": \"value\"}, \"waiting_since\": \"2026-01-02T03:04:05Z\", \"due_at\": \"2026-01-02T03:04:05Z\", \"prepared_at\": \"2026-01-02T03:04:05Z\", \"free_report\": true, \"example\": true, \"status\": \"sample\", \"is_open\": true, \"lookups\": 1, \"duration_ms\": 1, \"agent_version\": \"sample\", \"prepared_before_opened\": true, \"report\": {\"key\": \"value\"}, \"trail\": {\"key\": \"value\"}, \"decision\": {\"outcome\": \"accepted\", \"action\": \"approve\", \"actor_email\": \"sample\", \"actor_name\": \"sample\", \"override_category\": \"missing_context\", \"override_reason\": \"sample\", \"final_status\": \"sample\", \"agreed\": true, \"decided_at\": \"2026-01-02T03:04:05Z\", \"billed\": true, \"decided_by\": \"investigator\", \"original_outcome\": {\"action\": \"sample\", \"final_status\": \"sample\", \"decided_at\": \"2026-01-02T03:04:05Z\"}, \"overrides\": [{\"action\": \"sample\", \"actor_email\": \"sample\", \"actor_name\": \"sample\", \"override_category\": \"sample\", \"override_reason\": \"sample\", \"previous_status\": \"sample\", \"final_status\": \"sample\", \"agreed\": true, \"overridden_at\": \"2026-01-02T03:04:05Z\"}]}, \"autonomy\": {\"key\": \"value\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.Investigator.RetrieveRunAsync("run_id-1");
 
@@ -256,7 +277,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's schema.
-            handler.Enqueue(200, "{\"stage\": \"sample\", \"last_report_at\": \"2026-01-02T03:04:05Z\", \"prepared_today\": 1, \"ready_to_accept\": 1, \"open\": 1, \"decided_today\": 1, \"automation_rate_month\": 1.5, \"preparing\": 1}");
+            handler.Enqueue(200, "{\"stage\": \"sample\", \"last_report_at\": \"2026-01-02T03:04:05Z\", \"prepared_today\": 1, \"ready_to_accept\": 1, \"open\": 1, \"decided_today\": 1, \"automation_rate_month\": 1.5, \"preparing\": 1, \"free_reports\": {\"limit\": 1, \"used\": 1, \"remaining\": 1}}");
             using var client = TestClients.Create(handler);
             var result = await client.Investigator.RetrieveSummaryAsync(new InvestigatorRetrieveSummaryParams { Scope = new InvestigatorRetrieveSummaryParamsScope("all"), Timezone = "sample-timezone" });
 

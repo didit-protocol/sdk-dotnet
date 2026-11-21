@@ -105,6 +105,18 @@ namespace Didit
         public DateTimeOffset? PreparedAt { get; init; }
 
         /// <summary>
+        /// True for one of the organization's free reports: a review run at stage <c>none</c>, with no setup, never charged.
+        /// </summary>
+        [JsonPropertyName("free_report")]
+        public bool? FreeReport { get; init; }
+
+        /// <summary>
+        /// True for an example report shown on a sandbox application. Example reports are read only and never cost anything.
+        /// </summary>
+        [JsonPropertyName("example")]
+        public bool? Example { get; init; }
+
+        /// <summary>
         /// The &lt;c&gt;status&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("status")]

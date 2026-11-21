@@ -104,6 +104,18 @@ namespace Didit
         [JsonPropertyName("prepared_at")]
         public DateTimeOffset? PreparedAt { get; init; }
 
+        /// <summary>
+        /// True for one of the organization's free reports: a review run at stage <c>none</c>, with no setup, never charged.
+        /// </summary>
+        [JsonPropertyName("free_report")]
+        public bool? FreeReport { get; init; }
+
+        /// <summary>
+        /// True for an example report shown on a sandbox application. Example reports are read only and never cost anything.
+        /// </summary>
+        [JsonPropertyName("example")]
+        public bool? Example { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

@@ -26,6 +26,9 @@ namespace Didit
         /// <summary>The <c>analytics</c> resource.</summary>
         public AnalyticsResource Analytics { get; private set; } = null!;
 
+        /// <summary>The <c>authentication_setup</c> resource.</summary>
+        public AuthenticationSetupResource AuthenticationSetup { get; private set; } = null!;
+
         /// <summary>The <c>bank</c> resource.</summary>
         public BankResource Bank { get; private set; } = null!;
 
@@ -155,6 +158,7 @@ namespace Didit
             Aml = new AmlResource(WithRawResponse.Aml);
             AmlMonitoring = new AmlMonitoringResource(WithRawResponse.AmlMonitoring);
             Analytics = new AnalyticsResource(WithRawResponse.Analytics);
+            AuthenticationSetup = new AuthenticationSetupResource(WithRawResponse.AuthenticationSetup);
             Bank = new BankResource(WithRawResponse.Bank);
             Billing = new BillingResource(WithRawResponse.Billing);
             BiometricTemplates = new BiometricTemplatesResource(WithRawResponse.BiometricTemplates);
@@ -207,6 +211,7 @@ namespace Didit
             Aml = new AmlRawResource(pipeline);
             AmlMonitoring = new AmlMonitoringRawResource(pipeline);
             Analytics = new AnalyticsRawResource(pipeline);
+            AuthenticationSetup = new AuthenticationSetupRawResource(pipeline);
             Bank = new BankRawResource(pipeline);
             Billing = new BillingRawResource(pipeline);
             BiometricTemplates = new BiometricTemplatesRawResource(pipeline);
@@ -264,6 +269,9 @@ namespace Didit
 
         /// <summary>The <c>analytics</c> resource.</summary>
         public AnalyticsRawResource Analytics { get; }
+
+        /// <summary>The <c>authentication_setup</c> resource.</summary>
+        public AuthenticationSetupRawResource AuthenticationSetup { get; }
 
         /// <summary>The <c>bank</c> resource.</summary>
         public BankRawResource Bank { get; }
