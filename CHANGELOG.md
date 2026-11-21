@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.1](https://github.com/didit-protocol/sdk-dotnet/compare/v1.32.0...v1.32.1) (2026-11-21)
+
+
+### Documentation
+
+* **design:** API key on account_base_url for authentication_setup ([#112](https://github.com/didit-protocol/sdk-dotnet/issues/112)) ([3fcc0d2](https://github.com/didit-protocol/sdk-dotnet/commit/3fcc0d2461e9b19eb87c6314def52abbdd3b5693))
+
 ## [1.32.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.31.0...v1.32.0) (2026-11-21)
 
 
