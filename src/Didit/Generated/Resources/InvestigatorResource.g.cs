@@ -163,6 +163,22 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Investigator agent offer
+        /// </summary>
+        /// <remarks>
+        /// Whether to offer the Investigator agent to this application: its decisions taken by hand in the last 30 days, the average handling time, the people who stopped halfway and whether follow-ups are on. Read from the daily analytics, never from a scan of sessions. <c>show</c> is true when 20 or more decisions were taken by hand and the agent is not set up, or when follow-ups are off and 50 or more people stopped halfway.
+        /// <para/>
+        /// <c>GET /v3/investigator/offer/</c> (<c>investigator.retrieve_offer</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<InvestigatorRetrieveOfferResponse> RetrieveOfferAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveOfferAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Investigator performance
         /// </summary>
         /// <remarks>
@@ -433,6 +449,21 @@ namespace Didit.Resources
             };
             request.Query.Add("scope", parameters?.Scope?.Value);
             return _pipeline.SendJsonAsync<InvestigatorRetrieveDashboardResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Investigator agent offer
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="InvestigatorResource.RetrieveOfferAsync"/>.</remarks>
+        public Task<DiditResponse<InvestigatorRetrieveOfferResponse>> RetrieveOfferAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/investigator/offer/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<InvestigatorRetrieveOfferResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

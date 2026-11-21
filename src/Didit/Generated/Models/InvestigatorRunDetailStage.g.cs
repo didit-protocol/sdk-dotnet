@@ -23,6 +23,9 @@ namespace Didit
             _value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary><c>none</c></summary>
+        public static InvestigatorRunDetailStage None { get; } = new("none");
+
         /// <summary><c>shadow</c></summary>
         public static InvestigatorRunDetailStage Shadow { get; } = new("shadow");
 

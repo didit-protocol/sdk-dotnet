@@ -15,7 +15,7 @@ namespace Didit
     public sealed record InvestigatorRetrieveSummaryResponse
     {
         /// <summary>
-        /// The &lt;c&gt;stage&lt;/c&gt; field.
+        /// <c>none</c> (not set up; free reports still run while <c>free_reports.remaining</c> is above 0), <c>shadow</c> or <c>live</c>.
         /// </summary>
         [JsonPropertyName("stage")]
         public string? Stage { get; init; }
@@ -61,6 +61,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("preparing")]
         public long? Preparing { get; init; }
+
+        /// <summary>
+        /// The organization's free reports: the first reports run with no setup, on any plan, and are never charged.
+        /// </summary>
+        [JsonPropertyName("free_reports")]
+        public InvestigatorRetrieveSummaryResponseFreeReports? FreeReports { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
