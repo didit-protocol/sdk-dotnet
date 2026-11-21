@@ -119,6 +119,9 @@ namespace Didit
         /// <summary><c>investigator.external.report.ready</c></summary>
         public static WebhookEvent InvestigatorExternalReportReady { get; } = new("investigator.external.report.ready");
 
+        /// <summary><c>message.status.updated</c></summary>
+        public static WebhookEvent MessageStatusUpdated { get; } = new("message.status.updated");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

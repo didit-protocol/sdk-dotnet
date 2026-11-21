@@ -89,6 +89,9 @@ namespace Didit
         /// <summary>The <c>lists</c> resource.</summary>
         public ListsResource Lists { get; private set; } = null!;
 
+        /// <summary>The <c>messages</c> resource.</summary>
+        public MessagesResource Messages { get; private set; } = null!;
+
         /// <summary>The <c>monitoring_events</c> resource.</summary>
         public MonitoringEventsResource MonitoringEvents { get; private set; } = null!;
 
@@ -179,6 +182,7 @@ namespace Didit
             Ip = new IpResource(WithRawResponse.Ip);
             Kyb = new KybResource(WithRawResponse.Kyb);
             Lists = new ListsResource(WithRawResponse.Lists);
+            Messages = new MessagesResource(WithRawResponse.Messages);
             MonitoringEvents = new MonitoringEventsResource(WithRawResponse.MonitoringEvents);
             Networks = new NetworksResource(WithRawResponse.Networks);
             PassiveLiveness = new PassiveLivenessResource(WithRawResponse.PassiveLiveness);
@@ -232,6 +236,7 @@ namespace Didit
             Ip = new IpRawResource(pipeline);
             Kyb = new KybRawResource(pipeline);
             Lists = new ListsRawResource(pipeline);
+            Messages = new MessagesRawResource(pipeline);
             MonitoringEvents = new MonitoringEventsRawResource(pipeline);
             Networks = new NetworksRawResource(pipeline);
             PassiveLiveness = new PassiveLivenessRawResource(pipeline);
@@ -332,6 +337,9 @@ namespace Didit
 
         /// <summary>The <c>lists</c> resource.</summary>
         public ListsRawResource Lists { get; }
+
+        /// <summary>The <c>messages</c> resource.</summary>
+        public MessagesRawResource Messages { get; }
 
         /// <summary>The <c>monitoring_events</c> resource.</summary>
         public MonitoringEventsRawResource MonitoringEvents { get; }
