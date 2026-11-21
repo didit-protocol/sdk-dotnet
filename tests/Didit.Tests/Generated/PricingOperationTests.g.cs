@@ -35,5 +35,26 @@ namespace Didit.Tests.Generated
             Assert.NotNull(result);
             Assert.Equal("0.0200", result.OwnProviderFeeUsd);
         }
+
+        [Fact]
+        public async Task Pricing_PriceBook()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"currency\": \"USD\", \"plans\": [{\"key\": \"free\", \"price_usd_month\": \"0.00\", \"price_usd_year\": null, \"discount_percent\": 0, \"transactions_included_per_month\": 1000}, {\"key\": \"growth\", \"price_usd_month\": \"99.00\", \"price_usd_year\": \"1128.00\", \"discount_percent\": 4, \"transactions_included_per_month\": 10000}, {\"key\": \"scale\", \"price_usd_month\": \"299.00\", \"price_usd_year\": \"3408.00\", \"discount_percent\": 10, \"transactions_included_per_month\": 100000}, {\"key\": \"enterprise\", \"price_usd_month\": null, \"price_usd_year\": null, \"discount_percent\": null, \"transactions_included_per_month\": null}], \"white_label_usd\": \"0.10\", \"messages_fee_usd\": \"0.02\", \"message_fee_usd_by_channel\": {\"sms\": \"0.02\", \"whatsapp\": \"0.004\"}, \"lines\": [{\"key\": \"message_email\", \"product\": \"identity\", \"feature\": \"email\", \"unit\": \"message\", \"list_price_usd\": \"0.02\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Pricing.PriceBookAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/price-book/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Null(request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("0.10", result.WhiteLabelUsd);
+        }
     }
 }

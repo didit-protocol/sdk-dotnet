@@ -43,6 +43,28 @@ namespace Didit.Resources
             var response = await _raw.BankVerificationAsync(requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Get the price book (public, unauthenticated)
+        /// </summary>
+        /// <remarks>
+        /// Returns Didit's public list prices: every plan with its monthly and yearly price and its discount, the white label price, Didit's fee on each Messages channel, and every flat usage price. Use it to quote Didit's prices in your own product or to check a price before you build a workflow.
+        /// <para/>
+        /// Public: send no auth header. The response contains no organization data and is the same for every caller. It carries an <c>ETag</c>, so send <c>If-None-Match</c> to get a <c>304 Not Modified</c> when nothing changed.
+        /// <para/>
+        /// Messages fees. An SMS costs the carrier's price per segment plus Didit's fee per segment (<c>message_fee_usd_by_channel.sms</c>, also <c>messages_fee_usd</c>). A WhatsApp message sent from Didit's number costs WhatsApp's rate plus Didit's own WhatsApp fee (<c>message_fee_usd_by_channel.whatsapp</c>); sent from your own WhatsApp Business account, WhatsApp bills you directly and Didit charges only its fee. The carrier's and WhatsApp's parts are passed on at cost.
+        /// <para/>
+        /// These are list prices before your plan discount, which applies to Didit's fee only on carrier-priced items and to the whole price everywhere else. A negotiated or contract price replaces the list price for your organization. Per-item prices are on their own feeds, such as [phone verification prices](/getting-started/phone-verification-pricing) and [bank verification prices](/getting-started/bank-verification-pricing).
+        /// <para/>
+        /// <c>GET /v3/organization/price-book/</c> (<c>pricing.price_book</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<PublicPriceBook> PriceBookAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.PriceBookAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
     }
 
     /// <summary>The <c>pricing</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -68,6 +90,21 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<BankVerificationPricing>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get the price book (public, unauthenticated)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PricingResource.PriceBookAsync"/>.</remarks>
+        public Task<DiditResponse<PublicPriceBook>> PriceBookAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/price-book/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.None,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<PublicPriceBook>(request, requestOptions, cancellationToken);
         }
     }
 }
