@@ -287,6 +287,71 @@ namespace Didit.Tests.Webhooks
             Assert.Equal("sandbox", WebhookEnvironment.Sandbox);
         }
 
+        [Fact]
+        public void BankLinkEventsReadTheirNestedData()
+        {
+            var verified = SignAndVerify(Body(
+                "bank.link.failed",
+                "\"data\":{\"link_id\":\"link-1\",\"status\":\"failed\",\"connection_id\":null,\"check_id\":null,"
+                + "\"error_code\":\"duplicate_conflict\"}"));
+
+            var failed = Assert.IsType<BankLinkFailedEvent>(verified);
+            Assert.Equal("link-1", failed.LinkId);
+            Assert.Equal("failed", failed.Status);
+            Assert.Null(failed.ConnectionId);
+            Assert.Null(failed.CheckId);
+            Assert.Equal("duplicate_conflict", failed.ErrorCode);
+        }
+
+        [Fact]
+        public void BankConnectionEventsReadTheirTopLevelData()
+        {
+            var verified = SignAndVerify(Body(
+                "bank.connection.consent_expiring",
+                "\"connection_id\":\"connection-1\",\"days_left\":7,\"consent_expires_at\":\"2027-05-20T12:04:11Z\","
+                + "\"renew_by\":\"2027-05-20T12:04:11Z\""));
+
+            var expiring = Assert.IsType<BankConnectionConsentExpiringEvent>(verified);
+            Assert.Equal("connection-1", expiring.ConnectionId);
+            Assert.Equal(7, expiring.DaysLeft);
+            Assert.Equal(DateTimeOffset.Parse("2027-05-20T12:04:11Z", System.Globalization.CultureInfo.InvariantCulture), expiring.ConsentExpiresAt);
+            Assert.Equal(expiring.ConsentExpiresAt, expiring.RenewBy);
+        }
+
+        [Fact]
+        public void BankSyncEventsReadTheirCountsAndDates()
+        {
+            var verified = SignAndVerify(Body(
+                "bank.data.updated",
+                "\"connection_id\":\"connection-1\",\"sync_id\":\"sync-1\",\"trigger\":\"scheduled\","
+                + "\"accounts\":[{\"account_id\":\"account-1\",\"added\":3,\"modified\":1,\"removed\":2}],"
+                + "\"balances_changed\":true"));
+
+            var dataUpdated = Assert.IsType<BankDataUpdatedEvent>(verified);
+            Assert.Equal("connection-1", dataUpdated.ConnectionId);
+            Assert.Equal("sync-1", dataUpdated.SyncId);
+            Assert.Equal("scheduled", dataUpdated.Trigger);
+            Assert.True(dataUpdated.BalancesChanged);
+            var account = Assert.Single(dataUpdated.Accounts!);
+            Assert.Equal("account-1", account.AccountId);
+            Assert.Equal(3, account.Added);
+            Assert.Equal(1, account.Modified);
+            Assert.Equal(2, account.Removed);
+        }
+
+        [Fact]
+        public void BankSyncFailureReadsItsDate()
+        {
+            var verified = SignAndVerify(Body(
+                "bank.sync.failed",
+                "\"connection_id\":\"connection-1\",\"sync_id\":\"sync-1\",\"error_code\":\"bank_unavailable\","
+                + "\"failing_since\":\"2027-03-01T00:00:00Z\""));
+
+            var failed = Assert.IsType<BankSyncFailedEvent>(verified);
+            Assert.Equal("bank_unavailable", failed.ErrorCode);
+            Assert.Equal(DateTimeOffset.Parse("2027-03-01T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture), failed.FailingSince);
+        }
+
         private static string Body(string webhookType, string fields) =>
             "{" + Envelope + ",\"webhook_type\":\"" + webhookType + "\"," + fields + "}";
     }
