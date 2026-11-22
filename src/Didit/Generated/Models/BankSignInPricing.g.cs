@@ -38,6 +38,18 @@ namespace Didit
         [JsonPropertyName("add_ons")]
         public BankSignInPricingAddOns? AddOns { get; init; }
 
+        /// <summary>
+        /// Ongoing access to bank data (Bank Link <c>access: ongoing</c>). Present only where Bank data is switched on.
+        /// </summary>
+        [JsonPropertyName("ongoing")]
+        public BankSignInPricingOngoing? Ongoing { get; init; }
+
+        /// <summary>
+        /// One-time data prices of a Bank Link, present only where Bank data is switched on. <c>null</c> where the country offers no one-time data: use <c>add_ons</c>. Where the country offers the one-time bundle, the object also carries <c>bundle_included: true</c> and <c>transactions_usd</c> is that bundle: one read of transactions and balances.
+        /// </summary>
+        [JsonPropertyName("one_time_data")]
+        public BankSignInPricingOneTimeData? OneTimeData { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
