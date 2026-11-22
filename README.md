@@ -272,6 +272,7 @@ var link = await client.Bank.CreateLinkAsync(new BankLinkCreateRequest
 Console.WriteLine(link.Url);   // send the person here
 
 var connections = await client.Bank.ListConnectionsAsync(new BankListConnectionsParams { Limit = 100 });
+var connectionId = connections.Items![0].Id!;   // or the connection id from bank.connection.created
 var accounts = await client.Bank.ListAccountsAsync(connectionId);
 ```
 
