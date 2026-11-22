@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: deps
+    groups:
+      microsoft-and-system:
+        patterns:
+          - "Microsoft.Extensions.*"
+          - "Microsoft.Bcl.*"
+          - "Microsoft.IdentityModel.*"
+          - "System.*"
+      test:
+        patterns:
+          - "Microsoft.NET.Test.Sdk"
+          - "xunit"
+          - "xunit.*"
+          - "coverlet.*"
+    ignore:
+      # A library references the lowest framework package versions it supports, so consumers are not forced to
+      # upgrade. Raise these majors deliberately, not through Dependabot.
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Bcl.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "System.*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns:
+          - "*"
