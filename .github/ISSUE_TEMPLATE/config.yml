@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/didit-protocol/sdk-dotnet/security/advisories/new
+    about: Report vulnerabilities privately through GitHub private vulnerability reporting, never in a public issue. See SECURITY.md.
+  - name: Didit API documentation
+    url: https://docs.didit.me
+    about: API reference, guides and the Server SDKs section.
+  - name: Account, billing or API support
+    url: https://didit.me
+    about: Questions about your Didit account or verification results go to support@didit.me, not to this repository.
