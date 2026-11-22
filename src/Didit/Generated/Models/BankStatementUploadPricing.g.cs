@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankStatementUploadPricing
     {
         /// <summary>
-        /// Price of a statement upload after a charged bank attempt. Decimal string with 4 decimals, in USD.
+        /// Price of a statement upload with no charged bank attempt before it. After a charged bank attempt in the same session the statement costs nothing extra. Decimal string with 4 decimals, in USD.
         /// </summary>
         [JsonPropertyName("price_usd")]
         public string? PriceUsd { get; init; }
@@ -27,7 +27,7 @@ namespace Didit
         public bool? IncludedAfterChargedBankAttempt { get; init; }
 
         /// <summary>
-        /// <c>true</c> when a statement upload can run on its own, with no bank attempt first. <c>false</c> in production; sandbox sessions can test it without billing.
+        /// <c>true</c> when a statement upload can run on its own, with no bank attempt first, at <c>price_usd</c>.
         /// </summary>
         [JsonPropertyName("standalone_available")]
         public bool? StandaloneAvailable { get; init; }
