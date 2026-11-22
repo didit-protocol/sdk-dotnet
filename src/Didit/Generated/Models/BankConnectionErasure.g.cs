@@ -10,24 +10,24 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Progress of a deletion you asked for.
+    /// The record of a deletion you asked for. The deletion itself is immediate: the connection's data is deleted and unreadable when the call returns. <c>status</c> is the confirmation of it.
     /// </summary>
     public sealed record BankConnectionErasure
     {
         /// <summary>
-        /// <c>pending</c> while deletion runs, <c>erased</c> when no stored copy and no access at the bank remain, <c>failed</c> when it could not be confirmed within 24 hours. A failed deletion keeps the connection's data closed, is retried, and Didit is alerted.
+        /// The confirmation of the deletion. <c>pending</c>: the deletion is being confirmed, including the end of access at the bank. <c>erased</c>: confirmed, with <c>erased_at</c>. <c>failed</c>: the confirmation has not arrived yet and is repeated automatically; nothing is needed from you. The data is deleted and not readable in any of the three.
         /// </summary>
         [JsonPropertyName("status")]
         public BankConnectionErasureStatus? Status { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;requested_at&lt;/c&gt; field.
+        /// When you asked for the deletion.
         /// </summary>
         [JsonPropertyName("requested_at")]
         public DateTimeOffset? RequestedAt { get; init; }
 
         /// <summary>
-        /// When the deletion finished. <c>null</c> until <c>status</c> is <c>erased</c>.
+        /// When the deletion was confirmed. <c>null</c> until <c>status</c> is <c>erased</c>.
         /// </summary>
         [JsonPropertyName("erased_at")]
         public DateTimeOffset? ErasedAt { get; init; }
