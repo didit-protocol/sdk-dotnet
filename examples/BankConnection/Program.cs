@@ -62,7 +62,7 @@ while (connectionId is null && DateTimeOffset.UtcNow < deadline
 
 if (connectionId is null)
 {
-    Console.WriteLine($"The link is {link.Status.Value}: no connection to read. Set DIDIT_CONNECTION_ID to read an existing one.");
+    Console.WriteLine($"The link is {link.Status?.Value}: no connection to read. Set DIDIT_CONNECTION_ID to read an existing one.");
     return;
 }
 
