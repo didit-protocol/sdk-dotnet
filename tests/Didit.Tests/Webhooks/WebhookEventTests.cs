@@ -313,7 +313,7 @@ namespace Didit.Tests.Webhooks
 
             var expiring = Assert.IsType<BankConnectionConsentExpiringEvent>(verified);
             Assert.Equal("connection-1", expiring.ConnectionId);
-            Assert.Equal(7, expiring.DaysLeft);
+            Assert.Equal(7L, expiring.DaysLeft);
             Assert.Equal(DateTimeOffset.Parse("2027-05-20T12:04:11Z", System.Globalization.CultureInfo.InvariantCulture), expiring.ConsentExpiresAt);
             Assert.Equal(expiring.ConsentExpiresAt, expiring.RenewBy);
         }
@@ -334,9 +334,9 @@ namespace Didit.Tests.Webhooks
             Assert.True(dataUpdated.BalancesChanged);
             var account = Assert.Single(dataUpdated.Accounts!);
             Assert.Equal("account-1", account.AccountId);
-            Assert.Equal(3, account.Added);
-            Assert.Equal(1, account.Modified);
-            Assert.Equal(2, account.Removed);
+            Assert.Equal(3L, account.Added);
+            Assert.Equal(1L, account.Modified);
+            Assert.Equal(2L, account.Removed);
         }
 
         [Fact]
