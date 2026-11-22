@@ -23,6 +23,22 @@ namespace Didit.Tests.Webhooks
             ["transaction.status.updated"] = typeof(TransactionStatusUpdatedEvent),
             ["travel_rule.status.updated"] = typeof(TravelRuleStatusUpdatedEvent),
             ["workflow.compliance_changed"] = typeof(WorkflowComplianceChangedEvent),
+            ["bank.link.completed"] = typeof(BankLinkCompletedEvent),
+            ["bank.link.cancelled"] = typeof(BankLinkCancelledEvent),
+            ["bank.link.expired"] = typeof(BankLinkExpiredEvent),
+            ["bank.link.failed"] = typeof(BankLinkFailedEvent),
+            ["bank.connection.created"] = typeof(BankConnectionCreatedEvent),
+            ["bank.connection.updated"] = typeof(BankConnectionUpdatedEvent),
+            ["bank.connection.consent_expiring"] = typeof(BankConnectionConsentExpiringEvent),
+            ["bank.connection.renewal_required"] = typeof(BankConnectionRenewalRequiredEvent),
+            ["bank.connection.renewed"] = typeof(BankConnectionRenewedEvent),
+            ["bank.connection.revoked"] = typeof(BankConnectionRevokedEvent),
+            ["bank.connection.deleted"] = typeof(BankConnectionDeletedEvent),
+            ["bank.connection.history_complete"] = typeof(BankConnectionHistoryCompleteEvent),
+            ["bank.data.updated"] = typeof(BankDataUpdatedEvent),
+            ["bank.sync.completed"] = typeof(BankSyncCompletedEvent),
+            ["bank.sync.failed"] = typeof(BankSyncFailedEvent),
+            ["bank.sync.recovered"] = typeof(BankSyncRecoveredEvent),
         };
 
         public static TheoryData<string> AllVectors => Names(_ => true);
@@ -232,6 +248,75 @@ namespace Didit.Tests.Webhooks
                     Assert.Equal(Text(body, "travel_rule_status"), travelRule.TravelRuleStatus);
                     Assert.Equal(Text(body, "rail"), travelRule.Rail);
                     Assert.Equal(Text(body, "direction"), travelRule.Direction);
+                    break;
+                case BankLinkEvent link:
+                    var data = body.GetProperty("data");
+                    Assert.Equal(Text(data, "link_id"), link.LinkId);
+                    Assert.Equal(Text(data, "status"), link.Status);
+                    Assert.Equal(Text(data, "connection_id"), link.ConnectionId);
+                    Assert.Equal(Text(data, "check_id"), link.CheckId);
+                    Assert.Equal(Text(data, "error_code"), link.ErrorCode);
+                    break;
+                case BankConnectionCreatedEvent created:
+                    Assert.Equal(Text(body, "connection_id"), created.ConnectionId);
+                    Assert.Equal(Text(body, "initial_status"), created.InitialStatus);
+                    break;
+                case BankConnectionUpdatedEvent updated:
+                    Assert.Equal(Text(body, "connection_id"), updated.ConnectionId);
+                    Assert.Equal(Text(body, "status"), updated.Status);
+                    Assert.Equal(Text(body, "revocation_status"), updated.RevocationStatus);
+                    break;
+                case BankConnectionConsentExpiringEvent consentExpiring:
+                    Assert.Equal(Text(body, "connection_id"), consentExpiring.ConnectionId);
+                    Assert.Equal(body.GetProperty("days_left").GetInt64(), consentExpiring.DaysLeft);
+                    Assert.Equal(body.GetProperty("consent_expires_at").GetDateTimeOffset(), consentExpiring.ConsentExpiresAt!.Value);
+                    Assert.Equal(body.GetProperty("renew_by").GetDateTimeOffset(), consentExpiring.RenewBy!.Value);
+                    break;
+                case BankConnectionRenewalRequiredEvent renewalRequired:
+                    Assert.Equal(Text(body, "connection_id"), renewalRequired.ConnectionId);
+                    Assert.Equal(Text(body, "reason"), renewalRequired.Reason);
+                    break;
+                case BankConnectionRenewedEvent renewed:
+                    Assert.Equal(Text(body, "connection_id"), renewed.ConnectionId);
+                    Assert.Equal(body.GetProperty("consent_version").GetInt64(), renewed.ConsentVersion);
+                    Assert.Equal(Text(body, "link_id"), renewed.LinkId);
+                    break;
+                case BankConnectionRevokedEvent revoked:
+                    Assert.Equal(Text(body, "connection_id"), revoked.ConnectionId);
+                    Assert.Equal(Text(body, "ended_by"), revoked.EndedBy);
+                    Assert.Equal(Text(body, "status_reason"), revoked.StatusReason);
+                    break;
+                case BankConnectionDeletedEvent deleted:
+                    Assert.Equal(Text(body, "connection_id"), deleted.ConnectionId);
+                    Assert.Equal(Text(body, "erasure_status"), deleted.ErasureStatus);
+                    Assert.Equal(Text(body, "reason"), deleted.Reason);
+                    break;
+                case BankConnectionHistoryCompleteEvent historyComplete:
+                    Assert.Equal(Text(body, "connection_id"), historyComplete.ConnectionId);
+                    Assert.Equal(Text(body, "status"), historyComplete.Status);
+                    break;
+                case BankDataUpdatedEvent dataUpdated:
+                    Assert.Equal(Text(body, "connection_id"), dataUpdated.ConnectionId);
+                    Assert.Equal(Text(body, "sync_id"), dataUpdated.SyncId);
+                    Assert.Equal(Text(body, "trigger"), dataUpdated.Trigger);
+                    Assert.Equal(body.GetProperty("balances_changed").GetBoolean(), dataUpdated.BalancesChanged);
+                    Assert.Equal(body.GetProperty("accounts").GetArrayLength(), dataUpdated.Accounts!.Count);
+                    Assert.Equal(body.GetProperty("accounts")[1].GetProperty("removed").GetInt64(), dataUpdated.Accounts![1].Removed!.Value);
+                    break;
+                case BankSyncCompletedEvent syncCompleted:
+                    Assert.Equal(Text(body, "connection_id"), syncCompleted.ConnectionId);
+                    Assert.Equal(Text(body, "sync_id"), syncCompleted.SyncId);
+                    Assert.Equal(Text(body, "outcome"), syncCompleted.Outcome);
+                    Assert.Equal(body.GetProperty("changed").GetBoolean(), syncCompleted.Changed);
+                    break;
+                case BankSyncFailedEvent syncFailed:
+                    Assert.Equal(Text(body, "connection_id"), syncFailed.ConnectionId);
+                    Assert.Equal(Text(body, "sync_id"), syncFailed.SyncId);
+                    Assert.Equal(Text(body, "error_code"), syncFailed.ErrorCode);
+                    break;
+                case BankSyncRecoveredEvent syncRecovered:
+                    Assert.Equal(Text(body, "connection_id"), syncRecovered.ConnectionId);
+                    Assert.Equal(Text(body, "sync_id"), syncRecovered.SyncId);
                     break;
             }
         }
