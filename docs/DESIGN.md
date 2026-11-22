@@ -210,10 +210,11 @@ Every SDK test suite runs every vector and asserts the expected outcome, and ass
 
 ### 9.4 Typed events
 
-Parse the verified body into a discriminated union on `webhook_type`: `status.updated`, `data.updated`, `user.status.updated`, `user.data.updated`, `business.status.updated`, `business.data.updated`, `activity.created`, `transaction.created`, `transaction.status.updated`, `travel_rule.status.updated`, `workflow.compliance_changed`, `kyb.registry_search.resolved`, plus an `UnknownEvent` that keeps the raw payload for any other type.
+Parse the verified body into a discriminated union on `webhook_type`: `status.updated`, `data.updated`, `user.status.updated`, `user.data.updated`, `business.status.updated`, `business.data.updated`, `activity.created`, `transaction.created`, `transaction.status.updated`, `travel_rule.status.updated`, `workflow.compliance_changed`, `kyb.registry_search.resolved`, `bank.link.completed`, `bank.link.cancelled`, `bank.link.expired`, `bank.link.failed`, `bank.connection.created`, `bank.connection.updated`, `bank.connection.consent_expiring`, `bank.connection.renewal_required`, `bank.connection.renewed`, `bank.connection.revoked`, `bank.connection.deleted`, `bank.connection.history_complete`, `bank.data.updated`, `bank.sync.completed`, `bank.sync.failed`, `bank.sync.recovered`, plus an `UnknownEvent` that keeps the raw payload for any other type.
 Envelope fields on every event: `event_id`, `webhook_type`, `timestamp`, `created_at`, `application_id`, `environment` (`live` or `sandbox`).
 Session events add `session_id`, `business_session_id`, `session_kind`, `status`, `workflow_id`, `workflow_version`, `vendor_data`, `metadata`, `decision`, `resubmit_info`; transaction events add `transaction_id`, `txn_id`, `status`, `score`, `severity`, `amount`, `currency`, `direction`, `action_required`; Travel Rule events add `transaction_id`, `txn_id`, `travel_rule_status`, `rail`, `direction`; user and business events add `vendor_user_id` or `vendor_business_id`, `vendor_data`, `status`.
 Where the spec has a schema for the payload (for example the session decision), reuse the generated type.
+Bank events carry their fields next to the envelope fields; section 16.3 lists them.
 
 ## 10. Authentication (Didit customer authentication)
 
@@ -295,14 +296,26 @@ Any change to a public API endpoint, parameter, request or response field, enum 
 The spec sync (3.1) then opens a pull request in every SDK repository; whoever changed the backend makes sure those pull requests merge, adding hand-written core changes (webhooks, Authentication) where the change needs them.
 The rule lives in `CLAUDE.md` and `AGENTS.md` of the backends, of mintlify-docs, of every SDK repository, and of the Didit workspace.
 
-## 16. Bank verification
+## 16. Bank data and Bank Link
 
-`client.bank` is generated from the same `openapi-25.json` as every other resource and covers the Bank Verification product. The public contract has the ownership check `account_check` and these link and connection operations: `create_link`, `get_link`, `cancel_link`, `list_connections`, `get_connection`, `delete_connection`, `refresh_connection`, `list_sync_runs`, `get_sync_run`, `renew_connection`, `revoke_connection`, `list_accounts`, `get_account`, `get_balances`, `list_transactions`, `sync_transactions`, `list_institutions`, `get_institution` and `get_coverage`. The sandbox-only simulate and manage-link operations are not in the public document and are not generated.
+The `bank` resource exposes the Bank verification API: Bank Link, connections, accounts, balances, transactions, sync runs, institutions and coverage. It is generated from `openapi/verification.json` like every other resource; the hand-written `bank.*` webhook events are in section 9.4.
 
-Bank data is read with the `bank-data` permission on the API key. Full access does not include it, and a key without it answers `403 bank_data_access_denied`. A live sync beyond the bank's daily limit answers `429 refresh_limit_reached` with `Retry-After` and a `sync` object; the header is exposed like every other rate-limit header.
+### 16.1 Operations
 
-- Amounts (`amount`, `balance_after`, `price_usd`) are decimal strings in the API. The SDK keeps them as strings and never converts money to a floating-point number.
-- Connections, accounts, institutions and sync runs are cursor pages: `limit` with `cursor`, returning `{items, next_cursor}`. Transactions return `{items, next_page_token, has_more}`, and the change feed takes `page_token`. Bank pages are returned as their typed page objects, not as the offset `Page<T>` of section 8.
-- Every write accepts `RequestOptions.IdempotencyKey`; repeating a request with the same key returns the first result. Identifiers and tokens are opaque strings: the SDK validates no format, including the ownership check id.
-- `delete_connection` "stops access at the bank and deletes the stored accounts, balances and transactions; it cannot be undone". A deleted connection answers only `id`, `status`, `status_reason`, `created_at` and an `erasure` block; every other field is absent. `revoke_connection` "stops access; stored data stays readable until the retention window ends".
-- Received `bank.*` webhooks are typed like section 9.4: `bank.link.completed`, `bank.link.cancelled`, `bank.link.expired`, `bank.link.failed`, `bank.connection.created`, `bank.connection.updated`, `bank.connection.consent_expiring`, `bank.connection.renewal_required`, `bank.connection.renewed`, `bank.connection.revoked`, `bank.connection.deleted`, `bank.connection.history_complete`, `bank.data.updated`, `bank.sync.completed`, `bank.sync.failed` and `bank.sync.recovered`. Link events put their fields under `data`; connection, data and sync events put them at the top level next to the envelope. The payload is ids, statuses, counts and timestamps only: `connection_id`, `link_id`, `check_id`, `status`, `status_reason`, `ended_by`, `error_code`, `erasure_status`, `days_left`, `consent_expires_at`, `renew_by`, `renewable_until`, `consent_version`, `trigger`, `outcome`, `changed`, `balances_changed`, the per-account `account_id`/`added`/`modified`/`removed` counts and `sync_id`. There is no personal or account data in an event; fetch the object from the API when the event says something changed.
+`client.bank` has `account_check` and the Bank data operations: `create_link`, `get_link`, `cancel_link`, `list_connections`, `get_connection`, `delete_connection`, `refresh_connection`, `list_sync_runs`, `get_sync_run`, `renew_connection`, `revoke_connection`, `list_accounts`, `get_account`, `get_balances`, `list_transactions`, `sync_transactions`, `list_institutions`, `get_institution` and `get_coverage`. The document is the contract: an operation the document does not have is not generated (the sandbox simulate and manage-link operations are not public yet).
+
+- `delete_connection` stops access at the bank and deletes the stored accounts, balances and transactions; it cannot be undone. `revoke_connection` stops access; stored data stays readable until the retention window ends.
+- Identifiers and tokens are opaque strings: never validate their format in the SDK.
+- A deleted connection answers only `id`, `status`, `status_reason`, `created_at` and an `erasure` block.
+- Bank data needs the `bank-data` permission on the API key and is not part of full access: a key without it answers `403` with `code: bank_data_access_denied`.
+- In production the product is on for sandbox applications first; a live application's Bank data calls answer `404`.
+
+### 16.2 Pagination, amounts and retries
+
+Bank lists are cursor-paginated and are the exception to section 8: `list_connections`, `list_accounts`, `list_sync_runs` and `list_institutions` take `limit` and `cursor` and return `{items, next_cursor}`; pass `next_cursor` as `cursor` to read the next page. `list_transactions` takes `limit` and `page_token` and returns `{items, next_page_token}`; `sync_transactions` takes `cursor`, `limit` and `page_token` and returns changes with `has_more`, `next_cursor` and `next_page_token`. There is no auto-pagination for these lists: the cursor is opaque and the response is not the page envelope of section 8.
+Amounts are decimal strings exactly as the API sends them, never floats. Every write takes an `Idempotency-Key` through the per-request option (section 6); a retry sends the same key.
+A live sync beyond the bank's daily limit answers `429` with `code: refresh_limit_reached` and `Retry-After`; the error exposes the header like every other rate limit (section 7).
+
+### 16.3 Webhook events
+
+The typed `bank.*` events are part of the union in section 9.4. Their fields sit next to the envelope fields and are ids, statuses and counts only: `connection_id`, `link_id`, `check_id`, `status`, `status_reason`, `initial_status`, `revocation_status`, `reason`, `ended_by`, `ended_at`, `retain_until`, `erasure_status`, `erased_at`, `consent_version`, `consent_expires_at`, `days_left`, `renew_by`, `renewable_until`, `accounts` (each account with `account_id`, `added`, `modified` and `removed`), `trigger`, `outcome`, `changed`, `balances_changed`, `error_code`, `failing_since` and `sync_id`. The envelope is the same as every other event.
