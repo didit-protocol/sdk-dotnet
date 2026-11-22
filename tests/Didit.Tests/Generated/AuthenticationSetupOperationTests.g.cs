@@ -107,13 +107,13 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"key\": \"code\", \"from\": \"Example <no-reply@example.com>\", \"to\": \"\", \"subject\": \"Your Example code: 123456\", \"html\": \"<html>...</html>\", \"enabled\": true}");
             using var client = TestClients.Create(handler);
-            var result = await client.AuthenticationSetup.GetEmailAsync("organization_id-1", "application_id-1", "key-1");
+            var result = await client.AuthenticationSetup.GetEmailAsync("organization_id-1", "application_id-1", "key-1", new AuthenticationSetupGetEmailParams { Organization = "Northwind Traders", Role = new AuthenticationSetupGetEmailParamsRole("member"), Agent = "Nova" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("GET", request.Method);
             Assert.Equal("apx.didit.me", request.Uri.Host);
             Assert.Equal("/auth/v2/organizations/organization_id-1/applications/application_id-1/authentication/emails/key-1/", request.Path);
-            Assert.Equal("", request.Query);
+            Assert.Equal("?organization=Northwind%20Traders&role=member&agent=Nova", request.Query);
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);

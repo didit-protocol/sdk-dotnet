@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Accepted deletion. The connection's bank data is being deleted and its data operations answer <c>409 connection_not_active</c>; reading the connection returns a minimal record with this <c>erasure</c> status.
+    /// The record of a deletion. The connection's bank data is deleted and its data operations answer <c>409 connection_not_active</c>; reading the connection returns a minimal record with this <c>erasure</c> record.
     /// </summary>
     public sealed record BankConnectionDeletion
     {
@@ -21,7 +21,7 @@ namespace Didit
         public string? Id { get; init; }
 
         /// <summary>
-        /// Progress of a deletion you asked for.
+        /// The record of a deletion you asked for. The deletion itself is immediate: the connection's data is deleted and unreadable when the call returns. <c>status</c> is the confirmation of it.
         /// </summary>
         [JsonPropertyName("erasure")]
         public BankConnectionErasure? Erasure { get; init; }

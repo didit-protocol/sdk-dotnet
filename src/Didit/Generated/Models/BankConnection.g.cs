@@ -39,7 +39,7 @@ namespace Didit
         public BankConnectionStatus? Status { get; init; }
 
         /// <summary>
-        /// Why the connection is in this status. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c>, <c>application_deleted</c> or <c>restored_after_deletion</c>.
+        /// Why the connection is in this status. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>.
         /// </summary>
         [JsonPropertyName("status_reason")]
         public BankConnectionStatusReason? StatusReason { get; init; }
@@ -93,7 +93,7 @@ namespace Didit
         public BankConnectionEndUser? EndUser { get; init; }
 
         /// <summary>
-        /// Reserved. Always <c>null</c>.
+        /// The person's own access page. <c>null</c> until the access page is available.
         /// </summary>
         [JsonPropertyName("manage_url")]
         public string? ManageUrl { get; init; }

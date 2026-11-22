@@ -45,7 +45,7 @@ namespace Didit
         public string? Url { get; init; }
 
         /// <summary>
-        /// The token the web and native SDKs take. Returned only when the link is created; <c>null</c> on later reads. Single purpose and short lived: the hosted <c>url</c> and this token are redeemed once between them, and whichever arrives first wins. It carries no personal data. Never log it.
+        /// The token for Didit's embedded Bank Link, which is not released yet: open <c>url</c> today. Returned only when the link is created; <c>null</c> on later reads. Single purpose and short lived. It carries no personal data. Never log it.
         /// </summary>
         [JsonPropertyName("client_token")]
         public string? ClientToken { get; init; }

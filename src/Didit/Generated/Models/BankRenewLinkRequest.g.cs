@@ -15,14 +15,14 @@ namespace Didit
     public sealed record BankRenewLinkRequest
     {
         /// <summary>
-        /// Where the browser goes at the end. Must exactly match a registered redirect URL (scheme, host, port, path and query), otherwise <c>400 redirect_url_not_registered</c>. In sandbox only, a plain <c>http</c> localhost address needs no registration.
+        /// Where the browser goes at the end. In a sandbox application a plain <c>http</c> address of <c>localhost</c>, <c>127.0.0.1</c> or <c>[::1]</c> needs no registration. Any other address answers <c>400 redirect_url_not_registered</c>: registering other addresses is not available yet.
         /// </summary>
         [JsonPropertyName("redirect_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> RedirectUrl { get; set; }
 
         /// <summary>
-        /// HTTPS origins allowed to embed this link, up to 50, among your application's allowed domains.
+        /// Accepted and not used today: reserved for Didit's embedded Bank Link, which is not released yet. HTTPS origins, up to 50.
         /// </summary>
         [JsonPropertyName("allowed_origins")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

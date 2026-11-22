@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Why the connection is in this status. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c>, <c>application_deleted</c> or <c>restored_after_deletion</c>.
+    /// Why the connection is in this status. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankConnectionStatusReason.EnumJsonConverter))]
@@ -61,9 +61,6 @@ namespace Didit
 
         /// <summary><c>application_deleted</c></summary>
         public static BankConnectionStatusReason ApplicationDeleted { get; } = new("application_deleted");
-
-        /// <summary><c>restored_after_deletion</c></summary>
-        public static BankConnectionStatusReason RestoredAfterDeletion { get; } = new("restored_after_deletion");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

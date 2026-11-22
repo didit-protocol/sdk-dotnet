@@ -99,18 +99,19 @@ namespace Didit.Resources
         /// Preview a sign-in email
         /// </summary>
         /// <remarks>
-        /// Returns one email as it renders, with sample codes and links. An invitation preview uses a sample organization for a grant or named key. A console session can see a customer organization's name. The address of a console member is left out for a grant or a key, which have no mailbox. An email Authentication does not send answers <c>{"error": "email_not_sent_by_authentication"}</c>.
+        /// Returns one email as it renders, with sample codes and links. An invitation preview uses a sample organization for a grant or named key, or the <c>organization</c> and <c>role</c> you pass. <c>agentoff</c> is the email a person receives when your team ends an agent's access with a notification; <c>agent</c> names the agent. A console session can see a customer organization's name. The address of a console member is left out for a grant or a key, which have no mailbox. An email Authentication does not send answers <c>{"error": "email_not_sent_by_authentication"}</c>.
         /// <para/>
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/emails/{key}/</c> (<c>authentication_setup.get_email</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
         /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
         /// <param name="key">The email: <c>code</c>, <c>magic</c>, <c>reset</c>, <c>device</c>, <c>invite</c>, <c>org</c>, <c>agent</c> or <c>agentoff</c>.</param>
+        /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<SetupEmail> GetEmailAsync(string organizationId, string applicationId, string key, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<SetupEmail> GetEmailAsync(string organizationId, string applicationId, string key, AuthenticationSetupGetEmailParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            var response = await _raw.GetEmailAsync(organizationId, applicationId, key, requestOptions, cancellationToken).ConfigureAwait(false);
+            var response = await _raw.GetEmailAsync(organizationId, applicationId, key, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -507,7 +508,7 @@ namespace Didit.Resources
         /// Preview a sign-in email
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="AuthenticationSetupResource.GetEmailAsync"/>.</remarks>
-        public Task<DiditResponse<SetupEmail>> GetEmailAsync(string organizationId, string applicationId, string key, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<SetupEmail>> GetEmailAsync(string organizationId, string applicationId, string key, AuthenticationSetupGetEmailParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/organizations/" + PathParameter.Encode(organizationId, "organizationId") + "/applications/" + PathParameter.Encode(applicationId, "applicationId") + "/authentication/emails/" + PathParameter.Encode(key, "key") + "/")
             {
@@ -515,6 +516,9 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
+            request.Query.Add("organization", parameters?.Organization);
+            request.Query.Add("role", parameters?.Role?.Value);
+            request.Query.Add("agent", parameters?.Agent);
             return _pipeline.SendJsonAsync<SetupEmail>(request, requestOptions, cancellationToken);
         }
 
