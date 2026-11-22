@@ -106,14 +106,14 @@ namespace Didit
         public Optional<BankLinkEndUser> EndUser { get; set; }
 
         /// <summary>
-        /// Where the browser goes at the end, with <c>link_id</c>, <c>status</c> and a signed <c>state</c> (for display only: the webhook and <c>get_link</c> are authoritative). Must exactly match a redirect URL registered for your application (scheme, host, port, path and query: no prefix, no trailing-slash or case tolerance), otherwise the call answers <c>400 redirect_url_not_registered</c>. In sandbox only, a plain <c>http</c> address of <c>localhost</c>, <c>127.0.0.1</c> or <c>[::1]</c> (any port and path, no credentials, no fragment) needs no registration. Without one, automatic return to your page is not promised: after a full-page bank hop the person returns to the page that opened the link when its origin is in <c>allowed_origins</c>, and otherwise the flow ends on Didit's own result page.
+        /// Where the browser goes at the end, with <c>link_id</c>, <c>status</c> and a signed <c>state</c> (for display only: the webhook and <c>get_link</c> are authoritative). In a sandbox application a plain <c>http</c> address of <c>localhost</c>, <c>127.0.0.1</c> or <c>[::1]</c> (any port and path, no credentials, no fragment) needs no registration. Any other address answers <c>400 redirect_url_not_registered</c>: registering other addresses is not available yet. Without a <c>redirect_url</c> the person finishes on Didit's own result page.
         /// </summary>
         [JsonPropertyName("redirect_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<string> RedirectUrl { get; set; }
 
         /// <summary>
-        /// HTTPS origins allowed to embed this link, up to 50. Must be among your application's allowed domains, which are the default; an origin outside them answers <c>403 link_origin_not_allowed</c>.
+        /// Accepted and not used today: reserved for Didit's embedded Bank Link, which is not released yet. HTTPS origins, up to 50.
         /// </summary>
         [JsonPropertyName("allowed_origins")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -162,7 +162,7 @@ namespace Didit
         public Optional<bool> AcceptReducedGrant { get; set; }
 
         /// <summary>
-        /// Sandbox applications only: shapes what the Didit Test Bank does in this link, so a test can reach each outcome. Ignored in a live application.
+        /// Sandbox applications only: picks the Didit Test Bank customer. Ignored in a live application.
         /// </summary>
         [JsonPropertyName("sandbox")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

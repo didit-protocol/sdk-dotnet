@@ -106,7 +106,7 @@ namespace Didit
         public Optional<string> SimplifiedValidationThreshold { get; set; }
 
         /// <summary>
-        /// Merged per entity type: an entity type you leave out keeps its current choice. A choice that cannot meet the originator obligations of your <c>jurisdiction</c> regime (EU TFR or FATF Recommendation 16), an empty list included, is refused with <c>400</c>.
+        /// Merged per entity type: an entity type you leave out keeps its current choice. A choice that cannot meet the originator obligations of your <c>jurisdiction</c> regime (EU TFR, FINTRAC for <c>canada</c>, FinCEN for <c>us</c>, or FATF Recommendation 16), an empty list included, is refused with <c>400</c>.
         /// </summary>
         [JsonPropertyName("data_sharing_fields")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

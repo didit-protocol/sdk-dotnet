@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// The account set the Test Bank offers. <c>no_ongoing</c> makes the bank refuse ongoing access.
+    /// The Test Bank customer: <c>personal_basic</c> (one current account, 60 movements), <c>business_multi</c> (three accounts held by a company), <c>long_history</c> (one account with 400 days and 1,400 movements; a read returns the last 365 days, so set <c>history_days</c> to 365), <c>pending</c> (includes pending transactions), <c>sparse_fields</c> (no value date, no counterparty IBAN, no bank reference) or <c>no_ongoing</c> (a bank that only allows one-time access: use <c>allow_one_time_fallback</c>).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankLinkCreateRequestSandboxPersona.EnumJsonConverter))]

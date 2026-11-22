@@ -26,6 +26,12 @@ namespace Didit
         [JsonPropertyName("transactions_usd")]
         public string? TransactionsUsd { get; init; }
 
+        /// <summary>
+        /// <c>true</c> when <c>transactions_usd</c> is the one-time bundle: one read that carries transactions and balances together, so the <c>balance</c> add-on is not charged on top of it. Absent - never <c>false</c> - where <c>transactions_usd</c> is the separate transactions add-on price, including while the one-time bundle is not offered in the country.
+        /// </summary>
+        [JsonPropertyName("bundle_included")]
+        public bool? BundleIncluded { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

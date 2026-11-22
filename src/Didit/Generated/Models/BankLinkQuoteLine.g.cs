@@ -27,7 +27,7 @@ namespace Didit
         public string? Unit { get; init; }
 
         /// <summary>
-        /// Price of one unit in USD, a decimal string with 4 decimals. Amounts in examples are illustrative; the price for a country is shown on the pricing page and in the console.
+        /// Price of one unit in USD, a decimal string with 4 decimals. Amounts in examples are illustrative; the price for a country is shown on the pricing page.
         /// </summary>
         [JsonPropertyName("price_usd")]
         public string? PriceUsd { get; init; }

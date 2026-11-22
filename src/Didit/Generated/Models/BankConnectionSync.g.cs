@@ -63,7 +63,7 @@ namespace Didit
         public BankSyncError? LastError { get; init; }
 
         /// <summary>
-        /// How many times a day the automatic sync runs for this connection, between one and four depending on the bank. Where the bank allows more unattended reads, at least two a day always remain for live syncs. Your application can lower it to once a day in its settings.
+        /// How many times a day the automatic sync runs for this connection, between one and four depending on the bank. Where the bank allows more unattended reads, at least two a day always remain for live syncs.
         /// </summary>
         [JsonPropertyName("frequency_per_day")]
         public long? FrequencyPerDay { get; init; }
