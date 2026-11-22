@@ -74,11 +74,11 @@ namespace Didit.Resources
         /// Create a bank link
         /// </summary>
         /// <remarks>
-        /// Creates a Bank Link: one run of the flow in which a person connects a bank, or renews a connection. Send the person to <c>url</c>, or pass <c>client_token</c> to the web or native SDK. A completed link yields a connection.
+        /// Creates a Bank Link: one run of the flow in which a person connects a bank, or renews a connection. Send the person to <c>url</c>. The <c>client_token</c> is for Didit's embedded Bank Link, which is not released yet: open the <c>url</c> today. A completed link yields a connection.
         /// <para/>
         /// The smallest request is <c>{}</c> plus what you want. Defaults: <c>mode</c> connect, <c>access</c> one_time, <c>data</c> accounts only, <c>history_days</c> 90, <c>ownership.compare</c> none, <c>segment</c> any, <c>duplicates</c> reuse, <c>allow_one_time_fallback</c> false, and for ongoing access a consent as long as the bank allows.
         /// <para/>
-        /// The response carries the quote: the price is pinned to the link and charged as quoted. The API key never reaches a browser or an app: only <c>client_token</c> and <c>url</c> do. They are redeemed once between them, and whichever arrives first wins.
+        /// The response carries the quote: the price is pinned to the link and charged as quoted. The API key never reaches a browser or an app: only the <c>url</c> does.
         /// <para/>
         /// Confirm the outcome yourself with <c>get_link</c> or the <c>bank.link.completed</c> webhook; never trust a link id sent by the browser. History: send <c>history_from</c> or <c>history_days</c>, not both. Where the bank allows, ongoing access keeps working until the consent ends; the real date is on each connection.
         /// <para/>
@@ -100,11 +100,11 @@ namespace Didit.Resources
         /// Delete a bank connection
         /// </summary>
         /// <remarks>
-        /// Deletes the connection's bank data and stops access at the bank. The connection's accounts, balances, transactions, sync history, consent records and ownership results are deleted. Deletion is irreversible.
+        /// Deletes the connection's bank data and stops access at the bank. Deletion is immediate and irreversible: when the call returns, the connection's accounts, balances, transactions, sync history, consent records and ownership results are deleted, and its data operations (refresh, sync runs, accounts, balances, transactions and the change feed) answer <c>409 connection_not_active</c>.
         /// <para/>
-        /// It starts at once: the response is <c>202</c> with <c>erasure.status</c> <c>pending</c>, and from that moment the connection's data operations (refresh, sync runs, accounts, balances, transactions and the change feed) answer <c>409 connection_not_active</c>. The connection then reads with <c>erasure.status</c> <c>erased</c>, or <c>failed</c> if deletion could not be confirmed within 24 hours; a failed deletion is retried until it completes. A deleted connection reads as a minimal record: its id, <c>status: deleted</c>, the reason, its dates and its <c>erasure</c> status, and it holds no accounts, balances, transactions, consent or sync data.
+        /// A deleted connection reads as a minimal record: its id, <c>status: deleted</c>, the reason, its dates and its <c>erasure</c> record (<c>requested_at</c>, <c>erased_at</c> and <c>status</c>, the confirmation of the deletion: <c>pending</c> while it is being confirmed, including the end of access at the bank, <c>erased</c> once confirmed, <c>failed</c> if the confirmation has not arrived yet and is repeated automatically, with nothing needed from you). It holds no accounts, balances, transactions, consent or sync data. <c>bank.connection.deleted</c> confirms the deletion.
         /// <para/>
-        /// Not affected: your other connections, the charges already made (they are not refunded), and any data you already downloaded, which is your own copy. Repeating the call returns the current state. To stop access without deleting, use <c>revoke_connection</c>.
+        /// Not affected: your other connections, the charges already made (they are not refunded), and any data you already downloaded, which is your own copy. Repeating the call is safe. To stop access without deleting, use <c>revoke_connection</c>.
         /// <para/>
         /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
@@ -126,7 +126,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns one account with full identifiers, holders, sync state and <c>history_coverage</c>, which says what the bank delivered of the history you asked for. <c>sync.last_synced_at</c> is when the data was fetched from the bank, not when you read it.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Reading accounts, balances and transactions in a live application also needs the application setting "Bank data in the API"; a sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/accounts/{account_id}/</c> (<c>bank.get_account</c>).
         /// </remarks>
@@ -145,7 +145,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns the typed balances of an account with their reference dates. Balances are replaced at each sync.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Reading accounts, balances and transactions in a live application also needs the application setting "Bank data in the API"; a sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/accounts/{account_id}/balances/</c> (<c>bank.get_balances</c>).
         /// </remarks>
@@ -261,7 +261,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Lists every account of the connection, oldest first, with full identifiers and holders. A read never bills.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Reading accounts, balances and transactions in a live application also needs the application setting "Bank data in the API"; a sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/accounts/</c> (<c>bank.list_accounts</c>).
         /// </remarks>
@@ -349,7 +349,7 @@ namespace Didit.Resources
         /// <para/>
         /// Response headers: <c>X-Bank-Last-Synced-At</c> and <c>Cache-Control: no-store</c>.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Reading accounts, balances and transactions in a live application also needs the application setting "Bank data in the API"; a sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/accounts/{account_id}/transactions/</c> (<c>bank.list_transactions</c>).
         /// </remarks>
@@ -394,9 +394,11 @@ namespace Didit.Resources
         /// Renew a bank connection
         /// </summary>
         /// <remarks>
-        /// Creates a renew link for this connection, a shortcut for <c>create_link</c> with <c>mode: renew</c>. The person confirms what continues to be shared and signs in at the bank, or reconfirms on Didit's screen where the bank and country allow it (<c>consent.renewal_action</c>). The connection id and every account id stay the same, and history continues without duplicates.
+        /// Creates a renew link for this connection, a shortcut for <c>create_link</c> with <c>mode: renew</c>. The connection id and every account id stay the same.
         /// <para/>
-        /// Until the consent has 30 days left or fewer it answers <c>409 renewal_not_needed</c>; after <c>consent.renewable_until</c> it answers <c>409 renewal_window_expired</c> and the person connects again. If the person renews with another bank login, the link ends <c>failed</c> with <c>renewal_login_mismatch</c> and nothing changes.
+        /// Opening the returned link on the hosted page is not available yet: the page that lets the person renew is still to be built.
+        /// <para/>
+        /// Until the consent has 30 days left or fewer it answers <c>409 renewal_not_needed</c>; after <c>consent.renewable_until</c> it answers <c>409 renewal_window_expired</c> and the person connects again.
         /// <para/>
         /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
@@ -447,7 +449,7 @@ namespace Didit.Resources
         /// <para/>
         /// The change log is replayable for 90 days. An older cursor answers <c>410 cursor_expired</c> with <c>bootstrap: true</c>: start again from an empty cursor. Stored history is never aged out while the connection exists. A booked pending transaction appears in <c>added</c> and the pending one in <c>removed</c> with <c>reason: pending_booked</c>. Webhook <c>bank.data.updated</c> tells you when to call.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Reading accounts, balances and transactions in a live application also needs the application setting "Bank data in the API"; a sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/transactions/sync/</c> (<c>bank.sync_transactions</c>).
         /// </remarks>

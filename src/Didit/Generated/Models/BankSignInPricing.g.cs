@@ -45,7 +45,7 @@ namespace Didit
         public BankSignInPricingOngoing? Ongoing { get; init; }
 
         /// <summary>
-        /// One-time data prices of a Bank Link, present only where Bank data is switched on. <c>null</c> where the country offers no one-time data: use <c>add_ons</c>.
+        /// One-time data prices of a Bank Link, present only where Bank data is switched on. <c>null</c> where the country offers no one-time data: use <c>add_ons</c>. Where the country offers the one-time bundle, the object also carries <c>bundle_included: true</c> and <c>transactions_usd</c> is that bundle: one read of transactions and balances.
         /// </summary>
         [JsonPropertyName("one_time_data")]
         public BankSignInPricingOneTimeData? OneTimeData { get; init; }

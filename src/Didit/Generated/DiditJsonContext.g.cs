@@ -150,6 +150,8 @@ namespace Didit.Internal
     [JsonSerializable(typeof(AsyncReportRetryRequest))]
     [JsonSerializable(typeof(AsyncReportStatus))]
     [JsonSerializable(typeof(AuthenticationSetupGetBrandingParams))]
+    [JsonSerializable(typeof(AuthenticationSetupGetEmailParams))]
+    [JsonSerializable(typeof(AuthenticationSetupGetEmailParamsRole))]
     [JsonSerializable(typeof(AuthenticationSetupGetEmailsParams))]
     [JsonSerializable(typeof(BankAccount))]
     [JsonSerializable(typeof(BankAccountCheckHolder))]
