@@ -119,6 +119,54 @@ namespace Didit
         /// <summary><c>investigator.external.report.ready</c></summary>
         public static WebhookEvent InvestigatorExternalReportReady { get; } = new("investigator.external.report.ready");
 
+        /// <summary><c>bank.link.completed</c></summary>
+        public static WebhookEvent BankLinkCompleted { get; } = new("bank.link.completed");
+
+        /// <summary><c>bank.link.cancelled</c></summary>
+        public static WebhookEvent BankLinkCancelled { get; } = new("bank.link.cancelled");
+
+        /// <summary><c>bank.link.expired</c></summary>
+        public static WebhookEvent BankLinkExpired { get; } = new("bank.link.expired");
+
+        /// <summary><c>bank.link.failed</c></summary>
+        public static WebhookEvent BankLinkFailed { get; } = new("bank.link.failed");
+
+        /// <summary><c>bank.connection.created</c></summary>
+        public static WebhookEvent BankConnectionCreated { get; } = new("bank.connection.created");
+
+        /// <summary><c>bank.connection.updated</c></summary>
+        public static WebhookEvent BankConnectionUpdated { get; } = new("bank.connection.updated");
+
+        /// <summary><c>bank.connection.consent_expiring</c></summary>
+        public static WebhookEvent BankConnectionConsentExpiring { get; } = new("bank.connection.consent_expiring");
+
+        /// <summary><c>bank.connection.renewal_required</c></summary>
+        public static WebhookEvent BankConnectionRenewalRequired { get; } = new("bank.connection.renewal_required");
+
+        /// <summary><c>bank.connection.renewed</c></summary>
+        public static WebhookEvent BankConnectionRenewed { get; } = new("bank.connection.renewed");
+
+        /// <summary><c>bank.connection.revoked</c></summary>
+        public static WebhookEvent BankConnectionRevoked { get; } = new("bank.connection.revoked");
+
+        /// <summary><c>bank.connection.deleted</c></summary>
+        public static WebhookEvent BankConnectionDeleted { get; } = new("bank.connection.deleted");
+
+        /// <summary><c>bank.connection.history_complete</c></summary>
+        public static WebhookEvent BankConnectionHistoryComplete { get; } = new("bank.connection.history_complete");
+
+        /// <summary><c>bank.data.updated</c></summary>
+        public static WebhookEvent BankDataUpdated { get; } = new("bank.data.updated");
+
+        /// <summary><c>bank.sync.completed</c></summary>
+        public static WebhookEvent BankSyncCompleted { get; } = new("bank.sync.completed");
+
+        /// <summary><c>bank.sync.failed</c></summary>
+        public static WebhookEvent BankSyncFailed { get; } = new("bank.sync.failed");
+
+        /// <summary><c>bank.sync.recovered</c></summary>
+        public static WebhookEvent BankSyncRecovered { get; } = new("bank.sync.recovered");
+
         /// <summary><c>message.status.updated</c></summary>
         public static WebhookEvent MessageStatusUpdated { get; } = new("message.status.updated");
 
