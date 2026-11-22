@@ -86,7 +86,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(202, "{\"id\": \"5e1d2a70-3b94-4c1f-8a6e-d2f07b9c1e35\", \"erasure\": {\"status\": \"pending\", \"requested_at\": \"2026-11-21T15:10:00Z\", \"erased_at\": null}}");
+            handler.Enqueue(202, "{\"id\": \"5e1d2a70-3b94-4c1f-8a6e-d2f07b9c1e35\", \"erasure\": {\"status\": \"erased\", \"requested_at\": \"2026-11-21T15:10:00Z\", \"erased_at\": \"2026-11-21T15:10:00Z\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.Bank.DeleteConnectionAsync("id-1");
 

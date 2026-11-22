@@ -100,11 +100,11 @@ namespace Didit.Resources
         /// Delete a bank connection
         /// </summary>
         /// <remarks>
-        /// Deletes the connection's bank data and stops access at the bank. The connection's accounts, balances, transactions, sync history, consent records and ownership results are deleted. Deletion is irreversible.
+        /// Deletes the connection's bank data and stops access at the bank. Deletion is immediate and irreversible: when the call returns, the connection's accounts, balances, transactions, sync history, consent records and ownership results are deleted, and its data operations (refresh, sync runs, accounts, balances, transactions and the change feed) answer <c>409 connection_not_active</c>.
         /// <para/>
-        /// It starts at once: the response is <c>202</c> with <c>erasure.status</c> <c>pending</c>, and from that moment the connection's data operations (refresh, sync runs, accounts, balances, transactions and the change feed) answer <c>409 connection_not_active</c>. The connection then reads with <c>erasure.status</c> <c>erased</c>, or <c>failed</c> if deletion could not be confirmed within 24 hours; a failed deletion is retried until it completes. A deleted connection reads as a minimal record: its id, <c>status: deleted</c>, the reason, its dates and its <c>erasure</c> status, and it holds no accounts, balances, transactions, consent or sync data.
+        /// A deleted connection reads as a minimal record: its id, <c>status: deleted</c>, the reason, its dates and its <c>erasure</c> record (<c>requested_at</c>, <c>erased_at</c> and <c>status</c>, the confirmation of the deletion: <c>pending</c> while it is being confirmed, including the end of access at the bank, <c>erased</c> once confirmed, <c>failed</c> if the confirmation has not arrived yet and is repeated automatically, with nothing needed from you). It holds no accounts, balances, transactions, consent or sync data. <c>bank.connection.deleted</c> confirms the deletion.
         /// <para/>
-        /// Not affected: your other connections, the charges already made (they are not refunded), and any data you already downloaded, which is your own copy. Repeating the call returns the current state. To stop access without deleting, use <c>revoke_connection</c>.
+        /// Not affected: your other connections, the charges already made (they are not refunded), and any data you already downloaded, which is your own copy. Repeating the call is safe. To stop access without deleting, use <c>revoke_connection</c>.
         /// <para/>
         /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
