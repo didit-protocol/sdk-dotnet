@@ -7,6 +7,7 @@ Runnable examples of the Didit .NET library. They reference the library project;
 | [Quickstart](Quickstart) | create a verification session, read its decision, verify a webhook |
 | [StandaloneApis](StandaloneApis) | ID verification from images, AML screening |
 | [TransactionMonitoring](TransactionMonitoring) | transaction screening, auto-pagination, wallet screening, Travel Rule |
+| [BankConnection](BankConnection) | create a Bank Link, verify `bank.connection.created`, read the accounts |
 | [WebhookMinimalApi](WebhookMinimalApi) | webhook receiver with ASP.NET Core minimal APIs, secret rotation |
 | [WebhookMvc](WebhookMvc) | webhook receiver with an ASP.NET Core MVC controller and `services.AddDidit()` |
 | [AuthenticationApi](AuthenticationApi) | Didit Authentication: protect an API with access tokens, server-side login with PKCE |
