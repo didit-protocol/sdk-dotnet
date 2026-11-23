@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// A page of connections.
+    /// A page of connections. Deleted connections are not in it unless the request asked for <c>status=deleted</c>.
     /// </summary>
     public sealed record BankConnectionList
     {

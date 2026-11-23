@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankLinkCreateRequestSandbox
     {
         /// <summary>
-        /// The Test Bank customer: <c>personal_basic</c> (one current account, 60 movements), <c>business_multi</c> (three accounts held by a company), <c>long_history</c> (one account with 400 days and 1,400 movements; a read returns the last 365 days, so set <c>history_days</c> to 365), <c>pending</c> (includes pending transactions), <c>sparse_fields</c> (no value date, no counterparty IBAN, no bank reference) or <c>no_ongoing</c> (a bank that only allows one-time access: use <c>allow_one_time_fallback</c>).
+        /// The Test Bank customer: <c>personal_basic</c> (one current account, 60 movements), <c>business_multi</c> (three accounts held by a company), <c>long_history</c> (one account with 400 days and 1,400 movements; a read returns the last 365 days, so set <c>history_days</c> to 365), <c>pending</c> (includes pending transactions), <c>sparse_fields</c> (no value date, no counterparty IBAN, no bank reference) or <c>no_ongoing</c> (a bank that only allows one-time access: use <c>allow_one_time_fallback</c>). <c>requires_email</c>: the Test Bank behaves as a bank that needs the person's email, so the link asks for an email address and a code before the bank. In sandbox no email is sent and the code is always <c>123456</c>; ignored for live applications.
         /// </summary>
         [JsonPropertyName("persona")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
