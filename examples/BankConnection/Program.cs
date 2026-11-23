@@ -1,4 +1,4 @@
-// Single-user desktop demo. Run on the computer of the person connecting their bank.
+// Single-user sandbox demo. The developer running the server also plays the customer.
 // Forward your sandbox webhook destination to /webhooks/didit on this receiver.
 // Set DIDIT_API_KEY (bank-data permission) and DIDIT_WEBHOOK_SECRET, then run:
 // dotnet run --project examples/BankConnection --urls http://localhost:5080
