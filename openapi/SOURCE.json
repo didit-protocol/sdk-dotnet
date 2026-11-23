@@ -16,7 +16,7 @@
  },
  "webhook-vectors.json": {
   "generator": "product-automations scripts/server-sdks/make_vectors.py (seeded 2026-10-17)",
-  "source": "service-didit-verification@c69152ea870f394d00e28c466300b25756ceeda3 src/sessions/utils/webhooks.py (bank events; signing functions unchanged)"
+  "source": "service-didit-verification@9773c66e0a src/sessions/utils/webhooks.py"
  },
  "breaking-vectors.json": {
   "source": "didit-protocol/sdk-python@3c361f6e873673ed8a55ad7ea000176e6880f8d3 openapi/breaking-vectors.json (copied byte for byte)",

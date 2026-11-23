@@ -181,8 +181,12 @@ namespace Didit.Tests.Webhooks
             var path = Path.Combine(AppContext.BaseDirectory, "openapi", "webhook-vectors.json");
             using var document = JsonDocument.Parse(File.ReadAllText(path));
             var root = document.RootElement;
+            // The bank.* deliveries are a hand-written fixture: the upstream copy above is written only by the spec sync.
+            var bankPath = Path.Combine(AppContext.BaseDirectory, "fixtures", "bank-webhook-vectors.json");
+            using var bankDocument = JsonDocument.Parse(File.ReadAllText(bankPath));
             var vectors = new Dictionary<string, WebhookVector>(StringComparer.Ordinal);
-            foreach (var item in root.GetProperty("vectors").EnumerateArray())
+            foreach (var item in root.GetProperty("vectors").EnumerateArray()
+                         .Concat(bankDocument.RootElement.GetProperty("vectors").EnumerateArray()))
             {
                 var headers = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (var header in item.GetProperty("headers").EnumerateObject())
