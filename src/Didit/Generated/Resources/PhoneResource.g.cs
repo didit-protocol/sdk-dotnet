@@ -20,7 +20,23 @@ namespace Didit.Resources
         internal PhoneResource(PhoneRawResource raw)
         {
             _raw = raw;
+            Factors = new PhoneFactorsResource(raw.Factors);
+            Network = new PhoneNetworkResource(raw.Network);
+            SdkKeys = new PhoneSdkKeysResource(raw.SdkKeys);
+            Silent = new PhoneSilentResource(raw.Silent);
         }
+
+        /// <summary>The <c>phone.factors</c> resource.</summary>
+        public PhoneFactorsResource Factors { get; }
+
+        /// <summary>The <c>phone.network</c> resource.</summary>
+        public PhoneNetworkResource Network { get; }
+
+        /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
+        public PhoneSdkKeysResource SdkKeys { get; }
+
+        /// <summary>The <c>phone.silent</c> resource.</summary>
+        public PhoneSilentResource Silent { get; }
 
         /// <summary>
         /// Risk-score a phone number
@@ -83,12 +99,12 @@ namespace Didit.Resources
         /// <c>POST /v3/phone/check/</c> (<c>phone.check_code</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
-        /// <param name="parameters">The request parameters.</param>
+        /// <param name="body">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<PhoneVerificationCheckResponse> CheckCodeAsync(PhoneCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<PhoneCheckCodeResponse> CheckCodeAsync(object body, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            var response = await _raw.CheckCodeAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            var response = await _raw.CheckCodeAsync(body, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -137,7 +153,23 @@ namespace Didit.Resources
         internal PhoneRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Factors = new PhoneFactorsRawResource(pipeline);
+            Network = new PhoneNetworkRawResource(pipeline);
+            SdkKeys = new PhoneSdkKeysRawResource(pipeline);
+            Silent = new PhoneSilentRawResource(pipeline);
         }
+
+        /// <summary>The <c>phone.factors</c> resource.</summary>
+        public PhoneFactorsRawResource Factors { get; }
+
+        /// <summary>The <c>phone.network</c> resource.</summary>
+        public PhoneNetworkRawResource Network { get; }
+
+        /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
+        public PhoneSdkKeysRawResource SdkKeys { get; }
+
+        /// <summary>The <c>phone.silent</c> resource.</summary>
+        public PhoneSilentRawResource Silent { get; }
 
         /// <summary>
         /// Risk-score a phone number
@@ -164,11 +196,11 @@ namespace Didit.Resources
         /// Check Phone Code
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneResource.CheckCodeAsync"/>.</remarks>
-        public Task<DiditResponse<PhoneVerificationCheckResponse>> CheckCodeAsync(PhoneCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<PhoneCheckCodeResponse>> CheckCodeAsync(object body, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            if (parameters is null)
+            if (body is null)
             {
-                throw new ArgumentNullException(nameof(parameters));
+                throw new ArgumentNullException(nameof(body));
             }
 
             var request = new ApiRequest(HttpMethods.Post, "/v3/phone/check/")
@@ -177,8 +209,8 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            request.Body = JsonRequestBody.Create(parameters);
-            return _pipeline.SendJsonAsync<PhoneVerificationCheckResponse>(request, requestOptions, cancellationToken);
+            request.Body = JsonRequestBody.Create(body);
+            return _pipeline.SendJsonAsync<PhoneCheckCodeResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
