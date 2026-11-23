@@ -396,7 +396,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Creates a renew link for this connection, a shortcut for <c>create_link</c> with <c>mode: renew</c>. The connection id and every account id stay the same.
         /// <para/>
-        /// Opening the returned link on the hosted page is not available yet: the page that lets the person renew is still to be built.
+        /// Send the returned <c>url</c> to the person: the hosted page shows what continues to be shared and until when, the person signs in at their bank once and returns to your <c>redirect_url</c>, and <c>bank.connection.renewed</c> confirms it. Afterwards the connection's <c>consent</c> shows a new <c>version</c>, <c>renewed_count</c>, <c>expires_at</c> and <c>renew_by</c>, with <c>renewal_action</c> <c>bank_auth</c>.
         /// <para/>
         /// Until the consent has 30 days left or fewer it answers <c>409 renewal_not_needed</c>; after <c>consent.renewable_until</c> it answers <c>409 renewal_window_expired</c> and the person connects again.
         /// <para/>
