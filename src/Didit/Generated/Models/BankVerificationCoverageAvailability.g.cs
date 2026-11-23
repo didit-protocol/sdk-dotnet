@@ -10,27 +10,27 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (BankVerificationCoverageOpen).
+    /// Response object (BankVerificationCoverageAvailability).
     /// </summary>
-    public sealed record BankVerificationCoverageOpen2
+    public sealed record BankVerificationCoverageAvailability
     {
         /// <summary>
         /// Bank Verification inside verification workflows.
         /// </summary>
         [JsonPropertyName("bank_verification_in_workflows")]
-        public BankVerificationCoverageOpen2BankVerificationInWorkflows? BankVerificationInWorkflows { get; init; }
+        public BankVerificationWorkflowsAvailability? BankVerificationInWorkflows { get; init; }
 
         /// <summary>
         /// The Bank data API with one-time access, for live applications.
         /// </summary>
         [JsonPropertyName("bank_data_api_one_time")]
-        public BankVerificationCoverageOpen2BankDataApiOneTime? BankDataApiOneTime { get; init; }
+        public BankVerificationOneTimeAvailability? BankDataApiOneTime { get; init; }
 
         /// <summary>
         /// The Bank data API with ongoing access, for live applications.
         /// </summary>
         [JsonPropertyName("bank_data_api_ongoing")]
-        public BankVerificationCoverageOpen2BankDataApiOngoing? BankDataApiOngoing { get; init; }
+        public BankVerificationOngoingAvailability? BankDataApiOngoing { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

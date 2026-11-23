@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The Bank data API with one-time access, for live applications.
+    /// The Bank data API with ongoing access, for live applications.
     /// </summary>
-    public sealed record BankVerificationCoverageOpen2BankDataApiOneTime
+    public sealed record BankVerificationOngoingAvailability
     {
         /// <summary>
         /// The &lt;c&gt;live_applications&lt;/c&gt; field.

@@ -24,7 +24,7 @@ namespace Didit
         /// The &lt;c&gt;open&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("open")]
-        public BankVerificationCoverageOpen2? Open { get; init; }
+        public BankVerificationCoverageAvailability? Open { get; init; }
 
         /// <summary>
         /// What a read of any covered bank returns.
