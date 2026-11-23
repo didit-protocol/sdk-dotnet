@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Every field is optional. Changing the application’s <c>agent_humans_only</c> setting requires an owner or admin. Enabling it also requires an enrolled passkey. A named key receives 403 <c>owner_or_admin_required</c>.
+    /// Every field is optional. Changing the application’s <c>agent_humans_only</c> setting requires an owner or admin. Enabling it also requires an enrolled passkey. An API key receives 403 <c>owner_or_admin_required</c>.
     /// </summary>
     public sealed record SetupSettingsUpdate
     {
