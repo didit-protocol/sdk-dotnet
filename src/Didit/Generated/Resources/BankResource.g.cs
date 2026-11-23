@@ -82,7 +82,7 @@ namespace Didit.Resources
         /// <para/>
         /// Confirm the outcome yourself with <c>get_link</c> or the <c>bank.link.completed</c> webhook; never trust a link id sent by the browser. History: send <c>history_from</c> or <c>history_days</c>, not both. Where the bank allows, ongoing access keeps working until the consent ends; the real date is on each connection.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>POST /v3/bank/links/</c> (<c>bank.create_link</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -106,7 +106,7 @@ namespace Didit.Resources
         /// <para/>
         /// Not affected: your other connections, the charges already made (they are not refunded), and any data you already downloaded, which is your own copy. Repeating the call is safe. To stop access without deleting, use <c>revoke_connection</c>.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>DELETE /v3/bank/connections/{id}/</c> (<c>bank.delete_connection</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -126,7 +126,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns one account with full identifiers, holders, sync state and <c>history_coverage</c>, which says what the bank delivered of the history you asked for. <c>sync.last_synced_at</c> is when the data was fetched from the bank, not when you read it.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/accounts/{account_id}/</c> (<c>bank.get_account</c>).
         /// </remarks>
@@ -145,7 +145,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns the typed balances of an account with their reference dates. Balances are replaced at each sync.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/accounts/{account_id}/balances/</c> (<c>bank.get_balances</c>).
         /// </remarks>
@@ -164,7 +164,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns the connection with its consent, sync state and a summary of each account. Read the data itself with the accounts, balances and transactions operations. A connection that was deleted reads as a minimal record: its id, <c>status: deleted</c>, the reason, its dates and its <c>erasure</c> status, and no accounts, balances, transactions, consent or sync data.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/</c> (<c>bank.get_connection</c>).
         /// </remarks>
@@ -183,7 +183,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns one entry per country: whether bank sign-in and the account check are available, and whether ongoing access is available, with how many banks offer it, the longest consent and deepest history any of them allows, and whether business accounts are supported. Ongoing access is counted only where a bank is switched on for it. Use it to decide which countries to offer; use <c>list_institutions</c> for a single bank.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>GET /v3/bank/coverage/</c> (<c>bank.get_coverage</c>).
         /// </remarks>
@@ -201,7 +201,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns one bank with its capabilities. The id is Didit's slug, as listed by <c>list_institutions</c>.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>GET /v3/bank/institutions/{id}/</c> (<c>bank.get_institution</c>).
         /// </remarks>
@@ -222,7 +222,7 @@ namespace Didit.Resources
         /// <para/>
         /// A link that fails is not an HTTP error: it reads <c>200</c> with <c>status: failed</c> and an <c>error</c> object, for example <c>duplicate_conflict</c> with <c>conflicts_with</c>. <c>url</c> and <c>client_token</c> are returned only when the link is created.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>GET /v3/bank/links/{id}/</c> (<c>bank.get_link</c>).
         /// </remarks>
@@ -241,7 +241,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Returns one sync run with its results per account and resource.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/sync-runs/{sync_id}/</c> (<c>bank.get_sync_run</c>).
         /// </remarks>
@@ -261,7 +261,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Lists every account of the connection, oldest first, with full identifiers and holders. A read never bills.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/accounts/</c> (<c>bank.list_accounts</c>).
         /// </remarks>
@@ -283,7 +283,7 @@ namespace Didit.Resources
         /// <para/>
         /// Connections that were deleted are left out of the list by default. To list them, ask with <c>status=deleted</c>, which returns only them. The <c>status</c> filter takes one value, so a list of statuses answers <c>400 invalid_request</c> with <c>field</c> <c>status</c>. A deleted connection is a record that the deletion happened: it carries no bank data, and reading it by id returns the same minimal record (<c>id</c>, <c>status</c>, <c>status_reason</c>, <c>created_at</c> and <c>erasure</c>).
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// In this list <c>sync.budgets</c> shows only the budgets that exist already; <c>GET /v3/bank/connections/{id}/</c> opens today's budgets.
         /// <para/>
@@ -304,7 +304,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Lists the banks per country with their capabilities: segments, access modes, the longest consent and deepest history the bank offers, whether it reports pending transactions, which transaction fields it is known to send, and how the person signs in. Values come from observed data, refreshed daily; a value never observed is <c>null</c>. The same data feeds the bank picker, so use it to know what to expect before you create a link. <c>access</c> lists <c>ongoing</c> only where ongoing access is available.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// The list is sorted by name, then id.
         /// <para/>
@@ -327,7 +327,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Lists what each sync of a connection did, newest first, per account and resource.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/sync-runs/</c> (<c>bank.list_sync_runs</c>).
         /// </remarks>
@@ -351,7 +351,7 @@ namespace Didit.Resources
         /// <para/>
         /// Response headers: <c>X-Bank-Last-Synced-At</c> and <c>Cache-Control: no-store</c>.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/accounts/{account_id}/transactions/</c> (<c>bank.list_transactions</c>).
         /// </remarks>
@@ -375,7 +375,7 @@ namespace Didit.Resources
         /// <para/>
         /// When a sync stores changes, <c>bank.data.updated</c> tells you; then read the change feed.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// Refreshing a deleted connection answers <c>409 connection_not_active</c>. A one-time connection is read once and its access then ends, so refreshing it answers <c>409 one_time_connection</c>: create a new link to read the bank again.
         /// <para/>
@@ -404,7 +404,7 @@ namespace Didit.Resources
         /// <para/>
         /// Until the consent has 30 days left or fewer it answers <c>409 renewal_not_needed</c>; after <c>consent.renewable_until</c> it answers <c>409 renewal_window_expired</c> and the person connects again.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// <c>POST /v3/bank/connections/{id}/renew/</c> (<c>bank.renew_connection</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -427,7 +427,7 @@ namespace Didit.Resources
         /// <para/>
         /// Revoking does not delete anything: stored accounts, balances and transactions stay readable until <c>consent.retain_until</c>, the retention setting of your application, and nothing is charged. To delete them now, call <c>delete_connection</c>. Repeating the call returns the current state.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// Revoking a connection that was deleted answers <c>200</c> with the deleted connection, so repeating the call is safe.
         /// <para/>
@@ -466,7 +466,7 @@ namespace Didit.Resources
         /// <para/>
         /// <c>days</c> is only accepted with <c>consent_expiring</c> and <c>count</c> only with <c>new_transactions</c>: sent with another action, each answers <c>400 invalid_request</c> with <c>field</c> naming it.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Sandbox only: a live application, or a link or connection that belongs to the live environment, answers <c>404 not_found</c>, exactly as an unknown route does.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. Sandbox only: a live application, or a link or connection that belongs to the live environment, answers <c>404 not_found</c>, exactly as an unknown route does.
         /// <para/>
         /// <c>POST /v3/bank/connections/{id}/simulate/</c> (<c>bank.simulate_connection</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -491,7 +491,7 @@ namespace Didit.Resources
         /// <para/>
         /// A link that allows the one-time fallback and meets a bank that cannot keep access open accepts the reduced access and finishes in the same call. A link that is no longer open (completed, cancelled, expired or failed) is returned unchanged, so the call is safe to repeat.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Sandbox only: a live application, or a link or connection that belongs to the live environment, answers <c>404 not_found</c>, exactly as an unknown route does.
+        /// Needs an API key with write access to Bank data, because this operation changes something: a full-access key has it, and a scoped key needs <c>bank-data</c> write in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. Sandbox only: a live application, or a link or connection that belongs to the live environment, answers <c>404 not_found</c>, exactly as an unknown route does.
         /// <para/>
         /// <c>POST /v3/bank/links/{id}/simulate/</c> (<c>bank.simulate_link</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -516,7 +516,7 @@ namespace Didit.Resources
         /// <para/>
         /// The change log is replayable for 90 days. An older cursor answers <c>410 cursor_expired</c> with <c>bootstrap: true</c>: start again from an empty cursor. Stored history is never aged out while the connection exists. A booked pending transaction appears in <c>added</c> and the pending one in <c>removed</c> with <c>reason: pending_booked</c>. Webhook <c>bank.data.updated</c> tells you when to call.
         /// <para/>
-        /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
+        /// Needs an API key with read access to Bank data: a full-access key has it, and a scoped key needs <c>bank-data</c> read in its scopes. Otherwise the call answers <c>403 bank_data_access_denied</c>. A sandbox application reads its Test Bank data with the key alone. A request without an API key (client credentials) is refused on raw data with the same <c>403</c>.
         /// <para/>
         /// <c>GET /v3/bank/connections/{id}/transactions/sync/</c> (<c>bank.sync_transactions</c>).
         /// </remarks>
