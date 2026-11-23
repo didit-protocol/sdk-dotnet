@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankListConnectionsParams
     {
         /// <summary>
-        /// Only connections in this status.
+        /// Only connections in this status, one value. Without this filter the list leaves out <c>deleted</c> connections; <c>status=deleted</c> returns only them. A deleted connection carries no bank data.
         /// </summary>
         [JsonPropertyName("status")]
         [JsonIgnore]

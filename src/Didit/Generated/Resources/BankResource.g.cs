@@ -281,6 +281,8 @@ namespace Didit.Resources
         /// <remarks>
         /// Lists the connections of your application, newest first, with cursor pagination. All filters apply inside your application and environment.
         /// <para/>
+        /// Connections that were deleted are left out of the list by default. To list them, ask with <c>status=deleted</c>, which returns only them. The <c>status</c> filter takes one value, so a list of statuses answers <c>400 invalid_request</c> with <c>field</c> <c>status</c>. A deleted connection is a record that the deletion happened: it carries no bank data, and reading it by id returns the same minimal record (<c>id</c>, <c>status</c>, <c>status_reason</c>, <c>created_at</c> and <c>erasure</c>).
+        /// <para/>
         /// Needs an API key with the Bank data permission (<c>bank-data</c>): read for this operation. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
         /// In this list <c>sync.budgets</c> shows only the budgets that exist already; <c>GET /v3/bank/connections/{id}/</c> opens today's budgets.
