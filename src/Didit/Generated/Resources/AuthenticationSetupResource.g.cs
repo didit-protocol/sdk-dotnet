@@ -31,7 +31,7 @@ namespace Didit.Resources
         /// <c>POST /organizations/{organization_id}/applications/{application_id}/authentication/domain/activate/</c> (<c>authentication_setup.activate_domain</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupDomain> ActivateDomainAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -49,7 +49,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/branding/</c> (<c>authentication_setup.get_branding</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -68,7 +68,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/</c> (<c>authentication_setup.get_configuration</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupConfiguration> GetConfigurationAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -86,7 +86,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/domain/</c> (<c>authentication_setup.get_domain</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupDomain> GetDomainAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -99,12 +99,12 @@ namespace Didit.Resources
         /// Preview a sign-in email
         /// </summary>
         /// <remarks>
-        /// Returns one email as it renders, with sample codes and links. An invitation preview uses a sample organization for a grant or named key, or the <c>organization</c> and <c>role</c> you pass. <c>agentoff</c> is the email a person receives when your team ends an agent's access with a notification; <c>agent</c> names the agent. A console session can see a customer organization's name. The address of a console member is left out for a grant or a key, which have no mailbox. An email Authentication does not send answers <c>{"error": "email_not_sent_by_authentication"}</c>.
+        /// Returns one email as it renders, with sample codes and links. An invitation preview uses a sample organization for a grant or an API key, or the <c>organization</c> and <c>role</c> you pass. <c>agentoff</c> is the email a person receives when your team ends an agent's access with a notification; <c>agent</c> names the agent. A console session can see a customer organization's name. The address of a console member is left out for a grant or a key, which have no mailbox. An email Authentication does not send answers <c>{"error": "email_not_sent_by_authentication"}</c>.
         /// <para/>
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/emails/{key}/</c> (<c>authentication_setup.get_email</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="key">The email: <c>code</c>, <c>magic</c>, <c>reset</c>, <c>device</c>, <c>invite</c>, <c>org</c>, <c>agent</c> or <c>agentoff</c>.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -124,7 +124,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/emails/</c> (<c>authentication_setup.get_emails</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -143,7 +143,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/native-apps/</c> (<c>authentication_setup.get_native_apps</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupNativeApps> GetNativeAppsAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -161,7 +161,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/onboarding/</c> (<c>authentication_setup.get_onboarding</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupOnboarding> GetOnboardingAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -174,12 +174,12 @@ namespace Didit.Resources
         /// Get bot protection
         /// </summary>
         /// <remarks>
-        /// Returns whether protection is on, each policy's mode and the last 14 days of detections. Console sessions, grants and named keys receive the same aggregate counters.
+        /// Returns whether protection is on, each policy's mode and the last 14 days of detections. Console sessions, grants and API keys receive the same aggregate counters.
         /// <para/>
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/protection/</c> (<c>authentication_setup.get_protection</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupProtection> GetProtectionAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -197,7 +197,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/settings/</c> (<c>authentication_setup.get_settings</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupSettings> GetSettingsAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -215,7 +215,7 @@ namespace Didit.Resources
         /// <c>GET /organizations/{organization_id}/applications/{application_id}/authentication/verified/</c> (<c>authentication_setup.get_verified</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupVerified> GetVerifiedAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -233,7 +233,7 @@ namespace Didit.Resources
         /// <c>DELETE /organizations/{organization_id}/applications/{application_id}/authentication/domain/</c> (<c>authentication_setup.remove_domain</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupDomain> RemoveDomainAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
@@ -251,7 +251,7 @@ namespace Didit.Resources
         /// <c>PUT /organizations/{organization_id}/applications/{application_id}/authentication/domain/</c> (<c>authentication_setup.set_domain</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -270,7 +270,7 @@ namespace Didit.Resources
         /// <c>PUT /organizations/{organization_id}/applications/{application_id}/authentication/methods/{name}/</c> (<c>authentication_setup.set_method</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="name">The method: <c>password</c>, <c>code</c>, <c>magic</c>, <c>phone</c>, <c>passkey</c>, <c>google</c>, <c>microsoft</c>, <c>apple</c>, <c>github</c>, <c>sso</c> or <c>wallet</c>.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
@@ -290,7 +290,7 @@ namespace Didit.Resources
         /// <c>PATCH /organizations/{organization_id}/applications/{application_id}/authentication/branding/</c> (<c>authentication_setup.update_branding</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -309,7 +309,7 @@ namespace Didit.Resources
         /// <c>PATCH /organizations/{organization_id}/applications/{application_id}/authentication/</c> (<c>authentication_setup.update_configuration</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -328,7 +328,7 @@ namespace Didit.Resources
         /// <c>PUT /organizations/{organization_id}/applications/{application_id}/authentication/native-apps/</c> (<c>authentication_setup.update_native_apps</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -347,7 +347,7 @@ namespace Didit.Resources
         /// <c>PATCH /organizations/{organization_id}/applications/{application_id}/authentication/onboarding/</c> (<c>authentication_setup.update_onboarding</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -366,7 +366,7 @@ namespace Didit.Resources
         /// <c>PATCH /organizations/{organization_id}/applications/{application_id}/authentication/protection/</c> (<c>authentication_setup.update_protection</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -380,12 +380,12 @@ namespace Didit.Resources
         /// Update the application settings
         /// </summary>
         /// <remarks>
-        /// Changes the settings in the body. <c>agent_humans_only</c> needs a person: a named API key answers 403 <c>owner_or_admin_required</c>, and turning it on needs an owner or admin with an enrolled passkey.
+        /// Changes the settings in the body. <c>agent_humans_only</c> needs a person: an API key answers 403 <c>owner_or_admin_required</c>, and turning it on needs an owner or admin with an enrolled passkey.
         /// <para/>
         /// <c>PATCH /organizations/{organization_id}/applications/{application_id}/authentication/settings/</c> (<c>authentication_setup.update_settings</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -404,7 +404,7 @@ namespace Didit.Resources
         /// <c>PATCH /organizations/{organization_id}/applications/{application_id}/authentication/verified/</c> (<c>authentication_setup.update_verified</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
@@ -423,7 +423,7 @@ namespace Didit.Resources
         /// <c>POST /organizations/{organization_id}/applications/{application_id}/authentication/domain/verify/</c> (<c>authentication_setup.verify_domain</c>).
         /// </remarks>
         /// <param name="organizationId">UUID of the organization that owns the application.</param>
-        /// <param name="applicationId">UUID of the application: live or sandbox. A named key configures its own application only.</param>
+        /// <param name="applicationId">UUID of the application: live or sandbox. An API key configures its own application only.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
         public async Task<SetupDomain> VerifyDomainAsync(string organizationId, string applicationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
