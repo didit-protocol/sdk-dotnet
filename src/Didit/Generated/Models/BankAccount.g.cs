@@ -69,7 +69,7 @@ namespace Didit
         public IReadOnlyList<BankAccountHolder>? Holders { get; init; }
 
         /// <summary>
-        /// Full identifiers, returned to server-side callers with the bank data permission.
+        /// Full identifiers, returned to server-side callers with access to Bank data.
         /// </summary>
         [JsonPropertyName("identifiers")]
         public BankAccountIdentifiers? Identifiers { get; init; }

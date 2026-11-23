@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Full identifiers, returned to server-side callers with the bank data permission.
+    /// Full identifiers, returned to server-side callers with access to Bank data.
     /// </summary>
     public sealed record BankAccountIdentifiers
     {
