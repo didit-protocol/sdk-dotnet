@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Why the connection is in this status. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>.
+    /// Why the connection is in this status. <c>collection_complete</c>: a one-time connection whose read is complete, so its access has ended. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankConnectionStatusReason.EnumJsonConverter))]

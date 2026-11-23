@@ -29,14 +29,14 @@ namespace Didit
         public Optional<string> ConnectionId { get; set; }
 
         /// <summary>
-        /// <c>one_time</c> (default) reads the data once. <c>ongoing</c> keeps access open until the consent ends or someone stops it. With <c>institution_id</c> set, a bank that cannot keep access open answers <c>400 ongoing_access_not_available</c> before any screen. Without it, the bank picker lists only banks that can.
+        /// <c>one_time</c> (default) reads the data once: when the read completes the connection ends itself and reads <c>status: revoked</c> with <c>status_reason: collection_complete</c>, and its data stays readable until <c>consent.retain_until</c>. <c>ongoing</c> keeps access open until the consent ends or someone stops it. With <c>institution_id</c> set, a bank that cannot keep access open answers <c>400 ongoing_access_not_available</c> before any screen. Without it, the bank picker lists only banks that can.
         /// </summary>
         [JsonPropertyName("access")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<BankLinkCreateRequestAccess> Access { get; set; }
 
         /// <summary>
-        /// Optional. Without it the person picks among the countries your application enabled. It has to be a country Bank Link serves; any other, <c>ZZZ</c> included, answers <c>400 invalid_request</c> with <c>field: country</c>. An empty request body stays valid.
+        /// Optional. Without it the person picks among the countries your application enabled. It has to be a country Bank Link serves; a malformed value answers <c>400 invalid_request</c>, and a country the product does not serve, or where no bank is offered, answers <c>400 country_not_available</c>, both with <c>field: country</c>. An empty request body stays valid.
         /// </summary>
         [JsonPropertyName("country")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
