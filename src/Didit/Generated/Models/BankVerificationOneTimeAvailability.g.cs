@@ -10,15 +10,15 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Bank Verification inside verification workflows.
+    /// The Bank data API with one-time access, for live applications.
     /// </summary>
-    public sealed record BankVerificationCoverageOpen2BankVerificationInWorkflows
+    public sealed record BankVerificationOneTimeAvailability
     {
         /// <summary>
-        /// The &lt;c&gt;live&lt;/c&gt; field.
+        /// The &lt;c&gt;live_applications&lt;/c&gt; field.
         /// </summary>
-        [JsonPropertyName("live")]
-        public bool? Live { get; init; }
+        [JsonPropertyName("live_applications")]
+        public bool? LiveApplications { get; init; }
 
         /// <summary>
         /// The &lt;c&gt;countries&lt;/c&gt; field.
