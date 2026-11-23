@@ -64,14 +64,14 @@ namespace Didit
         public Optional<IReadOnlyList<BankLinkCreateRequestData>> Data { get; set; }
 
         /// <summary>
-        /// Days of transaction history to request, 1 to 365, default 90. The bank may deliver less: each account reports what it delivered in <c>history_coverage</c>. Cannot be sent with <c>history_from</c>.
+        /// The most days of transaction history to request, 1 to 365, default 90. It is a request "up to": when the bank or the connection can give less, the link still completes with the history it can give, and each account reports what was obtained in <c>history_coverage</c>. Cannot be sent with <c>history_from</c>.
         /// </summary>
         [JsonPropertyName("history_days")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<long> HistoryDays { get; set; }
 
         /// <summary>
-        /// Start date of the history to request, instead of <c>history_days</c>. Cannot be sent with <c>history_days</c>: both together answer <c>400 history_window_ambiguous</c>. A date older than 365 days, or in the future, answers <c>400 window_not_available</c>.
+        /// The earliest date of history to request, instead of <c>history_days</c>; it is a request "up to", like <c>history_days</c>: when the bank or the connection can give less, the link still completes with the history it can give and <c>history_coverage</c> reports it. Cannot be sent with <c>history_days</c>: both together answer <c>400 history_window_ambiguous</c>. A date older than 365 days, or in the future, answers <c>400 window_not_available</c>.
         /// </summary>
         [JsonPropertyName("history_from")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -155,14 +155,14 @@ namespace Didit
         public Optional<bool> AllowOneTimeFallback { get; set; }
 
         /// <summary>
-        /// When the bank or the person grants less than you asked for, complete the link and charge only the granted scopes. Otherwise the link ends <c>failed</c> with <c>reduced_grant</c> and nothing is charged.
+        /// When the bank or the person grants less data than the link required (a data scope or an account), complete the link and charge only what was granted. Otherwise the link ends <c>failed</c> with <c>reduced_grant</c> and nothing is charged. A shorter history than asked for is never a reduced grant: the link completes and <c>history_coverage</c> reports what was obtained.
         /// </summary>
         [JsonPropertyName("accept_reduced_grant")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<bool> AcceptReducedGrant { get; set; }
 
         /// <summary>
-        /// Sandbox applications only: picks the Didit Test Bank customer. Ignored in a live application.
+        /// Sandbox applications only: picks the Didit Test Bank customer. A live application that sends it, with any key, answers <c>400 invalid_request</c> with <c>field: sandbox</c> and no link is created.
         /// </summary>
         [JsonPropertyName("sandbox")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

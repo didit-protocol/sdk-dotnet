@@ -63,7 +63,7 @@ namespace Didit
         public long? ConsentDaysMax { get; init; }
 
         /// <summary>
-        /// The deepest history any bank in the country delivers, in days.
+        /// The most history a link can obtain at any bank in the country today, in days.
         /// </summary>
         [JsonPropertyName("history_days_max")]
         public long? HistoryDaysMax { get; init; }
