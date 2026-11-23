@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Sandbox applications only: picks the Didit Test Bank customer. Ignored in a live application.
+    /// Sandbox applications only: picks the Didit Test Bank customer. A live application that sends it, with any key, answers <c>400 invalid_request</c> with <c>field: sandbox</c> and no link is created.
     /// </summary>
     public sealed record BankLinkCreateRequestSandbox
     {
