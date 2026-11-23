@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>pending</c>: first sync running. <c>active</c>: consent valid. <c>renewal_required</c>: the consent ended or the bank wants the person to sign in again, data readable as last synced and nothing charged. <c>paused</c>: balance too low for the month. <c>revoked</c>: access stopped by the person, the bank or you. <c>deleted</c>: only <c>id</c>, <c>status</c>, <c>status_reason</c>, <c>created_at</c> and <c>erasure</c> remain. <c>failed</c>: the first sync never succeeded.
+    /// <c>pending</c>: first sync running. <c>active</c>: consent valid. <c>renewal_required</c>: the consent ended or the bank wants the person to sign in again, data readable as last synced and nothing charged. <c>paused</c>: balance too low for the month. <c>revoked</c>: access stopped by the person, the bank or you, or ended because the read of a one-time connection is complete. <c>deleted</c>: only <c>id</c>, <c>status</c>, <c>status_reason</c>, <c>created_at</c> and <c>erasure</c> remain. <c>failed</c>: the first sync never succeeded.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankConnectionStatus.EnumJsonConverter))]

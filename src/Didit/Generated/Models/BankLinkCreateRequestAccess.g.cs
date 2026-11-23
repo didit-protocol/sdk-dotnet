@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>one_time</c> (default) reads the data once. <c>ongoing</c> keeps access open until the consent ends or someone stops it. With <c>institution_id</c> set, a bank that cannot keep access open answers <c>400 ongoing_access_not_available</c> before any screen. Without it, the bank picker lists only banks that can.
+    /// <c>one_time</c> (default) reads the data once: when the read completes the connection ends itself and reads <c>status: revoked</c> with <c>status_reason: collection_complete</c>, and its data stays readable until <c>consent.retain_until</c>. <c>ongoing</c> keeps access open until the consent ends or someone stops it. With <c>institution_id</c> set, a bank that cannot keep access open answers <c>400 ongoing_access_not_available</c> before any screen. Without it, the bank picker lists only banks that can.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankLinkCreateRequestAccess.EnumJsonConverter))]

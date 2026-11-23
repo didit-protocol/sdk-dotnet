@@ -375,7 +375,7 @@ namespace Didit.Resources
         /// <para/>
         /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
         /// <para/>
-        /// Refreshing a deleted connection answers <c>409 connection_not_active</c>.
+        /// Refreshing a deleted connection answers <c>409 connection_not_active</c>. A one-time connection is read once and its access then ends, so refreshing it answers <c>409 one_time_connection</c>: create a new link to read the bank again.
         /// <para/>
         /// <c>POST /v3/bank/connections/{id}/refresh/</c> (<c>bank.refresh_connection</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -398,6 +398,8 @@ namespace Didit.Resources
         /// <para/>
         /// Send the returned <c>url</c> to the person: the hosted page shows what continues to be shared and until when, the person signs in at their bank once and returns to your <c>redirect_url</c>, and <c>bank.connection.renewed</c> confirms it. Afterwards the connection's <c>consent</c> shows a new <c>version</c>, <c>renewed_count</c>, <c>expires_at</c> and <c>renew_by</c>, with <c>renewal_action</c> <c>bank_auth</c>.
         /// <para/>
+        /// A one-time connection has no consent to renew: it answers <c>409 one_time_connection</c>, and a new link reads the bank again.
+        /// <para/>
         /// Until the consent has 30 days left or fewer it answers <c>409 renewal_not_needed</c>; after <c>consent.renewable_until</c> it answers <c>409 renewal_window_expired</c> and the person connects again.
         /// <para/>
         /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>.
@@ -419,7 +421,7 @@ namespace Didit.Resources
         /// Revoke a bank connection
         /// </summary>
         /// <remarks>
-        /// Stops access to the bank. Bank fetches stop the moment you ask, even while the bank's confirmation is pending: the consent reads <c>revocation_pending</c>, then <c>revoked</c> once the bank confirms access is terminated, or <c>revocation_failed</c> while the call is retried automatically. <c>consent.ended_by</c> is <c>customer</c>.
+        /// Stops access to the bank. Bank fetches stop the moment you ask, even while the bank's confirmation is pending: the consent reads <c>revocation_pending</c>, then <c>revoked</c> once the bank confirms access is terminated, or <c>revocation_failed</c> while the call is retried automatically. <c>consent.ended_by</c> is <c>customer</c>. Until the bank confirms, <c>status</c> keeps its value and <c>status_reason</c> is <c>null</c>; once <c>status</c> is <c>revoked</c>, <c>status_reason</c> is <c>revoked_by_customer</c>.
         /// <para/>
         /// Revoking does not delete anything: stored accounts, balances and transactions stay readable until <c>consent.retain_until</c>, the retention setting of your application, and nothing is charged. To delete them now, call <c>delete_connection</c>. Repeating the call returns the current state.
         /// <para/>
