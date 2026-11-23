@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.36.0...v1.37.0) (2026-11-23)
+
+
+### Features
+
+* **bank:** Bank data operations and typed bank.* webhook events ([#120](https://github.com/didit-protocol/sdk-dotnet/issues/120)) ([f1d153e](https://github.com/didit-protocol/sdk-dotnet/commit/f1d153ed5f52f1abdca20974e16a8c601e567b17))
+
 ## [1.36.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.35.0...v1.36.0) (2026-11-22)
 
 
