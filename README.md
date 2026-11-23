@@ -265,16 +265,13 @@ Rules live under `client.Transactions.Rules` (CRUD, backtest, library), Travel R
 var link = await client.Bank.CreateLinkAsync(new BankLinkCreateRequest
 {
     Mode = BankLinkCreateRequestMode.Connect,
-    Access = BankLinkCreateRequestAccess.Ongoing,
-    Country = "ES",
-    Data = new[] { BankLinkCreateRequestData.Accounts, BankLinkCreateRequestData.Balances, BankLinkCreateRequestData.Transactions },
+    Access = BankLinkCreateRequestAccess.OneTime,
+    Country = "ESP",
+    Data = new[] { BankLinkCreateRequestData.Accounts },
 });
-Console.WriteLine(link.Url);   // send the person here
-
-var connections = await client.Bank.ListConnectionsAsync(new BankListConnectionsParams { Limit = 100 });
-var connectionId = connections.Items![0].Id!;   // or the connection id from bank.connection.created
-var accounts = await client.Bank.ListAccountsAsync(connectionId);
 ```
+
+Store `link.Id` with the signed-in customer's request and redirect that customer to `link.Url`. The URL is redeemable and belongs only in the customer's response. When `DiditWebhooks.Verify` returns a `BankConnectionCreatedEvent created`, fetch the stored link with `GetLinkAsync`. Once its `ConnectionId` matches the event's nonempty `ConnectionId`, call `ListAccountsAsync(created.ConnectionId)`.
 
 Amounts are decimal strings (`amount`, `balance_after`), lists are cursor pages (`Items`, `NextCursor`), and every write takes `RequestOptions { IdempotencyKey = ... }`. The `bank.*` webhook events are typed; match `BankConnectionCreatedEvent`, `BankDataUpdatedEvent` and the rest. See [examples/BankConnection](examples/BankConnection).
 
