@@ -37,6 +37,48 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Pricing_BankVerificationCountryCoverage()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"country\": \"ESP\", \"name\": \"Spain\", \"updated_at\": \"2026-11-23T08:00:00Z\", \"open\": {\"bank_verification_in_workflows\": true, \"bank_data_api_one_time\": false, \"bank_data_api_ongoing\": false, \"account_check\": false}, \"data_read\": [\"accounts\", \"balances\", \"transactions\"], \"balances_note\": \"Balances are read for every account a bank shares. The balance types a bank states are listed per bank only when Didit has observed them.\", \"banks\": [{\"id\": \"es-bbva\", \"name\": \"BBVA\", \"country\": \"ESP\", \"segments\": [\"personal\", \"business\"], \"access\": [\"one_time\"], \"history_days_max\": 60, \"pending_transactions\": true, \"status\": \"operational\"}, {\"id\": \"es-caixabank\", \"name\": \"CaixaBank\", \"country\": \"ESP\", \"segments\": [\"personal\", \"business\"], \"access\": [\"one_time\"], \"history_days_max\": 60, \"pending_transactions\": false, \"status\": \"operational\"}, {\"id\": \"es-santander\", \"name\": \"Santander\", \"country\": \"ESP\", \"segments\": [\"personal\", \"business\"], \"access\": [\"one_time\"], \"history_days_max\": 60, \"pending_transactions\": true, \"status\": \"operational\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Pricing.BankVerificationCountryCoverageAsync("country-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/bank-verification-coverage/country-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Null(request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("ESP", result.Country);
+        }
+
+        [Fact]
+        public async Task Pricing_BankVerificationCoverage()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"updated_at\": \"2026-11-23T08:00:00Z\", \"open\": {\"bank_verification_in_workflows\": {\"live\": true, \"countries\": [\"ESP\"]}, \"bank_data_api_one_time\": {\"live_applications\": false, \"countries\": []}, \"bank_data_api_ongoing\": {\"live_applications\": false, \"countries\": []}}, \"data_read\": [\"accounts\", \"balances\", \"transactions\"], \"balances_note\": \"Balances are read for every account a bank shares. The balance types a bank states are listed per bank only when Didit has observed them.\", \"countries\": {\"ESP\": {\"name\": \"Spain\", \"banks\": 92, \"banks_by_segment\": {\"personal\": 84, \"business\": 87}, \"open\": {\"bank_verification_in_workflows\": true, \"bank_data_api_one_time\": false, \"bank_data_api_ongoing\": false, \"account_check\": false}, \"banks_url\": \"/v3/organization/bank-verification-coverage/ESP/\"}}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Pricing.BankVerificationCoverageAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/bank-verification-coverage/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Null(request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("Balances are read for every account a bank shares. The balance types a bank states are listed per bank only when Didit has observed them.", result.BalancesNote);
+        }
+
+        [Fact]
         public async Task Pricing_PriceBook()
         {
             var handler = new MockHttpHandler();

@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankLinkError
     {
         /// <summary>
-        /// Why the link failed. A failed link is not an HTTP error: the link reads with <c>status: failed</c> and this object. A renew link whose connection changed meanwhile reads <c>renewal_not_needed</c> or <c>renewal_window_expired</c>.
+        /// Why the link failed. A failed link is not an HTTP error: the link reads with <c>status: failed</c> and this object. <c>bank_cancelled</c> ends a link only on the fifth cancel at the bank: until then a person who backs out at the bank returns to the list of banks with a notice and the link stays <c>opened</c>. A bank that cannot be reached (<c>bank_unavailable</c>) also returns the person to the list of banks and leaves the link <c>opened</c>. A link ended by the simulate operation fails at once. A renew link whose connection changed meanwhile reads <c>renewal_not_needed</c> or <c>renewal_window_expired</c>.
         /// </summary>
         [JsonPropertyName("code")]
         public BankLinkErrorCode? Code { get; init; }

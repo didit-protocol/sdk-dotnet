@@ -45,6 +45,39 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// List the banks of one country (public, unauthenticated)
+        /// </summary>
+        /// <remarks>
+        /// Lists the banks Didit covers in one country: id, name, segments, access modes, history days, pending transactions and whether the bank is operational. Public: no auth header. One cached document per country.
+        /// <para/>
+        /// <c>GET /v3/organization/bank-verification-coverage/{country}/</c> (<c>pricing.bank_verification_country_coverage</c>).
+        /// </remarks>
+        /// <param name="country">ISO 3166-1 alpha-3 code, for example <c>ESP</c>.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BankVerificationCountryCoverage> BankVerificationCountryCoverageAsync(string country, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.BankVerificationCountryCoverageAsync(country, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// List the countries with bank coverage (public, unauthenticated)
+        /// </summary>
+        /// <remarks>
+        /// Lists the countries where Didit covers banks, how many, and what is open today for each product. Public: no auth header. Cached publicly and revalidated with an <c>ETag</c>. What is open is read on every request from the switches the API uses, so a product that is not open today reads <c>false</c> even when its banks are listed. It carries no prices (see the bank verification pricing feed) and never names a supplier.
+        /// <para/>
+        /// <c>GET /v3/organization/bank-verification-coverage/</c> (<c>pricing.bank_verification_coverage</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BankVerificationCoverage> BankVerificationCoverageAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.BankVerificationCoverageAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Get the price book (public, unauthenticated)
         /// </summary>
         /// <remarks>
@@ -90,6 +123,36 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<BankVerificationPricing>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List the banks of one country (public, unauthenticated)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PricingResource.BankVerificationCountryCoverageAsync"/>.</remarks>
+        public Task<DiditResponse<BankVerificationCountryCoverage>> BankVerificationCountryCoverageAsync(string country, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/bank-verification-coverage/" + PathParameter.Encode(country, "country") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.None,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<BankVerificationCountryCoverage>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// List the countries with bank coverage (public, unauthenticated)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PricingResource.BankVerificationCoverageAsync"/>.</remarks>
+        public Task<DiditResponse<BankVerificationCoverage>> BankVerificationCoverageAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/bank-verification-coverage/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.None,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<BankVerificationCoverage>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
