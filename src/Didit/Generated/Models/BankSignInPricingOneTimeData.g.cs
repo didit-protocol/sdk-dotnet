@@ -21,7 +21,7 @@ namespace Didit
         public string? BalancesUsd { get; init; }
 
         /// <summary>
-        /// Price of one read of transactions, with or without balances. Decimal string with 4 decimals in USD.
+        /// Price of one read of transactions. Where <c>bundle_included</c> is <c>true</c> it also covers balances; otherwise balances are a separate line (<c>balances_usd</c>). Decimal string with 4 decimals in USD.
         /// </summary>
         [JsonPropertyName("transactions_usd")]
         public string? TransactionsUsd { get; init; }
