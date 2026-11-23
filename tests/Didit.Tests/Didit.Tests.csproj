@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <None Include="../../openapi/*.json" LinkBase="openapi" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Webhooks/bank-webhook-vectors.json" Link="fixtures/bank-webhook-vectors.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -257,6 +257,24 @@ var wallet = await client.WalletScreening.ScreenAsync(new WalletScreeningScreenP
 
 Rules live under `client.Transactions.Rules` (CRUD, backtest, library), Travel Rule transfers under `client.Transactions.TravelRule`, and settings, the VASP directory, inbound registration and widget sessions under `client.TravelRule` (wallet addresses: `client.TravelRule.WalletAddresses`). See [examples/TransactionMonitoring](examples/TransactionMonitoring).
 
+## Bank verification
+
+`client.Bank` creates Bank Links, reads connections and accounts, and keeps balances and transactions current. Bank data needs an API key with the `bank-data` permission; full access does not include it.
+
+```csharp
+var link = await client.Bank.CreateLinkAsync(new BankLinkCreateRequest
+{
+    Mode = BankLinkCreateRequestMode.Connect,
+    Access = BankLinkCreateRequestAccess.OneTime,
+    Country = "ESP",
+    Data = new[] { BankLinkCreateRequestData.Accounts },
+});
+```
+
+Store `link.Id` with the signed-in customer's request and redirect that customer to `link.Url`. The URL is redeemable and belongs only in the customer's response. When `DiditWebhooks.Verify` returns a `BankConnectionCreatedEvent created`, fetch the stored link with `GetLinkAsync`. Once its `ConnectionId` matches the event's nonempty `ConnectionId`, call `ListAccountsAsync(created.ConnectionId)`.
+
+Amounts are decimal strings (`amount`, `balance_after`), lists are cursor pages (`Items`, `NextCursor`), and every write takes `RequestOptions { IdempotencyKey = ... }`. The `bank.*` webhook events are typed; match `BankConnectionCreatedEvent`, `BankDataUpdatedEvent` and the rest. See [examples/BankConnection](examples/BankConnection).
+
 ## Authentication
 
 Didit Authentication gives each application its own OpenID Connect issuer for its end users. The `Authentication` class is for your backend: it verifies the tokens your frontend sends, exchanges authorization codes and manages sessions. It talks to your issuer and never takes the API key.
@@ -313,6 +331,7 @@ Resources follow the API's naming (`sessions.imports.create` is `client.Sessions
 | `IdWallets`, `FraudChecks` | digital ID wallets, fraud checks |
 | `Users`, `Businesses`, `BusinessSessions`, `AmlMonitoring` | entities, monitoring, faces |
 | `Transactions` (`Rules`, `TravelRule`), `WalletScreening`, `TravelRule` (`WalletAddresses`) | transaction monitoring, wallet screening, Travel Rule |
+| `Bank` | Bank Link, connections, accounts, balances, transactions, sync runs, institutions, coverage |
 | `Workflows`, `Questionnaires`, `Customization`, `Billing`, `BiometricTemplates` | configuration |
 | `Webhooks.Destinations` | webhook destinations |
 | `Cases` (`Notes`, `Links`, `Checklist`, `Requests`, `Teams`, `RoutingRules`, `Blueprints`, `RegulatoryReports`), `RegulatoryReports`, `ReportTemplates`, `Networks` (`Notes`) | case management and investigations (application-scoped) |
