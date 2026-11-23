@@ -444,6 +444,69 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Simulate a bank connection event (sandbox)
+        /// </summary>
+        /// <remarks>
+        /// Moves a sandbox connection through time without waiting: new transactions, a pending row that posts, a consent that is about to end or has ended, a revocation, a failing sync, a duplicate webhook or a used-up refresh allowance. It uses the real sync engine and the real webhooks, so <c>bank.*</c> deliveries, the change feed and <c>sync</c> behave as they do for a real bank. Answers the connection as <c>get_connection</c> would.
+        /// <para/>
+        /// <c>action</c> is required and is one of:
+        /// <para/>
+        /// - <c>new_transactions</c>: the bank adds <c>count</c> booked transactions (1 to 500, default 3). A sync follows.
+        /// - <c>pending_posted</c>: one day passes at the bank: pending rows leave the change feed as <c>removed</c> and their booked rows arrive as <c>added</c>. It needs a test customer with pending transactions (<c>pending</c>); with <c>personal_basic</c> nothing changes. A sync follows.
+        /// - <c>booking_correction</c>: the next sync returns booked rows again with a corrected booking, so they arrive as <c>modified</c>. A sync follows.
+        /// - <c>midnight_booking</c>: a row is booked across midnight, to test day boundaries. A sync follows.
+        /// - <c>consent_expiring</c>: the consent now ends in <c>days</c> days and the expiry notice is sent (<c>bank.connection.consent_expiring</c>). <c>days</c> accepts only the notification thresholds, 14, 7 or 1 (default 7); any other value answers <c>400 invalid_request</c> with <c>field</c> <c>days</c>.
+        /// - <c>consent_expired</c>: the consent has ended now and the connection becomes <c>renewal_required</c>.
+        /// - <c>revoked_by_user</c> and <c>revoked_by_bank</c>: the bank tells Didit the consent ended, as if the person or the bank had revoked it. The connection reads <c>revoked</c> with <c>status_reason</c> <c>revoked_by_end_user</c> or <c>revoked_by_bank</c>, and <c>consent.ended_by</c> is <c>end_user</c> or <c>bank</c>.
+        /// - <c>sync_failed</c>: the bank fails every read until <c>sync_recovered</c>; the connection has been failing for 24 hours, so <c>bank.sync.failed</c> is sent. A sync follows.
+        /// - <c>sync_recovered</c>: the bank answers again. A sync follows.
+        /// - <c>webhook_twice</c>: the last <c>bank.*</c> webhook of this connection is delivered again with the same <c>event_id</c> and a fresh signature, to test your deduplication. It answers <c>400 invalid_request</c> if the connection has no delivery yet.
+        /// - <c>budget_used</c>: today's refresh allowance is used up on the bank's own day, so the next <c>refresh_connection</c> answers <c>429 refresh_limit_reached</c> with <c>Retry-After</c>, and <c>sync.live_syncs_left_today</c> and the <c>sync.budgets</c> <c>remaining</c> read 0.
+        /// - <c>budget_reset</c>: today's refresh allowance is restored: <c>sync.live_syncs_left_today</c> and the <c>remaining</c> of <c>sync.budgets</c> read what they read on a new connection.
+        /// <para/>
+        /// <c>days</c> is only accepted with <c>consent_expiring</c> and <c>count</c> only with <c>new_transactions</c>: sent with another action, each answers <c>400 invalid_request</c> with <c>field</c> naming it.
+        /// <para/>
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Sandbox only: a live application, or a link or connection that belongs to the live environment, answers <c>404 not_found</c>, exactly as an unknown route does.
+        /// <para/>
+        /// <c>POST /v3/bank/connections/{id}/simulate/</c> (<c>bank.simulate_connection</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="id">The connection id.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BankConnection> SimulateConnectionAsync(string id, BankConnectionSimulateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.SimulateConnectionAsync(id, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Simulate a bank link (sandbox)
+        /// </summary>
+        /// <remarks>
+        /// Finishes a link of your sandbox application in one call, as if the person had gone through the Didit Test Bank: you choose the Test Bank customer (<c>persona</c>) and how the link ends (<c>outcome</c>). The link goes through the same completion code as a real bank sign-in, so the connection, its accounts, the first sync and the <c>bank.*</c> webhooks happen exactly as they would for a real person. Answers the link, so read <c>status</c> and <c>connection_id</c>.
+        /// <para/>
+        /// <c>outcome</c> is <c>completed</c> (the default: the person agrees and the connection is created), <c>cancelled</c> (the person leaves, the link ends <c>cancelled</c>), <c>failed</c> (the link ends <c>failed</c>; <c>error_code</c> picks the reason, <c>bank_unavailable</c> by default), <c>duplicate_conflict</c> (the person already has a connection with the same bank), <c>reduced_grant</c> (the person shares less than you asked for) or <c>renewal_login_mismatch</c> (a renewal with another bank login; on a connect link it ends as the failure it is). <c>error_code</c> is only accepted with <c>outcome: failed</c>.
+        /// <para/>
+        /// A link that allows the one-time fallback and meets a bank that cannot keep access open accepts the reduced access and finishes in the same call. A link that is no longer open (completed, cancelled, expired or failed) is returned unchanged, so the call is safe to repeat.
+        /// <para/>
+        /// Needs an API key with the Bank data permission (<c>bank-data</c>): write for this operation, which changes something. A key with full access does not include it: grant it explicitly when you create the key, or the call answers <c>403 bank_data_access_denied</c>. Sandbox only: a live application, or a link or connection that belongs to the live environment, answers <c>404 not_found</c>, exactly as an unknown route does.
+        /// <para/>
+        /// <c>POST /v3/bank/links/{id}/simulate/</c> (<c>bank.simulate_link</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="id">The link id.</param>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BankLink> SimulateLinkAsync(string id, BankLinkSimulateRequest? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.SimulateLinkAsync(id, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Sync transactions (change feed)
         /// </summary>
         /// <remarks>
@@ -806,6 +869,46 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<BankConnection>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Simulate a bank connection event (sandbox)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="BankResource.SimulateConnectionAsync"/>.</remarks>
+        public Task<DiditResponse<BankConnection>> SimulateConnectionAsync(string id, BankConnectionSimulateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/bank/connections/" + PathParameter.Encode(id, "id") + "/simulate/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<BankConnection>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Simulate a bank link (sandbox)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="BankResource.SimulateLinkAsync"/>.</remarks>
+        public Task<DiditResponse<BankLink>> SimulateLinkAsync(string id, BankLinkSimulateRequest? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Post, "/v3/bank/links/" + PathParameter.Encode(id, "id") + "/simulate/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            if (parameters is not null)
+            {
+                request.Body = JsonRequestBody.Create(parameters);
+            }
+            return _pipeline.SendJsonAsync<BankLink>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>
