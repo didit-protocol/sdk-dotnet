@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Who ended access, set from evidence. <c>unknown</c> when neither the bank nor the sync says.
+    /// Who ended access, set from evidence. <c>system</c> when Didit ended it by design: a one-time connection once its read is complete. <c>unknown</c> when neither the bank nor the sync says.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankConnectionConsentEndedBy.EnumJsonConverter))]
@@ -31,6 +31,9 @@ namespace Didit
 
         /// <summary><c>customer</c></summary>
         public static BankConnectionConsentEndedBy Customer { get; } = new("customer");
+
+        /// <summary><c>system</c></summary>
+        public static BankConnectionConsentEndedBy System { get; } = new("system");
 
         /// <summary><c>unknown</c></summary>
         public static BankConnectionConsentEndedBy Unknown { get; } = new("unknown");
