@@ -105,7 +105,7 @@ namespace Didit
         public DateTimeOffset? EndedAt { get; init; }
 
         /// <summary>
-        /// Who ended access, set from evidence. <c>unknown</c> when neither the bank nor the sync says.
+        /// Who ended access, set from evidence. <c>system</c> when Didit ended it by design: a one-time connection once its read is complete. <c>unknown</c> when neither the bank nor the sync says.
         /// </summary>
         [JsonPropertyName("ended_by")]
         public BankConnectionConsentEndedBy? EndedBy { get; init; }
