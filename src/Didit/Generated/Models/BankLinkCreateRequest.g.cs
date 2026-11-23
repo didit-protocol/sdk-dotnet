@@ -120,7 +120,7 @@ namespace Didit
         public Optional<IReadOnlyList<string>> AllowedOrigins { get; set; }
 
         /// <summary>
-        /// Optional language code such as <c>es</c> or <c>pt-BR</c>. Otherwise the browser language.
+        /// Optional. One of the [supported languages](/integration/supported-languages), the same codes the <c>language</c> of the session API takes, for example <c>es</c>, <c>pt</c>, <c>pt-BR</c> or <c>zh-CN</c> (<c>pt-PT</c> is not one of them). The match is exact and case-sensitive (<c>ES</c> and <c>pt-PT</c> are refused). A code outside that list answers <c>400 invalid_request</c> with <c>field: language</c>. Otherwise the browser language.
         /// </summary>
         [JsonPropertyName("language")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
