@@ -41,6 +41,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSdkKey> CreateAsync(PhoneSdkKeyRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -66,6 +67,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSdkKeysPage> ListAsync(PhoneSdkKeysListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -89,6 +91,7 @@ namespace Didit.Resources
         /// <param name="keyId">The publishable key to revoke.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task RevokeAsync(string keyId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
             _raw.RevokeAsync(keyId, requestOptions, cancellationToken);
 
@@ -112,6 +115,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSdkKeyRotated> RotateAsync(string keyId, PhoneSdkKeyRotateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RotateAsync(keyId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -133,6 +137,7 @@ namespace Didit.Resources
         /// Issue a publishable key for a client SDK
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSdkKeysResource.CreateAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSdkKey>> CreateAsync(PhoneSdkKeyRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -154,6 +159,7 @@ namespace Didit.Resources
         /// List the publishable keys of your client SDKs
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSdkKeysResource.ListAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSdkKeysPage>> ListAsync(PhoneSdkKeysListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/sdk-keys/")
@@ -170,6 +176,7 @@ namespace Didit.Resources
         /// Revoke a publishable key
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSdkKeysResource.RevokeAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse> RevokeAsync(string keyId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/phone/sdk-keys/" + PathParameter.Encode(keyId, "keyId") + "/")
@@ -185,6 +192,7 @@ namespace Didit.Resources
         /// Rotate a publishable key with an overlap
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSdkKeysResource.RotateAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSdkKeyRotated>> RotateAsync(string keyId, PhoneSdkKeyRotateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

@@ -42,6 +42,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneNetworkRegistrationTestNumber> CreateAsync(string registrationId, PhoneNetworkRegistrationTestNumberRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(registrationId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -66,6 +67,7 @@ namespace Didit.Resources
         /// <param name="phoneNumber">The test number, in E.164 and URL-encoded.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task DeleteAsync(string registrationId, string phoneNumber, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
             _raw.DeleteAsync(registrationId, phoneNumber, requestOptions, cancellationToken);
     }
@@ -84,6 +86,7 @@ namespace Didit.Resources
         /// Add a test number while the networks review
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsTestNumbersResource.CreateAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneNetworkRegistrationTestNumber>> CreateAsync(string registrationId, PhoneNetworkRegistrationTestNumberRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -105,6 +108,7 @@ namespace Didit.Resources
         /// Remove a test number
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsTestNumbersResource.DeleteAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse> DeleteAsync(string registrationId, string phoneNumber, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/phone/network/registrations/" + PathParameter.Encode(registrationId, "registrationId") + "/test-numbers/" + PathParameter.Encode(phoneNumber, "phoneNumber") + "/")

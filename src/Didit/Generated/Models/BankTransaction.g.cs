@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankTransaction
     {
         /// <summary>
-        /// Didit's id, opaque and stored at first sight. The same movement keeps its id across reads, syncs and renewals. <c>identity_quality</c> says how strong that guarantee is.
+        /// Didit's id, opaque and stored at first sight, per connection. The same movement keeps its id across reads, syncs and renewals within one connection; a new connection of the same bank account has new transaction ids. To recognise a transaction across connections, use the account's <c>account_ref</c> with <c>bank_reference</c> (when <c>identity_quality</c> is <c>bank_reference</c>), or match on content as a probable match. <c>identity_quality</c> says how strong the guarantee is within the connection.
         /// </summary>
         [JsonPropertyName("id")]
         public string? Id { get; init; }
@@ -111,13 +111,13 @@ namespace Didit
         public string? BankTransactionCode { get; init; }
 
         /// <summary>
-        /// The bank's immutable entry reference where it provides one. <c>null</c> otherwise, never invented.
+        /// The bank's immutable entry reference where it provides one. <c>null</c> otherwise, never invented. It is the same in every connection, so with the account's <c>account_ref</c> it is the reliable key across connections when <c>identity_quality</c> is <c>bank_reference</c>.
         /// </summary>
         [JsonPropertyName("bank_reference")]
         public string? BankReference { get; init; }
 
         /// <summary>
-        /// How <c>id</c> was matched. <c>bank_reference</c> and <c>route_id</c> are stable. <c>derived</c> is matched by content: it is stable while the bank keeps reporting the entry unchanged, and a correction by the bank can then appear as one <c>removed</c> and one <c>added</c>.
+        /// How <c>id</c> was matched within the connection. <c>bank_reference</c> and <c>route_id</c> are stable. <c>derived</c> is matched by content: it is stable while the bank keeps reporting the entry unchanged, and a correction by the bank can then appear as one <c>removed</c> and one <c>added</c>. Across connections only a <c>bank_reference</c> is a reliable key.
         /// </summary>
         [JsonPropertyName("identity_quality")]
         public BankTransactionIdentityQuality? IdentityQuality { get; init; }

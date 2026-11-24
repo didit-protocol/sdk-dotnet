@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (PhoneCheckCodeResponsePhoneWarnings).
+    /// Response object (PhoneVerificationCheckResponsePhoneWarnings).
     /// </summary>
-    public sealed record PhoneCheckCodeResponsePhoneWarnings
+    public sealed record PhoneVerificationCheckResponsePhoneWarnings
     {
         /// <summary>
         /// Feature that produced the warning. Always <c>PHONE</c> here.
@@ -36,7 +36,7 @@ namespace Didit
         /// Severity. <c>error</c> risks decline the verification, <c>warning</c> flags it for review, <c>information</c> is recorded without affecting the status.
         /// </summary>
         [JsonPropertyName("log_type")]
-        public PhoneCheckCodeResponsePhoneWarningsLogType? LogType { get; init; }
+        public PhoneVerificationCheckResponsePhoneWarningsLogType? LogType { get; init; }
 
         /// <summary>
         /// Human-readable one-line summary of the risk.

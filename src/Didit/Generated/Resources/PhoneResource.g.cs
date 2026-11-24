@@ -99,12 +99,12 @@ namespace Didit.Resources
         /// <c>POST /v3/phone/check/</c> (<c>phone.check_code</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
-        /// <param name="body">The request parameters.</param>
+        /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        public async Task<PhoneCheckCodeResponse> CheckCodeAsync(object body, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<PhoneVerificationCheckResponse> CheckCodeAsync(PhoneCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            var response = await _raw.CheckCodeAsync(body, requestOptions, cancellationToken).ConfigureAwait(false);
+            var response = await _raw.CheckCodeAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -122,7 +122,7 @@ namespace Didit.Resources
         /// <para/>
         /// Send statuses. <c>Success</c> — OTP sent for a new verification; <c>Retry</c> — OTP re-sent for the pending verification; <c>Blocked</c> — the anti-fraud layer refused to send (see <c>reason</c>, e.g. <c>repeated_attempts</c>, <c>suspicious</c>, <c>spam</c>). A <c>Blocked</c> send immediately finalizes the verification as <c>Declined</c> with a high-risk warning, so a follow-up check returns <c>Expired or Not Found</c>.
         /// <para/>
-        /// Billing. The price depends on the destination country and the channel that actually delivers the message — see [Phone Verification Pricing](/getting-started/phone-verification-pricing). Only <c>Blocked</c> sends are guaranteed free: any other unbilled send attempt is charged at verification finalization or expiration, even if delivery was never confirmed or the delivery provider reported the message undeliverable. Checks are always free. As an anti-abuse measure, phone verification is disabled until your organization's first top-up (<c>403</c>).
+        /// Billing. The price depends on the destination country and the channel that actually delivers the message — see [Phone Verification Pricing](/getting-started/phone-verification-pricing). Only <c>Blocked</c> sends are guaranteed free: any other unbilled send attempt is charged at verification finalization or expiration, even if delivery was never confirmed or the delivery provider reported the message undeliverable. Checks are always free. As an anti-abuse measure, phone verification is disabled until your organization has a paid plan or makes its first top-up (<c>403</c>).
         /// <para/>
         /// Session persistence. Every new verification is persisted as an API-type session: <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c>, the verification appears in the Business Console, and <c>status.updated</c> webhooks fire as it progresses.
         /// <para/>
@@ -196,11 +196,11 @@ namespace Didit.Resources
         /// Check Phone Code
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneResource.CheckCodeAsync"/>.</remarks>
-        public Task<DiditResponse<PhoneCheckCodeResponse>> CheckCodeAsync(object body, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        public Task<DiditResponse<PhoneVerificationCheckResponse>> CheckCodeAsync(PhoneCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            if (body is null)
+            if (parameters is null)
             {
-                throw new ArgumentNullException(nameof(body));
+                throw new ArgumentNullException(nameof(parameters));
             }
 
             var request = new ApiRequest(HttpMethods.Post, "/v3/phone/check/")
@@ -209,8 +209,8 @@ namespace Didit.Resources
                 Auth = AuthKind.ApiKey,
                 ApplicationScoped = false,
             };
-            request.Body = JsonRequestBody.Create(body);
-            return _pipeline.SendJsonAsync<PhoneCheckCodeResponse>(request, requestOptions, cancellationToken);
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<PhoneVerificationCheckResponse>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

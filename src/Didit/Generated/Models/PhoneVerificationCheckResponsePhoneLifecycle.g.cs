@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (PhoneCheckCodeResponsePhoneLifecycle).
+    /// Response object (PhoneVerificationCheckResponsePhoneLifecycle).
     /// </summary>
-    public sealed record PhoneCheckCodeResponsePhoneLifecycle
+    public sealed record PhoneVerificationCheckResponsePhoneLifecycle
     {
         /// <summary>
         /// Event type.
