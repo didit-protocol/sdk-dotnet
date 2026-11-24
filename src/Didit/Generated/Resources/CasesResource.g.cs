@@ -78,7 +78,9 @@ namespace Didit.Resources
         /// Approve staged resolution (4-eyes)
         /// </summary>
         /// <remarks>
-        /// Apply a resolution staged by resolve on a four-eyes blueprint. The caller must be a different officer than the one who submitted it, otherwise 403. When the resolution names a checker (the case's <c>checker</c>), only that member can approve it: any other caller, including an API key, gets 403.
+        /// Apply a resolution staged by resolve on a four-eyes blueprint. Only a different signed-in person can approve: the officer who submitted the resolution gets 403, and an API key or MCP token acting as the application always gets 403 with code <c>human_approver_required</c>, leaving the case unchanged. When the resolution names a checker (the case's <c>checker</c>), only that member can approve it. A successful approval records the approver's email and name on the case's APPROVAL_GRANTED event.
+        /// <para/>
+        /// Authentication: a signed-in console member's access token (<c>Authorization: Bearer ...</c>) carrying the <c>write:cases</c> permission. The application's own credential — an API key in <c>x-api-key</c> or an MCP token — may stage a resolution with resolve but can never approve one: every such call returns 403 <c>human_approver_required</c>, so an approval always names the person who gave it. The SDK samples below build an application client, so they receive that 403; the console-user cURL sample shows the call that succeeds.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/{case_uuid}/approve/</c> (<c>cases.approve_resolution</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -155,7 +157,7 @@ namespace Didit.Resources
         /// Create case
         /// </summary>
         /// <remarks>
-        /// Create a case anchored to exactly one subject (a user or a business), directly or by deriving the subject from an attached session/transaction link. Source is always <c>MANUAL</c> for API-created cases. Network links require write:cases plus read:networks, Networks access and investigation access for the network scope. The network must be visible and contain the case subject. Manually adding links to network-generated cases is not allowed. An explicit subject is required whenever links includes a network.
+        /// Create a case anchored to exactly one subject (a user or a business), directly or by deriving the subject from an attached session/transaction link. Source is always <c>MANUAL</c> for API-created cases. Network links require write:cases plus read:networks, Networks access and investigation access for the network scope. The network must be visible and contain the case subject. Manually adding links to network-generated cases is not allowed. An explicit subject is required whenever links includes a network. Every linked session, business session and transaction must belong to this application and not be deleted, whether or not review_duplicates is set; otherwise the request answers 404 and no case is created.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/cases/</c> (<c>cases.create</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.

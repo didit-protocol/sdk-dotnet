@@ -15,7 +15,7 @@ namespace Didit
     public sealed record RegisterRequest
     {
         /// <summary>
-        /// Any valid email address (personal, work, alias). Used as the unique account identifier.
+        /// A real, deliverable mailbox address without a +tag, used as the unique account identifier. Registration rejects tags that normalization would remove, with a 400 email field error naming the canonical address. Only explicitly configured staging test mailboxes retain tags.
         /// </summary>
         [JsonPropertyName("email")]
         public required string Email { get; set; }
