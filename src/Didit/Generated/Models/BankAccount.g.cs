@@ -75,7 +75,7 @@ namespace Didit
         public BankAccountIdentifiers? Identifiers { get; init; }
 
         /// <summary>
-        /// Identifies the same bank account across connections of one application and environment: a keyed hash of the bank's own identifiers. <c>null</c> when the bank gives no reliable identifier. Use it to recognise a bank account you already know. It is the same for one bank account in every connection of the application, while <c>id</c> and the transaction ids are new in each connection.
+        /// Identifies the same bank account across connections of one application and environment: a keyed hash of the bank's own identifiers. <c>null</c> when the bank gives no reliable identifier. Use it to recognise a bank account you already know. Several accounts of one connection can share an <c>account_ref</c> (one IBAN held in several currencies, or a linked card account under the same IBAN): key an account by its <c>id</c>; <c>account_ref</c> tells you which bank account (IBAN) it belongs to. It is the same for one bank account in every connection of the application, while <c>id</c> and the transaction ids are new in each connection.
         /// </summary>
         [JsonPropertyName("account_ref")]
         public string? AccountRef { get; init; }
