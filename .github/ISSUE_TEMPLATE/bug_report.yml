@@ -1,0 +1,50 @@
+name: Bug report
+description: Something in the Didit .NET SDK does not work as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Never paste API keys, webhook secrets, tokens or real customer data; redact them.
+        Security vulnerabilities go through private vulnerability reporting (see SECURITY.md), not issues.
+  - type: input
+    id: version
+    attributes:
+      label: SDK version
+      description: The version of the `Didit` package (and `Didit.Extensions.DependencyInjection`, if used).
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: .NET runtime and target framework
+      placeholder: .NET 8.0.11, net8.0
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Ubuntu 24.04, Windows Server 2022, macOS 15
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code that shows the problem.
+      render: csharp
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Exception, response or logs
+      description: Include the exception type, and for `ApiStatusException` its status code and `RequestId`. `DIDIT_LOG=debug` output never contains keys or bodies.
+      render: text
