@@ -21,7 +21,7 @@ namespace Didit
         public required string PhoneNumber { get; set; }
 
         /// <summary>
-        /// The OTP the end user received. Must be 4–8 numeric digits — anything else returns <c>400</c> without consuming an attempt. A well-formed but wrong code returns <c>200</c> with <c>status: "Failed"</c> and consumes one of the 3 attempts.
+        /// For a delivered code, enter 4 to 10 letters or digits. Letters match in either case. A wrong delivered code consumes one attempt and returns <c>Failed</c> while attempts remain or <c>Declined</c> on the last attempt.
         /// </summary>
         [JsonPropertyName("code")]
         public required string Code { get; set; }
@@ -104,7 +104,7 @@ namespace Didit
         public Optional<string> FactorId { get; set; }
 
         /// <summary>
-        /// Check the code Didit sent to a registration test number: send the <c>verification_id</c> that <c>POST /v3/phone/network/registrations/{registration_id}/test-numbers/</c> returned with the <c>code</c>. The number itself still goes in <c>phone_number</c>.
+        /// Check this verification instead of the number's latest one: the <c>verification_id</c> a send returned, or the one <c>POST /v3/phone/network/registrations/{registration_id}/test-numbers/</c> returned for a registration test number. Didit takes the number from that verification, so the request's <c>phone_number</c> is not used, but it stays a required field. An ID that is not one of your application's checkable verifications is ignored and the check uses the latest pending verification of <c>phone_number</c>.
         /// </summary>
         [JsonPropertyName("verification_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

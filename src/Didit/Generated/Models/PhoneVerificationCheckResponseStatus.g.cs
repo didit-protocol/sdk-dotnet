@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>Approved</c> — correct code, no declining risk. <c>Declined</c> — terminal: a declining risk matched or the attempt budget (3) was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — no pending verification for this number in the last 5 minutes. For a TOTP factor check (a request that names <c>factor_id</c>) the status is <c>verified</c> (the code matched) or <c>failed</c>.
+    /// <c>Approved</c> — correct code, no declining risk. <c>Declined</c> — terminal: a declining risk matched or the attempt budget (your <c>verification.max_attempts</c> setting, 5 by default) was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — no pending verification for this number in the last 5 minutes. For a TOTP factor check (a request that names <c>factor_id</c>) the status is <c>verified</c> (the code matched) or <c>failed</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(PhoneVerificationCheckResponseStatus.EnumJsonConverter))]

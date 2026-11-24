@@ -69,7 +69,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"request_id\": \"e39cb057-92fc-4b59-b84e-02fec29a0f24\", \"status\": \"Approved\", \"message\": \"The verification code is correct.\", \"phone\": {\"status\": \"Approved\", \"phone_number_prefix\": \"+1\", \"phone_number\": \"4155552671\", \"full_number\": \"+14155552671\", \"country_code\": \"US\", \"country_name\": \"United States\", \"carrier\": {\"name\": \"AT&T\", \"type\": \"mobile\"}, \"is_disposable\": false, \"is_virtual\": false, \"verification_method\": \"whatsapp\", \"verification_attempts\": 1, \"verified_at\": \"2026-06-12T01:24:47.311323Z\", \"warnings\": [], \"lifecycle\": [{\"type\": \"PHONE_VERIFICATION_MESSAGE_SENT\", \"timestamp\": \"2026-06-12T01:23:39.580554+00:00\", \"details\": {\"status\": \"Success\", \"reason\": null, \"channel\": \"whatsapp\", \"actual_channel\": \"whatsapp\", \"attempt\": 0, \"delivery_status\": \"delivered\"}, \"fee\": 0.0509}, {\"type\": \"PHONE_DELIVERY_DELIVERED\", \"timestamp\": \"2026-06-12T01:23:43.118220+00:00\", \"details\": {\"channel\": \"whatsapp\", \"status\": \"delivered\", \"attempt\": 0}, \"fee\": 0}, {\"type\": \"VALID_CODE_ENTERED\", \"timestamp\": \"2026-06-12T01:24:47.311201+00:00\", \"details\": {\"code_tried\": \"123456\", \"status\": \"Approved\"}, \"fee\": 0}, {\"type\": \"PHONE_VERIFICATION_APPROVED\", \"timestamp\": \"2026-06-12T01:24:47.384292+00:00\", \"details\": null, \"fee\": 0}], \"matches\": []}, \"vendor_data\": \"user-1234\", \"metadata\": null, \"created_at\": \"2026-06-12T01:24:47.401719+00:00\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Phone.CheckCodeAsync(new PhoneCheckCodeParams { PhoneNumber = "+14155552671", Code = "123456", DuplicatedPhoneNumberAction = new PhoneCheckCodeParamsDuplicatedPhoneNumberAction("NO_ACTION"), DisposableNumberAction = new PhoneCheckCodeParamsDisposableNumberAction("NO_ACTION"), VoipNumberAction = new PhoneCheckCodeParamsVoipNumberAction("NO_ACTION"), EnableEnrichment = true, PhoneIntelligenceScoreAction = new PhoneCheckCodeParamsPhoneIntelligenceScoreAction("NO_ACTION"), PhoneTypeRiskAction = new PhoneCheckCodeParamsPhoneTypeRiskAction("NO_ACTION"), RecentPortAction = new PhoneCheckCodeParamsRecentPortAction("NO_ACTION"), LowPhoneTrustAction = new PhoneCheckCodeParamsLowPhoneTrustAction("NO_ACTION"), EnableSocial = true, PhoneNoSocialPresenceAction = new PhoneCheckCodeParamsPhoneNoSocialPresenceAction("NO_ACTION"), FactorId = "fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", VerificationId = "pv_ae4f1a368c7a4d259a493f6b0c2d7e55" });
+            var result = await client.Phone.CheckCodeAsync(new PhoneCheckCodeParams { PhoneNumber = "+14155552671", Code = "123456", DuplicatedPhoneNumberAction = new PhoneCheckCodeParamsDuplicatedPhoneNumberAction("NO_ACTION"), DisposableNumberAction = new PhoneCheckCodeParamsDisposableNumberAction("NO_ACTION"), VoipNumberAction = new PhoneCheckCodeParamsVoipNumberAction("NO_ACTION"), EnableEnrichment = true, PhoneIntelligenceScoreAction = new PhoneCheckCodeParamsPhoneIntelligenceScoreAction("NO_ACTION"), PhoneTypeRiskAction = new PhoneCheckCodeParamsPhoneTypeRiskAction("NO_ACTION"), RecentPortAction = new PhoneCheckCodeParamsRecentPortAction("NO_ACTION"), LowPhoneTrustAction = new PhoneCheckCodeParamsLowPhoneTrustAction("NO_ACTION"), EnableSocial = true, PhoneNoSocialPresenceAction = new PhoneCheckCodeParamsPhoneNoSocialPresenceAction("NO_ACTION"), FactorId = "fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", VerificationId = "11111111-2222-3333-4444-555555555555" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -79,9 +79,31 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"code\": \"123456\", \"duplicated_phone_number_action\": \"NO_ACTION\", \"disposable_number_action\": \"NO_ACTION\", \"voip_number_action\": \"NO_ACTION\", \"enable_enrichment\": true, \"phone_intelligence_score_action\": \"NO_ACTION\", \"phone_type_risk_action\": \"NO_ACTION\", \"recent_port_action\": \"NO_ACTION\", \"low_phone_trust_action\": \"NO_ACTION\", \"enable_social\": true, \"phone_no_social_presence_action\": \"NO_ACTION\", \"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"verification_id\": \"pv_ae4f1a368c7a4d259a493f6b0c2d7e55\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"code\": \"123456\", \"duplicated_phone_number_action\": \"NO_ACTION\", \"disposable_number_action\": \"NO_ACTION\", \"voip_number_action\": \"NO_ACTION\", \"enable_enrichment\": true, \"phone_intelligence_score_action\": \"NO_ACTION\", \"phone_type_risk_action\": \"NO_ACTION\", \"recent_port_action\": \"NO_ACTION\", \"low_phone_trust_action\": \"NO_ACTION\", \"enable_social\": true, \"phone_no_social_presence_action\": \"NO_ACTION\", \"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"verification_id\": \"11111111-2222-3333-4444-555555555555\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("e39cb057-92fc-4b59-b84e-02fec29a0f24", result.RequestId);
+        }
+
+        [Fact]
+        public async Task Phone_Countries_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"updated\": 1}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Countries.UpdateAsync(new PhoneCountriesUpdateRequest { Countries = new PhoneCountryUpdate[] { new PhoneCountryUpdate { Country = "TJ" } } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/countries/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"countries\": [{\"country\": \"TJ\"}]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal(1L, result.Updated);
         }
 
         [Fact]
@@ -207,6 +229,49 @@ namespace Didit.Tests.Generated
             JsonAssert.Equivalent("{\"friendly_name\": \"Work phone\", \"status\": \"disabled\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", result.FactorId);
+        }
+
+        [Fact]
+        public async Task Phone_Feedback_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(202, "{\"received\": true, \"weight\": 0.9}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Feedback.CreateAsync(new PhoneFeedbackRequest { VerificationId = "11111111-2222-3333-4444-555555555555", PhoneNumber = "+34600000012", Email = "user@example.com", Outcome = new PhoneFeedbackRequestOutcome("fraud"), Event = "chargeback", Confidence = new PhoneFeedbackRequestConfidence("low"), OccurredAt = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), Note = "sample-note" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/feedback/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"verification_id\": \"11111111-2222-3333-4444-555555555555\", \"phone_number\": \"+34600000012\", \"email\": \"user@example.com\", \"outcome\": \"fraud\", \"event\": \"chargeback\", \"confidence\": \"low\", \"occurred_at\": \"2026-01-02T03:04:05+00:00\", \"note\": \"sample-note\"}", request.BodyText);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Phone_Feedback_CreateBatch()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(207, "{\"accepted\": 1, \"results\": [{\"index\": 0, \"status\": \"accepted\", \"error\": null}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Feedback.CreateBatchAsync(new PhoneFeedbackBatchRequest { Items = new PhoneFeedbackBatchItem[] { new PhoneFeedbackBatchItem { Outcome = new PhoneFeedbackBatchItemOutcome("fraud") } } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/feedback/batch/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"items\": [{\"outcome\": \"fraud\"}]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal(1L, result.Accepted);
         }
 
         [Fact]
@@ -502,6 +567,27 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Phone_Lookups_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"lookup_id\": \"123e4567-e89b-42d3-a456-426614174001\", \"phone_number\": \"+12025550136\", \"status\": \"Approved\", \"country\": \"US\", \"line_type\": \"mobile\", \"risk_score\": 12.5, \"created_at\": \"2026-11-21T12:00:00Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Lookups.ListAsync(new PhoneLookupsListParams { PhoneNumber = "+12025550136", CreatedAfter = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), CreatedBefore = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), Limit = 20L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/lookups/", request.Path);
+            Assert.Equal("?phone_number=%2B12025550136&created_after=2026-01-02T03%3A04%3A05%2B00%3A00&created_before=2026-01-02T03%3A04%3A05%2B00%3A00&limit=20&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
         }
 
         [Fact]
@@ -839,9 +925,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"request_id\": \"e39cb057-92fc-4b59-b84e-02fec29a0f24\", \"status\": \"Success\", \"channel\": null, \"reason\": null, \"vendor_data\": \"user-1234\", \"metadata\": null}");
+            handler.Enqueue(200, "{\"request_id\": \"e39cb057-92fc-4b59-b84e-02fec29a0f24\", \"status\": \"Success\", \"channel\": null, \"reason\": null, \"vendor_data\": \"user-1234\", \"metadata\": null, \"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Phone.SendCodeAsync(new PhoneSendCodeParams { PhoneNumber = "+14155552671", VendorData = "sample-vendor_data" });
+            var result = await client.Phone.SendCodeAsync(new PhoneSendCodeParams { PhoneNumber = "+14155552671", VendorData = "sample-vendor_data", Code = "K7P2QX", CodeLength = 1L, OnConflict = new PhoneSendCodeParamsOnConflict("replace"), TrustedUser = true, ForceChallenge = true, FraudOverride = "sample-fraud_override" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -851,9 +937,50 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"vendor_data\": \"sample-vendor_data\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"vendor_data\": \"sample-vendor_data\", \"code\": \"K7P2QX\", \"code_length\": 1, \"on_conflict\": \"replace\", \"trusted_user\": true, \"force_challenge\": true, \"fraud_override\": \"sample-fraud_override\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("e39cb057-92fc-4b59-b84e-02fec29a0f24", result.RequestId);
+        }
+
+        [Fact]
+        public async Task Phone_Settings_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"verification\": {\"code_length\": 6, \"valid_minutes\": 5, \"max_attempts\": 5, \"resend_limit\": 5, \"channel_order\": [\"silent\", \"whatsapp\", \"sms\"], \"routing\": \"conversion\", \"voice\": {\"tts_voice\": \"es-ES-female-2\"}, \"email\": {\"domain_id\": \"ed_01JCH8S3\"}}, \"messages\": {\"retention_days\": 30}, \"data_region\": \"eu\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Settings.RetrieveAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/settings/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Phone_Settings_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"updated_at\": \"2026-11-21T10:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Settings.UpdateAsync(new PhoneSettingsUpdate { DataRegion = new PhoneSettingsUpdateDataRegion("eu") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/settings/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"data_region\": \"eu\"}", request.BodyText);
+            Assert.NotNull(result);
         }
 
         [Fact]
@@ -939,6 +1066,136 @@ namespace Didit.Tests.Generated
             Assert.Empty(request.Body);
             Assert.NotNull(result);
             Assert.Equal("sr_7c2d9e146a584b039e271d4f8a0b5c33", result.RegistrationId);
+        }
+
+        [Fact]
+        public async Task Phone_Verifications_Approve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\", \"status\": \"verified\", \"verified_by\": \"api\", \"verified_at\": \"2026-11-21T10:00:12Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Verifications.ApproveAsync("verification_id-1", new PhoneVerificationApproveRequest { Reason = new PhoneVerificationApproveRequestReason("own_code_check") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/verifications/verification_id-1/approve/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"reason\": \"own_code_check\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("c9b18621-9f8f-4590-a3b4-f8ebea4baa7d", result.VerificationId);
+        }
+
+        [Fact]
+        public async Task Phone_Verifications_Cancel()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\", \"status\": \"cancelled\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Verifications.CancelAsync("verification_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/verifications/verification_id-1/cancel/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("c9b18621-9f8f-4590-a3b4-f8ebea4baa7d", result.VerificationId);
+        }
+
+        [Fact]
+        public async Task Phone_Verifications_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\", \"status\": \"verified\", \"phone_number\": \"+12025550136\", \"country\": \"US\", \"attempts\": [{\"channel\": \"whatsapp\", \"status\": \"delivered\", \"network\": \"Mobile network A\", \"route\": \"Route A\", \"error\": null, \"silent_result\": null, \"sent_at\": \"2026-11-21T10:00:01Z\", \"delivered_at\": \"2026-11-21T10:00:03Z\", \"read_at\": null, \"expired_at\": null, \"charged\": true, \"price\": {\"amount\": \"0.0300\", \"carrier\": null, \"fee\": null, \"final\": true}}], \"reference\": \"signup-48221\", \"tags\": {\"flow\": \"signup\"}, \"created_at\": \"2026-11-21T10:00:00Z\", \"verified_at\": \"2026-11-21T10:00:12Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Verifications.ListAsync(new PhoneVerificationsListParams { Status = new PhoneVerificationsListParamsStatus("pending"), Channel = new PhoneChannel("silent"), PhoneNumber = "+34600000012", Reference = "signup-48221", Tag = "flow:signup", CreatedAfter = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), CreatedBefore = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), Limit = 20L, Offset = 1L, Format = new PhoneVerificationsListParamsFormat("json") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/verifications/", request.Path);
+            Assert.Equal("?status=pending&channel=silent&phone_number=%2B34600000012&reference=signup-48221&tag=flow%3Asignup&created_after=2026-01-02T03%3A04%3A05%2B00%3A00&created_before=2026-01-02T03%3A04%3A05%2B00%3A00&limit=20&offset=1&format=json", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Phone_Verifications_Next()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\", \"channel\": \"sms\", \"status\": \"pending\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Verifications.NextAsync("verification_id-1", new PhoneVerificationNextRequest { Channel = new PhoneVerificationNextRequestChannel("silent") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/verifications/verification_id-1/next/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"channel\": \"silent\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("c9b18621-9f8f-4590-a3b4-f8ebea4baa7d", result.VerificationId);
+        }
+
+        [Fact]
+        public async Task Phone_Verifications_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\", \"status\": \"verified\", \"phone_number\": \"+12025550136\", \"country\": \"US\", \"attempts\": [{\"channel\": \"whatsapp\", \"status\": \"delivered\", \"network\": \"Mobile network A\", \"route\": \"Route A\", \"error\": null, \"silent_result\": null, \"sent_at\": \"2026-11-21T10:00:01Z\", \"delivered_at\": \"2026-11-21T10:00:03Z\", \"read_at\": null, \"expired_at\": null, \"charged\": true, \"price\": {\"amount\": \"0.0300\", \"carrier\": null, \"fee\": null, \"final\": true}}], \"reference\": \"signup-48221\", \"tags\": {\"flow\": \"signup\"}, \"created_at\": \"2026-11-21T10:00:00Z\", \"verified_at\": \"2026-11-21T10:00:12Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Verifications.RetrieveAsync("verification_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/verifications/verification_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("c9b18621-9f8f-4590-a3b4-f8ebea4baa7d", result.VerificationId);
+        }
+
+        [Fact]
+        public async Task Phone_Verifications_Retry()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"verification_id\": \"c9b18621-9f8f-4590-a3b4-f8ebea4baa7d\", \"status\": \"pending\", \"channel\": \"sms\", \"sends\": 2, \"sends_left\": 1, \"expires_at\": \"2026-11-21T10:05:00Z\", \"charged\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Verifications.RetryAsync("verification_id-1", new PhoneVerificationRetryRequest { Channel = new PhoneVerificationRetryRequestChannel("silent") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/verifications/verification_id-1/retry/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"channel\": \"silent\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("c9b18621-9f8f-4590-a3b4-f8ebea4baa7d", result.VerificationId);
+            Assert.Equal(2L, result.Sends);
         }
     }
 }

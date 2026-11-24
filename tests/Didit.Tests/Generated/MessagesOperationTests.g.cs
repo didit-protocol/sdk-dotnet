@@ -38,6 +38,109 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Messages_Capabilities_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"channels\": {\"sms\": true, \"whatsapp\": true, \"telegram\": false, \"rcs\": true, \"viber\": false, \"mms\": true}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Capabilities.RetrieveAsync(new MessagesCapabilitiesRetrieveParams { To = "+34600000012" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/capabilities/", request.Path);
+            Assert.Equal("?to=%2B34600000012", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Messages_Configurations_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"configuration_id\": \"d7e3d55d-4fc8-4bab-9710-123456789abc\", \"name\": \"Order updates\", \"from\": \"\", \"channels\": [\"sms\"], \"status_callback_url\": \"\", \"inbound_url\": \"\", \"opt_out\": {}, \"append_opt_out_line\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Configurations.CreateAsync(new MessagingConfigurationCreateRequest { Name = "Order updates", From = "sample-from", Channels = new MessagingConfigurationCreateRequestChannels[] { new MessagingConfigurationCreateRequestChannels("sms") }, StatusCallbackUrl = "sample-status_callback_url", InboundUrl = "sample-inbound_url", AppendOptOutLine = true });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/configurations/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"Order updates\", \"from\": \"sample-from\", \"channels\": [\"sms\"], \"status_callback_url\": \"sample-status_callback_url\", \"inbound_url\": \"sample-inbound_url\", \"append_opt_out_line\": true}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("d7e3d55d-4fc8-4bab-9710-123456789abc", result.ConfigurationId);
+        }
+
+        [Fact]
+        public async Task Messages_Configurations_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Messages.Configurations.DeleteAsync("configuration_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/configurations/configuration_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Messages_Configurations_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"configuration_id\": \"d7e3d55d-4fc8-4bab-9710-123456789abc\", \"name\": \"Order updates\", \"from\": \"\", \"channels\": [\"sms\"], \"status_callback_url\": \"\", \"inbound_url\": \"\", \"opt_out\": {}, \"append_opt_out_line\": true}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Configurations.ListAsync(new MessagesConfigurationsListParams { Limit = 20L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/configurations/", request.Path);
+            Assert.Equal("?limit=20&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Messages_Configurations_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"configuration_id\": \"d7e3d55d-4fc8-4bab-9710-123456789abc\", \"name\": \"Order updates\", \"from\": \"\", \"channels\": [\"whatsapp\", \"sms\"], \"status_callback_url\": \"\", \"inbound_url\": \"\", \"opt_out\": {}, \"append_opt_out_line\": true}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Configurations.UpdateAsync("configuration_id-1", new MessagingConfigurationUpdateRequest { Name = "Order updates", From = "sample-from", Channels = new MessagingConfigurationUpdateRequestChannels[] { new MessagingConfigurationUpdateRequestChannels("sms") }, StatusCallbackUrl = "sample-status_callback_url", InboundUrl = "sample-inbound_url", AppendOptOutLine = true });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/configurations/configuration_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"Order updates\", \"from\": \"sample-from\", \"channels\": [\"sms\"], \"status_callback_url\": \"sample-status_callback_url\", \"inbound_url\": \"sample-inbound_url\", \"append_opt_out_line\": true}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("d7e3d55d-4fc8-4bab-9710-123456789abc", result.ConfigurationId);
+        }
+
+        [Fact]
         public async Task Messages_Consent_Retrieve()
         {
             var handler = new MockHttpHandler();
