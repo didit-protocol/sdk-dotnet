@@ -50,6 +50,24 @@ namespace Didit
         [JsonPropertyName("metadata")]
         public JsonElement? Metadata { get; init; }
 
+        /// <summary>
+        /// UUID of the phone verification. Pass this value to check the code, retrieve the record, cancel, change channels, approve or retry. A same-window retry keeps this UUID. Use <c>request_id</c> to retrieve the session decision.
+        /// </summary>
+        [JsonPropertyName("verification_id")]
+        public string? VerificationId { get; init; }
+
+        /// <summary>
+        /// Seconds the code stays valid. A new send returns the full configured window; a same-window retry or a <c>reuse</c> of a pending verification returns the seconds left, because a retry keeps the expiry of the first send.
+        /// </summary>
+        [JsonPropertyName("expires_in")]
+        public long? ExpiresIn { get; init; }
+
+        /// <summary>
+        /// The fraud decision for this send.
+        /// </summary>
+        [JsonPropertyName("fraud")]
+        public PhoneVerificationSendResponseFraud? Fraud { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

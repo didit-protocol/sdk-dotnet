@@ -20,11 +20,19 @@ namespace Didit.Resources
         internal MessagesResource(MessagesRawResource raw)
         {
             _raw = raw;
+            Capabilities = new MessagesCapabilitiesResource(raw.Capabilities);
+            Configurations = new MessagesConfigurationsResource(raw.Configurations);
             Consent = new MessagesConsentResource(raw.Consent);
             Conversations = new MessagesConversationsResource(raw.Conversations);
             Rules = new MessagesRulesResource(raw.Rules);
             Templates = new MessagesTemplatesResource(raw.Templates);
         }
+
+        /// <summary>The <c>messages.capabilities</c> resource.</summary>
+        public MessagesCapabilitiesResource Capabilities { get; }
+
+        /// <summary>The <c>messages.configurations</c> resource.</summary>
+        public MessagesConfigurationsResource Configurations { get; }
 
         /// <summary>The <c>messages.consent</c> resource.</summary>
         public MessagesConsentResource Consent { get; }
@@ -204,11 +212,19 @@ namespace Didit.Resources
         internal MessagesRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Capabilities = new MessagesCapabilitiesRawResource(pipeline);
+            Configurations = new MessagesConfigurationsRawResource(pipeline);
             Consent = new MessagesConsentRawResource(pipeline);
             Conversations = new MessagesConversationsRawResource(pipeline);
             Rules = new MessagesRulesRawResource(pipeline);
             Templates = new MessagesTemplatesRawResource(pipeline);
         }
+
+        /// <summary>The <c>messages.capabilities</c> resource.</summary>
+        public MessagesCapabilitiesRawResource Capabilities { get; }
+
+        /// <summary>The <c>messages.configurations</c> resource.</summary>
+        public MessagesConfigurationsRawResource Configurations { get; }
 
         /// <summary>The <c>messages.consent</c> resource.</summary>
         public MessagesConsentRawResource Consent { get; }

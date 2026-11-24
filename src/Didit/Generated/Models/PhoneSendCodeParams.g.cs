@@ -48,6 +48,48 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<object?> Metadata { get; set; }
 
+        /// <summary>
+        /// Supply 4 to 10 letters and digits, such as K7P2QX. Letters match in either case. Your code takes precedence over <c>code_length</c> and <c>options.code_size</c>. Choose a channel that supports caller-supplied codes, such as WhatsApp. If the allowed channels cannot carry your code, the send returns <c>400 custom_code_unavailable</c>.
+        /// </summary>
+        [JsonPropertyName("code")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> Code { get; set; }
+
+        /// <summary>
+        /// 4 to 10 digits, for this request. Wins over <c>options.code_size</c> when both are sent; ignored when <c>code</c> is sent.
+        /// </summary>
+        [JsonPropertyName("code_length")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> CodeLength { get; set; }
+
+        /// <summary>
+        /// A code is still valid: <c>replace</c> (default) sends a new one, <c>reuse</c> returns it without sending, <c>retry</c> sends the same code again in the same window (up to two retries, three sends total), <c>reject</c> answers <c>409 verification_in_progress</c>. For <c>reuse</c> and <c>retry</c>, if the pending verification does not meet the requested channel or challenge policy, the send starts a new verification. A retry also starts a new verification if the requested channel differs from the last delivery channel. Both <c>reuse</c> and <c>retry</c> start a new verification if the caller supplies a different code.
+        /// </summary>
+        [JsonPropertyName("on_conflict")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<PhoneSendCodeParamsOnConflict> OnConflict { get; set; }
+
+        /// <summary>
+        /// Your server vouches for this user: this one request goes past your fraud rules (velocity limits, risk score, network blocks, policies). Needs a <c>fraud_override</c> signed for it; a block list still stops the number.
+        /// </summary>
+        [JsonPropertyName("trusted_user")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> TrustedUser { get; set; }
+
+        /// <summary>
+        /// Your server asks for a challenge on this request: Didit uses only fraud-resistant channels (<c>fraud.channels_allowed</c>) and records it as challenged by you; it is not reported or scored as fraud.
+        /// </summary>
+        [JsonPropertyName("force_challenge")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> ForceChallenge { get; set; }
+
+        /// <summary>
+        /// A token signed for this phone number and expiry, in the form <c>v1.&lt;expires_at&gt;.&lt;signature&gt;</c>. <c>&lt;expires_at&gt;</c> is the Unix time in seconds, at most 5 minutes ahead. <c>&lt;signature&gt;</c> is the base64url encoding, without padding, of the HMAC-SHA256 of the UTF-8 string <c>v1\n&lt;phone_number&gt;\n&lt;expires_at&gt;</c> (the number in E.164 format, with a newline between each value), keyed with your application's webhook signing secret. It lets the request past a temporary network block, or with <c>trusted_user</c> past your fraud rules. An unsigned token, a past expiry, a wrong signature or one signed for another number is refused with <c>403 invalid_fraud_override</c>.
+        /// </summary>
+        [JsonPropertyName("fraud_override")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FraudOverride { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

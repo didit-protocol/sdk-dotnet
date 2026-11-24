@@ -20,18 +20,29 @@ namespace Didit.Resources
         internal PhoneResource(PhoneRawResource raw)
         {
             _raw = raw;
+            Countries = new PhoneCountriesResource(raw.Countries);
             Factors = new PhoneFactorsResource(raw.Factors);
+            Feedback = new PhoneFeedbackResource(raw.Feedback);
             Fraud = new PhoneFraudResource(raw.Fraud);
             LineTypeOverrides = new PhoneLineTypeOverridesResource(raw.LineTypeOverrides);
             Lists = new PhoneListsResource(raw.Lists);
+            Lookups = new PhoneLookupsResource(raw.Lookups);
             Network = new PhoneNetworkResource(raw.Network);
             RateLimits = new PhoneRateLimitsResource(raw.RateLimits);
             SdkKeys = new PhoneSdkKeysResource(raw.SdkKeys);
+            Settings = new PhoneSettingsResource(raw.Settings);
             Silent = new PhoneSilentResource(raw.Silent);
+            Verifications = new PhoneVerificationsResource(raw.Verifications);
         }
+
+        /// <summary>The <c>phone.countries</c> resource.</summary>
+        public PhoneCountriesResource Countries { get; }
 
         /// <summary>The <c>phone.factors</c> resource.</summary>
         public PhoneFactorsResource Factors { get; }
+
+        /// <summary>The <c>phone.feedback</c> resource.</summary>
+        public PhoneFeedbackResource Feedback { get; }
 
         /// <summary>The <c>phone.fraud</c> resource.</summary>
         public PhoneFraudResource Fraud { get; }
@@ -42,6 +53,9 @@ namespace Didit.Resources
         /// <summary>The <c>phone.lists</c> resource.</summary>
         public PhoneListsResource Lists { get; }
 
+        /// <summary>The <c>phone.lookups</c> resource.</summary>
+        public PhoneLookupsResource Lookups { get; }
+
         /// <summary>The <c>phone.network</c> resource.</summary>
         public PhoneNetworkResource Network { get; }
 
@@ -51,8 +65,14 @@ namespace Didit.Resources
         /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
         public PhoneSdkKeysResource SdkKeys { get; }
 
+        /// <summary>The <c>phone.settings</c> resource.</summary>
+        public PhoneSettingsResource Settings { get; }
+
         /// <summary>The <c>phone.silent</c> resource.</summary>
         public PhoneSilentResource Silent { get; }
+
+        /// <summary>The <c>phone.verifications</c> resource.</summary>
+        public PhoneVerificationsResource Verifications { get; }
 
         /// <summary>
         /// Risk-score a phone number
@@ -114,9 +134,9 @@ namespace Didit.Resources
         /// <remarks>
         /// Verify the OTP delivered by [<c>POST /v3/phone/send/</c>](/standalone-apis/phone-send) and get the final verification result plus phone intelligence: carrier name and line type, virtual (VoIP) and disposable flags, and duplicate usage of the number across your sessions.
         /// <para/>
-        /// How the check finds the verification. Matching is by your application plus the E.164 <c>phone_number</c> — <c>request_id</c> is not an input. The most recent pending verification created within the last 5 minutes is checked. If there is none (never sent, already finalized, or older than 5 minutes) the endpoint returns <c>200</c> with <c>status: "Expired or Not Found"</c>.
+        /// How the check finds the verification. Send the code and the E.164 <c>phone_number</c>: the number selects its latest pending verification in your application. Add the <c>verification_id</c> the send returned to check that specific verification: Didit then checks it and takes its number, so the <c>phone_number</c> of the request is not used. <c>phone_number</c> stays a required field of the request. An ID that is not one of your application's checkable verifications (unknown, cancelled, or of another application) is ignored, and the check falls back to the latest pending verification of <c>phone_number</c>. A finalized or expired verification, or no matching verification, returns <c>200</c> with <c>status: "Expired or Not Found"</c>.
         /// <para/>
-        /// Attempt budget. Each verification allows 3 code attempts. The first two wrong codes return <c>status: "Failed"</c> with the attempts remaining and <c>phone: null</c>; the third wrong code finalizes the verification as <c>Declined</c> with a <c>VERIFICATION_CODE_ATTEMPTS_EXCEEDED</c> warning and returns the full phone report.
+        /// Attempt budget for delivered codes. Your application's <c>verification.max_attempts</c> setting (3 to 10) sets how many wrong codes a verification takes, and it defaults to 5 on v3. With that default, the first four wrong codes return <c>Failed</c> with the attempts remaining and <c>phone: null</c>, and the fifth returns <c>Declined</c> with the full phone report and a <c>VERIFICATION_CODE_ATTEMPTS_EXCEEDED</c> warning. A verification started in a hosted flow uses the workflow's own limit instead.
         /// <para/>
         /// Outcomes. <c>Approved</c> — correct code and no declining risk. <c>Declined</c> — terminal: the code was correct but a declining risk matched (a <c>DECLINE</c> action below, a blocklisted or high-risk number), or the attempt budget was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — nothing to check. On <c>Approved</c>/<c>Declined</c> the <c>request_id</c> equals the send's <c>request_id</c> (the session id) and <c>phone</c> carries the full report (<c>carrier</c>, <c>is_virtual</c>, <c>is_disposable</c>, <c>warnings</c>, <c>lifecycle</c>, <c>matches</c>); on <c>Failed</c> and <c>Expired or Not Found</c> the <c>request_id</c> is a one-off random UUID.
         /// <para/>
@@ -126,9 +146,9 @@ namespace Didit.Resources
         /// <para/>
         /// Session persistence. A finalized check updates the session created by the send (visible in the Business Console, queryable via <c>GET /v3/session/{sessionId}/decision/</c>) and fires a <c>status.updated</c> webhook.
         /// <para/>
-        /// Sandbox. Sandbox API keys skip all processing: any well-formed code (4–8 digits, <c>123456</c> included) returns a static <c>Approved</c> payload with a simplified flat <c>phone</c> object (<c>status</c>, <c>phone_number</c>, <c>country_code</c>, <c>carrier_name</c>, <c>line_type</c>, <c>flags</c>); malformed input still returns <c>400</c>. Nothing is persisted.
+        /// Sandbox. Sandbox API keys skip all processing and charge nothing; malformed input still returns <c>400</c>. In a sandbox application, use the code <c>123456</c> or the fixed code of a sandbox test number. Today the sandbox check also approves any other well-formed code for a number that has no fixed code; that is being tightened to the two codes above, so do not rely on it.
         /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
+        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. A missing <c>x-api-key</c> header, or a key that is scoped and does not carry write access to <c>sessions</c>, returns <c>403</c>; a wrong, revoked or expired key returns <c>401</c>.
         /// <para/>
         /// Rate limits. Shared write budget of 300 requests/min per API key, plus the upstream anti-abuse cap of 4 attempts per number per hour; exceeding either returns <c>429</c>.
         /// <para/>
@@ -192,7 +212,9 @@ namespace Didit.Resources
         /// <remarks>
         /// Send a one-time passcode (OTP) to a phone number over WhatsApp, SMS, or another supported channel, then verify it with [<c>POST /v3/phone/check/</c>](/standalone-apis/phone-check).
         /// <para/>
-        /// How send and check pair up. Verification state is keyed by your application plus the E.164 <c>phone_number</c> — the check call does not take <c>request_id</c>. Each new send creates a pending verification that lives for 5 minutes: call the check with the same number and the code the user received before the window closes. Calling send again for the same number while a verification is pending re-sends a code for that same verification (<c>status: "Retry"</c>, same <c>request_id</c>). At most one retry is attached this way (two sends total); a further send starts a fresh verification with a new <c>request_id</c>. The 5-minute window is measured from the first send and is not extended by retries.
+        /// How send and check pair up. Send the same E.164 <c>phone_number</c> and the code to check the latest pending verification of that number in your application. Add the <c>verification_id</c> the send returned to check that specific verification: Didit then checks it and takes its number, so the <c>phone_number</c> of the request is not used. <c>phone_number</c> stays a required field of the request. An ID that is not one of your application's checkable verifications (unknown, cancelled, or of another application) is ignored, and the check falls back to the latest pending verification of <c>phone_number</c>. The verification window defaults to 5 minutes. Calling send again for the same number while a verification is pending follows <c>on_conflict</c>: by default (<c>replace</c>) it starts a fresh verification with a new <c>request_id</c>; <c>retry</c> re-sends a code for the same verification (<c>status: "Retry"</c>, same <c>request_id</c> and <c>verification_id</c>), at most twice (three sends total, the first included, shared with <c>POST /v3/phone/verifications/{verification_id}/retry/</c>); <c>reuse</c> returns the pending verification without sending; <c>reject</c> answers <c>409 verification_in_progress</c>. For <c>reuse</c> and <c>retry</c>, if the pending verification does not meet the requested channel or challenge policy, the send starts a new verification. A retry also starts a new verification if the requested channel differs from the last delivery channel. Both <c>reuse</c> and <c>retry</c> start a new verification if the caller supplies a different code. A same-window retry keeps the expiry from the first send.
+        /// <para/>
+        /// Conflict, challenge and code options. <c>on_conflict</c> picks what happens while a code is still valid: <c>replace</c> (default) sends a new one, <c>reuse</c> returns it without sending, <c>retry</c> sends the same code again in the same window, up to two retries (three sends total, the first included), and <c>reject</c> answers <c>409 verification_in_progress</c>. <c>force_challenge</c> restricts the send to <c>fraud.channels_allowed</c> and records the challenge as yours, not as fraud. <c>trusted_user</c> needs a <c>fraud_override</c> signed for this number with your application's webhook signing secret; an unsigned or wrongly signed one returns <c>403 invalid_fraud_override</c>. <c>code</c> sets your own 4 to 10 letter-and-digit code and <c>code_length</c> the length of a Didit-made numeric code; <c>code</c> wins over <c>code_length</c>, and <c>code_length</c> wins over <c>options.code_size</c>.
         /// <para/>
         /// Delivery channels. <c>options.preferred_channel</c> selects the channel (<c>whatsapp</c> by default; <c>sms</c>, <c>telegram</c>, <c>voice</c>, <c>rcs</c>, <c>viber</c>, and <c>zalo</c> are also supported). When the preferred channel is unavailable for the destination country or number, delivery automatically falls back to SMS — the send still reports <c>Success</c>, and the channel actually used is reported by the check response (<c>phone.verification_method</c> and the <c>lifecycle</c> events).
         /// <para/>
@@ -206,9 +228,9 @@ namespace Didit.Resources
         /// <para/>
         /// Session persistence. Every new verification is persisted as an API-type session: <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c>, the verification appears in the Business Console, and <c>status.updated</c> webhooks fire as it progresses.
         /// <para/>
-        /// Sandbox. Sandbox API keys skip delivery and billing: after request validation (malformed input still returns <c>400</c>), the endpoint returns a static <c>Success</c> payload with a random <c>request_id</c>; no message is sent and nothing is persisted. Use code <c>123456</c> on the sandbox check.
+        /// Sandbox. A sandbox application's send takes the same path as a live one: the same validation, <c>on_conflict</c> handling, channel policy and refusals (an unsupported destination included) and the same answer, with a <c>verification_id</c> you can read, cancel or approve. Only the delivery is simulated: no message is sent and nothing is charged. In a sandbox application, use the code <c>123456</c> or the fixed code of a sandbox test number. Today the sandbox check also approves any other well-formed code for a number that has no fixed code; that is being tightened to the two codes above, so do not rely on it.
         /// <para/>
-        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. Missing or invalid credentials return <c>403</c> (<c>{"detail": "You do not have permission to perform this action."}</c>) — this API never returns <c>401</c>.
+        /// Authentication. Send your application's API key in the <c>x-api-key</c> header. A missing <c>x-api-key</c> header, or a key that is scoped and does not carry write access to <c>sessions</c>, returns <c>403</c>; a wrong, revoked or expired key returns <c>401</c>.
         /// <para/>
         /// Rate limits. Shared write budget of 300 requests/min per API key across all POST/PATCH/DELETE endpoints, plus an anti-abuse cap of 4 send attempts per phone number per hour; exceeding either returns <c>429</c>.
         /// <para/>
@@ -233,18 +255,29 @@ namespace Didit.Resources
         internal PhoneRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Countries = new PhoneCountriesRawResource(pipeline);
             Factors = new PhoneFactorsRawResource(pipeline);
+            Feedback = new PhoneFeedbackRawResource(pipeline);
             Fraud = new PhoneFraudRawResource(pipeline);
             LineTypeOverrides = new PhoneLineTypeOverridesRawResource(pipeline);
             Lists = new PhoneListsRawResource(pipeline);
+            Lookups = new PhoneLookupsRawResource(pipeline);
             Network = new PhoneNetworkRawResource(pipeline);
             RateLimits = new PhoneRateLimitsRawResource(pipeline);
             SdkKeys = new PhoneSdkKeysRawResource(pipeline);
+            Settings = new PhoneSettingsRawResource(pipeline);
             Silent = new PhoneSilentRawResource(pipeline);
+            Verifications = new PhoneVerificationsRawResource(pipeline);
         }
+
+        /// <summary>The <c>phone.countries</c> resource.</summary>
+        public PhoneCountriesRawResource Countries { get; }
 
         /// <summary>The <c>phone.factors</c> resource.</summary>
         public PhoneFactorsRawResource Factors { get; }
+
+        /// <summary>The <c>phone.feedback</c> resource.</summary>
+        public PhoneFeedbackRawResource Feedback { get; }
 
         /// <summary>The <c>phone.fraud</c> resource.</summary>
         public PhoneFraudRawResource Fraud { get; }
@@ -255,6 +288,9 @@ namespace Didit.Resources
         /// <summary>The <c>phone.lists</c> resource.</summary>
         public PhoneListsRawResource Lists { get; }
 
+        /// <summary>The <c>phone.lookups</c> resource.</summary>
+        public PhoneLookupsRawResource Lookups { get; }
+
         /// <summary>The <c>phone.network</c> resource.</summary>
         public PhoneNetworkRawResource Network { get; }
 
@@ -264,8 +300,14 @@ namespace Didit.Resources
         /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
         public PhoneSdkKeysRawResource SdkKeys { get; }
 
+        /// <summary>The <c>phone.settings</c> resource.</summary>
+        public PhoneSettingsRawResource Settings { get; }
+
         /// <summary>The <c>phone.silent</c> resource.</summary>
         public PhoneSilentRawResource Silent { get; }
+
+        /// <summary>The <c>phone.verifications</c> resource.</summary>
+        public PhoneVerificationsRawResource Verifications { get; }
 
         /// <summary>
         /// Risk-score a phone number
