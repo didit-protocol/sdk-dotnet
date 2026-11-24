@@ -64,7 +64,7 @@ namespace Didit.Resources
         /// Finalize report
         /// </summary>
         /// <remarks>
-        /// Re-validate, then render the goAML XML and PDF and upload both to S3. On SAR/STR/TFR reports, this also moves the case's transaction alerts from Pending SAR to SAR filed. FFR and PNMR reports do not move alerts.
+        /// Re-validate, then render the goAML XML and PDF and upload both to S3. On SAR/STR/TFR reports, this also moves the case's transaction alerts from Pending SAR to SAR filed. FFR and PNMR reports do not move alerts. A report filed on a case answers 403 <c>plan_upgrade_required</c> when the plan or the release does not include Cases, like the case's own routes; a standalone report is not refused.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/finalize/</c> (<c>regulatory_reports.finalize</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -101,7 +101,7 @@ namespace Didit.Resources
         /// Get report
         /// </summary>
         /// <remarks>
-        /// Retrieve a regulatory report.
+        /// Retrieve a regulatory report. A report filed on a case answers 403 <c>plan_upgrade_required</c> when the plan or the release does not include Cases, like the case's own routes; a standalone report is not refused.
         /// <para/>
         /// <c>GET /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.retrieve</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -119,7 +119,7 @@ namespace Didit.Resources
         /// Get report download URL
         /// </summary>
         /// <remarks>
-        /// Mint a presigned URL for a finalized report's goAML XML or PDF.
+        /// Mint a presigned URL for a finalized report's goAML XML or PDF. A report filed on a case answers 403 <c>plan_upgrade_required</c> when the plan or the release does not include Cases, like the case's own routes; a standalone report is not refused.
         /// <para/>
         /// <c>GET /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/download-url/</c> (<c>regulatory_reports.retrieve_download_url</c>).
         /// Application-scoped: uses <see cref="DiditClientOptions.OrganizationId"/> and <see cref="DiditClientOptions.ApplicationId"/>.
@@ -138,7 +138,7 @@ namespace Didit.Resources
         /// Update report
         /// </summary>
         /// <remarks>
-        /// Edit a draft or validated report's fields. Finalized reports cannot be edited (409).
+        /// Edit a draft or validated report's fields. Finalized reports cannot be edited (409). A report filed on a case answers 403 <c>plan_upgrade_required</c> when the plan or the release does not include Cases, like the case's own routes; a standalone report is not refused.
         /// <para/>
         /// <c>PATCH /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/</c> (<c>regulatory_reports.update</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
@@ -158,7 +158,7 @@ namespace Didit.Resources
         /// Validate report
         /// </summary>
         /// <remarks>
-        /// Check the report against the obligatory goAML header fields (reporting entity ID, submission code, local currency, action taken, submission date), plus at least one attached transaction and a 2-letter jurisdiction, without generating any files. For jurisdiction AE, once those pass, the report's goAML XML is also checked against the UAE FIU's goAML XML schema and each problem is returned as a field and a message; finalize refuses a report that fails. FFR and PNMR reports need no attached transaction: they require the case to have a subject, otherwise validation_errors contains an error with field <c>subject</c>. Also stores the result on the report: validation_errors and validated_at are updated, and a non-finalized report's status moves to VALIDATED (no errors) or back to DRAFT (errors).
+        /// Check the report against the obligatory goAML header fields (reporting entity ID, submission code, local currency, action taken, submission date), plus at least one attached transaction and a 2-letter jurisdiction, without generating any files. For jurisdiction AE, once those pass, the report's goAML XML is also checked against the UAE FIU's goAML XML schema and each problem is returned as a field and a message; finalize refuses a report that fails. FFR and PNMR reports need no attached transaction: they require the case to have a subject, otherwise validation_errors contains an error with field <c>subject</c>. Also stores the result on the report: validation_errors and validated_at are updated, and a non-finalized report's status moves to VALIDATED (no errors) or back to DRAFT (errors). A report filed on a case answers 403 <c>plan_upgrade_required</c> when the plan or the release does not include Cases, like the case's own routes; a standalone report is not refused.
         /// <para/>
         /// <c>POST /v3/organization/{organization_id}/application/{application_id}/regulatory-reports/{report_uuid}/validate/</c> (<c>regulatory_reports.validate</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
