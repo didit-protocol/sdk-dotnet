@@ -20,6 +20,7 @@ namespace Didit.Resources
         internal PhoneResource(PhoneRawResource raw)
         {
             _raw = raw;
+            Balance = new PhoneBalanceResource(raw.Balance);
             Countries = new PhoneCountriesResource(raw.Countries);
             Factors = new PhoneFactorsResource(raw.Factors);
             Feedback = new PhoneFeedbackResource(raw.Feedback);
@@ -29,11 +30,17 @@ namespace Didit.Resources
             Lookups = new PhoneLookupsResource(raw.Lookups);
             Network = new PhoneNetworkResource(raw.Network);
             RateLimits = new PhoneRateLimitsResource(raw.RateLimits);
+            SandboxNumbers = new PhoneSandboxNumbersResource(raw.SandboxNumbers);
             SdkKeys = new PhoneSdkKeysResource(raw.SdkKeys);
             Settings = new PhoneSettingsResource(raw.Settings);
             Silent = new PhoneSilentResource(raw.Silent);
+            Stats = new PhoneStatsResource(raw.Stats);
             Verifications = new PhoneVerificationsResource(raw.Verifications);
+            Voices = new PhoneVoicesResource(raw.Voices);
         }
+
+        /// <summary>The <c>phone.balance</c> resource.</summary>
+        public PhoneBalanceResource Balance { get; }
 
         /// <summary>The <c>phone.countries</c> resource.</summary>
         public PhoneCountriesResource Countries { get; }
@@ -62,6 +69,9 @@ namespace Didit.Resources
         /// <summary>The <c>phone.rate_limits</c> resource.</summary>
         public PhoneRateLimitsResource RateLimits { get; }
 
+        /// <summary>The <c>phone.sandbox_numbers</c> resource.</summary>
+        public PhoneSandboxNumbersResource SandboxNumbers { get; }
+
         /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
         public PhoneSdkKeysResource SdkKeys { get; }
 
@@ -71,8 +81,14 @@ namespace Didit.Resources
         /// <summary>The <c>phone.silent</c> resource.</summary>
         public PhoneSilentResource Silent { get; }
 
+        /// <summary>The <c>phone.stats</c> resource.</summary>
+        public PhoneStatsResource Stats { get; }
+
         /// <summary>The <c>phone.verifications</c> resource.</summary>
         public PhoneVerificationsResource Verifications { get; }
+
+        /// <summary>The <c>phone.voices</c> resource.</summary>
+        public PhoneVoicesResource Voices { get; }
 
         /// <summary>
         /// Risk-score a phone number
@@ -146,7 +162,7 @@ namespace Didit.Resources
         /// <para/>
         /// Session persistence. A finalized check updates the session created by the send (visible in the Business Console, queryable via <c>GET /v3/session/{sessionId}/decision/</c>) and fires a <c>status.updated</c> webhook.
         /// <para/>
-        /// Sandbox. Sandbox API keys skip all processing and charge nothing; malformed input still returns <c>400</c>. In a sandbox application, use the code <c>123456</c> or the fixed code of a sandbox test number. Today the sandbox check also approves any other well-formed code for a number that has no fixed code; that is being tightened to the two codes above, so do not rely on it.
+        /// Sandbox. Sandbox API keys skip all processing and charge nothing; malformed input still returns <c>400</c>. A number you registered with <c>POST /v3/phone/sandbox/numbers/</c> answers by its outcome: with <c>verified</c> or <c>silent_fallback</c> it accepts the fixed code it was registered with (any well-formed code when it has none), a wrong code answers <c>Failed</c> and the last attempt <c>Declined</c>; <c>silent_match</c> answers <c>Approved</c>; <c>not_delivered</c>, <c>blocked</c> and <c>silent_mismatch</c> answer <c>Declined</c>; <c>expired</c> answers <c>Expired or Not Found</c>. For any other number, the code is <c>123456</c>, or the <c>code</c> your send set; any other code answers <c>Failed</c>, and the last attempt <c>Declined</c>.
         /// <para/>
         /// Authentication. Send your application's API key in the <c>x-api-key</c> header. A missing <c>x-api-key</c> header, or a key that is scoped and does not carry write access to <c>sessions</c>, returns <c>403</c>; a wrong, revoked or expired key returns <c>401</c>.
         /// <para/>
@@ -222,13 +238,13 @@ namespace Didit.Resources
         /// <para/>
         /// Branding. SMS codes carry your application's SMS sender name, set in the Business Console, at no extra cost. Pass <c>options.sms_sender_name</c> to sign one code with another name, or <c>options.use_white_label_customization: true</c> to fall back to your white-label public name when no sender name is set. WhatsApp codes use a fixed message; connect your own WhatsApp Business number in the Business Console to send them from your business name and number, billed at the Didit fee only.
         /// <para/>
-        /// Send statuses. <c>Success</c> — OTP sent for a new verification; <c>Retry</c> — OTP re-sent for the pending verification; <c>Blocked</c> — the anti-fraud layer refused to send (see <c>reason</c>, e.g. <c>repeated_attempts</c>, <c>suspicious</c>, <c>spam</c>). A <c>Blocked</c> send immediately finalizes the verification as <c>Declined</c> with a high-risk warning, so a follow-up check returns <c>Expired or Not Found</c>.
+        /// Send statuses. <c>Success</c> — OTP sent for a new verification; <c>Retry</c> — OTP re-sent for the pending verification; <c>Blocked</c> — the anti-fraud layer refused to send (see <c>reason</c>, e.g. <c>repeated_attempts</c>, <c>suspicious</c>, <c>spam</c>). A <c>Blocked</c> send immediately finalizes the verification as <c>Declined</c> with a high-risk warning, so a follow-up check returns <c>Expired or Not Found</c>. A sandbox test number registered as <c>blocked</c> is the exception: its send answers <c>Blocked</c> and its check answers <c>Declined</c>.
         /// <para/>
         /// Billing. The price depends on the destination country and the channel that actually delivers the message — see [Phone Verification Pricing](/getting-started/phone-verification-pricing). Only <c>Blocked</c> sends are guaranteed free: any other unbilled send attempt is charged at verification finalization or expiration, even if delivery was never confirmed or the delivery provider reported the message undeliverable. Checks are always free. As an anti-abuse measure, phone verification is disabled until your organization has a paid plan or makes its first top-up (<c>403</c>).
         /// <para/>
         /// Session persistence. Every new verification is persisted as an API-type session: <c>request_id</c> is a real session id you can pass to <c>GET /v3/session/{sessionId}/decision/</c>, the verification appears in the Business Console, and <c>status.updated</c> webhooks fire as it progresses.
         /// <para/>
-        /// Sandbox. A sandbox application's send takes the same path as a live one: the same validation, <c>on_conflict</c> handling, channel policy and refusals (an unsupported destination included) and the same answer, with a <c>verification_id</c> you can read, cancel or approve. Only the delivery is simulated: no message is sent and nothing is charged. In a sandbox application, use the code <c>123456</c> or the fixed code of a sandbox test number. Today the sandbox check also approves any other well-formed code for a number that has no fixed code; that is being tightened to the two codes above, so do not rely on it.
+        /// Sandbox. A sandbox application's send takes the same path as a live one: the same validation, <c>on_conflict</c> handling, channel policy and refusals (an unsupported destination included) and the same answer, with a <c>verification_id</c> you can read, cancel or approve. Only the delivery is simulated: no message is sent and nothing is charged. A number you registered with <c>POST /v3/phone/sandbox/numbers/</c> plays the outcome it was registered with: <c>blocked</c> answers <c>Blocked</c>, every other outcome answers <c>Success</c>, and the outcomes that end the verification at send time (<c>not_delivered</c>, <c>silent_match</c>, <c>silent_mismatch</c>) settle it. For any other number, check with <c>123456</c>, or with the <c>code</c> your send set.
         /// <para/>
         /// Authentication. Send your application's API key in the <c>x-api-key</c> header. A missing <c>x-api-key</c> header, or a key that is scoped and does not carry write access to <c>sessions</c>, returns <c>403</c>; a wrong, revoked or expired key returns <c>401</c>.
         /// <para/>
@@ -245,6 +261,30 @@ namespace Didit.Resources
             var response = await _raw.SendCodeAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
+
+        /// <summary>
+        /// Validate and format a phone number
+        /// </summary>
+        /// <remarks>
+        /// Check that a number can exist and return it formatted, without looking anything up: <c>valid</c>, <c>format.e164</c>, <c>format.national</c> and <c>country</c>. Send the number in international format, or a national number with <c>country</c>.
+        /// <para/>
+        /// If the number parses but is invalid for its numbering plan, the response is <c>200</c> with <c>valid: false</c> and both formats. Validation and formatting are free: <c>charged</c> is always <c>false</c>.
+        /// <para/>
+        /// Errors. <c>400 invalid_phone_number</c>: not a number at all.
+        /// <para/>
+        /// A scoped API key needs <c>phone: write</c>.
+        /// <para/>
+        /// <c>POST /v3/phone/validate/</c> (<c>phone.validate</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<PhoneValidateResponse> ValidateAsync(PhoneValidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.ValidateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
     }
 
     /// <summary>The <c>phone</c> resource, returning raw HTTP responses (<see cref="DiditResponse{T}"/>).</summary>
@@ -255,6 +295,7 @@ namespace Didit.Resources
         internal PhoneRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Balance = new PhoneBalanceRawResource(pipeline);
             Countries = new PhoneCountriesRawResource(pipeline);
             Factors = new PhoneFactorsRawResource(pipeline);
             Feedback = new PhoneFeedbackRawResource(pipeline);
@@ -264,11 +305,17 @@ namespace Didit.Resources
             Lookups = new PhoneLookupsRawResource(pipeline);
             Network = new PhoneNetworkRawResource(pipeline);
             RateLimits = new PhoneRateLimitsRawResource(pipeline);
+            SandboxNumbers = new PhoneSandboxNumbersRawResource(pipeline);
             SdkKeys = new PhoneSdkKeysRawResource(pipeline);
             Settings = new PhoneSettingsRawResource(pipeline);
             Silent = new PhoneSilentRawResource(pipeline);
+            Stats = new PhoneStatsRawResource(pipeline);
             Verifications = new PhoneVerificationsRawResource(pipeline);
+            Voices = new PhoneVoicesRawResource(pipeline);
         }
+
+        /// <summary>The <c>phone.balance</c> resource.</summary>
+        public PhoneBalanceRawResource Balance { get; }
 
         /// <summary>The <c>phone.countries</c> resource.</summary>
         public PhoneCountriesRawResource Countries { get; }
@@ -297,6 +344,9 @@ namespace Didit.Resources
         /// <summary>The <c>phone.rate_limits</c> resource.</summary>
         public PhoneRateLimitsRawResource RateLimits { get; }
 
+        /// <summary>The <c>phone.sandbox_numbers</c> resource.</summary>
+        public PhoneSandboxNumbersRawResource SandboxNumbers { get; }
+
         /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
         public PhoneSdkKeysRawResource SdkKeys { get; }
 
@@ -306,8 +356,14 @@ namespace Didit.Resources
         /// <summary>The <c>phone.silent</c> resource.</summary>
         public PhoneSilentRawResource Silent { get; }
 
+        /// <summary>The <c>phone.stats</c> resource.</summary>
+        public PhoneStatsRawResource Stats { get; }
+
         /// <summary>The <c>phone.verifications</c> resource.</summary>
         public PhoneVerificationsRawResource Verifications { get; }
+
+        /// <summary>The <c>phone.voices</c> resource.</summary>
+        public PhoneVoicesRawResource Voices { get; }
 
         /// <summary>
         /// Risk-score a phone number
@@ -431,6 +487,27 @@ namespace Didit.Resources
             };
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<PhoneVerificationSendResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validate and format a phone number
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.ValidateAsync"/>.</remarks>
+        public Task<DiditResponse<PhoneValidateResponse>> ValidateAsync(PhoneValidateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/phone/validate/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<PhoneValidateResponse>(request, requestOptions, cancellationToken);
         }
     }
 }

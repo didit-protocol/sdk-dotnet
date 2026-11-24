@@ -16,6 +16,28 @@ namespace Didit.Tests.Generated
     public sealed class WebhooksOperationTests
     {
         [Fact]
+        public async Task Webhooks_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"webhook_id\": \"8f14e45f-ceea-467f-a8d4-6f2b1c9b0d11\", \"secret\": \"tno2NTeRC1ZK3sBOYlBJDyEzBVENl3pQ1AcZyAW0xnQ\", \"events\": [\"status.updated\", \"message.status.updated\"]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Webhooks.CreateAsync(new WebhookCreateRequest { Url = "https://example.com/callback", Events = new WebhookCreateRequestEvents[] { new WebhookCreateRequestEvents("status.updated") }, Description = "sample-description" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/webhooks/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"url\": \"https://example.com/callback\", \"events\": [\"status.updated\"], \"description\": \"sample-description\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("8f14e45f-ceea-467f-a8d4-6f2b1c9b0d11", result.WebhookId);
+        }
+
+        [Fact]
         public async Task Webhooks_Destinations_Create()
         {
             var handler = new MockHttpHandler();
