@@ -26,9 +26,6 @@ namespace Didit
         /// <summary><c>code_sent</c></summary>
         public static PhoneNetworkRegistrationTestNumberStatus CodeSent { get; } = new("code_sent");
 
-        /// <summary><c>verified</c></summary>
-        public static PhoneNetworkRegistrationTestNumberStatus Verified { get; } = new("verified");
-
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

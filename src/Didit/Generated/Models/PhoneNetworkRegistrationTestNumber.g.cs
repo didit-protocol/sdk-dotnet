@@ -27,7 +27,7 @@ namespace Didit
         public PhoneNetworkRegistrationTestNumberStatus? Status { get; init; }
 
         /// <summary>
-        /// The verification carrying the code: check it with <c>POST /v3/phone/check/</c>.
+        /// The verification of the code Didit sent: <c>pv_</c> followed by 32 hexadecimal characters. Check the code with <c>POST /v3/phone/check/</c> and this <c>verification_id</c>.
         /// </summary>
         [JsonPropertyName("verification_id")]
         public string? VerificationId { get; init; }

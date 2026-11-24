@@ -21,7 +21,7 @@ namespace Didit
         public required PhoneSdkKeyRequestPlatform Platform { get; set; }
 
         /// <summary>
-        /// The bundle ids, package names or <c>https</c> origins the key works for.
+        /// The apps the key may run in: iOS bundle ids, Android package names or web origins (<c>https://</c> and the host), matching <c>platform</c>
         /// </summary>
         [JsonPropertyName("app_ids")]
         public required IReadOnlyList<string> AppIds { get; set; }

@@ -66,7 +66,7 @@ namespace Didit
         /// Your test numbers for this registration, up to 5.
         /// </summary>
         [JsonPropertyName("test_numbers")]
-        public IReadOnlyList<PhoneNetworkRegistrationTestNumber>? TestNumbers { get; init; }
+        public IReadOnlyList<PhoneNetworkRegistrationTestNumberSummary>? TestNumbers { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

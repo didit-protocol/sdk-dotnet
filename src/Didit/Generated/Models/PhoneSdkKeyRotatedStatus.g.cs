@@ -26,12 +26,6 @@ namespace Didit
         /// <summary><c>active</c></summary>
         public static PhoneSdkKeyRotatedStatus Active { get; } = new("active");
 
-        /// <summary><c>expiring</c></summary>
-        public static PhoneSdkKeyRotatedStatus Expiring { get; } = new("expiring");
-
-        /// <summary><c>revoked</c></summary>
-        public static PhoneSdkKeyRotatedStatus Revoked { get; } = new("revoked");
-
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 

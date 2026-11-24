@@ -15,7 +15,7 @@ namespace Didit
     public sealed record PhoneSilentRegistration
     {
         /// <summary>
-        /// The registration: track it with it.
+        /// The registration: <c>sr_</c> followed by 32 hexadecimal characters
         /// </summary>
         [JsonPropertyName("registration_id")]
         public string? RegistrationId { get; init; }

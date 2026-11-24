@@ -21,7 +21,7 @@ namespace Didit
         public required string Country { get; set; }
 
         /// <summary>
-        /// Only these mobile networks; left out, every network in the country.
+        /// The mobile networks to ask, by the names <c>GET /v3/phone/silent/coverage/</c> lists; all the country's networks when you send none
         /// </summary>
         [JsonPropertyName("networks")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -50,7 +50,7 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("monthly_volume")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<long> MonthlyVolume { get; set; }
+        public Optional<long?> MonthlyVolume { get; set; }
 
         /// <summary>
         /// Links to screens of the flow, as the networks ask for them.

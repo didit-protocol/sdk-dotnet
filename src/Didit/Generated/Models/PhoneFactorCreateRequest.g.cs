@@ -15,7 +15,7 @@ namespace Didit
     public sealed record PhoneFactorCreateRequest
     {
         /// <summary>
-        /// The factor to enroll: <c>totp</c>, for an authenticator app.
+        /// The factor to enroll: <c>totp</c>, an authenticator app. Any other value answers <c>400 invalid_type</c>.
         /// </summary>
         [JsonPropertyName("type")]
         public required PhoneFactorCreateRequestType Type { get; set; }
@@ -34,7 +34,7 @@ namespace Didit
         public Optional<string> FriendlyName { get; set; }
 
         /// <summary>
-        /// Up to 10 keys and values of your own, returned with the factor.
+        /// Your own small object returned with the factor: up to 10 keys, each value at most 500 characters.
         /// </summary>
         [JsonPropertyName("metadata")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

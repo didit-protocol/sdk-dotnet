@@ -96,6 +96,20 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<PhoneCheckCodeParamsPhoneNoSocialPresenceAction> PhoneNoSocialPresenceAction { get; set; }
 
+        /// <summary>
+        /// Check a TOTP factor enrolled with <c>POST /v3/phone/factors/</c> instead of a phone code: send the 4-8 digit <c>code</c> its authenticator app shows. With <c>factor_id</c> the service does not read <c>phone_number</c> (typed SDKs still take it, because it stays a required field of this request, so pass the user's number or any valid E.164 number). The answer carries <c>verification_id</c>, <c>status</c> (<c>verified</c> or <c>failed</c>) and <c>attempts</c>. A <c>disabled</c> factor answers <c>409 factor_disabled</c>, an unknown one <c>404 not_found</c> and a request without <c>code</c> <c>400 code_required</c>.
+        /// </summary>
+        [JsonPropertyName("factor_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> FactorId { get; set; }
+
+        /// <summary>
+        /// Check the code Didit sent to a registration test number: send the <c>verification_id</c> that <c>POST /v3/phone/network/registrations/{registration_id}/test-numbers/</c> returned with the <c>code</c>. The number itself still goes in <c>phone_number</c>.
+        /// </summary>
+        [JsonPropertyName("verification_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> VerificationId { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }

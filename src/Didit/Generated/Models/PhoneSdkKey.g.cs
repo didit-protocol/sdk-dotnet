@@ -15,7 +15,7 @@ namespace Didit
     public sealed record PhoneSdkKey
     {
         /// <summary>
-        /// The key.
+        /// The key: <c>sk_</c> followed by 32 hexadecimal characters
         /// </summary>
         [JsonPropertyName("key_id")]
         public string? KeyId { get; init; }
