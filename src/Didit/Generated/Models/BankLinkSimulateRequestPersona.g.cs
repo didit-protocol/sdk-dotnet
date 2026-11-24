@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// The Test Bank customer who signs in: <c>personal_basic</c> (one current account), <c>business_multi</c> (several business accounts), <c>long_history</c> (a long transaction history), <c>pending</c> (pending rows), <c>sparse_fields</c> (transactions with fields missing, one automatic sync a day) or <c>no_ongoing</c> (a bank that cannot keep access open).
+    /// The Test Bank customer who signs in: <c>personal_basic</c> (one current account), <c>business_multi</c> (several business accounts), <c>long_history</c> (a long transaction history), <c>pending</c> (pending rows), <c>sparse_fields</c> (transactions with fields missing, one automatic sync a day), <c>no_ongoing</c> (a bank that cannot keep access open) or <c>multi_currency</c> (an EUR and a USD account on one IBAN; the connection keeps both, with one <c>account_ref</c> and a different <c>id</c> and <c>currency</c> each).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankLinkSimulateRequestPersona.EnumJsonConverter))]
@@ -40,6 +40,9 @@ namespace Didit
 
         /// <summary><c>no_ongoing</c></summary>
         public static BankLinkSimulateRequestPersona NoOngoing { get; } = new("no_ongoing");
+
+        /// <summary><c>multi_currency</c></summary>
+        public static BankLinkSimulateRequestPersona MultiCurrency { get; } = new("multi_currency");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
