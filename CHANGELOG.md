@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.44.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.43.0...v1.44.0) (2026-11-24)
+
+
+### Features
+
+* **spec:** sync API spec 2026-11-24 ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+
+
+### API changes that can break typed code
+
+* **spec:** `DELETE /v3/phone/factors/{factor_id}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `DELETE /v3/phone/network/registrations/{registration_id}/test-numbers/{phone_number}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `DELETE /v3/phone/sdk-keys/{key_id}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/factors/{factor_id}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/factors/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/network/registrations/{registration_id}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/network/registrations/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/sdk-keys/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/silent/coverage/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `GET /v3/phone/silent/registrations/{registration_id}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `PATCH /v3/phone/factors/{factor_id}/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/check/` request `factor_id`: removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/check/` request body: type changed from object|object to object ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/check/` response `status`: no longer required ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/check/` response body: type changed from object|object to object ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/factors/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/network/registrations/{registration_id}/test-numbers/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/network/registrations/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/sdk-keys/{key_id}/rotate/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/sdk-keys/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/silent/eligibility/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+* **spec:** `POST /v3/phone/silent/registrations/`: operation removed ([9f858b9](https://github.com/didit-protocol/sdk-dotnet/commit/9f858b9ffa0f43659bcb071dc4aea9ce7b9b78a0))
+
 ## [1.43.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.42.0...v1.43.0) (2026-11-23)
 
 
