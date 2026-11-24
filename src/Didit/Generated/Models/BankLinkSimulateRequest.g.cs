@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankLinkSimulateRequest
     {
         /// <summary>
-        /// The Test Bank customer who signs in: <c>personal_basic</c> (one current account), <c>business_multi</c> (several business accounts), <c>long_history</c> (a long transaction history), <c>pending</c> (pending rows), <c>sparse_fields</c> (transactions with fields missing, one automatic sync a day) or <c>no_ongoing</c> (a bank that cannot keep access open).
+        /// The Test Bank customer who signs in: <c>personal_basic</c> (one current account), <c>business_multi</c> (several business accounts), <c>long_history</c> (a long transaction history), <c>pending</c> (pending rows), <c>sparse_fields</c> (transactions with fields missing, one automatic sync a day), <c>no_ongoing</c> (a bank that cannot keep access open) or <c>multi_currency</c> (an EUR and a USD account on one IBAN; the connection keeps both, with one <c>account_ref</c> and a different <c>id</c> and <c>currency</c> each).
         /// </summary>
         [JsonPropertyName("persona")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

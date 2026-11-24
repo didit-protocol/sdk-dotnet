@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// The Test Bank customer: <c>personal_basic</c> (one current account, 60 movements), <c>business_multi</c> (three accounts held by a company), <c>long_history</c> (one account with 400 days and 1,400 movements; a read returns the last 365 days, so set <c>history_days</c> to 365), <c>pending</c> (includes pending transactions), <c>sparse_fields</c> (no value date, no counterparty IBAN, no bank reference) or <c>no_ongoing</c> (a bank that only allows one-time access: use <c>allow_one_time_fallback</c>). <c>requires_email</c>: the Test Bank behaves as a bank that needs the person's email, so the link asks for an email address and a code before the bank. In sandbox no email is sent and the code is always <c>123456</c>; ignored for live applications.
+    /// The Test Bank customer: <c>personal_basic</c> (one current account, 60 movements), <c>business_multi</c> (three accounts held by a company), <c>long_history</c> (one account with 400 days and 1,400 movements; a read returns the last 365 days, so set <c>history_days</c> to 365), <c>pending</c> (includes pending transactions), <c>sparse_fields</c> (no value date, no counterparty IBAN, no bank reference), <c>no_ongoing</c> (a bank that only allows one-time access: use <c>allow_one_time_fallback</c>) or <c>multi_currency</c> (one multi-currency account that the bank lists as an EUR and a USD account on the same IBAN; a link that selects both stores both, and they share one <c>account_ref</c> and differ by <c>id</c> and <c>currency</c>). <c>requires_email</c>: the Test Bank behaves as a bank that needs the person's email, so the link asks for an email address and a code before the bank. In sandbox no email is sent and the code is always <c>123456</c>; ignored for live applications.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankLinkCreateRequestSandboxPersona.EnumJsonConverter))]
@@ -40,6 +40,9 @@ namespace Didit
 
         /// <summary><c>no_ongoing</c></summary>
         public static BankLinkCreateRequestSandboxPersona NoOngoing { get; } = new("no_ongoing");
+
+        /// <summary><c>multi_currency</c></summary>
+        public static BankLinkCreateRequestSandboxPersona MultiCurrency { get; } = new("multi_currency");
 
         /// <summary><c>requires_email</c></summary>
         public static BankLinkCreateRequestSandboxPersona RequiresEmail { get; } = new("requires_email");
