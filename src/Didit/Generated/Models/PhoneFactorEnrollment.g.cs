@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The enrollment of a TOTP factor: <c>totp.uri</c> is what the authenticator app needs.
+    /// A new TOTP factor and the authenticator URI to show as a QR code. The secret is shown only here.
     /// </summary>
     public sealed record PhoneFactorEnrollment
     {
@@ -27,7 +27,7 @@ namespace Didit
         public PhoneFactorEnrollmentType? Type { get; init; }
 
         /// <summary>
-        /// <c>unverified</c> until the first successful check, then <c>verified</c>.
+        /// A new factor is <c>unverified</c> until its first check passes
         /// </summary>
         [JsonPropertyName("status")]
         public PhoneFactorEnrollmentStatus? Status { get; init; }

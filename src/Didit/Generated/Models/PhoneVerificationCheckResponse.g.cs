@@ -21,7 +21,7 @@ namespace Didit
         public string? RequestId { get; init; }
 
         /// <summary>
-        /// <c>Approved</c> — correct code, no declining risk. <c>Declined</c> — terminal: a declining risk matched or the attempt budget (3) was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — no pending verification for this number in the last 5 minutes.
+        /// <c>Approved</c> — correct code, no declining risk. <c>Declined</c> — terminal: a declining risk matched or the attempt budget (3) was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — no pending verification for this number in the last 5 minutes. For a TOTP factor check (a request that names <c>factor_id</c>) the status is <c>verified</c> (the code matched) or <c>failed</c>.
         /// </summary>
         [JsonPropertyName("status")]
         public PhoneVerificationCheckResponseStatus? Status { get; init; }
@@ -55,6 +55,18 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
+
+        /// <summary>
+        /// A TOTP factor check only: the id of the factor that was checked, <c>fa_</c> followed by 32 hexadecimal characters. Not present in the answer to a phone code check.
+        /// </summary>
+        [JsonPropertyName("verification_id")]
+        public string? VerificationId { get; init; }
+
+        /// <summary>
+        /// A TOTP factor check only: the failed codes in the current window including this one. Not present in the answer to a phone code check.
+        /// </summary>
+        [JsonPropertyName("attempts")]
+        public long? Attempts { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

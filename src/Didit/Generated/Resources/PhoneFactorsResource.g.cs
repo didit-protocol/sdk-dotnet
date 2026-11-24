@@ -26,24 +26,24 @@ namespace Didit.Resources
         /// Enroll a TOTP factor
         /// </summary>
         /// <remarks>
-        /// Enroll a TOTP factor for one of your users, so they confirm a verification with an authenticator app instead of a code. <c>type</c> is <c>totp</c> and <c>user_id</c> is your id for the user.
+        /// Enroll a TOTP factor for one of your users, so they confirm a verification with the code of an authenticator app instead of a phone code: <c>type</c> is <c>totp</c> and <c>user_id</c> is your id for the user.
         /// <para/>
-        /// The answer carries <c>totp.uri</c>, the <c>otpauth://</c> URI to show as a QR code; the authenticator app scans it and starts producing codes.
+        /// The answer carries <c>totp.uri</c>, the <c>otpauth://</c> URI to show as a QR code. It is the only time the secret is shown.
         /// <para/>
-        /// State. A new factor is <c>unverified</c> until its first code passes <c>POST /v3/phone/check/</c>, then <c>verified</c>.
+        /// State. A new factor is <c>unverified</c>. It becomes <c>verified</c> when its first code passes <c>POST /v3/phone/check/</c> with the <c>factor_id</c>.
         /// <para/>
-        /// One of each type. A user holds at most one factor: a second one answers <c>409 factor_exists</c>.
+        /// One of each type. A user holds at most one factor of each type: a second one answers <c>409 factor_exists</c>.
+        /// <para/>
+        /// Permissions. Only an Owner or Admin API key can enroll factors.
         /// <para/>
         /// Authentication. Send your application's API key in <c>x-api-key</c>.
         /// <para/>
-        /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
-        /// <para/>
         /// <c>POST /v3/phone/factors/</c> (<c>phone.factors.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneFactorEnrollment> CreateAsync(PhoneFactorCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -54,7 +54,7 @@ namespace Didit.Resources
         /// Remove a factor
         /// </summary>
         /// <remarks>
-        /// Delete an enrolled factor. The factor is deleted at once: its <c>factor_id</c> stops working and the TOTP secret it held stop verifying, and the deletion cannot be undone. Verifications the factor already completed stay verified, and the user's other factors are not affected.
+        /// Delete an enrolled factor. The factor is deleted at once: its <c>factor_id</c> stops working, the TOTP secret it held stops verifying, and the deletion cannot be undone. Verifications the factor already completed stay verified, and the user's other factors are not affected.
         /// <para/>
         /// Enroll the user again with <c>POST /v3/phone/factors/</c> to give them a new factor.
         /// <para/>
@@ -63,11 +63,11 @@ namespace Didit.Resources
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
         /// <c>DELETE /v3/phone/factors/{factor_id}/</c> (<c>phone.factors.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
-        /// <param name="factorId">The factor to delete.</param>
+        /// <param name="factorId">The factor id, <c>fa_</c> followed by 32 hexadecimal characters, as enrollment returned it.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task DeleteAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
             _raw.DeleteAsync(factorId, requestOptions, cancellationToken);
 
@@ -75,7 +75,7 @@ namespace Didit.Resources
         /// List a user's enrolled factors
         /// </summary>
         /// <remarks>
-        /// List the factors enrolled for one of your users, so your app can show them and let the user pick the one to check with. <c>user_id</c> is required; <c>type</c> and <c>status</c> narrow the list.
+        /// List the factors enrolled for one of your users, newest first, so your app can show them and let the user pick the one to check with. <c>user_id</c> is required; <c>type</c> and <c>status</c> narrow the list.
         /// <para/>
         /// The answer is a page: <c>count</c>, <c>next</c>, <c>previous</c> and <c>results</c>, each result a factor as Retrieve returns it.
         /// <para/>
@@ -87,12 +87,13 @@ namespace Didit.Resources
         /// <para/>
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
+        /// Permissions. Only an Owner or Admin API key can list factors.
+        /// <para/>
         /// <c>GET /v3/phone/factors/</c> (<c>phone.factors.list</c>).
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<Page<PhoneFactor>> ListAsync(PhoneFactorsListParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -111,10 +112,9 @@ namespace Didit.Resources
         /// <para/>
         /// <c>GET /v3/phone/factors/{factor_id}/</c> (<c>phone.factors.retrieve</c>).
         /// </remarks>
-        /// <param name="factorId">The factor.</param>
+        /// <param name="factorId">The factor id, <c>fa_</c> followed by 32 hexadecimal characters, as enrollment returned it.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneFactor> RetrieveAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveAsync(factorId, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -125,7 +125,7 @@ namespace Didit.Resources
         /// Change a factor's name, metadata or state
         /// </summary>
         /// <remarks>
-        /// Change a factor without enrolling it again: rename it (<c>friendly_name</c>), replace your <c>metadata</c>, or disable it or turn it back on (<c>status</c>). The answer is the factor as it now stands.
+        /// Change a factor without enrolling it again: rename it (<c>friendly_name</c>), replace your <c>metadata</c>, disable it or turn it back on (<c>status</c>). The answer is the factor as it now stands.
         /// <para/>
         /// <c>disabled</c> stops the factor's checks and <c>verified</c> turns a disabled factor back on. A factor that was never verified cannot be turned on: finish its first check instead, or the call answers <c>409 factor_unverified</c>.
         /// <para/>
@@ -136,12 +136,12 @@ namespace Didit.Resources
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
         /// <c>PATCH /v3/phone/factors/{factor_id}/</c> (<c>phone.factors.update</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
-        /// <param name="factorId">The factor to change.</param>
+        /// <param name="factorId">The factor id, <c>fa_</c> followed by 32 hexadecimal characters, as enrollment returned it.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneFactor> UpdateAsync(string factorId, PhoneFactorUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAsync(factorId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -163,7 +163,6 @@ namespace Didit.Resources
         /// Enroll a TOTP factor
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.CreateAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneFactorEnrollment>> CreateAsync(PhoneFactorCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -185,7 +184,6 @@ namespace Didit.Resources
         /// Remove a factor
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.DeleteAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse> DeleteAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/phone/factors/" + PathParameter.Encode(factorId, "factorId") + "/")
@@ -201,7 +199,6 @@ namespace Didit.Resources
         /// List a user's enrolled factors
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.ListAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<Page<PhoneFactor>>> ListAsync(PhoneFactorsListParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -228,7 +225,6 @@ namespace Didit.Resources
         /// Retrieve one enrolled factor
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.RetrieveAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneFactor>> RetrieveAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/factors/" + PathParameter.Encode(factorId, "factorId") + "/")
@@ -244,7 +240,6 @@ namespace Didit.Resources
         /// Change a factor's name, metadata or state
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.UpdateAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneFactor>> UpdateAsync(string factorId, PhoneFactorUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

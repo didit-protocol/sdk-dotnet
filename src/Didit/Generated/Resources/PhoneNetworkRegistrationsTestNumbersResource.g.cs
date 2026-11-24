@@ -28,7 +28,7 @@ namespace Didit.Resources
         /// <remarks>
         /// Add a number you hold as a test number while the networks review a registration, so you can try the feature before it is approved: send it in E.164 (<c>phone_number</c>).
         /// <para/>
-        /// Didit sends it a code and answers with <c>verification_id</c> and <c>status: code_sent</c>; check the code with <c>POST /v3/phone/check/</c> and the number. Once the code is checked the number is <c>verified</c>, and the feature answers for it under test access, marked <c>test: true</c>.
+        /// Didit sends it a code and answers with <c>verification_id</c> and <c>status: code_sent</c>; check the code with <c>POST /v3/phone/check/</c> and the <c>verification_id</c>. Once the code is checked the number is <c>verified</c>, and the feature answers for it under test access, marked <c>test: true</c>.
         /// <para/>
         /// Limits. A registration takes up to 5 test numbers (<c>409 too_many_test_numbers</c>), and test access ends when the networks decide (<c>409 review_finished</c>).
         /// <para/>
@@ -37,12 +37,12 @@ namespace Didit.Resources
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
         /// <c>POST /v3/phone/network/registrations/{registration_id}/test-numbers/</c> (<c>phone.network.registrations.test_numbers.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
-        /// <param name="registrationId">The network feature registration.</param>
+        /// <param name="registrationId">The registration id, <c>nr_</c> followed by 32 hexadecimal characters, as it was created.</param>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneNetworkRegistrationTestNumber> CreateAsync(string registrationId, PhoneNetworkRegistrationTestNumberRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(registrationId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -62,12 +62,12 @@ namespace Didit.Resources
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
         /// <c>DELETE /v3/phone/network/registrations/{registration_id}/test-numbers/{phone_number}/</c> (<c>phone.network.registrations.test_numbers.delete</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
-        /// <param name="registrationId">The network feature registration.</param>
+        /// <param name="registrationId">The registration id, <c>nr_</c> followed by 32 hexadecimal characters, as it was created.</param>
         /// <param name="phoneNumber">The test number, in E.164 and URL-encoded.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task DeleteAsync(string registrationId, string phoneNumber, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
             _raw.DeleteAsync(registrationId, phoneNumber, requestOptions, cancellationToken);
     }
@@ -86,7 +86,6 @@ namespace Didit.Resources
         /// Add a test number while the networks review
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsTestNumbersResource.CreateAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneNetworkRegistrationTestNumber>> CreateAsync(string registrationId, PhoneNetworkRegistrationTestNumberRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -108,7 +107,6 @@ namespace Didit.Resources
         /// Remove a test number
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsTestNumbersResource.DeleteAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse> DeleteAsync(string registrationId, string phoneNumber, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/phone/network/registrations/" + PathParameter.Encode(registrationId, "registrationId") + "/test-numbers/" + PathParameter.Encode(phoneNumber, "phoneNumber") + "/")

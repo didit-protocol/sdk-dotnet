@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// <c>unverified</c> until the first successful check, then <c>verified</c>.
+    /// A new factor is <c>unverified</c> until its first check passes
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(PhoneFactorEnrollmentStatus.EnumJsonConverter))]
@@ -25,12 +25,6 @@ namespace Didit
 
         /// <summary><c>unverified</c></summary>
         public static PhoneFactorEnrollmentStatus Unverified { get; } = new("unverified");
-
-        /// <summary><c>verified</c></summary>
-        public static PhoneFactorEnrollmentStatus Verified { get; } = new("verified");
-
-        /// <summary><c>disabled</c></summary>
-        public static PhoneFactorEnrollmentStatus Disabled { get; } = new("disabled");
 
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;

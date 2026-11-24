@@ -37,11 +37,11 @@ namespace Didit.Resources
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
         /// <c>POST /v3/phone/silent/registrations/</c> (<c>phone.silent.registrations.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSilentRegistration> CreateAsync(PhoneSilentRegistrationRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -62,10 +62,9 @@ namespace Didit.Resources
         /// <para/>
         /// <c>GET /v3/phone/silent/registrations/{registration_id}/</c> (<c>phone.silent.registrations.retrieve</c>).
         /// </remarks>
-        /// <param name="registrationId">The silent verification registration.</param>
+        /// <param name="registrationId">The registration id, <c>sr_</c> followed by 32 hexadecimal characters (an <c>nr_</c> id of a silent verification registration works too).</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSilentRegistration> RetrieveAsync(string registrationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveAsync(registrationId, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -87,7 +86,6 @@ namespace Didit.Resources
         /// Submit a country for carrier approval of silent verification
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSilentRegistrationsResource.CreateAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSilentRegistration>> CreateAsync(PhoneSilentRegistrationRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -109,7 +107,6 @@ namespace Didit.Resources
         /// Track a carrier approval, network by network
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSilentRegistrationsResource.RetrieveAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSilentRegistration>> RetrieveAsync(string registrationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/silent/registrations/" + PathParameter.Encode(registrationId, "registrationId") + "/")

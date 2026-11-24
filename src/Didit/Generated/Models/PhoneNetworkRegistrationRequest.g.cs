@@ -63,7 +63,7 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("monthly_volume")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<long> MonthlyVolume { get; set; }
+        public Optional<long?> MonthlyVolume { get; set; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

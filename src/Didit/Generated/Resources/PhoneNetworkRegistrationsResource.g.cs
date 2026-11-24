@@ -43,11 +43,11 @@ namespace Didit.Resources
         /// Rate limit. Requests count against the key's budget; over it the answer is <c>429</c> with <c>Retry-After</c>.
         /// <para/>
         /// <c>POST /v3/phone/network/registrations/</c> (<c>phone.network.registrations.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneNetworkRegistration> CreateAsync(PhoneNetworkRegistrationRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -71,7 +71,6 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<Page<PhoneNetworkRegistrationSummary>> ListAsync(PhoneNetworkRegistrationsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -90,10 +89,9 @@ namespace Didit.Resources
         /// <para/>
         /// <c>GET /v3/phone/network/registrations/{registration_id}/</c> (<c>phone.network.registrations.retrieve</c>).
         /// </remarks>
-        /// <param name="registrationId">The network feature registration.</param>
+        /// <param name="registrationId">The registration id, <c>nr_</c> followed by 32 hexadecimal characters, as it was created.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneNetworkRegistration> RetrieveAsync(string registrationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveAsync(registrationId, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -119,7 +117,6 @@ namespace Didit.Resources
         /// Ask the networks to approve a network feature
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsResource.CreateAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneNetworkRegistration>> CreateAsync(PhoneNetworkRegistrationRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -141,7 +138,6 @@ namespace Didit.Resources
         /// List your network feature registrations
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsResource.ListAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<Page<PhoneNetworkRegistrationSummary>>> ListAsync(PhoneNetworkRegistrationsListParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/network/registrations/")
@@ -163,7 +159,6 @@ namespace Didit.Resources
         /// Track a feature approval, network by network
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneNetworkRegistrationsResource.RetrieveAsync"/>.</remarks>
-        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneNetworkRegistration>> RetrieveAsync(string registrationId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/network/registrations/" + PathParameter.Encode(registrationId, "registrationId") + "/")

@@ -1406,6 +1406,8 @@ namespace Didit.Internal
     [JsonSerializable(typeof(PhoneNetworkRegistrationTestNumber))]
     [JsonSerializable(typeof(PhoneNetworkRegistrationTestNumberRequest))]
     [JsonSerializable(typeof(PhoneNetworkRegistrationTestNumberStatus))]
+    [JsonSerializable(typeof(PhoneNetworkRegistrationTestNumberSummary))]
+    [JsonSerializable(typeof(PhoneNetworkRegistrationTestNumberSummaryStatus))]
     [JsonSerializable(typeof(PhoneNetworkRegistrationTestNumberTestAccess))]
     [JsonSerializable(typeof(PhoneNetworkRegistrationsListParams))]
     [JsonSerializable(typeof(PhoneNetworkRegistrationsListParamsFeature))]

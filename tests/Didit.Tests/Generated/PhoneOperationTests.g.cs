@@ -69,7 +69,7 @@ namespace Didit.Tests.Generated
             // Response body from the spec's example.
             handler.Enqueue(200, "{\"request_id\": \"e39cb057-92fc-4b59-b84e-02fec29a0f24\", \"status\": \"Approved\", \"message\": \"The verification code is correct.\", \"phone\": {\"status\": \"Approved\", \"phone_number_prefix\": \"+1\", \"phone_number\": \"4155552671\", \"full_number\": \"+14155552671\", \"country_code\": \"US\", \"country_name\": \"United States\", \"carrier\": {\"name\": \"AT&T\", \"type\": \"mobile\"}, \"is_disposable\": false, \"is_virtual\": false, \"verification_method\": \"whatsapp\", \"verification_attempts\": 1, \"verified_at\": \"2026-06-12T01:24:47.311323Z\", \"warnings\": [], \"lifecycle\": [{\"type\": \"PHONE_VERIFICATION_MESSAGE_SENT\", \"timestamp\": \"2026-06-12T01:23:39.580554+00:00\", \"details\": {\"status\": \"Success\", \"reason\": null, \"channel\": \"whatsapp\", \"actual_channel\": \"whatsapp\", \"attempt\": 0, \"delivery_status\": \"delivered\"}, \"fee\": 0.0509}, {\"type\": \"PHONE_DELIVERY_DELIVERED\", \"timestamp\": \"2026-06-12T01:23:43.118220+00:00\", \"details\": {\"channel\": \"whatsapp\", \"status\": \"delivered\", \"attempt\": 0}, \"fee\": 0}, {\"type\": \"VALID_CODE_ENTERED\", \"timestamp\": \"2026-06-12T01:24:47.311201+00:00\", \"details\": {\"code_tried\": \"123456\", \"status\": \"Approved\"}, \"fee\": 0}, {\"type\": \"PHONE_VERIFICATION_APPROVED\", \"timestamp\": \"2026-06-12T01:24:47.384292+00:00\", \"details\": null, \"fee\": 0}], \"matches\": []}, \"vendor_data\": \"user-1234\", \"metadata\": null, \"created_at\": \"2026-06-12T01:24:47.401719+00:00\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Phone.CheckCodeAsync(new PhoneCheckCodeParams { PhoneNumber = "+14155552671", Code = "123456", DuplicatedPhoneNumberAction = new PhoneCheckCodeParamsDuplicatedPhoneNumberAction("NO_ACTION"), DisposableNumberAction = new PhoneCheckCodeParamsDisposableNumberAction("NO_ACTION"), VoipNumberAction = new PhoneCheckCodeParamsVoipNumberAction("NO_ACTION"), EnableEnrichment = true, PhoneIntelligenceScoreAction = new PhoneCheckCodeParamsPhoneIntelligenceScoreAction("NO_ACTION"), PhoneTypeRiskAction = new PhoneCheckCodeParamsPhoneTypeRiskAction("NO_ACTION"), RecentPortAction = new PhoneCheckCodeParamsRecentPortAction("NO_ACTION"), LowPhoneTrustAction = new PhoneCheckCodeParamsLowPhoneTrustAction("NO_ACTION"), EnableSocial = true, PhoneNoSocialPresenceAction = new PhoneCheckCodeParamsPhoneNoSocialPresenceAction("NO_ACTION") });
+            var result = await client.Phone.CheckCodeAsync(new PhoneCheckCodeParams { PhoneNumber = "+14155552671", Code = "123456", DuplicatedPhoneNumberAction = new PhoneCheckCodeParamsDuplicatedPhoneNumberAction("NO_ACTION"), DisposableNumberAction = new PhoneCheckCodeParamsDisposableNumberAction("NO_ACTION"), VoipNumberAction = new PhoneCheckCodeParamsVoipNumberAction("NO_ACTION"), EnableEnrichment = true, PhoneIntelligenceScoreAction = new PhoneCheckCodeParamsPhoneIntelligenceScoreAction("NO_ACTION"), PhoneTypeRiskAction = new PhoneCheckCodeParamsPhoneTypeRiskAction("NO_ACTION"), RecentPortAction = new PhoneCheckCodeParamsRecentPortAction("NO_ACTION"), LowPhoneTrustAction = new PhoneCheckCodeParamsLowPhoneTrustAction("NO_ACTION"), EnableSocial = true, PhoneNoSocialPresenceAction = new PhoneCheckCodeParamsPhoneNoSocialPresenceAction("NO_ACTION"), FactorId = "fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", VerificationId = "pv_ae4f1a368c7a4d259a493f6b0c2d7e55" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -79,7 +79,7 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"code\": \"123456\", \"duplicated_phone_number_action\": \"NO_ACTION\", \"disposable_number_action\": \"NO_ACTION\", \"voip_number_action\": \"NO_ACTION\", \"enable_enrichment\": true, \"phone_intelligence_score_action\": \"NO_ACTION\", \"phone_type_risk_action\": \"NO_ACTION\", \"recent_port_action\": \"NO_ACTION\", \"low_phone_trust_action\": \"NO_ACTION\", \"enable_social\": true, \"phone_no_social_presence_action\": \"NO_ACTION\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"code\": \"123456\", \"duplicated_phone_number_action\": \"NO_ACTION\", \"disposable_number_action\": \"NO_ACTION\", \"voip_number_action\": \"NO_ACTION\", \"enable_enrichment\": true, \"phone_intelligence_score_action\": \"NO_ACTION\", \"phone_type_risk_action\": \"NO_ACTION\", \"recent_port_action\": \"NO_ACTION\", \"low_phone_trust_action\": \"NO_ACTION\", \"enable_social\": true, \"phone_no_social_presence_action\": \"NO_ACTION\", \"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"verification_id\": \"pv_ae4f1a368c7a4d259a493f6b0c2d7e55\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("e39cb057-92fc-4b59-b84e-02fec29a0f24", result.RequestId);
         }
@@ -110,7 +110,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"factor_id\": \"fa_01JCH8K2\", \"type\": \"totp\", \"status\": \"unverified\", \"totp\": {\"uri\": \"otpauth://totp/Demo%20App:u_481?secret=JBSWY3DP\"}}");
+            handler.Enqueue(201, "{\"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"type\": \"totp\", \"status\": \"unverified\", \"totp\": {\"uri\": \"otpauth://totp/Demo%20App:u_481?secret=JBSWY3DP\"}}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Factors.CreateAsync(new PhoneFactorCreateRequest { Type = new PhoneFactorCreateRequestType("totp"), UserId = "u_481", FriendlyName = "Demo App" });
 
@@ -124,7 +124,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"type\": \"totp\", \"user_id\": \"u_481\", \"friendly_name\": \"Demo App\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("fa_01JCH8K2", result.FactorId);
+            Assert.Equal("fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", result.FactorId);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"factor_id\": \"fa_01JCH8K2\", \"type\": \"totp\", \"status\": \"verified\", \"user_id\": \"u_481\", \"friendly_name\": \"Demo App\", \"metadata\": {\"device\": \"iPhone 15\"}, \"created_at\": \"2026-11-02T08:14:00Z\", \"last_used_at\": \"2026-11-21T09:58:00Z\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"type\": \"totp\", \"status\": \"verified\", \"user_id\": \"u_481\", \"friendly_name\": \"Demo App\", \"metadata\": {\"device\": \"iPhone 15\"}, \"created_at\": \"2026-11-02T08:14:00Z\", \"last_used_at\": \"2026-11-21T09:58:00Z\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Factors.ListAsync(new PhoneFactorsListParams { UserId = "u_481", Type = new PhoneFactorsListParamsType("totp"), Status = new PhoneFactorsListParamsStatus("unverified"), Limit = 1L, Offset = 1L, Format = new PhoneFactorsListParamsFormat("json") });
 
@@ -171,7 +171,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"factor_id\": \"fa_01JCH8K2\", \"type\": \"totp\", \"status\": \"verified\", \"user_id\": \"u_481\", \"friendly_name\": \"Demo App\", \"metadata\": {\"device\": \"iPhone 15\"}, \"created_at\": \"2026-11-02T08:14:00Z\", \"last_used_at\": \"2026-11-21T09:58:00Z\"}");
+            handler.Enqueue(200, "{\"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"type\": \"totp\", \"status\": \"verified\", \"user_id\": \"u_481\", \"friendly_name\": \"Demo App\", \"metadata\": {\"device\": \"iPhone 15\"}, \"created_at\": \"2026-11-02T08:14:00Z\", \"last_used_at\": \"2026-11-21T09:58:00Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Factors.RetrieveAsync("factor_id-1");
 
@@ -184,7 +184,7 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
             Assert.NotNull(result);
-            Assert.Equal("fa_01JCH8K2", result.FactorId);
+            Assert.Equal("fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", result.FactorId);
         }
 
         [Fact]
@@ -192,7 +192,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"factor_id\": \"fa_01JCH8K2\", \"type\": \"totp\", \"status\": \"disabled\", \"user_id\": \"u_481\", \"friendly_name\": \"Work phone\", \"metadata\": {\"device\": \"iPhone 16\"}, \"created_at\": \"2026-11-02T08:14:00Z\", \"last_used_at\": \"2026-11-21T09:58:00Z\"}");
+            handler.Enqueue(200, "{\"factor_id\": \"fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01\", \"type\": \"totp\", \"status\": \"disabled\", \"user_id\": \"u_481\", \"friendly_name\": \"Work phone\", \"metadata\": {\"device\": \"iPhone 16\"}, \"created_at\": \"2026-11-02T08:14:00Z\", \"last_used_at\": \"2026-11-21T09:58:00Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Factors.UpdateAsync("factor_id-1", new PhoneFactorUpdateRequest { FriendlyName = "Work phone", Status = new PhoneFactorUpdateRequestStatus("disabled") });
 
@@ -206,7 +206,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"friendly_name\": \"Work phone\", \"status\": \"disabled\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("fa_01JCH8K2", result.FactorId);
+            Assert.Equal("fa_3f6c1b528d4e4a7b9c105e2a7d9b1c01", result.FactorId);
         }
 
         [Fact]
@@ -509,9 +509,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"registration_id\": \"nr_01JCP2F4Q8\", \"feature\": \"sim_swap\", \"country\": \"BR\", \"use_case\": \"account_recovery\", \"status\": \"partly_approved\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"in_review\", \"decided_at\": null, \"reason\": null}], \"live_at\": null, \"test_access\": \"on\", \"test_numbers\": [{\"phone_number\": \"+34600000012\", \"status\": \"verified\"}]}");
+            handler.Enqueue(201, "{\"registration_id\": \"nr_5b1e7a902c434d688f150a9c3e6d7b22\", \"feature\": \"sim_swap\", \"country\": \"BR\", \"use_case\": \"account_recovery\", \"status\": \"partly_approved\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"in_review\", \"decided_at\": null, \"reason\": null}], \"live_at\": null, \"test_access\": \"on\", \"test_numbers\": [{\"phone_number\": \"+34600000012\", \"status\": \"verified\"}]}");
             using var client = TestClients.Create(handler);
-            var result = await client.Phone.Network.Registrations.CreateAsync(new PhoneNetworkRegistrationRequest { Feature = new PhoneNetworkRegistrationRequestFeature("silent_verification"), Country = "BR", UseCase = new PhoneNetworkRegistrationRequestUseCase("signup"), Networks = new string[] { "sample-networks" }, CompanyName = "Demo Application S.L.", Website = "https://example.com/callback", Purpose = "Check for a recent SIM change before a password reset", MonthlyVolume = 20000L });
+            var result = await client.Phone.Network.Registrations.CreateAsync(new PhoneNetworkRegistrationRequest { Feature = new PhoneNetworkRegistrationRequestFeature("silent_verification"), Country = "BR", UseCase = new PhoneNetworkRegistrationRequestUseCase("signup"), Networks = new string[] { "sample-networks" }, CompanyName = "Demo Application S.L.", Website = "https://app.example.com", Purpose = "Check for a recent SIM change before a password reset", MonthlyVolume = 20000L });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -521,9 +521,9 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"feature\": \"silent_verification\", \"country\": \"BR\", \"use_case\": \"signup\", \"networks\": [\"sample-networks\"], \"company_name\": \"Demo Application S.L.\", \"website\": \"https://example.com/callback\", \"purpose\": \"Check for a recent SIM change before a password reset\", \"monthly_volume\": 20000}", request.BodyText);
+            JsonAssert.Equivalent("{\"feature\": \"silent_verification\", \"country\": \"BR\", \"use_case\": \"signup\", \"networks\": [\"sample-networks\"], \"company_name\": \"Demo Application S.L.\", \"website\": \"https://app.example.com\", \"purpose\": \"Check for a recent SIM change before a password reset\", \"monthly_volume\": 20000}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("nr_01JCP2F4Q8", result.RegistrationId);
+            Assert.Equal("nr_5b1e7a902c434d688f150a9c3e6d7b22", result.RegistrationId);
         }
 
         [Fact]
@@ -531,7 +531,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"registration_id\": \"nr_01JCP2F4Q8\", \"feature\": \"sim_swap\", \"country\": \"BR\", \"use_case\": \"account_recovery\", \"status\": \"partly_approved\"}]}");
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"registration_id\": \"nr_5b1e7a902c434d688f150a9c3e6d7b22\", \"feature\": \"sim_swap\", \"country\": \"BR\", \"use_case\": \"account_recovery\", \"status\": \"partly_approved\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Network.Registrations.ListAsync(new PhoneNetworkRegistrationsListParams { Feature = new PhoneNetworkRegistrationsListParamsFeature("silent_verification"), Country = "ES", Status = new PhoneNetworkRegistrationsListParamsStatus("submitted"), Limit = 1L, Offset = 1L, Format = new PhoneNetworkRegistrationsListParamsFormat("json") });
 
@@ -552,7 +552,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"registration_id\": \"nr_01JCP2F4Q8\", \"feature\": \"sim_swap\", \"country\": \"BR\", \"use_case\": \"account_recovery\", \"status\": \"partly_approved\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"in_review\", \"decided_at\": null, \"reason\": null}], \"live_at\": null, \"test_access\": \"on\", \"test_numbers\": [{\"phone_number\": \"+34600000012\", \"status\": \"verified\"}]}");
+            handler.Enqueue(200, "{\"registration_id\": \"nr_5b1e7a902c434d688f150a9c3e6d7b22\", \"feature\": \"sim_swap\", \"country\": \"BR\", \"use_case\": \"account_recovery\", \"status\": \"partly_approved\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"in_review\", \"decided_at\": null, \"reason\": null}], \"live_at\": null, \"test_access\": \"on\", \"test_numbers\": [{\"phone_number\": \"+34600000012\", \"status\": \"verified\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Network.Registrations.RetrieveAsync("registration_id-1");
 
@@ -565,7 +565,7 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
             Assert.NotNull(result);
-            Assert.Equal("nr_01JCP2F4Q8", result.RegistrationId);
+            Assert.Equal("nr_5b1e7a902c434d688f150a9c3e6d7b22", result.RegistrationId);
         }
 
         [Fact]
@@ -573,7 +573,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"phone_number\": \"+34600000012\", \"status\": \"code_sent\", \"verification_id\": \"pv_01JCH6D4T7N2XK8F\", \"test_access\": \"on\"}");
+            handler.Enqueue(201, "{\"phone_number\": \"+34600000012\", \"status\": \"code_sent\", \"verification_id\": \"pv_ae4f1a368c7a4d259a493f6b0c2d7e55\", \"test_access\": \"on\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Network.Registrations.TestNumbers.CreateAsync("registration_id-1", new PhoneNetworkRegistrationTestNumberRequest { PhoneNumber = "+34600000012" });
 
@@ -757,9 +757,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"key_id\": \"sk_01JCL2B6\", \"platform\": \"ios\", \"publishable_key\": \"pk_live_ios_7Hq2\", \"app_ids\": [\"com.demoapp.ios\"], \"status\": \"active\", \"created_at\": \"2026-11-21T09:00:00Z\"}");
+            handler.Enqueue(201, "{\"key_id\": \"sk_9d3e0f257b694c148f382e5a9b1c6d44\", \"platform\": \"ios\", \"publishable_key\": \"pk_live_ios_7Hq2\", \"app_ids\": [\"com.demoapp.ios\"], \"status\": \"active\", \"created_at\": \"2026-11-21T09:00:00Z\"}");
             using var client = TestClients.Create(handler);
-            var result = await client.Phone.SdkKeys.CreateAsync(new PhoneSdkKeyRequest { Platform = new PhoneSdkKeyRequestPlatform("ios"), AppIds = new string[] { "com.demoapp.ios" }, Name = "iOS app" });
+            var result = await client.Phone.SdkKeys.CreateAsync(new PhoneSdkKeyRequest { Platform = new PhoneSdkKeyRequestPlatform("ios"), AppIds = new string[] { "sample-app_ids" }, Name = "iOS app" });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -769,9 +769,9 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"platform\": \"ios\", \"app_ids\": [\"com.demoapp.ios\"], \"name\": \"iOS app\"}", request.BodyText);
+            JsonAssert.Equivalent("{\"platform\": \"ios\", \"app_ids\": [\"sample-app_ids\"], \"name\": \"iOS app\"}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("sk_01JCL2B6", result.KeyId);
+            Assert.Equal("sk_9d3e0f257b694c148f382e5a9b1c6d44", result.KeyId);
         }
 
         [Fact]
@@ -779,7 +779,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"results\": [{\"key_id\": \"sk_01JCL2B6\", \"platform\": \"ios\", \"status\": \"active\"}]}");
+            handler.Enqueue(200, "{\"results\": [{\"key_id\": \"sk_9d3e0f257b694c148f382e5a9b1c6d44\", \"platform\": \"ios\", \"status\": \"active\"}]}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.SdkKeys.ListAsync(new PhoneSdkKeysListParams { Platform = new PhoneSdkKeysListParamsPlatform("ios") });
 
@@ -817,7 +817,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"key_id\": \"sk_01JCL2B6\", \"platform\": \"ios\", \"publishable_key\": \"pk_live_ios_9Zt4\", \"app_ids\": [\"com.demoapp.ios\"], \"status\": \"active\", \"created_at\": \"2026-11-21T09:00:00Z\", \"previous_expires_at\": \"2026-11-24T09:00:00Z\"}");
+            handler.Enqueue(200, "{\"key_id\": \"sk_9d3e0f257b694c148f382e5a9b1c6d44\", \"platform\": \"ios\", \"publishable_key\": \"pk_live_ios_9Zt4\", \"app_ids\": [\"com.demoapp.ios\"], \"status\": \"active\", \"created_at\": \"2026-11-21T09:00:00Z\", \"previous_expires_at\": \"2026-11-24T09:00:00Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.SdkKeys.RotateAsync("key_id-1", new PhoneSdkKeyRotateRequest { OverlapHours = 72L });
 
@@ -831,7 +831,7 @@ namespace Didit.Tests.Generated
             Assert.StartsWith("application/json", request.ContentType);
             JsonAssert.Equivalent("{\"overlap_hours\": 72}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("sk_01JCL2B6", result.KeyId);
+            Assert.Equal("sk_9d3e0f257b694c148f382e5a9b1c6d44", result.KeyId);
         }
 
         [Fact]
@@ -903,9 +903,9 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(201, "{\"registration_id\": \"sr_01JCP2F4Q8\", \"country\": \"BR\", \"status\": \"in_review\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"in_review\", \"decided_at\": null, \"reason\": null}], \"live_at\": null}");
+            handler.Enqueue(201, "{\"registration_id\": \"sr_7c2d9e146a584b039e271d4f8a0b5c33\", \"country\": \"BR\", \"status\": \"in_review\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"in_review\", \"decided_at\": null, \"reason\": null}], \"live_at\": null}");
             using var client = TestClients.Create(handler);
-            var result = await client.Phone.Silent.Registrations.CreateAsync(new PhoneSilentRegistrationRequest { Country = "BR", Networks = new string[] { "sample-networks" }, UseCase = new PhoneSilentRegistrationRequestUseCase("signup"), CompanyName = "Demo Application S.L.", Website = "https://example.com/callback", MonthlyVolume = 40000L, FlowScreenshots = new string[] { "https://example.com/callback" } });
+            var result = await client.Phone.Silent.Registrations.CreateAsync(new PhoneSilentRegistrationRequest { Country = "BR", Networks = new string[] { "sample-networks" }, UseCase = new PhoneSilentRegistrationRequestUseCase("signup"), CompanyName = "Demo Application S.L.", Website = "https://app.example.com", MonthlyVolume = 40000L, FlowScreenshots = new string[] { "sample-flow_screenshots" } });
 
             var request = Assert.Single(handler.Requests);
             Assert.Equal("POST", request.Method);
@@ -915,9 +915,9 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.StartsWith("application/json", request.ContentType);
-            JsonAssert.Equivalent("{\"country\": \"BR\", \"networks\": [\"sample-networks\"], \"use_case\": \"signup\", \"company_name\": \"Demo Application S.L.\", \"website\": \"https://example.com/callback\", \"monthly_volume\": 40000, \"flow_screenshots\": [\"https://example.com/callback\"]}", request.BodyText);
+            JsonAssert.Equivalent("{\"country\": \"BR\", \"networks\": [\"sample-networks\"], \"use_case\": \"signup\", \"company_name\": \"Demo Application S.L.\", \"website\": \"https://app.example.com\", \"monthly_volume\": 40000, \"flow_screenshots\": [\"sample-flow_screenshots\"]}", request.BodyText);
             Assert.NotNull(result);
-            Assert.Equal("sr_01JCP2F4Q8", result.RegistrationId);
+            Assert.Equal("sr_7c2d9e146a584b039e271d4f8a0b5c33", result.RegistrationId);
         }
 
         [Fact]
@@ -925,7 +925,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"registration_id\": \"sr_01JCP2F4Q8\", \"country\": \"BR\", \"status\": \"partly_approved\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"rejected\", \"decided_at\": \"2026-11-20T16:40:00Z\", \"reason\": \"Use case not covered by the approval\"}], \"live_at\": \"2026-11-21T08:00:00Z\"}");
+            handler.Enqueue(200, "{\"registration_id\": \"sr_7c2d9e146a584b039e271d4f8a0b5c33\", \"country\": \"BR\", \"status\": \"partly_approved\", \"networks\": [{\"name\": \"Mobile network A\", \"status\": \"approved\", \"decided_at\": \"2026-11-20T15:02:00Z\", \"reason\": null}, {\"name\": \"Mobile network B\", \"status\": \"rejected\", \"decided_at\": \"2026-11-20T16:40:00Z\", \"reason\": \"Use case not covered by the approval\"}], \"live_at\": \"2026-11-21T08:00:00Z\"}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.Silent.Registrations.RetrieveAsync("registration_id-1");
 
@@ -938,7 +938,7 @@ namespace Didit.Tests.Generated
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
             Assert.NotNull(result);
-            Assert.Equal("sr_01JCP2F4Q8", result.RegistrationId);
+            Assert.Equal("sr_7c2d9e146a584b039e271d4f8a0b5c33", result.RegistrationId);
         }
     }
 }

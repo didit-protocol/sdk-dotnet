@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// The factor to enroll: <c>totp</c>, for an authenticator app.
+    /// The factor to enroll: <c>totp</c>, an authenticator app. Any other value answers <c>400 invalid_type</c>.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(PhoneFactorCreateRequestType.EnumJsonConverter))]
