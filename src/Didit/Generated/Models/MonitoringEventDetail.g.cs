@@ -189,13 +189,13 @@ namespace Didit
         public JsonElement? CustomValues { get; init; }
 
         /// <summary>
-        /// The device context as stored: your <c>device_context</c> (including <c>fingerprint</c>, <c>persistent_device_id</c> and <c>bot_score</c> when sent) with <c>network_context</c> completed by IP enrichment (<c>ip_country</c>, <c>ip_country_code</c>, <c>ip_city</c>, <c>asn_number</c>, <c>asn_organization</c>, <c>is_vpn_or_tor</c>, <c>is_data_center</c>, <c>proxy_type</c>, <c>connection_type</c>) for keys you left empty.
+        /// The device context as stored: your <c>device_context</c> (including <c>fingerprint</c>, <c>persistent_device_id</c> and <c>bot_score</c> when sent) with <c>network_context</c> completed by IP enrichment (<c>ip_country</c>, <c>ip_country_code</c>, <c>ip_city</c>, <c>asn_number</c>, <c>asn_organization</c>, <c>is_vpn_or_tor</c>, <c>is_data_center</c>, <c>proxy_type</c>, <c>connection_type</c>) for keys you left empty. For an event your backend submitted, <c>bot_score</c> is the integer you sent. For an event submitted from a device with a monitoring token (the Didit SDKs), <c>bot_score</c> is the score Didit decided for that request, an integer from 0 to 100, and it is absent when Didit had nothing to decide it from: absent means unknown, not 0. On those events a <c>bot_score</c> the device posted in its own <c>device_context</c> does not set the score and is returned as <c>metadata.client_bot_score</c>, an integer, present only when the device posted one.
         /// </summary>
         [JsonPropertyName("device_context")]
         public JsonElement? DeviceContext { get; init; }
 
         /// <summary>
-        /// Field path to provenance: <c>customer</c> (sent by your backend), <c>sdk</c> (sent through the device lane) or <c>server</c> (derived by Didit, such as <c>received_at</c> and enriched network fields). Check it before acting on a match.
+        /// Field path to provenance: <c>customer</c> (sent by your backend), <c>sdk</c> (sent through the device lane) or <c>server</c> (derived by Didit, such as <c>received_at</c> and enriched network fields). Check it before acting on a match. For an event submitted from a device with a monitoring token, the entry <c>device_context.bot_score</c> says who decided that score: <c>sdk</c> when the Didit SDK's own report alone set it, <c>server</c> when Didit raised it from the request or decided there is no score. The entry is present in that case even when <c>device_context.bot_score</c> itself is absent, so it is not a way to tell whether a score exists: read the score. Events stored before this behaviour keep the entries they were stored with.
         /// </summary>
         [JsonPropertyName("field_sources")]
         public IReadOnlyDictionary<string, MonitoringEventDetailFieldSourcesValue>? FieldSources { get; init; }
