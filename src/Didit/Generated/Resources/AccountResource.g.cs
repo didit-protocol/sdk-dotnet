@@ -53,6 +53,8 @@ namespace Didit.Resources
         /// <remarks>
         /// Step 1 of programmatic onboarding. Creates a pending account and emails a 6-char code (10 min TTL). The address is checked before any account is created: one that cannot receive the code returns 400 <c>email_undeliverable</c>. Rate limits: 5/IP/hour, plus a shared hourly budget per network (/24 for IPv4, /64 for IPv6).
         /// <para/>
+        /// Register with the mailbox address without a <c>+tag</c>. If normalization removes a tag (for example, <c>you+test@yourdomain.com</c> becomes <c>you@yourdomain.com</c>), registration returns 400 with an <c>email</c> field error naming that address, before looking up an account. The response is the same whether the account exists or not. No account is created or changed and no code is sent. Only explicitly configured staging test mailboxes keep their tags; production does not allow this exception.
+        /// <para/>
         /// <c>POST /programmatic/register/</c> (<c>account.register</c>).
         /// </remarks>
         /// <param name="parameters">The request parameters.</param>
@@ -71,6 +73,8 @@ namespace Didit.Resources
         /// Resend the 6-character verification code for an unverified programmatic account. Requires the account's email and password so only the owner can trigger a new code (no console Basic Auth). A fresh code replaces the previous one and is valid for 10 minutes.
         /// <para/>
         /// Rate limits: a per-email cooldown of 60 seconds between resends (HTTP 429 with <c>Retry-After</c>), and the same 5-per-IP-per-hour and per-network hourly budgets as registration.
+        /// <para/>
+        /// The password is required on every resend request. Omitting it returns HTTP 400 with {"password": ["This field is required."]}; no code is sent.
         /// <para/>
         /// <c>POST /programmatic/resend-otp/</c> (<c>account.resend_otp</c>).
         /// </remarks>
