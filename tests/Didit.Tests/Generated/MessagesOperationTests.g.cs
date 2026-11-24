@@ -284,6 +284,29 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Messages_Feedback_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(202, "{\"message_id\": \"3f6c9a52-8d1e-4b7a-9c20-5e1f7a3b8d44\", \"outcome\": \"converted\", \"conversion_seconds\": 240}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Feedback.CreateAsync("message_id-1", new MessageFeedbackRequest { Outcome = new MessageFeedbackRequestOutcome("converted"), OccurredAt = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero) });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/message_id-1/feedback/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"outcome\": \"converted\", \"occurred_at\": \"2026-01-02T03:04:05+00:00\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3f6c9a52-8d1e-4b7a-9c20-5e1f7a3b8d44", result.MessageId);
+            Assert.Equal(240L, result.ConversionSeconds);
+        }
+
+        [Fact]
         public async Task Messages_List()
         {
             var handler = new MockHttpHandler();

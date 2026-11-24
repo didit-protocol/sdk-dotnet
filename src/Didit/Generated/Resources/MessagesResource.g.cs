@@ -24,6 +24,7 @@ namespace Didit.Resources
             Configurations = new MessagesConfigurationsResource(raw.Configurations);
             Consent = new MessagesConsentResource(raw.Consent);
             Conversations = new MessagesConversationsResource(raw.Conversations);
+            Feedback = new MessagesFeedbackResource(raw.Feedback);
             Rules = new MessagesRulesResource(raw.Rules);
             Templates = new MessagesTemplatesResource(raw.Templates);
         }
@@ -39,6 +40,9 @@ namespace Didit.Resources
 
         /// <summary>The <c>messages.conversations</c> resource.</summary>
         public MessagesConversationsResource Conversations { get; }
+
+        /// <summary>The <c>messages.feedback</c> resource.</summary>
+        public MessagesFeedbackResource Feedback { get; }
 
         /// <summary>The <c>messages.rules</c> resource.</summary>
         public MessagesRulesResource Rules { get; }
@@ -218,6 +222,7 @@ namespace Didit.Resources
             Configurations = new MessagesConfigurationsRawResource(pipeline);
             Consent = new MessagesConsentRawResource(pipeline);
             Conversations = new MessagesConversationsRawResource(pipeline);
+            Feedback = new MessagesFeedbackRawResource(pipeline);
             Rules = new MessagesRulesRawResource(pipeline);
             Templates = new MessagesTemplatesRawResource(pipeline);
         }
@@ -233,6 +238,9 @@ namespace Didit.Resources
 
         /// <summary>The <c>messages.conversations</c> resource.</summary>
         public MessagesConversationsRawResource Conversations { get; }
+
+        /// <summary>The <c>messages.feedback</c> resource.</summary>
+        public MessagesFeedbackRawResource Feedback { get; }
 
         /// <summary>The <c>messages.rules</c> resource.</summary>
         public MessagesRulesRawResource Rules { get; }

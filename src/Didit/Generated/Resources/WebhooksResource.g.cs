@@ -27,6 +27,32 @@ namespace Didit.Resources
         public WebhooksDestinationsResource Destinations { get; }
 
         /// <summary>
+        /// Add a webhook endpoint
+        /// </summary>
+        /// <remarks>
+        /// Create a webhook endpoint: an HTTPS endpoint that receives the events in <c>events</c>. Send the event types to deliver, or <c>["*"]</c> for every event Didit lists: <c>*</c> is expanded when the endpoint is created and the answer lists the event names it now carries. An event Didit does not know answers <c>400 invalid_events</c>.
+        /// <para/>
+        /// The endpoint it creates is the destination the Business Console lists and <c>GET /v3/webhook/destinations/</c> returns: <c>webhook_id</c> is that destination's <c>destination_uuid</c>, <c>secret</c> is the same signing secret as <c>secret_shared_key</c>, and <c>events</c> is its stored <c>subscribed_events</c>, changed later through <c>PATCH /v3/webhook/destinations/{destination_uuid}/</c>. <c>description</c> names it in the console; left out, it takes the host of <c>url</c>. The <c>(application, url)</c> pair must be unique among the application's destinations.
+        /// <para/>
+        /// Didit delivers events only to the HTTPS endpoint in <c>url</c>.
+        /// <para/>
+        /// Errors. <c>400 invalid_url</c>: <c>url</c> is not an HTTPS URL, or the application already has an endpoint at it. <c>400 invalid_events</c>: an event in <c>events</c> is not one Didit lists.
+        /// <para/>
+        /// A scoped API key needs <c>webhooks: write</c>.
+        /// <para/>
+        /// <c>POST /v3/webhooks/</c> (<c>webhooks.create</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<WebhookCreateResponse> CreateAsync(WebhookCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Get webhook configuration
         /// </summary>
         /// <remarks>
@@ -74,6 +100,27 @@ namespace Didit.Resources
 
         /// <summary>The <c>webhooks.destinations</c> resource.</summary>
         public WebhooksDestinationsRawResource Destinations { get; }
+
+        /// <summary>
+        /// Add a webhook endpoint
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="WebhooksResource.CreateAsync"/>.</remarks>
+        public Task<DiditResponse<WebhookCreateResponse>> CreateAsync(WebhookCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/webhooks/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            request.Body = JsonRequestBody.Create(parameters);
+            return _pipeline.SendJsonAsync<WebhookCreateResponse>(request, requestOptions, cancellationToken);
+        }
 
         /// <summary>
         /// Get webhook configuration
