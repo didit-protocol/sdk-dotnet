@@ -20,7 +20,11 @@ namespace Didit.Resources
         internal MessagesResource(MessagesRawResource raw)
         {
             _raw = raw;
+            Rules = new MessagesRulesResource(raw.Rules);
         }
+
+        /// <summary>The <c>messages.rules</c> resource.</summary>
+        public MessagesRulesResource Rules { get; }
 
         /// <summary>
         /// Cancel a scheduled message
@@ -188,7 +192,11 @@ namespace Didit.Resources
         internal MessagesRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Rules = new MessagesRulesRawResource(pipeline);
         }
+
+        /// <summary>The <c>messages.rules</c> resource.</summary>
+        public MessagesRulesRawResource Rules { get; }
 
         /// <summary>
         /// Cancel a scheduled message

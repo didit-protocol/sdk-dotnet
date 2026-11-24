@@ -21,7 +21,11 @@ namespace Didit.Resources
         {
             _raw = raw;
             Factors = new PhoneFactorsResource(raw.Factors);
+            Fraud = new PhoneFraudResource(raw.Fraud);
+            LineTypeOverrides = new PhoneLineTypeOverridesResource(raw.LineTypeOverrides);
+            Lists = new PhoneListsResource(raw.Lists);
             Network = new PhoneNetworkResource(raw.Network);
+            RateLimits = new PhoneRateLimitsResource(raw.RateLimits);
             SdkKeys = new PhoneSdkKeysResource(raw.SdkKeys);
             Silent = new PhoneSilentResource(raw.Silent);
         }
@@ -29,8 +33,20 @@ namespace Didit.Resources
         /// <summary>The <c>phone.factors</c> resource.</summary>
         public PhoneFactorsResource Factors { get; }
 
+        /// <summary>The <c>phone.fraud</c> resource.</summary>
+        public PhoneFraudResource Fraud { get; }
+
+        /// <summary>The <c>phone.line_type_overrides</c> resource.</summary>
+        public PhoneLineTypeOverridesResource LineTypeOverrides { get; }
+
+        /// <summary>The <c>phone.lists</c> resource.</summary>
+        public PhoneListsResource Lists { get; }
+
         /// <summary>The <c>phone.network</c> resource.</summary>
         public PhoneNetworkResource Network { get; }
+
+        /// <summary>The <c>phone.rate_limits</c> resource.</summary>
+        public PhoneRateLimitsResource RateLimits { get; }
 
         /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
         public PhoneSdkKeysResource SdkKeys { get; }
@@ -71,6 +87,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Start a bulk lookup
+        /// </summary>
+        /// <remarks>
+        /// Look up a CSV of numbers as one job: one number per line, up to 100,000 numbers, with <c>fields</c> naming the signals to return for each number. The call answers <c>202</c> with the job (<c>status</c> <c>queued</c>, <c>processed</c> 0, <c>results_url</c> <c>null</c>). Read it with <c>GET /v3/phone/risk/bulk/{job_id}/</c>; when it is done, download the CSV from <c>results_url</c>. <c>callback_url</c>, a public HTTPS URL, receives <c>{job_id, status, total, results_url}</c> when the job finishes (described by <c>PhoneRiskBulkCallback</c>).
+        /// <para/>
+        /// Billing follows Phone Risk API pricing for each number in the file; a number that is not valid is not charged.
+        /// <para/>
+        /// Authentication. Send your application's API key in <c>x-api-key</c>.
+        /// <para/>
+        /// <c>POST /v3/phone/risk/bulk/</c> (<c>phone.assess_risk_bulk</c>).
+        /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
+        /// </remarks>
+        /// <param name="parameters">The request parameters.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<PhoneRiskBulkJob> AssessRiskBulkAsync(PhoneAssessRiskBulkParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.AssessRiskBulkAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Check Phone Code
         /// </summary>
         /// <remarks>
@@ -105,6 +143,44 @@ namespace Didit.Resources
         public async Task<PhoneVerificationCheckResponse> CheckCodeAsync(PhoneCheckCodeParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CheckCodeAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Download bulk lookup results
+        /// </summary>
+        /// <remarks>
+        /// Download the CSV of a bulk risk job: the column <c>phone_number</c> plus one column per requested signal, one row per number in the order of the uploaded file. A failed job still has the rows it answered. While no result file exists the answer is <c>409 results_not_ready</c>.
+        /// <para/>
+        /// Authentication. Send your application's API key in <c>x-api-key</c>.
+        /// <para/>
+        /// <c>GET /v3/phone/risk/bulk/{job_id}/results/</c> (<c>phone.download_risk_bulk_results</c>).
+        /// </remarks>
+        /// <param name="jobId">The job, as returned when it was started.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<BinaryResponse> DownloadRiskBulkResultsAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.DownloadRiskBulkResultsAsync(jobId, requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
+        /// Get a bulk lookup job
+        /// </summary>
+        /// <remarks>
+        /// Read a bulk risk job of your application: its <c>status</c>, how many numbers it has <c>processed</c> of its <c>total</c>, and the <c>results_url</c> of the CSV once a result file exists. An unknown job, or one of another application, answers <c>404</c>.
+        /// <para/>
+        /// Authentication. Send your application's API key in <c>x-api-key</c>.
+        /// <para/>
+        /// <c>GET /v3/phone/risk/bulk/{job_id}/</c> (<c>phone.retrieve_risk_bulk</c>).
+        /// </remarks>
+        /// <param name="jobId">The job, as returned when it was started.</param>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<PhoneRiskBulkJob> RetrieveRiskBulkAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.RetrieveRiskBulkAsync(jobId, requestOptions, cancellationToken).ConfigureAwait(false);
             return response.Data;
         }
 
@@ -154,7 +230,11 @@ namespace Didit.Resources
         {
             _pipeline = pipeline;
             Factors = new PhoneFactorsRawResource(pipeline);
+            Fraud = new PhoneFraudRawResource(pipeline);
+            LineTypeOverrides = new PhoneLineTypeOverridesRawResource(pipeline);
+            Lists = new PhoneListsRawResource(pipeline);
             Network = new PhoneNetworkRawResource(pipeline);
+            RateLimits = new PhoneRateLimitsRawResource(pipeline);
             SdkKeys = new PhoneSdkKeysRawResource(pipeline);
             Silent = new PhoneSilentRawResource(pipeline);
         }
@@ -162,8 +242,20 @@ namespace Didit.Resources
         /// <summary>The <c>phone.factors</c> resource.</summary>
         public PhoneFactorsRawResource Factors { get; }
 
+        /// <summary>The <c>phone.fraud</c> resource.</summary>
+        public PhoneFraudRawResource Fraud { get; }
+
+        /// <summary>The <c>phone.line_type_overrides</c> resource.</summary>
+        public PhoneLineTypeOverridesRawResource LineTypeOverrides { get; }
+
+        /// <summary>The <c>phone.lists</c> resource.</summary>
+        public PhoneListsRawResource Lists { get; }
+
         /// <summary>The <c>phone.network</c> resource.</summary>
         public PhoneNetworkRawResource Network { get; }
+
+        /// <summary>The <c>phone.rate_limits</c> resource.</summary>
+        public PhoneRateLimitsRawResource RateLimits { get; }
 
         /// <summary>The <c>phone.sdk_keys</c> resource.</summary>
         public PhoneSdkKeysRawResource SdkKeys { get; }
@@ -193,6 +285,37 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Start a bulk lookup
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.AssessRiskBulkAsync"/>.</remarks>
+        public Task<DiditResponse<PhoneRiskBulkJob>> AssessRiskBulkAsync(PhoneAssessRiskBulkParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            if (parameters is null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            var request = new ApiRequest(HttpMethods.Post, "/v3/phone/risk/bulk/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            var form = new MultipartRequestBody();
+            form.Add("file", parameters.File);
+            if (parameters.Fields.IsSet)
+            {
+                form.AddEach("fields", parameters.Fields.Value.Select(v => v.Value));
+            }
+            if (parameters.CallbackUrl.IsSet)
+            {
+                form.Add("callback_url", parameters.CallbackUrl.Value);
+            }
+            request.Body = form;
+            return _pipeline.SendJsonAsync<PhoneRiskBulkJob>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
         /// Check Phone Code
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneResource.CheckCodeAsync"/>.</remarks>
@@ -211,6 +334,36 @@ namespace Didit.Resources
             };
             request.Body = JsonRequestBody.Create(parameters);
             return _pipeline.SendJsonAsync<PhoneVerificationCheckResponse>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Download bulk lookup results
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.DownloadRiskBulkResultsAsync"/>.</remarks>
+        public Task<DiditResponse<BinaryResponse>> DownloadRiskBulkResultsAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/phone/risk/bulk/" + PathParameter.Encode(jobId, "jobId") + "/results/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendBinaryAsync(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get a bulk lookup job
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PhoneResource.RetrieveRiskBulkAsync"/>.</remarks>
+        public Task<DiditResponse<PhoneRiskBulkJob>> RetrieveRiskBulkAsync(string jobId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/phone/risk/bulk/" + PathParameter.Encode(jobId, "jobId") + "/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.ApiKey,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<PhoneRiskBulkJob>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

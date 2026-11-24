@@ -38,6 +38,31 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Phone_AssessRiskBulk()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(202, "{\"job_id\": \"8c1f2d3e-5a47-4b90-8e21-7d3a9b6c4f55\", \"status\": \"queued\", \"total\": 2400, \"processed\": 0, \"results_url\": null}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.AssessRiskBulkAsync(new PhoneAssessRiskBulkParams { File = FileUpload.FromBytes(new byte[] { 1, 2, 3 }, "sample.jpg", "image/jpeg"), Fields = new PhoneAssessRiskBulkParamsFields[] { new PhoneAssessRiskBulkParamsFields("format") }, CallbackUrl = "https://example.com/callback" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/risk/bulk/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("multipart/form-data", request.ContentType);
+            Assert.Contains("name=\"file\"", request.BodyText);
+            Assert.Contains("name=\"fields\"", request.BodyText);
+            Assert.Contains("name=\"callback_url\"", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("8c1f2d3e-5a47-4b90-8e21-7d3a9b6c4f55", result.JobId);
+            Assert.Equal(2400L, result.Total);
+        }
+
+        [Fact]
         public async Task Phone_CheckCode()
         {
             var handler = new MockHttpHandler();
@@ -57,6 +82,27 @@ namespace Didit.Tests.Generated
             JsonAssert.Equivalent("{\"phone_number\": \"+14155552671\", \"code\": \"123456\", \"duplicated_phone_number_action\": \"NO_ACTION\", \"disposable_number_action\": \"NO_ACTION\", \"voip_number_action\": \"NO_ACTION\", \"enable_enrichment\": true, \"phone_intelligence_score_action\": \"NO_ACTION\", \"phone_type_risk_action\": \"NO_ACTION\", \"recent_port_action\": \"NO_ACTION\", \"low_phone_trust_action\": \"NO_ACTION\", \"enable_social\": true, \"phone_no_social_presence_action\": \"NO_ACTION\"}", request.BodyText);
             Assert.NotNull(result);
             Assert.Equal("e39cb057-92fc-4b59-b84e-02fec29a0f24", result.RequestId);
+        }
+
+        [Fact]
+        public async Task Phone_DownloadRiskBulkResults()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(200, new byte[] { 37, 80, 68, 70 }, "text/csv", new Dictionary<string, string> { ["Content-Disposition"] = "attachment; filename=\"report.bin\"" });
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.DownloadRiskBulkResultsAsync("job_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/risk/bulk/job_id-1/results/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Equal(new byte[] { 37, 80, 68, 70 }, result.Content);
+            Assert.Equal("text/csv", result.ContentType);
+            Assert.Equal("report.bin", result.FileName);
         }
 
         [Fact]
@@ -164,6 +210,301 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Phone_Fraud_Evaluate()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"decision\": \"allow\", \"score\": 12, \"matched_rules\": [], \"policy\": {\"policy_id\": \"9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44\", \"score\": 40, \"conditions_met\": [\"sim_swap\"]}, \"challenge_channels\": [], \"email\": null, \"existing_user\": false, \"exception\": null}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.EvaluateAsync("sample");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/evaluate/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("\"sample\"", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal(12L, result.Score);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Events_CreateBatch()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(207, "{\"accepted\": 1, \"results\": [{\"index\": 0, \"event_id\": \"ae4f1a36-8c7a-4d25-9a49-3f6b0c2d7e55\", \"status\": \"accepted\", \"error\": null}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.Events.CreateBatchAsync(new PhoneFraudEventsCreateBatchParams { Events = new PhoneFraudEventsCreateBatchParamsEvents[] { new PhoneFraudEventsCreateBatchParamsEvents() } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/events/batch/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"events\": [{}]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal(1L, result.Accepted);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Policies_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"policy_id\": \"9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44\", \"name\": \"Payment check\", \"flow\": \"payment\", \"conditions\": [{\"signal\": \"sim_swap\", \"operator\": \"within_hours\", \"value\": \"72\", \"weight\": 40}], \"threshold\": 60, \"action\": \"challenge\", \"updated_at\": \"2026-11-21T09:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.Policies.CreateAsync(new PhoneFraudPolicyInput { Name = "Payment check", Flow = "payment", Threshold = 60L, Action = new PhoneFraudPolicyInputAction("allow") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/policies/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"Payment check\", \"flow\": \"payment\", \"threshold\": 60, \"action\": \"allow\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44", result.PolicyId);
+            Assert.Equal(60L, result.Threshold);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Policies_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Phone.Fraud.Policies.DeleteAsync("policy_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/policies/policy_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Policies_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"policy_id\": \"9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44\", \"name\": \"Payment check\", \"flow\": \"payment\", \"conditions\": [{\"signal\": \"sim_swap\", \"operator\": \"within_hours\", \"value\": \"72\", \"weight\": 40}], \"threshold\": 60, \"action\": \"challenge\", \"updated_at\": \"2026-11-21T09:00:00Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.Policies.ListAsync(new PhoneFraudPoliciesListParams { Flow = "sample-flow", Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/policies/", request.Path);
+            Assert.Equal("?flow=sample-flow&limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Policies_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"policy_id\": \"9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44\", \"name\": \"Payment check\", \"flow\": \"payment\", \"conditions\": [{\"signal\": \"sim_swap\", \"operator\": \"within_hours\", \"value\": \"72\", \"weight\": 40}, {\"signal\": \"email_risk\", \"operator\": \"eq\", \"value\": \"high\", \"weight\": 30}], \"threshold\": 60, \"action\": \"challenge\", \"updated_at\": \"2026-11-21T09:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.Policies.RetrieveAsync("policy_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/policies/policy_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44", result.PolicyId);
+            Assert.Equal(60L, result.Threshold);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Policies_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"policy_id\": \"9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44\", \"name\": \"Payment check\", \"flow\": \"payment\", \"conditions\": [{\"signal\": \"sim_swap\", \"operator\": \"within_hours\", \"value\": \"72\", \"weight\": 40}, {\"signal\": \"email_risk\", \"operator\": \"eq\", \"value\": \"high\", \"weight\": 30}], \"threshold\": 60, \"action\": \"challenge\", \"updated_at\": \"2026-11-21T09:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.Policies.UpdateAsync("policy_id-1", new PhoneFraudPolicyInput { Name = "Payment check", Flow = "payment", Threshold = 60L, Action = new PhoneFraudPolicyInputAction("allow") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/policies/policy_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"Payment check\", \"flow\": \"payment\", \"threshold\": 60, \"action\": \"allow\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("9d3e0f25-7b69-4c14-8f38-2e5a9b1c6d44", result.PolicyId);
+            Assert.Equal(60L, result.Threshold);
+        }
+
+        [Fact]
+        public async Task Phone_Fraud_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"level\": \"custom\", \"rules\": [{\"key\": \"sim_swap\", \"action\": \"require_code\", \"countries\": [\"GB\", \"ES\"]}], \"challenge_channels\": [\"silent\", \"whatsapp\", \"passkey\"], \"updated_at\": \"2026-11-21T10:00:00Z\", \"sim_swap_within\": 72, \"daily_cap\": null}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Fraud.UpdateAsync(new PhoneFraudUpdateParams { Level = new PhoneFraudUpdateParamsLevel("standard"), ChallengeChannels = new PhoneFraudUpdateParamsChallengeChannels[] { new PhoneFraudUpdateParamsChallengeChannels("silent") }, SimSwapWithin = 72L, DailyCap = "50.00" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/fraud/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"level\": \"standard\", \"challenge_channels\": [\"silent\"], \"sim_swap_within\": 72, \"daily_cap\": \"50.00\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal(72L, result.SimSwapWithin);
+        }
+
+        [Fact]
+        public async Task Phone_LineTypeOverrides_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"override_id\": \"7c2d9e14-6a58-4b03-9e27-1d4f8a0b5c33\", \"phone_number\": \"+34911234567\", \"line_type\": \"landline\", \"created_at\": \"2026-11-21T09:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.LineTypeOverrides.CreateAsync(new PhoneLineTypeOverridesCreateParams { PhoneNumber = "+34911234567", LineType = new PhoneLineTypeOverridesCreateParamsLineType("mobile"), Note = "sample-note" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/line-type-overrides/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"phone_number\": \"+34911234567\", \"line_type\": \"mobile\", \"note\": \"sample-note\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("7c2d9e14-6a58-4b03-9e27-1d4f8a0b5c33", result.OverrideId);
+        }
+
+        [Fact]
+        public async Task Phone_LineTypeOverrides_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Phone.LineTypeOverrides.DeleteAsync("override_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/line-type-overrides/override_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Phone_Lists_Add()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"entry_id\": \"bf5a2b47-9d8b-4e36-8b5a-407c1d3e8f66\", \"list_id\": \"block\", \"value\": \"+88216\", \"expires_at\": null, \"type\": \"prefix\", \"source\": \"api\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Lists.AddAsync("list_id-1", new PhoneListsAddParams { Value = "+88216", Type = new PhoneListsAddParamsType("number"), ExpiresAt = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.Zero), Note = "Pumping from this prefix" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/lists/list_id-1/entries/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"value\": \"+88216\", \"type\": \"number\", \"expires_at\": \"2026-01-02T03:04:05+00:00\", \"note\": \"Pumping from this prefix\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("bf5a2b47-9d8b-4e36-8b5a-407c1d3e8f66", result.EntryId);
+        }
+
+        [Fact]
+        public async Task Phone_Lists_Check()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"allowed\": false, \"blocked\": true, \"matches\": [{\"list_id\": \"block\", \"entry_id\": \"c06b3c58-ae9c-4f47-9c6b-518d2e4f9a77\", \"type\": \"prefix\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Lists.CheckAsync(new PhoneListsCheckParams { PhoneNumber = "+447700900123" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/lists/check/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"phone_number\": \"+447700900123\"}", request.BodyText);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Phone_Lists_ListEntries()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"entry_id\": \"c06b3c58-ae9c-4f47-9c6b-518d2e4f9a77\", \"value\": \"+4475\", \"type\": \"prefix\", \"expires_at\": null, \"source\": \"alert\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.Lists.ListEntriesAsync("list_id-1", new PhoneListsListEntriesParams { Type = new PhoneListsListEntriesParamsType("number"), Search = "sample-search", Limit = 1L, Offset = 1L, Format = new PhoneListsListEntriesParamsFormat("json") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/lists/list_id-1/entries/", request.Path);
+            Assert.Equal("?type=number&search=sample-search&limit=1&offset=1&format=json", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Phone_Lists_Remove()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Phone.Lists.RemoveAsync("list_id-1", "entry_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/lists/list_id-1/entries/entry_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
         public async Task Phone_Network_Registrations_Create()
         {
             var handler = new MockHttpHandler();
@@ -265,6 +606,150 @@ namespace Didit.Tests.Generated
             Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
             Assert.Null(request.Header("Authorization"));
             Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Phone_RateLimits_Buckets_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Phone.RateLimits.Buckets.DeleteAsync("rate_limit_id-1", "bucket_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/rate-limits/rate_limit_id-1/buckets/bucket_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Phone_RateLimits_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"rate_limit_id\": \"3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01\", \"key\": \"user_id\", \"buckets\": [{\"bucket_id\": \"0b6f6a4e-3f1a-4c6e-9a53-6b1d2f9c7a10\", \"max\": 5, \"interval\": 3600}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.RateLimits.CreateAsync(new PhoneRateLimitsCreateParams { Key = "user_id", Buckets = new PhoneRateLimitsCreateParamsBuckets[] { new PhoneRateLimitsCreateParamsBuckets { Max = 5L, Interval = 3600L } } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/rate-limits/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"key\": \"user_id\", \"buckets\": [{\"max\": 5, \"interval\": 3600}]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01", result.RateLimitId);
+        }
+
+        [Fact]
+        public async Task Phone_RateLimits_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Phone.RateLimits.DeleteAsync("rate_limit_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/rate-limits/rate_limit_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Phone_RateLimits_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"rate_limit_id\": \"3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01\", \"key\": \"user_id\", \"buckets\": [{\"bucket_id\": \"0b6f6a4e-3f1a-4c6e-9a53-6b1d2f9c7a10\", \"max\": 5, \"interval\": 3600, \"in_use\": 2}]}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.RateLimits.ListAsync(new PhoneRateLimitsListParams { Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/rate-limits/", request.Path);
+            Assert.Equal("?limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Phone_RateLimits_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"rate_limit_id\": \"3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01\", \"key\": \"user_id\", \"buckets\": [{\"bucket_id\": \"0b6f6a4e-3f1a-4c6e-9a53-6b1d2f9c7a10\", \"max\": 5, \"interval\": 3600, \"in_use\": 2}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.RateLimits.RetrieveAsync("rate_limit_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/rate-limits/rate_limit_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01", result.RateLimitId);
+        }
+
+        [Fact]
+        public async Task Phone_RateLimits_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"rate_limit_id\": \"3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01\", \"key\": \"user_id\", \"buckets\": [{\"bucket_id\": \"0b6f6a4e-3f1a-4c6e-9a53-6b1d2f9c7a10\", \"max\": 10, \"interval\": 86400, \"in_use\": 2}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.RateLimits.UpdateAsync("rate_limit_id-1", new PhoneRateLimitsUpdateParams { Buckets = new PhoneRateLimitsUpdateParamsBuckets[] { new PhoneRateLimitsUpdateParamsBuckets() } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/rate-limits/rate_limit_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"buckets\": [{}]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3f6c1b52-8d4e-4a7b-9c10-5e2a7d9b1c01", result.RateLimitId);
+        }
+
+        [Fact]
+        public async Task Phone_RetrieveRiskBulk()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"job_id\": \"8c1f2d3e-5a47-4b90-8e21-7d3a9b6c4f55\", \"status\": \"done\", \"total\": 2400, \"processed\": 2400, \"results_url\": \"/v3/phone/risk/bulk/8c1f2d3e-5a47-4b90-8e21-7d3a9b6c4f55/results/\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Phone.RetrieveRiskBulkAsync("job_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/phone/risk/bulk/job_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("8c1f2d3e-5a47-4b90-8e21-7d3a9b6c4f55", result.JobId);
+            Assert.Equal(2400L, result.Total);
         }
 
         [Fact]

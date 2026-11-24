@@ -141,6 +141,28 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Messages_Rules_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"rule_id\": \"5b1e7a90-2c43-4d68-8f15-0a9c3e6d7b22\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Rules.CreateAsync(new MessagesRulesCreateParams { Action = new MessagesRulesCreateParamsAction("allow"), Direction = new MessagesRulesCreateParamsDirection("outbound"), Match = "sample", Channels = new string[] { "sample-channels" } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/rules/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"action\": \"allow\", \"direction\": \"outbound\", \"match\": \"sample\", \"channels\": [\"sample-channels\"]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("5b1e7a90-2c43-4d68-8f15-0a9c3e6d7b22", result.RuleId);
+        }
+
+        [Fact]
         public async Task Messages_Send()
         {
             var handler = new MockHttpHandler();
