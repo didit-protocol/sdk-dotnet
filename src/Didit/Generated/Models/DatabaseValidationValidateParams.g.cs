@@ -484,6 +484,13 @@ namespace Didit
         public Optional<string> LeftThumb { get; set; }
 
         /// <summary>
+        /// Base64-encoded image of the CNH page carrying the Senatran QR code, required by <c>bra_cnh_facial_qrcode</c>. Send the whole page as a text field (<c>data:image/png;base64,...</c> or the bare base64 payload), never as a file part: the registry decodes the QR code server-side. JPEG, PNG or a PDF export of the digital CNH; a WebP payload returns <c>400</c>.
+        /// </summary>
+        [JsonPropertyName("cnh_qr_code_image")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<string> CnhQrCodeImage { get; set; }
+
+        /// <summary>
         /// Minimum biometric score level for <c>zaf_criminal_face_screening</c>. Defaults to <c>3</c>.
         /// </summary>
         [JsonPropertyName("score_level")]

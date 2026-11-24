@@ -354,6 +354,10 @@ namespace Didit.Resources
                 {
                     form.Add("left_thumb", parameters.LeftThumb.Value);
                 }
+                if (parameters.CnhQrCodeImage.IsSet)
+                {
+                    form.Add("cnh_qr_code_image", parameters.CnhQrCodeImage.Value);
+                }
                 if (parameters.ScoreLevel.IsSet)
                 {
                     form.Add("score_level", parameters.ScoreLevel.Value);
