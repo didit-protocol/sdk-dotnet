@@ -20,11 +20,23 @@ namespace Didit.Resources
         internal MessagesResource(MessagesRawResource raw)
         {
             _raw = raw;
+            Consent = new MessagesConsentResource(raw.Consent);
+            Conversations = new MessagesConversationsResource(raw.Conversations);
             Rules = new MessagesRulesResource(raw.Rules);
+            Templates = new MessagesTemplatesResource(raw.Templates);
         }
+
+        /// <summary>The <c>messages.consent</c> resource.</summary>
+        public MessagesConsentResource Consent { get; }
+
+        /// <summary>The <c>messages.conversations</c> resource.</summary>
+        public MessagesConversationsResource Conversations { get; }
 
         /// <summary>The <c>messages.rules</c> resource.</summary>
         public MessagesRulesResource Rules { get; }
+
+        /// <summary>The <c>messages.templates</c> resource.</summary>
+        public MessagesTemplatesResource Templates { get; }
 
         /// <summary>
         /// Cancel a scheduled message
@@ -144,7 +156,7 @@ namespace Didit.Resources
         /// <para/>
         /// Fallback. List several <c>channels</c>: each is tried in order, and the next one is used when a channel cannot take the message (switched off, the recipient opted out, no approved WhatsApp template, balance) or when the message fails on it later (rejected, undeliverable, expired). Every attempt is in <c>attempts</c>; a skipped channel is a <c>failed</c> attempt with its <c>error</c> and no price.
         /// <para/>
-        /// Statuses reach your webhook destinations subscribed to <c>message.status.updated</c>.
+        /// Statuses reach your webhook destinations subscribed to <c>message.status.updated</c>; a reply from the person reaches <c>message.received</c> (WhatsApp and Telegram) and a change of their consent <c>contact.consent.updated</c>.
         /// <para/>
         /// Billing. SMS: the carrier's price plus Didit's fee, per segment. WhatsApp from Didit's number: WhatsApp's rate for the market plus Didit's fee; from your own connected WhatsApp Business account, WhatsApp bills its rate to your account directly and Didit charges only its fee. Email: a flat price. Your plan's discount applies to the fee, never to the carrier's or WhatsApp's part. A failed SMS or WhatsApp attempt, a skipped one and a cancelled one are free; an email is charged once the receiving mail system accepts it, so an email that bounces later is charged. SMS and WhatsApp open with a paid plan or after your first top-up (<c>403 plan_locked</c>); a sandbox application simulates every message and charges nothing. See the [prices per country](/getting-started/pricing).
         /// <para/>
@@ -192,11 +204,23 @@ namespace Didit.Resources
         internal MessagesRawResource(HttpPipeline pipeline)
         {
             _pipeline = pipeline;
+            Consent = new MessagesConsentRawResource(pipeline);
+            Conversations = new MessagesConversationsRawResource(pipeline);
             Rules = new MessagesRulesRawResource(pipeline);
+            Templates = new MessagesTemplatesRawResource(pipeline);
         }
+
+        /// <summary>The <c>messages.consent</c> resource.</summary>
+        public MessagesConsentRawResource Consent { get; }
+
+        /// <summary>The <c>messages.conversations</c> resource.</summary>
+        public MessagesConversationsRawResource Conversations { get; }
 
         /// <summary>The <c>messages.rules</c> resource.</summary>
         public MessagesRulesRawResource Rules { get; }
+
+        /// <summary>The <c>messages.templates</c> resource.</summary>
+        public MessagesTemplatesRawResource Templates { get; }
 
         /// <summary>
         /// Cancel a scheduled message

@@ -170,6 +170,12 @@ namespace Didit
         /// <summary><c>message.status.updated</c></summary>
         public static WebhookEvent MessageStatusUpdated { get; } = new("message.status.updated");
 
+        /// <summary><c>message.received</c></summary>
+        public static WebhookEvent MessageReceived { get; } = new("message.received");
+
+        /// <summary><c>contact.consent.updated</c></summary>
+        public static WebhookEvent ContactConsentUpdated { get; } = new("contact.consent.updated");
+
         /// <summary>The wire value.</summary>
         public string Value => _value ?? string.Empty;
 
