@@ -38,6 +38,131 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Messages_Consent_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"channels\": [{\"channel\": \"sms\", \"status\": \"opted_in\", \"source\": \"api\", \"updated_at\": \"2026-11-12T08:30:00Z\"}], \"reassigned\": false}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Consent.RetrieveAsync("to-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/contacts/to-1/consent/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Messages_Consent_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"channels\": [{\"channel\": \"whatsapp\", \"status\": \"opted_out\", \"source\": \"api\", \"updated_at\": \"2026-11-22T09:41:00Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Consent.UpdateAsync("to-1", new MessageConsentUpdate { Channel = new MessageConsentUpdateChannel("sms"), Status = new MessageConsentUpdateStatus("opted_in"), Source = new MessageConsentUpdateSource("stop_reply") });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/contacts/to-1/consent/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"channel\": \"sms\", \"status\": \"opted_in\", \"source\": \"stop_reply\"}", request.BodyText);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Messages_Conversations_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"conversation_id\": \"6f0c2a8e-3b1d-4c5e-9a7f-2d8b1e4c6a90\", \"assignee\": \"mem_ana\", \"unread_count\": 2}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Conversations.ListAsync(new MessagesConversationsListParams { Status = new MessagesConversationsListParamsStatus("open"), Assignee = "sample-assignee", Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/conversations/", request.Path);
+            Assert.Equal("?status=open&assignee=sample-assignee&limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Messages_Conversations_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"conversation_id\": \"6f0c2a8e-3b1d-4c5e-9a7f-2d8b1e4c6a90\", \"assignee\": \"mem_ana\", \"unread_count\": 0}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Conversations.UpdateAsync("conversation_id-1", new MessageConversationUpdate { Assignee = "sample-assignee", Status = new MessageConversationUpdateStatus("open"), ReadUpTo = "11111111-2222-3333-4444-555555555555" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/conversations/conversation_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"assignee\": \"sample-assignee\", \"status\": \"open\", \"read_up_to\": \"11111111-2222-3333-4444-555555555555\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("6f0c2a8e-3b1d-4c5e-9a7f-2d8b1e4c6a90", result.ConversationId);
+            Assert.Equal(0L, result.UnreadCount);
+        }
+
+        [Fact]
+        public async Task Messages_Conversations_Webhooks_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"webhook_id\": \"b3e1d7a2-5c4f-4e8b-9d16-0a7c3f2e8b51\", \"secret\": \"whsec_live_4d81\", \"events\": [\"message.received\"]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Conversations.Webhooks.CreateAsync("conversation_id-1", new MessageConversationWebhookCreate { Url = "https://example.com/callback", Events = new MessageConversationWebhookCreateEvents[] { new MessageConversationWebhookCreateEvents("message.received") } });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/conversations/conversation_id-1/webhooks/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"url\": \"https://example.com/callback\", \"events\": [\"message.received\"]}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("b3e1d7a2-5c4f-4e8b-9d16-0a7c3f2e8b51", result.WebhookId);
+        }
+
+        [Fact]
+        public async Task Messages_Conversations_Webhooks_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Messages.Conversations.Webhooks.DeleteAsync("conversation_id-1", "webhook_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/conversations/conversation_id-1/webhooks/webhook_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
         public async Task Messages_Delete()
         {
             var handler = new MockHttpHandler();
@@ -183,6 +308,90 @@ namespace Didit.Tests.Generated
             Assert.NotNull(result);
             Assert.Equal("6f1c2a9e-4b7d-4d8e-9a51-2f0f7e3c1b55", result.Id);
             Assert.Equal(1L, result.Segments);
+        }
+
+        [Fact]
+        public async Task Messages_Templates_Delete()
+        {
+            var handler = new MockHttpHandler();
+            handler.Enqueue(204);
+            using var client = TestClients.Create(handler);
+            await client.Messages.Templates.DeleteAsync("template_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("DELETE", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/templates/template_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
+        public async Task Messages_Templates_List()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's schema.
+            handler.Enqueue(200, "{\"count\": 1, \"next\": null, \"previous\": null, \"results\": [{\"id\": \"sample\", \"name\": \"sample\", \"description\": \"sample\", \"channels\": [\"sms\"], \"languages\": [\"sample\"], \"variables\": [\"sample\"], \"variable_examples\": {\"key\": \"sample\"}, \"whatsapp\": {\"status\": \"draft\", \"reason\": \"sample\"}, \"version\": 1, \"contents\": [{\"channel\": \"sms\", \"language\": \"sample\", \"subject\": \"sample\", \"body\": \"sample\", \"whatsapp\": {\"status\": \"draft\", \"reason\": \"sample\"}, \"updated_at\": \"2026-01-02T03:04:05Z\"}], \"created_at\": \"2026-01-02T03:04:05Z\", \"updated_at\": \"2026-01-02T03:04:05Z\"}]}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Templates.ListAsync(new MessagesTemplatesListParams { Status = new MessagesTemplatesListParamsStatus("approved"), Channel = new MessagesTemplatesListParamsChannel("sms"), Locale = "sample-locale", Limit = 1L, Offset = 1L });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/templates/", request.Path);
+            Assert.Equal("?status=approved&channel=sms&locale=sample-locale&limit=1&offset=1", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.Single(result.Results);
+            Assert.Equal(1L, result.Count);
+        }
+
+        [Fact]
+        public async Task Messages_Templates_Retrieve()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"id\": \"3b7f2c1e-9d4a-4e6b-8a15-6c0d2f9e7a42\", \"name\": \"Order shipped\", \"description\": \"Sent when an order leaves the warehouse.\", \"channels\": [\"email\", \"sms\", \"whatsapp\"], \"languages\": [\"en\"], \"variables\": [\"order_number\", \"customer\"], \"variable_examples\": {\"customer\": \"Ana\", \"order_number\": \"1042\"}, \"whatsapp\": {\"status\": \"pending\", \"reason\": \"\"}, \"version\": 1, \"contents\": [{\"channel\": \"email\", \"language\": \"en\", \"subject\": \"Order {{order_number}} ships today\", \"body\": \"Hi {{customer}},\\n\\nyour order {{order_number}} ships today.\", \"whatsapp\": null, \"updated_at\": \"2026-11-21T10:00:00Z\"}, {\"channel\": \"sms\", \"language\": \"en\", \"subject\": null, \"body\": \"Hi {{customer}}, order {{order_number}} ships today.\", \"whatsapp\": null, \"updated_at\": \"2026-11-21T10:00:00Z\"}, {\"channel\": \"whatsapp\", \"language\": \"en\", \"subject\": null, \"body\": \"Hi {{customer}}, order {{order_number}} ships today.\", \"whatsapp\": {\"status\": \"pending\", \"reason\": \"\"}, \"updated_at\": \"2026-11-21T10:00:00Z\"}], \"created_at\": \"2026-11-21T10:00:00Z\", \"updated_at\": \"2026-11-21T10:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Templates.RetrieveAsync("template_id-1");
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/templates/template_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+            Assert.NotNull(result);
+            Assert.Equal("3b7f2c1e-9d4a-4e6b-8a15-6c0d2f9e7a42", result.Id);
+            Assert.Equal(1L, result.Version);
+        }
+
+        [Fact]
+        public async Task Messages_Templates_Update()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"id\": \"3b7f2c1e-9d4a-4e6b-8a15-6c0d2f9e7a42\", \"name\": \"Order on its way\", \"description\": \"Sent when an order leaves the warehouse.\", \"channels\": [\"email\", \"sms\", \"whatsapp\"], \"languages\": [\"en\"], \"variables\": [\"order_number\", \"customer\"], \"variable_examples\": {\"customer\": \"Ana\", \"order_number\": \"1042\"}, \"whatsapp\": {\"status\": \"pending\", \"reason\": \"\"}, \"version\": 2, \"contents\": [{\"channel\": \"email\", \"language\": \"en\", \"subject\": \"Order {{order_number}} ships today\", \"body\": \"Hi {{customer}},\\n\\nyour order {{order_number}} ships today.\", \"whatsapp\": null, \"updated_at\": \"2026-11-21T10:00:00Z\"}, {\"channel\": \"sms\", \"language\": \"en\", \"subject\": null, \"body\": \"Hi {{customer}}, order {{order_number}} ships today.\", \"whatsapp\": null, \"updated_at\": \"2026-11-21T10:00:00Z\"}, {\"channel\": \"whatsapp\", \"language\": \"en\", \"subject\": null, \"body\": \"Hi {{customer}}, order {{order_number}} ships today.\", \"whatsapp\": {\"status\": \"pending\", \"reason\": \"\"}, \"updated_at\": \"2026-11-21T10:00:00Z\"}], \"created_at\": \"2026-11-21T10:00:00Z\", \"updated_at\": \"2026-11-21T10:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.Templates.UpdateAsync("template_id-1", new UpdateMessageTemplateRequest { Name = "sample-name", Description = "sample-description" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("PATCH", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/templates/template_id-1/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"name\": \"sample-name\", \"description\": \"sample-description\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("3b7f2c1e-9d4a-4e6b-8a15-6c0d2f9e7a42", result.Id);
+            Assert.Equal(2L, result.Version);
         }
 
         [Fact]
