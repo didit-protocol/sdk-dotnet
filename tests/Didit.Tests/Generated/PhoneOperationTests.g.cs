@@ -839,7 +839,7 @@ namespace Didit.Tests.Generated
         {
             var handler = new MockHttpHandler();
             // Response body from the spec's example.
-            handler.Enqueue(200, "{\"request_id\": \"e39cb057-92fc-4b59-b84e-02fec29a0f24\", \"status\": \"Success\", \"reason\": null, \"vendor_data\": \"user-1234\", \"metadata\": null}");
+            handler.Enqueue(200, "{\"request_id\": \"e39cb057-92fc-4b59-b84e-02fec29a0f24\", \"status\": \"Success\", \"channel\": null, \"reason\": null, \"vendor_data\": \"user-1234\", \"metadata\": null}");
             using var client = TestClients.Create(handler);
             var result = await client.Phone.SendCodeAsync(new PhoneSendCodeParams { PhoneNumber = "+14155552671", VendorData = "sample-vendor_data" });
 

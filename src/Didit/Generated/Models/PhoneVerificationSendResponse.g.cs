@@ -27,6 +27,12 @@ namespace Didit
         public PhoneVerificationSendResponseStatus? Status { get; init; }
 
         /// <summary>
+        /// The channel the code went out on, <c>voice</c> when a call reads it, or <c>null</c> when the delivery channel is not confirmed, for example when the carrier delivers the message without saying which channel carried it. A <c>Blocked</c> send returns the channel you asked for. A send that reuses the pending code returns the channel that code went out on.
+        /// </summary>
+        [JsonPropertyName("channel")]
+        public string? Channel { get; init; }
+
+        /// <summary>
         /// Why a send was <c>Blocked</c> (e.g., <c>repeated_attempts</c>, <c>suspicious</c>, <c>spam</c>). <c>null</c> on <c>Success</c> and <c>Retry</c>.
         /// </summary>
         [JsonPropertyName("reason")]
