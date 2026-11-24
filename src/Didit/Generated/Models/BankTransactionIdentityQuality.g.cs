@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// How <c>id</c> was matched. <c>bank_reference</c> and <c>route_id</c> are stable. <c>derived</c> is matched by content: it is stable while the bank keeps reporting the entry unchanged, and a correction by the bank can then appear as one <c>removed</c> and one <c>added</c>.
+    /// How <c>id</c> was matched within the connection. <c>bank_reference</c> and <c>route_id</c> are stable. <c>derived</c> is matched by content: it is stable while the bank keeps reporting the entry unchanged, and a correction by the bank can then appear as one <c>removed</c> and one <c>added</c>. Across connections only a <c>bank_reference</c> is a reliable key.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankTransactionIdentityQuality.EnumJsonConverter))]

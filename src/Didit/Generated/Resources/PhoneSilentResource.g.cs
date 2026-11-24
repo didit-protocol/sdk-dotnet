@@ -47,6 +47,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSilentCoverage> CoverageAsync(PhoneSilentCoverageParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CoverageAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -74,6 +75,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneSilentEligibility> EligibilityAsync(PhoneSilentEligibilityRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.EligibilityAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -99,6 +101,7 @@ namespace Didit.Resources
         /// List where silent verification runs
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSilentResource.CoverageAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSilentCoverage>> CoverageAsync(PhoneSilentCoverageParams? parameters = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/silent/coverage/")
@@ -115,6 +118,7 @@ namespace Didit.Resources
         /// Check silent eligibility before you start
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneSilentResource.EligibilityAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneSilentEligibility>> EligibilityAsync(PhoneSilentEligibilityRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

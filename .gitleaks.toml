@@ -11,7 +11,7 @@ description = "Upstream copies under openapi/, pinned upstream copies in codegen
 # Copies of the published API documents and of the backend's webhook vectors; only the spec sync updates them.
 # The fixtures are earlier versions of verification.json, pinned by commit, for the spec sync classification tests.
 paths = [
-  '''^openapi/(verification|account|authentication|webhook-vectors)\.json$''',
+  '''^openapi/(verification|account|authentication|webhook-vectors|deprecated-operations)\.json$''',
   '''^codegen/tests/fixtures/verification-[0-9a-f]{40}\.json$''',
 ]
 # Synthetic webhook signing secrets used by the tests and examples.

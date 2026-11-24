@@ -12,13 +12,13 @@ namespace Didit
     /// <summary>
     /// Full phone report. Present (non-null) only on finalized outcomes (<c>Approved</c>/<c>Declined</c>); <c>null</c> on <c>Failed</c> and absent on <c>Expired or Not Found</c>.
     /// </summary>
-    public sealed record PhoneCheckCodeResponsePhone
+    public sealed record PhoneVerificationCheckResponsePhone
     {
         /// <summary>
         /// Final status of the phone verification. Matches the top-level <c>status</c> for finalized checks.
         /// </summary>
         [JsonPropertyName("status")]
-        public PhoneCheckCodeResponsePhoneStatus? Status { get; init; }
+        public PhoneVerificationCheckResponsePhoneStatus? Status { get; init; }
 
         /// <summary>
         /// Country calling code with leading <c>+</c> (e.g., <c>+1</c>).
@@ -54,7 +54,7 @@ namespace Didit
         /// Current network serving the number, from the carrier lookup run at finalization.
         /// </summary>
         [JsonPropertyName("carrier")]
-        public PhoneCheckCodeResponsePhoneCarrier? Carrier { get; init; }
+        public PhoneVerificationCheckResponsePhoneCarrier? Carrier { get; init; }
 
         /// <summary>
         /// <c>true</c> when the number belongs to a temporary/burner number service.
@@ -90,19 +90,19 @@ namespace Didit
         /// Risk warnings recorded during the verification (duplicate, disposable, VoIP, attempts exceeded, blocklist, etc.). Empty array when there are none.
         /// </summary>
         [JsonPropertyName("warnings")]
-        public IReadOnlyList<PhoneCheckCodeResponsePhoneWarnings>? Warnings { get; init; }
+        public IReadOnlyList<PhoneVerificationCheckResponsePhoneWarnings>? Warnings { get; init; }
 
         /// <summary>
         /// Chronological audit trail of the verification. Event <c>type</c> is one of <c>PHONE_VERIFICATION_MESSAGE_SENT</c>, <c>PHONE_VERIFICATION_RETRY_MESSAGE_SENT</c>, <c>PHONE_VERIFICATION_BLOCKED</c>, <c>PHONE_DELIVERY_DELIVERED</c>, <c>PHONE_DELIVERY_UNDELIVERABLE</c>, <c>VALID_CODE_ENTERED</c>, <c>INVALID_CODE_ENTERED</c>, <c>PHONE_VERIFICATION_APPROVED</c>, <c>PHONE_VERIFICATION_DECLINED</c>, <c>PHONE_VERIFICATION_IN_REVIEW</c>, <c>PHONE_VERIFICATION_EXPIRED</c>.
         /// </summary>
         [JsonPropertyName("lifecycle")]
-        public IReadOnlyList<PhoneCheckCodeResponsePhoneLifecycle>? Lifecycle { get; init; }
+        public IReadOnlyList<PhoneVerificationCheckResponsePhoneLifecycle>? Lifecycle { get; init; }
 
         /// <summary>
         /// Other sessions of your application (KYC, KYB, or API) where the same phone number was used by a different user (different <c>vendor_data</c>). Up to 5 entries, a synthetic list-entry blocklist match first when present (session-derived matches keep query order). Empty array when there are no matches.
         /// </summary>
         [JsonPropertyName("matches")]
-        public IReadOnlyList<PhoneCheckCodeResponsePhoneMatches>? Matches { get; init; }
+        public IReadOnlyList<PhoneVerificationCheckResponsePhoneMatches>? Matches { get; init; }
 
         /// <summary>
         /// Social footprint of the phone number: the online platforms it is registered on. Present only when <c>enable_social</c> was set and the check completed. Every count may be null when no data was returned for it. <c>profiles_registered: 0</c> means the platforms were checked and the phone number was found on none of them - a valid, billable answer and a common synthetic-identity signal.

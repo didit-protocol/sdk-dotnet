@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// The answer to a factor check (a request that names <c>factor_id</c>).
+    /// Response object (PhoneVerificationCheckResponse).
     /// </summary>
-    public sealed record PhoneCheckCodeResponse
+    public sealed record PhoneVerificationCheckResponse
     {
         /// <summary>
         /// On <c>Approved</c>/<c>Declined</c>: the session id of the matched verification — identical to the <c>request_id</c> returned by <c>POST /v3/phone/send/</c>. On <c>Failed</c> and <c>Expired or Not Found</c>: a random one-off UUID that cannot be looked up later.
@@ -24,7 +24,7 @@ namespace Didit
         /// <c>Approved</c> — correct code, no declining risk. <c>Declined</c> — terminal: a declining risk matched or the attempt budget (3) was exhausted. <c>Failed</c> — wrong code, attempts remaining. <c>Expired or Not Found</c> — no pending verification for this number in the last 5 minutes.
         /// </summary>
         [JsonPropertyName("status")]
-        public PhoneCheckCodeResponseStatus? Status { get; init; }
+        public PhoneVerificationCheckResponseStatus? Status { get; init; }
 
         /// <summary>
         /// Human-readable explanation of the outcome, including the number of attempts remaining after a wrong code.
@@ -36,7 +36,7 @@ namespace Didit
         /// Full phone report. Present (non-null) only on finalized outcomes (<c>Approved</c>/<c>Declined</c>); <c>null</c> on <c>Failed</c> and absent on <c>Expired or Not Found</c>.
         /// </summary>
         [JsonPropertyName("phone")]
-        public PhoneCheckCodeResponsePhone? Phone { get; init; }
+        public PhoneVerificationCheckResponsePhone? Phone { get; init; }
 
         /// <summary>
         /// <c>vendor_data</c> of the matched verification's session. <c>null</c> on <c>Expired or Not Found</c>.
@@ -55,18 +55,6 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("created_at")]
         public DateTimeOffset? CreatedAt { get; init; }
-
-        /// <summary>
-        /// The factor id.
-        /// </summary>
-        [JsonPropertyName("verification_id")]
-        public string? VerificationId { get; init; }
-
-        /// <summary>
-        /// The &lt;c&gt;attempts&lt;/c&gt; field.
-        /// </summary>
-        [JsonPropertyName("attempts")]
-        public long? Attempts { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

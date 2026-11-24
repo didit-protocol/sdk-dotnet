@@ -15,7 +15,7 @@ namespace Didit
     public sealed record BankAccount
     {
         /// <summary>
-        /// Account id. Belongs to the connection and never changes while it exists, renewals included.
+        /// Account id. Belongs to the connection and never changes while it exists, renewals included; a new connection of the same bank account has a new id (use <c>account_ref</c> to recognise the account).
         /// </summary>
         [JsonPropertyName("id")]
         public string? Id { get; init; }
@@ -75,7 +75,7 @@ namespace Didit
         public BankAccountIdentifiers? Identifiers { get; init; }
 
         /// <summary>
-        /// Identifies the same bank account across connections of one application and environment: a keyed hash of the bank's own identifiers. <c>null</c> when the bank gives no reliable identifier. Use it to recognise a bank account you already know.
+        /// Identifies the same bank account across connections of one application and environment: a keyed hash of the bank's own identifiers. <c>null</c> when the bank gives no reliable identifier. Use it to recognise a bank account you already know. It is the same for one bank account in every connection of the application, while <c>id</c> and the transaction ids are new in each connection.
         /// </summary>
         [JsonPropertyName("account_ref")]
         public string? AccountRef { get; init; }

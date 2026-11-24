@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Response object (PhoneCheckCodeResponsePhoneMatches).
+    /// Response object (PhoneVerificationCheckResponsePhoneMatches).
     /// </summary>
-    public sealed record PhoneCheckCodeResponsePhoneMatches
+    public sealed record PhoneVerificationCheckResponsePhoneMatches
     {
         /// <summary>
         /// Session id of the other verification that used this phone number.

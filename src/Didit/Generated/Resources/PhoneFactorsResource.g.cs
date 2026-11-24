@@ -43,6 +43,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneFactorEnrollment> CreateAsync(PhoneFactorCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.CreateAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -66,6 +67,7 @@ namespace Didit.Resources
         /// <param name="factorId">The factor to delete.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task DeleteAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>
             _raw.DeleteAsync(factorId, requestOptions, cancellationToken);
 
@@ -90,6 +92,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<Page<PhoneFactor>> ListAsync(PhoneFactorsListParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.ListAsync(parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -111,6 +114,7 @@ namespace Didit.Resources
         /// <param name="factorId">The factor.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneFactor> RetrieveAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.RetrieveAsync(factorId, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -137,6 +141,7 @@ namespace Didit.Resources
         /// <param name="parameters">The request parameters.</param>
         /// <param name="requestOptions">Per-request overrides of the client options.</param>
         /// <param name="cancellationToken">Cancels the request.</param>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public async Task<PhoneFactor> UpdateAsync(string factorId, PhoneFactorUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var response = await _raw.UpdateAsync(factorId, parameters, requestOptions, cancellationToken).ConfigureAwait(false);
@@ -158,6 +163,7 @@ namespace Didit.Resources
         /// Enroll a TOTP factor
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.CreateAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneFactorEnrollment>> CreateAsync(PhoneFactorCreateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -179,6 +185,7 @@ namespace Didit.Resources
         /// Remove a factor
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.DeleteAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse> DeleteAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Delete, "/v3/phone/factors/" + PathParameter.Encode(factorId, "factorId") + "/")
@@ -194,6 +201,7 @@ namespace Didit.Resources
         /// List a user's enrolled factors
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.ListAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<Page<PhoneFactor>>> ListAsync(PhoneFactorsListParams parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)
@@ -220,6 +228,7 @@ namespace Didit.Resources
         /// Retrieve one enrolled factor
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.RetrieveAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneFactor>> RetrieveAsync(string factorId, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             var request = new ApiRequest(HttpMethods.Get, "/v3/phone/factors/" + PathParameter.Encode(factorId, "factorId") + "/")
@@ -235,6 +244,7 @@ namespace Didit.Resources
         /// Change a factor's name, metadata or state
         /// </summary>
         /// <remarks>Raw-response variant of <see cref="PhoneFactorsResource.UpdateAsync"/>.</remarks>
+        [Obsolete("Removed from the Didit API on 2026-11-24. This method is deleted in the next minor release.")]
         public Task<DiditResponse<PhoneFactor>> UpdateAsync(string factorId, PhoneFactorUpdateRequest parameters, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             if (parameters is null)

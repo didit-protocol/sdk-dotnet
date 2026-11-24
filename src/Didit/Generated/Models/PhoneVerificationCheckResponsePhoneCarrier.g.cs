@@ -12,7 +12,7 @@ namespace Didit
     /// <summary>
     /// Current network serving the number, from the carrier lookup run at finalization.
     /// </summary>
-    public sealed record PhoneCheckCodeResponsePhoneCarrier
+    public sealed record PhoneVerificationCheckResponsePhoneCarrier
     {
         /// <summary>
         /// Carrier name. Empty string when the lookup could not identify it.
