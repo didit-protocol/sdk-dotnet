@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Preferred delivery channel. If the channel is unavailable for the destination country or number, the message automatically falls back to SMS — the send still reports <c>Success</c>.
+    /// Preferred delivery channel. If the channel is unavailable for the destination country or number, the message automatically falls back to SMS — the send still reports <c>Success</c>. A new <c>sms</c> send to a fixed line is read out in a call instead only under the conditions in Fixed lines in the operation description: it never applies to a send that repeats or reuses the pending code, to a destination without voice delivery, when your routing settings do not allow voice, or in a sandbox application.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(PhoneSendCodeParamsOptionsPreferredChannel.EnumJsonConverter))]
