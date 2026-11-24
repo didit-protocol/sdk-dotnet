@@ -9,9 +9,11 @@ useDefault = true
 [[allowlists]]
 description = "Upstream copies under openapi/, pinned upstream copies in codegen/tests/fixtures/ and the synthetic whsec_test_ webhook secrets"
 # Copies of the published API documents and of the backend's webhook vectors; only the spec sync updates them.
+# deprecated-operations.json holds operations upstream removed, copied verbatim (with their examples) from those
+# documents by codegen/spec_sync.py.
 # The fixtures are earlier versions of verification.json, pinned by commit, for the spec sync classification tests.
 paths = [
-  '''^openapi/(verification|account|authentication|webhook-vectors)\.json$''',
+  '''^openapi/(verification|account|authentication|webhook-vectors|deprecated-operations)\.json$''',
   '''^codegen/tests/fixtures/verification-[0-9a-f]{40}\.json$''',
 ]
 # Synthetic webhook signing secrets used by the tests and examples.
