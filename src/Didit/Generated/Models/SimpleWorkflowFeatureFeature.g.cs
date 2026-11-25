@@ -53,6 +53,9 @@ namespace Didit
         /// <summary><c>DATABASE_VALIDATION</c></summary>
         public static SimpleWorkflowFeatureFeature DatabaseValidation { get; } = new("DATABASE_VALIDATION");
 
+        /// <summary><c>BANK_VERIFICATION</c></summary>
+        public static SimpleWorkflowFeatureFeature BankVerification { get; } = new("BANK_VERIFICATION");
+
         /// <summary><c>AML</c></summary>
         public static SimpleWorkflowFeatureFeature Aml { get; } = new("AML");
 
