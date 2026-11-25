@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Why the connection is in this status. <c>collection_complete</c>: a one-time connection whose read is complete, so its access has ended. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>.
+    /// Why the connection is in this status. <c>collection_complete</c>: a one-time connection whose read is complete, so its access has ended. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>. <c>unpaid</c>: the coming month was not paid by 20:00 UTC on the last day of the month before it, so Didit ended access and removed the connection at the bank; nothing more is charged. <c>bank.connection.revoked</c> with this reason is the final signal of that ending.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankConnectionStatusReason.EnumJsonConverter))]
@@ -52,6 +52,9 @@ namespace Didit
 
         /// <summary><c>first_sync_failed</c></summary>
         public static BankConnectionStatusReason FirstSyncFailed { get; } = new("first_sync_failed");
+
+        /// <summary><c>unpaid</c></summary>
+        public static BankConnectionStatusReason Unpaid { get; } = new("unpaid");
 
         /// <summary><c>deleted_by_customer</c></summary>
         public static BankConnectionStatusReason DeletedByCustomer { get; } = new("deleted_by_customer");
