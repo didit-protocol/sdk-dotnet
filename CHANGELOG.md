@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.58.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.57.0...v1.58.0) (2026-11-25)
+
+
+### Features
+
+* **spec:** sync API spec 2026-11-25 ([d75857c](https://github.com/didit-protocol/sdk-dotnet/commit/d75857cb714a83b81357c592f20e49ae6de36b89))
+
 ## [1.57.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.56.0...v1.57.0) (2026-11-25)
 
 
