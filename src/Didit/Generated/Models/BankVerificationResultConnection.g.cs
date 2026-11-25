@@ -21,7 +21,7 @@ namespace Didit
         public BankVerificationResultConnectionStatus? Status { get; init; }
 
         /// <summary>
-        /// The bank's ID. <c>null</c> for an account check, where no bank is picked.
+        /// Didit's own ID of the bank, never the identifier the bank is reached by. It is opaque, so do not parse it, and stable for a bank in Didit's catalogue; a bank outside the catalogue has an ID that changes once the bank is added to it. The session's bank step (its start and continue calls and the saved bank lists of a workflow's bank node) accepts both the earlier form and this one; the Bank Data endpoints accept only this one. <c>null</c> for an account check, where no bank is picked.
         /// </summary>
         [JsonPropertyName("institution_id")]
         public string? InstitutionId { get; init; }

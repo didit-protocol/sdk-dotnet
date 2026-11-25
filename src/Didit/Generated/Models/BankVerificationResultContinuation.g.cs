@@ -33,7 +33,7 @@ namespace Didit
         public IReadOnlyList<BankVerificationResultContinuationOffered>? Offered { get; init; }
 
         /// <summary>
-        /// For <c>institution_unsupported</c>, the ID of the bank the person could not use: the bank they picked, or the bank their last attempt ended on. Didit takes it from its own list of banks, never from the person's device, so a bank that list does not have is <c>null</c>. <c>null</c> for every other reason.
+        /// For <c>institution_unsupported</c>, Didit's ID of the bank the person could not use (the same ID as <c>connection.institution_id</c>): the bank they picked, or the bank their last attempt ended on. Didit takes it from its own list of banks, never from the person's device, so a bank that list does not have is <c>null</c>. <c>null</c> for every other reason.
         /// </summary>
         [JsonPropertyName("institution_id")]
         public string? InstitutionId { get; init; }
