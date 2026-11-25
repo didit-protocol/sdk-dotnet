@@ -120,13 +120,6 @@ namespace Didit
         public Optional<object?> FilterDocumentType { get; set; }
 
         /// <summary>
-        /// Narrows a <c>delete_all</c> to the sessions that match the <c>document_name</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
-        /// </summary>
-        [JsonPropertyName("filter_document_name")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public Optional<object?> FilterDocumentName { get; set; }
-
-        /// <summary>
         /// Narrows a <c>delete_all</c> to the sessions that match the <c>region</c> filter of [List Sessions](/sessions-api/list-sessions), with the same values. A comma-separated string or an array. Ignored without <c>delete_all</c>. An empty value is ignored and does not narrow the selection.
         /// </summary>
         [JsonPropertyName("filter_region")]

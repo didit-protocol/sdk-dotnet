@@ -21,10 +21,10 @@ namespace Didit
         public string? SandboxSample { get; init; }
 
         /// <summary>
-        /// The document the sandbox OCR mock returns.
+        /// The type of the document the sandbox OCR mock returns: <c>P</c> (Passport), <c>ID</c> (Identity Card), <c>DL</c> (Driver's License) or <c>RP</c> (Residence Permit). Its issuing country is <c>id_country</c>.
         /// </summary>
-        [JsonPropertyName("document_name")]
-        public string? DocumentName { get; init; }
+        [JsonPropertyName("document_type")]
+        public string? DocumentType { get; init; }
 
         /// <summary>
         /// Whether this is the document returned when no sample is selected.
