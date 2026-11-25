@@ -24,6 +24,7 @@ namespace Didit
             LinkId = WebhookJson.GetString(data, "link_id");
             Status = WebhookJson.GetString(data, "status");
             ConnectionId = WebhookJson.GetString(data, "connection_id");
+            RenewsConnectionId = WebhookJson.GetString(data, "renews_connection_id");
             CheckId = WebhookJson.GetString(data, "check_id");
             ErrorCode = WebhookJson.GetString(data, "error_code");
         }
@@ -36,6 +37,9 @@ namespace Didit
 
         /// <summary>The connection the link created or renewed, when there is one (<c>data.connection_id</c>).</summary>
         public string? ConnectionId { get; init; }
+
+        /// <summary>The connection targeted when the renewal link was created (<c>data.renews_connection_id</c>).</summary>
+        public string? RenewsConnectionId { get; init; }
 
         /// <summary>The ownership check id, when the link asked for one (<c>data.check_id</c>).</summary>
         public string? CheckId { get; init; }
@@ -147,11 +151,19 @@ namespace Didit
             : base(payload, verifiedBy)
         {
             Status = WebhookJson.GetString(payload, "status");
+            StatusReason = WebhookJson.GetString(payload, "status_reason");
+            EndsAt = BankEventReader.ReadDateTime(payload, "ends_at");
             RevocationStatus = WebhookJson.GetString(payload, "revocation_status");
         }
 
         /// <summary>The connection status (<c>status</c>).</summary>
         public string? Status { get; init; }
+
+        /// <summary>Why the status changed, such as <c>insufficient_balance</c> or <c>first_sync_failed</c> (<c>status_reason</c>).</summary>
+        public string? StatusReason { get; init; }
+
+        /// <summary>When the connection is scheduled to end, if known (<c>ends_at</c>).</summary>
+        public DateTimeOffset? EndsAt { get; init; }
 
         /// <summary><c>pending</c> while a revocation waits for the bank to confirm it (<c>revocation_status</c>).</summary>
         public string? RevocationStatus { get; init; }
@@ -264,10 +276,10 @@ namespace Didit
         /// <summary>Consent status once access is terminated (<c>status</c>).</summary>
         public string? Status { get; init; }
 
-        /// <summary>Who ended access (<c>ended_by</c>).</summary>
+        /// <summary>Who ended access, including <c>system</c> when Didit ended the connection (<c>ended_by</c>).</summary>
         public string? EndedBy { get; init; }
 
-        /// <summary>Why the connection is in this status (<c>status_reason</c>).</summary>
+        /// <summary>Why access ended, including <c>unpaid</c> for an unpaid coming month or <c>collection_complete</c> for a completed one-time read (<c>status_reason</c>).</summary>
         public string? StatusReason { get; init; }
 
         /// <summary>When access ended (<c>ended_at</c>).</summary>

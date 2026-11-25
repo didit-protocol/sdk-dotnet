@@ -254,6 +254,7 @@ namespace Didit.Tests.Webhooks
                     Assert.Equal(Text(data, "link_id"), link.LinkId);
                     Assert.Equal(Text(data, "status"), link.Status);
                     Assert.Equal(Text(data, "connection_id"), link.ConnectionId);
+                    Assert.Equal(Text(data, "renews_connection_id"), link.RenewsConnectionId);
                     Assert.Equal(Text(data, "check_id"), link.CheckId);
                     Assert.Equal(Text(data, "error_code"), link.ErrorCode);
                     break;
@@ -264,6 +265,11 @@ namespace Didit.Tests.Webhooks
                 case BankConnectionUpdatedEvent updated:
                     Assert.Equal(Text(body, "connection_id"), updated.ConnectionId);
                     Assert.Equal(Text(body, "status"), updated.Status);
+                    Assert.Equal(Text(body, "status_reason"), updated.StatusReason);
+                    DateTimeOffset? endsAt = body.TryGetProperty("ends_at", out var end) && end.ValueKind == JsonValueKind.String
+                        ? end.GetDateTimeOffset()
+                        : null;
+                    Assert.Equal(endsAt, updated.EndsAt);
                     Assert.Equal(Text(body, "revocation_status"), updated.RevocationStatus);
                     break;
                 case BankConnectionConsentExpiringEvent consentExpiring:
