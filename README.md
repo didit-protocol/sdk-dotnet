@@ -273,6 +273,10 @@ var link = await client.Bank.CreateLinkAsync(new BankLinkCreateRequest
 
 Store `link.Id` with the signed-in customer's request and redirect that customer to `link.Url`. The URL is redeemable and belongs only in the customer's response. When `DiditWebhooks.Verify` returns a `BankConnectionCreatedEvent created`, fetch the stored link with `GetLinkAsync`. Once its `ConnectionId` matches the event's nonempty `ConnectionId`, call `ListAccountsAsync(created.ConnectionId)`.
 
+For a renewal, correlate the link event with its target using `linkEvent.RenewsConnectionId ?? linkEvent.ConnectionId`. The target is known from link creation. `ConnectionId` stays null until completion, but an older failed renewal may carry its target only in `ConnectionId`.
+
+On a `BankConnectionUpdatedEvent`, `RevocationStatus` is `"pending"` when revocation starts. Other updates expose nullable `StatusReason` and `EndsAt`. A `BankConnectionRevokedEvent` with `EndedBy == "system"` and `StatusReason == "unpaid"` means the coming month was unpaid.
+
 Amounts are decimal strings (`amount`, `balance_after`), lists are cursor pages (`Items`, `NextCursor`), and every write takes `RequestOptions { IdempotencyKey = ... }`. The `bank.*` webhook events are typed; match `BankConnectionCreatedEvent`, `BankDataUpdatedEvent` and the rest. See [examples/BankConnection](examples/BankConnection).
 
 ## Authentication
