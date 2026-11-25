@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.60.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.59.0...v1.60.0) (2026-11-25)
+
+
+### Features
+
+* **spec:** sync API spec 2026-11-25 ([cefe67d](https://github.com/didit-protocol/sdk-dotnet/commit/cefe67d90a2778ed09b9b8574eea00861d8ef575))
+
+
+### API changes that can break typed code
+
+* **spec:** `GET /v1/sandbox/scenarios/` response `sample_identity.documents[].document_name`: removed ([cefe67d](https://github.com/didit-protocol/sdk-dotnet/commit/cefe67d90a2778ed09b9b8574eea00861d8ef575))
+* **spec:** `GET /v3/sessions/` query parameter `document_name`: removed ([cefe67d](https://github.com/didit-protocol/sdk-dotnet/commit/cefe67d90a2778ed09b9b8574eea00861d8ef575))
+* **spec:** `POST /v3/sessions/delete/` request `filter_document_name`: removed ([cefe67d](https://github.com/didit-protocol/sdk-dotnet/commit/cefe67d90a2778ed09b9b8574eea00861d8ef575))
+
 ## [1.59.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.58.0...v1.59.0) (2026-11-25)
 
 
