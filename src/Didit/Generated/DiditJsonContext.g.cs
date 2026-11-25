@@ -2342,6 +2342,7 @@ namespace Didit.Internal
     [JsonSerializable(typeof(TransactionDetailNetworkSnapshot))]
     [JsonSerializable(typeof(TransactionDetailParties))]
     [JsonSerializable(typeof(TransactionDetailPartiesDevice))]
+    [JsonSerializable(typeof(TransactionDetailPartiesDeviceMetadata))]
     [JsonSerializable(typeof(TransactionDetailPartiesDeviceNetworkContext))]
     [JsonSerializable(typeof(TransactionDetailPartiesEntityType))]
     [JsonSerializable(typeof(TransactionDetailPartiesKind))]

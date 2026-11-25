@@ -86,6 +86,12 @@ namespace Didit
         [JsonPropertyName("network_context")]
         public TransactionDetailPartiesDeviceNetworkContext? NetworkContext { get; init; }
 
+        /// <summary>
+        /// Further keys of the device context, free-form: the <c>metadata</c> that was sent, of any shape, returned as stored. For the subject (the <c>APPLICANT</c> party) of a transaction submitted from a device with a transaction token (<c>POST /v1/transactions/</c>, the Didit SDKs), Didit adds what it read from the request, such as <c>bot_score</c>.
+        /// </summary>
+        [JsonPropertyName("metadata")]
+        public TransactionDetailPartiesDeviceMetadata? Metadata { get; init; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
