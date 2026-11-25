@@ -57,10 +57,16 @@ namespace Didit
         public DateTimeOffset? ExpiresAt { get; init; }
 
         /// <summary>
-        /// The connection this link created or renewed, once <c>status</c> is <c>completed</c>.
+        /// The connection this link produced or renewed. <c>null</c> until the link completes, on every kind of link.
         /// </summary>
         [JsonPropertyName("connection_id")]
         public string? ConnectionId { get; init; }
+
+        /// <summary>
+        /// The connection a renewal link (<c>mode: renew</c>) targets, set when the link is created; <c>null</c> on a link that renews nothing. Always present. <c>connection_id</c> stays <c>null</c> until the link completes.
+        /// </summary>
+        [JsonPropertyName("renews_connection_id")]
+        public string? RenewsConnectionId { get; init; }
 
         /// <summary>
         /// The ownership result of this link, when it asked for <c>ownership.compare</c> other than <c>none</c>.

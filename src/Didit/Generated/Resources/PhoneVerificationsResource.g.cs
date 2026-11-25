@@ -63,7 +63,7 @@ namespace Didit.Resources
         /// List or export verifications
         /// </summary>
         /// <remarks>
-        /// List your application's verifications, newest first. Filter by status, channel, phone number, reference, tag (<c>key:value</c>) or creation time. Use <c>limit</c> and <c>offset</c> to page through JSON results: <c>next</c> and <c>previous</c> are offsets, not URLs, so send <c>next</c> as <c>offset</c> to read the next page. Use <c>format=csv</c> to export all matching verifications. The <c>template</c> query parameter does not filter these records. Verification history does not return a <c>template_used</c> field.
+        /// List your application's verifications, newest first. Filter by status, channel, phone number, reference, tag (<c>key:value</c>) or creation time. Use <c>limit</c> and <c>offset</c> to page through JSON results: <c>next</c> and <c>previous</c> are offsets, not URLs, so send <c>next</c> as <c>offset</c> to read the next page. Use <c>format=csv</c> to export all matching verifications. The <c>template</c> query parameter does not filter these records. Verification history does not return a <c>template_used</c> field. A Phone risk lookup is not a verification and is not listed here: read lookups with <c>GET /v3/phone/lookups/</c>.
         /// <para/>
         /// <c>GET /v3/phone/verifications/</c> (<c>phone.verifications.list</c>).
         /// </remarks>

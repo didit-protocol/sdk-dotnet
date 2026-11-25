@@ -57,7 +57,7 @@ namespace Didit
         public double? ReplyRate { get; init; }
 
         /// <summary>
-        /// Spend in USD.
+        /// Spend in USD. For <c>verification</c> and <c>lookups</c>: what Didit charged, debited from your balance or invoiced under a contract in USD. For <c>messages</c>: the price recorded on each message sent. <c>0.00</c> in the sandbox.
         /// </summary>
         [JsonPropertyName("spend")]
         public string? Spend { get; init; }
