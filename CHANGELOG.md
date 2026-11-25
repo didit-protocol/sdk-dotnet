@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.52.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.51.0...v1.52.0) (2026-11-25)
+
+
+### Features
+
+* **webhooks:** Bank link and connection event fields (renews_connection_id, ends_at, unpaid) in the hand-written webhook events [sdk-dotnet ([#179](https://github.com/didit-protocol/sdk-dotnet/issues/179)) ([7172a60](https://github.com/didit-protocol/sdk-dotnet/commit/7172a605f220fb44b30c6cf0294e239e452dc6d2))
+
 ## [1.51.0](https://github.com/didit-protocol/sdk-dotnet/compare/v1.50.0...v1.51.0) (2026-11-24)
 
 
