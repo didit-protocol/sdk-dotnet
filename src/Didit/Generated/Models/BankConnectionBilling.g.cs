@@ -21,7 +21,7 @@ namespace Didit
         public BankConnectionBillingUnit? Unit { get; init; }
 
         /// <summary>
-        /// Your price for the month meter today, for your application and the country, in USD, a decimal string with 4 decimals. A connection is charged for a month only when every accepted scope published data for at least one account in that month. <c>null</c> for one-time connections and in the sandbox. Ongoing access is billed per active connection per month; the current price is on the pricing page (https://docs.didit.me/getting-started/pricing). Amounts in examples are illustrative; the price for a country is shown on the pricing page.
+        /// Your price for the month meter today, for your application and the country, in USD, a decimal string with 4 decimals. A connection is charged once for each calendar month (UTC) it is active: its first month when its first sync succeeds, and every later month in advance, in the last five days of the month before it, while the connection's consent reaches into it. A connection created in the last five days of a month whose first read starts in the next month needs both months covered together before that read: with funds for only one, the read fails and neither is charged. <c>null</c> for one-time connections and in the sandbox. Ongoing access is billed per active connection per month; the current price is on the pricing page (https://docs.didit.me/getting-started/pricing). Amounts in examples are illustrative; the price for a country is shown on the pricing page.
         /// </summary>
         [JsonPropertyName("price_usd")]
         public string? PriceUsd { get; init; }
@@ -31,6 +31,12 @@ namespace Didit
         /// </summary>
         [JsonPropertyName("billed_through")]
         public string? BilledThrough { get; init; }
+
+        /// <summary>
+        /// When the connection ends unless its coming month is paid first: 20:00 UTC on the last day of the month before it. Set once a payment of the coming month has failed, while the connection is <c>active</c> or <c>paused</c>. <c>null</c> when nothing has failed yet and once the month is paid, and also while the connection is <c>pending</c>, needs renewal, is being revoked or has ended, is a sandbox connection, or its consent ends before the month begins, so a <c>null</c> alone does not mean the month was paid.
+        /// </summary>
+        [JsonPropertyName("ends_at")]
+        public DateTimeOffset? EndsAt { get; init; }
 
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]

@@ -33,13 +33,13 @@ namespace Didit
         public BankConnectionAccess? Access { get; init; }
 
         /// <summary>
-        /// <c>pending</c>: first sync running. <c>active</c>: consent valid. <c>renewal_required</c>: the consent ended or the bank wants the person to sign in again, data readable as last synced and nothing charged. <c>paused</c>: balance too low for the month. <c>revoked</c>: access stopped by the person, the bank or you, or ended because the read of a one-time connection is complete. <c>deleted</c>: only <c>id</c>, <c>status</c>, <c>status_reason</c>, <c>created_at</c> and <c>erasure</c> remain. The list returns these only for <c>status=deleted</c>; reading one by id always returns it. <c>failed</c>: the first sync never succeeded.
+        /// <c>pending</c>: first sync running. <c>active</c>: consent valid. <c>renewal_required</c>: the consent ended or the bank wants the person to sign in again, data readable as last synced; a month that begins while it waits is not charged. <c>paused</c>: the current month could not be paid, so syncing stops. It resumes by itself once your balance covers the month: when a credit reaches your wallet, or at the daily check at 05:30 UTC. <c>revoked</c>: access stopped by the person, the bank or you, ended because the read of a one-time connection is complete, or ended by Didit because its coming month was not paid by the deadline (<c>status_reason: unpaid</c>). <c>deleted</c>: only <c>id</c>, <c>status</c>, <c>status_reason</c>, <c>created_at</c> and <c>erasure</c> remain. The list returns these only for <c>status=deleted</c>; reading one by id always returns it. <c>failed</c>: the first sync never succeeded.
         /// </summary>
         [JsonPropertyName("status")]
         public BankConnectionStatus? Status { get; init; }
 
         /// <summary>
-        /// Why the connection is in this status. <c>collection_complete</c>: a one-time connection whose read is complete, so its access has ended. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>.
+        /// Why the connection is in this status. <c>collection_complete</c>: a one-time connection whose read is complete, so its access has ended. <c>paused_by_customer</c> is reserved. On a <c>deleted</c> connection: <c>deleted_by_customer</c>, <c>consent_lapsed</c>, <c>retention_elapsed</c> or <c>application_deleted</c>. <c>unpaid</c>: the coming month was not paid by 20:00 UTC on the last day of the month before it, so Didit ended access and removed the connection at the bank; nothing more is charged. <c>bank.connection.revoked</c> with this reason is the final signal of that ending.
         /// </summary>
         [JsonPropertyName("status_reason")]
         public BankConnectionStatusReason? StatusReason { get; init; }

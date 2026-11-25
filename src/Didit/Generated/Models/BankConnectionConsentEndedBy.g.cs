@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Who ended access, set from evidence. <c>system</c> when Didit ended it by design: a one-time connection once its read is complete. <c>unknown</c> when neither the bank nor the sync says.
+    /// Who ended access, set from evidence. <c>system</c> when Didit ended it: a one-time connection once its read is complete (<c>status_reason: collection_complete</c>), or a connection whose coming month was not paid by the deadline (<c>status_reason: unpaid</c>). <c>unknown</c> when neither the bank nor the sync says.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankConnectionConsentEndedBy.EnumJsonConverter))]
