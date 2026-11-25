@@ -33,7 +33,7 @@ namespace Didit
         public string? Country { get; init; }
 
         /// <summary>
-        /// Logo of the bank, or <c>null</c>.
+        /// The address of the bank's logo hosted by Didit.
         /// </summary>
         [JsonPropertyName("logo_url")]
         public string? LogoUrl { get; init; }
