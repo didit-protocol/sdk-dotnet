@@ -33,6 +33,12 @@ namespace Didit
         public string? InstitutionName { get; init; }
 
         /// <summary>
+        /// The address of the bank's logo hosted by Didit, or <c>null</c> when Didit has no logo for the bank. <c>null</c> for an account check, where no bank is picked. Returned with <c>institution_name</c>.
+        /// </summary>
+        [JsonPropertyName("logo_url")]
+        public string? LogoUrl { get; init; }
+
+        /// <summary>
         /// The account's country, ISO 3166-1 alpha-3.
         /// </summary>
         [JsonPropertyName("institution_country")]

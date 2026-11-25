@@ -85,7 +85,7 @@ namespace Didit
         public Optional<BankLinkCreateRequestExtendedHistory> ExtendedHistory { get; set; }
 
         /// <summary>
-        /// Ongoing only. How many days to ask the bank to keep access open, 1 or more. Default: the longest the bank allows. The connection reports the date the bank actually granted in <c>consent.expires_at</c>. With <c>access: one_time</c> it answers <c>400 invalid_request</c> with <c>field: consent_days</c>.
+        /// Ongoing only. How many days to ask the bank to keep access open, 1 or more. Default: the longest the bank allows. On a renewal link that sends none, the bank is asked for the length the person chose before, never above the bank's maximum; only a connection with no recorded length is asked for the maximum. The connection reports the date the bank actually granted in <c>consent.expires_at</c>. With <c>access: one_time</c> it answers <c>400 invalid_request</c> with <c>field: consent_days</c>.
         /// </summary>
         [JsonPropertyName("consent_days")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
