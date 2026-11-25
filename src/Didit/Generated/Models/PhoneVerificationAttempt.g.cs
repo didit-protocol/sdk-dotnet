@@ -75,7 +75,7 @@ namespace Didit
         public DateTimeOffset? ExpiredAt { get; init; }
 
         /// <summary>
-        /// True when the attempt has been billed or has a nonzero actual price. See <c>status</c> for the delivery outcome.
+        /// True when the attempt has been billed or has a nonzero actual price. Always false in the sandbox, which charges nothing. See <c>status</c> for the delivery outcome.
         /// </summary>
         [JsonPropertyName("charged")]
         public bool? Charged { get; init; }

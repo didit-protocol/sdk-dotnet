@@ -15,7 +15,7 @@ namespace Didit
     public sealed record PhoneVerificationPrice
     {
         /// <summary>
-        /// What it cost, in USD.
+        /// What it cost, in USD: the estimated price until <c>final</c> is true, then the price billing recorded for the attempt. Under a contract, your invoice prices each code at the contract's rate, which this amount does not show. <c>0.0000</c> in the sandbox.
         /// </summary>
         [JsonPropertyName("amount")]
         public string? Amount { get; init; }
@@ -33,7 +33,7 @@ namespace Didit
         public string? Fee { get; init; }
 
         /// <summary>
-        /// false until the carrier reports delivery, then the reported price.
+        /// true once billing has recorded the attempt's charge: on its delivery report or, when no delivery report comes, no later than a few minutes after the code's 5-minute validity ends. Until then <c>amount</c> is the estimated price. Always true in the sandbox, where nothing is charged.
         /// </summary>
         [JsonPropertyName("final")]
         public bool? Final { get; init; }
