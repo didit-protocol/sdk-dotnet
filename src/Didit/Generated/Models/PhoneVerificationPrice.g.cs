@@ -15,7 +15,7 @@ namespace Didit
     public sealed record PhoneVerificationPrice
     {
         /// <summary>
-        /// What it cost, in USD: the estimated price until <c>final</c> is true, then the price billing recorded for the attempt. Under a contract, your invoice prices each code at the contract's rate, which this amount does not show. <c>0.0000</c> in the sandbox.
+        /// What the attempt costs, in USD. It is the estimated price, with <c>final</c> false, until billing records a charge or billing close comes (a few minutes after the code's 5-minute validity ends). Once billing records a charge it is that charge, and <c>final</c> is true. An attempt that is not charged reads <c>0.0000</c> from billing close: final for a <c>Blocked</c> attempt, which is never charged, and not final (<c>final</c> false) for an attempt whose every message was reported undeliverable, because a later delivery report showing one of its messages was delivered charges it and replaces the <c>0.0000</c>. Under a contract, your invoice prices each code at the contract's rate, which this amount does not show. <c>0.0000</c> in the sandbox.
         /// </summary>
         [JsonPropertyName("amount")]
         public string? Amount { get; init; }
@@ -33,7 +33,7 @@ namespace Didit
         public string? Fee { get; init; }
 
         /// <summary>
-        /// true once billing has recorded the attempt's charge: on its delivery report or, when no delivery report comes, no later than a few minutes after the code's 5-minute validity ends. Until then <c>amount</c> is the estimated price. Always true in the sandbox, where nothing is charged.
+        /// true once billing has recorded the attempt's charge (on its delivery report or, when no report comes, at billing close, a few minutes after the code's 5-minute validity ends), and from billing close for a <c>Blocked</c> attempt, which is never charged (<c>amount</c> <c>0.0000</c>). false while <c>amount</c> is the estimated price before billing close, and for an attempt whose every message was reported undeliverable: it reads <c>amount</c> <c>0.0000</c> from billing close, but a later delivery report showing one of its messages was delivered charges it. Always true in the sandbox, where nothing is charged.
         /// </summary>
         [JsonPropertyName("final")]
         public bool? Final { get; init; }
