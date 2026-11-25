@@ -15,7 +15,7 @@ namespace Didit
     public sealed record SignatureResultWarnings
     {
         /// <summary>
-        /// The &lt;c&gt;code&lt;/c&gt; field.
+        /// The warning. <c>SIGNATURE_OTP_NOT_CONFIRMED</c> means no code was sent because the code goes by SMS and the signer's phone is on your phone block list (the number, its prefix, its network or its country); the signing ended by <c>signature_otp_failed_action</c>, and the same warning in the session's activity, and in the top-level <c>warnings</c> of a version 1 decision and its webhooks, carries <c>additional_data.blocked_reason: "blocked_by_list"</c>. The signer's own flow never receives the reason. See [E-signature warnings](/core-technology/electronic-signature/warnings-electronic-signature).
         /// </summary>
         [JsonPropertyName("code")]
         public SignatureResultWarningsCode? Code { get; init; }

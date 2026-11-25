@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// Values of SignatureResultWarningsCode.
+    /// The warning. <c>SIGNATURE_OTP_NOT_CONFIRMED</c> means no code was sent because the code goes by SMS and the signer's phone is on your phone block list (the number, its prefix, its network or its country); the signing ended by <c>signature_otp_failed_action</c>, and the same warning in the session's activity, and in the top-level <c>warnings</c> of a version 1 decision and its webhooks, carries <c>additional_data.blocked_reason: "blocked_by_list"</c>. The signer's own flow never receives the reason. See [E-signature warnings](/core-technology/electronic-signature/warnings-electronic-signature).
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(SignatureResultWarningsCode.EnumJsonConverter))]
@@ -28,6 +28,9 @@ namespace Didit
 
         /// <summary><c>SIGNATURE_OTP_FAILED</c></summary>
         public static SignatureResultWarningsCode SignatureOtpFailed { get; } = new("SIGNATURE_OTP_FAILED");
+
+        /// <summary><c>SIGNATURE_OTP_NOT_CONFIRMED</c></summary>
+        public static SignatureResultWarningsCode SignatureOtpNotConfirmed { get; } = new("SIGNATURE_OTP_NOT_CONFIRMED");
 
         /// <summary><c>SIGNATURE_NAME_MISMATCH</c></summary>
         public static SignatureResultWarningsCode SignatureNameMismatch { get; } = new("SIGNATURE_NAME_MISMATCH");
