@@ -113,13 +113,6 @@ namespace Didit
         public string? DocumentType { get; set; }
 
         /// <summary>
-        /// Exact document names; multiple names can be passed comma-separated, but the value is only split on commas when it contains more than one <c> - </c> separator (a lone name with an embedded comma is matched whole). Names are as recognized by document verification (front or back side), e.g. <c>Spain - Id Card (2021)</c>. KYC rows only.
-        /// </summary>
-        [JsonPropertyName("document_name")]
-        [JsonIgnore]
-        public string? DocumentName { get; set; }
-
-        /// <summary>
         /// Comma-separated document region/state values (for documents issued per region, such as US driver's licenses). KYC rows only.
         /// </summary>
         [JsonPropertyName("region")]
