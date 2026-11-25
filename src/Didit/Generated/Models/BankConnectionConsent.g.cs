@@ -87,7 +87,7 @@ namespace Didit
         public DateTimeOffset? ReconfirmBy { get; init; }
 
         /// <summary>
-        /// The last moment the same connection can be revived after the consent ended. After it the person connects again. It equals <c>retain_until</c>.
+        /// The last moment the same connection can be renewed with its renewal link after access ended. <c>null</c> while access has not ended and whenever the connection cannot be renewed, so a non-null value is the test for a renewal and <c>ended_by</c> does not decide it. After it the person connects again.
         /// </summary>
         [JsonPropertyName("renewable_until")]
         public DateTimeOffset? RenewableUntil { get; init; }
