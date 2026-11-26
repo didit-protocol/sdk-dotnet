@@ -402,6 +402,8 @@ namespace Didit.Resources
         /// <para/>
         /// Send the returned <c>url</c> to the person: the hosted page shows what continues to be shared and until when, the person signs in at their bank once and returns to your <c>redirect_url</c>, and <c>bank.connection.renewed</c> confirms it. Afterwards the connection's <c>consent</c> shows a new <c>version</c>, <c>renewed_count</c>, <c>expires_at</c> and <c>renew_by</c>, with <c>renewal_action</c> <c>bank_auth</c>.
         /// <para/>
+        /// Send <c>consent_days</c> to choose how many days the renewal asks the bank for; without it the renewal asks for the length the person chose before, and either way the bank's own maximum is never exceeded.
+        /// <para/>
         /// A one-time connection has no consent to renew: it answers <c>409 one_time_connection</c>, and a new link reads the bank again.
         /// <para/>
         /// Until the consent has 30 days left or fewer it answers <c>409 renewal_not_needed</c>; after <c>consent.renewable_until</c> it answers <c>409 renewal_window_expired</c> and the person connects again.
