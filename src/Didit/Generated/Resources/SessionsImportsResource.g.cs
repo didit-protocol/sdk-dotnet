@@ -253,7 +253,7 @@ namespace Didit.Resources
         /// Retry a migration
         /// </summary>
         /// <remarks>
-        /// Run a migration that ended again as a new job, with a new key (the old one was erased). It keeps the provider, workflow, region, status mapping and face templates choice; everything already in Didit is skipped.
+        /// Supply read-only provider credentials again when retrying an API migration. Didit erases credentials when a job ends. Retrying a failed Sumsub migration keeps the same job ID and continues its preview or import from the saved position. Other eligible retries create a new job with the original migration settings and skip previously imported records.
         /// <para/>
         /// <c>POST /v3/session/imports/{importId}/retry/</c> (<c>sessions.imports.retry</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
