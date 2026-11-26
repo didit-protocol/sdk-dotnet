@@ -42,6 +42,13 @@ namespace Didit
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public Optional<long> ExpiresIn { get; set; }
 
+        /// <summary>
+        /// Optional. How many days to ask the bank to keep access open, 1 or more. Without it, the bank is asked for the length the person chose before, never above the bank's maximum; only a connection with no recorded length is asked for the maximum. With it, the bank is asked for that many days, never above its maximum: a longer value is capped, not refused. A value below 1, above 32767 or not a whole number answers <c>400 invalid_request</c> with <c>field: consent_days</c>. The connection reports the date the bank actually granted in <c>consent.expires_at</c>. <c>create_link</c> with <c>mode: renew</c> takes the same field with the same rule.
+        /// </summary>
+        [JsonPropertyName("consent_days")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<long> ConsentDays { get; set; }
+
         /// <summary>Fields not described by this SDK version, kept as raw JSON (sent with requests, filled from responses).</summary>
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? AdditionalProperties { get; set; }
