@@ -106,7 +106,7 @@ namespace Didit
         public Optional<BankLinkEndUser> EndUser { get; set; }
 
         /// <summary>
-        /// Where the browser goes at the end, with <c>link_id</c>, <c>status</c> and a signed <c>state</c> (for display only: the webhook and <c>get_link</c> are authoritative). In a sandbox application a plain <c>http</c> address of <c>localhost</c>, <c>127.0.0.1</c> or <c>[::1]</c> (any port and path, no credentials, no fragment) needs no registration. Any other address answers <c>400 redirect_url_not_registered</c>: registering other addresses is not available yet. Without a <c>redirect_url</c> the person finishes on Didit's own result page.
+        /// Where the browser goes at the end, with <c>link_id</c>, <c>status</c> and a signed <c>state</c> (for display only: the webhook and <c>get_link</c> are authoritative). <c>status</c> is the link's own status: <c>completed</c>, <c>failed</c>, <c>cancelled</c> or <c>expired</c>. In a sandbox application a plain <c>http</c> address of <c>localhost</c>, <c>127.0.0.1</c> or <c>[::1]</c> (any port and path, no credentials, no fragment) needs no registration. Any other address answers <c>400 redirect_url_not_registered</c>: registering other addresses is not available yet. Without a <c>redirect_url</c> the person finishes on Didit's own result page.
         /// </summary>
         [JsonPropertyName("redirect_url")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
