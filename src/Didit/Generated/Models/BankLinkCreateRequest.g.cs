@@ -43,7 +43,7 @@ namespace Didit
         public Optional<string> Country { get; set; }
 
         /// <summary>
-        /// Optional bank to preselect, from <c>list_institutions</c>. Skips the picker.
+        /// Optional. The bank the person starts with, from <c>list_institutions</c>. The picker is skipped; the person can still choose another bank the link allows, for example when this one is unavailable. The connection's <c>institution</c> reports the bank that was actually connected.
         /// </summary>
         [JsonPropertyName("institution_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
