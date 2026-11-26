@@ -1,0 +1,34 @@
+# Secret scan configuration for gitleaks (the "Secret scan" job in .github/workflows/ci.yml).
+# The default rules apply everywhere; only the two exceptions below are allowed: copies of published upstream documents
+# and synthetic webhook secrets. Never widen them for a test value: change the fixture instead (tests generate keys at
+# run time, and fake values do not look like real credentials).
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Upstream copies under openapi/, pinned upstream copies in codegen/tests/fixtures/ and the synthetic whsec_test_ webhook secrets"
+# Copies of the published API documents and of the backend's webhook vectors; only the spec sync updates them.
+# deprecated-operations.json holds operations upstream removed, copied verbatim (with their examples) from those
+# documents by codegen/spec_sync.py.
+# The fixtures are earlier versions of verification.json, pinned by commit, for the spec sync classification tests.
+paths = [
+  '''^openapi/(verification|account|authentication|webhook-vectors|deprecated-operations)\.json$''',
+  '''^codegen/tests/fixtures/verification-[0-9a-f]{40}\.json$''',
+]
+# Synthetic webhook signing secrets used by the tests and examples.
+regexes = [
+  '''^whsec_test_[A-Za-z0-9_]+$''',
+]
+
+# Synthetic consent-redaction test value: this one value, in this one test file, for this one rule.
+[[allowlists]]
+description = "Synthetic agent consent redaction test value"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = [
+  '''^tests/Didit\.Tests/Authentication/AuthenticationEndpointTests\.cs$''',
+]
+regexes = [
+  '''^Y3JlZGVudGlhbC1pZC0xMjM0NTY3ODkw$''',
+]

@@ -1,0 +1,14 @@
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+*.nupkg
+.DS_Store
+.env
+.env.*
+*.snupkg
+__pycache__/
+*.pyc
+artifacts/
+coverage/
