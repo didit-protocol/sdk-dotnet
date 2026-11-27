@@ -57,6 +57,13 @@ namespace Didit
         public Optional<bool> IsDesktopAllowed { get; set; }
 
         /// <summary>
+        /// Show “Continue on another device” on the hosted verification welcome screen. Set to false to hide the QR code and link from the phone welcome.
+        /// </summary>
+        [JsonPropertyName("is_welcome_handoff_enabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<bool> IsWelcomeHandoffEnabled { get; set; }
+
+        /// <summary>
         /// On Declined and In review results, the person being verified sees a short reference to the session, such as <c>S-20481</c>, shown on one line. This is the session number as the console shows it, so your support team can find the session in the console by typing it. When <c>false</c>, the result screens show no reference. Applies to the hosted flow and the SDKs.
         /// </summary>
         [JsonPropertyName("is_session_reference_enabled")]
