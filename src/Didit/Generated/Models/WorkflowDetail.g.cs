@@ -39,6 +39,12 @@ namespace Didit
         public WorkflowDetailWorkflowType? WorkflowType { get; init; }
 
         /// <summary>
+        /// Whether the hosted phone welcome screen offers the QR code and link to continue on another device.
+        /// </summary>
+        [JsonPropertyName("is_welcome_handoff_enabled")]
+        public bool? IsWelcomeHandoffEnabled { get; init; }
+
+        /// <summary>
         /// Whether this is the application's default workflow.
         /// </summary>
         [JsonPropertyName("is_default")]
