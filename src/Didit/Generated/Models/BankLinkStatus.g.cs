@@ -9,7 +9,7 @@ using Didit.Internal;
 namespace Didit
 {
     /// <summary>
-    /// State of the link. <c>completed</c>, <c>cancelled</c>, <c>expired</c> and <c>failed</c> are final.
+    /// State of the link. <c>completed</c>, <c>cancelled</c>, <c>expired</c> and <c>failed</c> are final. A person who cancels or declines at the bank, whose bank cannot be reached or does not accept the sign-in, or who meets an unexpected error while the connection is completed, does not end the link: it stays <c>opened</c> and the person can try again. A first connection returns to the list of banks. A renewal returns to its own step, where the person can try the same bank again or choose Not now, which ends the link as <c>cancelled</c>. The link ends <c>failed</c> when the tries are used up (the fifth attempt at the bank) or when the failure cannot be fixed by trying again.
     /// </summary>
     /// <remarks>An open enumeration: values added to the API later are accepted and kept as strings.</remarks>
     [JsonConverter(typeof(BankLinkStatus.EnumJsonConverter))]
