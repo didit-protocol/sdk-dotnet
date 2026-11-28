@@ -55,6 +55,8 @@ namespace Didit.Resources
         /// <para/>
         /// A scoped API key needs write access to messages. It also needs read access to sessions, and its workflow and approved-only session limits apply: a conversation outside them, or one whose session was deleted, answers 404 as another application's would.
         /// <para/>
+        /// The stored answer is replayed only while the conversation is inside your key's access: once the session was erased the key is refused with <c>409</c> <c>idempotency_key_forgotten</c>, and a repeat the access no longer reaches answers <c>404</c>. Send it again with a new key.
+        /// <para/>
         /// <c>PATCH /v3/messages/conversations/{conversation_id}/</c> (<c>messages.conversations.update</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
