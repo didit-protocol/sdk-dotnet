@@ -2333,6 +2333,8 @@ namespace Didit.Internal
     [JsonSerializable(typeof(SocialFootprintPlatformScope))]
     [JsonSerializable(typeof(SocialFootprintProfile))]
     [JsonSerializable(typeof(SocialFootprintProfilePrivacyStatus))]
+    [JsonSerializable(typeof(TelegramLink))]
+    [JsonSerializable(typeof(TelegramLinkRequest))]
     [JsonSerializable(typeof(TransactionDetail))]
     [JsonSerializable(typeof(TransactionDetailActionRequired))]
     [JsonSerializable(typeof(TransactionDetailActionRequiredType))]

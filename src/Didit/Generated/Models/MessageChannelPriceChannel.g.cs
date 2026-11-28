@@ -29,6 +29,9 @@ namespace Didit
         /// <summary><c>whatsapp</c></summary>
         public static MessageChannelPriceChannel Whatsapp { get; } = new("whatsapp");
 
+        /// <summary><c>telegram</c></summary>
+        public static MessageChannelPriceChannel Telegram { get; } = new("telegram");
+
         /// <summary><c>email</c></summary>
         public static MessageChannelPriceChannel Email { get; } = new("email");
 

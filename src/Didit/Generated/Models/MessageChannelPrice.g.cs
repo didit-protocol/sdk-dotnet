@@ -33,13 +33,13 @@ namespace Didit
         public string? Category { get; init; }
 
         /// <summary>
-        /// The carrier's or WhatsApp's part, at cost; <c>0.0000</c> from your own connected WhatsApp Business account.
+        /// The carrier's or WhatsApp's part, at cost. For standard quotes this is <c>0.0000</c> on Telegram and on your own connected WhatsApp Business account. A Telegram quote under a contract rate card returns <c>null</c> here.
         /// </summary>
         [JsonPropertyName("carrier")]
         public string? Carrier { get; init; }
 
         /// <summary>
-        /// Didit's fee with your plan's discount.
+        /// Didit's fee with your plan's discount. For a standard Telegram quote this equals <c>price</c>. A Telegram quote under a contract rate card returns <c>null</c> here.
         /// </summary>
         [JsonPropertyName("fee")]
         public string? Fee { get; init; }
