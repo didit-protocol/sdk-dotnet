@@ -45,7 +45,7 @@ namespace Didit
         public MessageError? Error { get; init; }
 
         /// <summary>
-        /// What the message costs, in <c>currency</c>. <c>carrier</c> is the carrier's or WhatsApp's part, passed through at cost; <c>fee</c> is Didit's fee with your plan's discount. Both are <c>null</c> when one flat amount prices the message (email, or a contract or negotiated rate). <c>final</c> is <c>false</c> while the amount is an estimate, before the carrier's delivery report gives the real price.
+        /// What the message costs, in <c>currency</c>. <c>carrier</c> is the carrier's or WhatsApp's part, passed through at cost. <c>fee</c> is Didit's fee with your plan's discount. When a contract rate card prices a live Telegram message, both are <c>null</c>. For all other live Telegram rates, including a negotiated rate, <c>carrier</c> is <c>0.0000</c> and <c>fee</c> equals <c>amount</c>. On other channels both fields are <c>null</c> when one flat amount prices the message (email, or a contract or negotiated rate). <c>final</c> is <c>false</c> for an estimate and <c>true</c> once the amount is billed.
         /// </summary>
         [JsonPropertyName("price")]
         public MessagePrice? Price { get; init; }

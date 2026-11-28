@@ -437,6 +437,28 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Messages_TelegramLinks_Create()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(201, "{\"url\": \"https://example.invalid/example_bot?start=example-token\", \"expires_at\": \"2026-11-22T10:00:00Z\"}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Messages.TelegramLinks.CreateAsync(new TelegramLinkRequest { To = "sample-to", ExpiresIn = 1L, From = "sample-from" });
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("POST", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/messages/telegram/links/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Equal(TestClients.ApiKey, request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.StartsWith("application/json", request.ContentType);
+            JsonAssert.Equivalent("{\"to\": \"sample-to\", \"expires_in\": 1, \"from\": \"sample-from\"}", request.BodyText);
+            Assert.NotNull(result);
+            Assert.Equal("https://example.invalid/example_bot?start=example-token", result.Url);
+        }
+
+        [Fact]
         public async Task Messages_Templates_Delete()
         {
             var handler = new MockHttpHandler();
