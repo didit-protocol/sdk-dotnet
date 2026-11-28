@@ -79,6 +79,25 @@ namespace Didit.Tests.Generated
         }
 
         [Fact]
+        public async Task Pricing_KybRegistry()
+        {
+            var handler = new MockHttpHandler();
+            // Response body from the spec's example.
+            handler.Enqueue(200, "{\"AL\": {\"name\": \"Albania\", \"validated\": false, \"tiers\": {\"basic\": {\"available\": true, \"price_usd\": \"2.00\"}, \"shareholders\": {\"available\": true, \"price_usd\": \"5.00\"}, \"ubo\": {\"available\": true, \"price_usd\": \"9.00\"}}, \"monitoring\": {\"available\": false, \"price_usd\": \"2.00\"}}, \"ES\": {\"name\": \"Spain\", \"validated\": true, \"tiers\": {\"basic\": {\"available\": true, \"price_usd\": \"2.00\"}, \"shareholders\": {\"available\": true, \"price_usd\": \"5.00\"}, \"ubo\": {\"available\": true, \"price_usd\": \"9.00\"}}, \"monitoring\": {\"available\": false, \"price_usd\": \"2.00\"}}, \"XK\": {\"name\": \"Kosovo\", \"validated\": false, \"tiers\": {\"basic\": {\"available\": true, \"price_usd\": \"2.00\"}, \"shareholders\": {\"available\": true, \"price_usd\": \"5.00\"}, \"ubo\": {\"available\": true, \"price_usd\": \"9.00\"}}, \"monitoring\": {\"available\": false, \"price_usd\": \"2.00\"}}}");
+            using var client = TestClients.Create(handler);
+            var result = await client.Pricing.KybRegistryAsync();
+
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("GET", request.Method);
+            Assert.Equal("verification.didit.me", request.Uri.Host);
+            Assert.Equal("/v3/organization/kyb-registry-pricing/", request.Path);
+            Assert.Equal("", request.Query);
+            Assert.Null(request.Header("x-api-key"));
+            Assert.Null(request.Header("Authorization"));
+            Assert.Empty(request.Body);
+        }
+
+        [Fact]
         public async Task Pricing_PriceBook()
         {
             var handler = new MockHttpHandler();
