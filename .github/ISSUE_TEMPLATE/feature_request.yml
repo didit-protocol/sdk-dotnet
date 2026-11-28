@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest an improvement to the Didit .NET SDK.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The seven Didit server SDKs share one design (docs/DESIGN.md) and ship the same capabilities.
+        Missing API operations or fields usually come from the OpenAPI spec and reach the SDK through the daily spec sync; mention the endpoint if that is what you need.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to do, and what is hard or impossible today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API
+      description: How you would like to call it from C#.
+      render: csharp
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
