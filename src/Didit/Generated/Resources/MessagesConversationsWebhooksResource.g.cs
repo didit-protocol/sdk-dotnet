@@ -30,6 +30,8 @@ namespace Didit.Resources
         /// <para/>
         /// A scoped API key needs write access to messages. It also needs read access to sessions, and its workflow and approved-only session limits apply: a conversation outside them, or one whose session was deleted, answers 404 as another application's would.
         /// <para/>
+        /// The stored answer is replayed only while the conversation is inside your key's access: once the session was erased the key is refused with <c>409</c> <c>idempotency_key_forgotten</c>, and a repeat the access no longer reaches answers <c>404</c>. Send it again with a new key.
+        /// <para/>
         /// <c>POST /v3/messages/conversations/{conversation_id}/webhooks/</c> (<c>messages.conversations.webhooks.create</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
         /// </remarks>
@@ -50,6 +52,8 @@ namespace Didit.Resources
         /// Remove one of a conversation's webhook subscriptions: deliveries to its URL stop. Other subscriptions, and the conversation itself, are not touched.
         /// <para/>
         /// A scoped API key needs write access to messages. It also needs read access to sessions, and its workflow and approved-only session limits apply: a conversation outside them, or one whose session was deleted, answers 404 as another application's would.
+        /// <para/>
+        /// The stored answer is replayed only while the conversation is inside your key's access: once the session was erased the key is refused with <c>409</c> <c>idempotency_key_forgotten</c>, and a repeat the access no longer reaches answers <c>404</c>. Send it again with a new key.
         /// <para/>
         /// <c>DELETE /v3/messages/conversations/{conversation_id}/webhooks/{webhook_id}/</c> (<c>messages.conversations.webhooks.delete</c>).
         /// Accepts an idempotency key: set <see cref="RequestOptions.IdempotencyKey"/>.
