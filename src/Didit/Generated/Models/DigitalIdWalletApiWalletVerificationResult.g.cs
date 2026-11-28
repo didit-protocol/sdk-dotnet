@@ -43,7 +43,7 @@ namespace Didit
         public DigitalIdWalletApiWalletVerificationResultOutcomeEnum? Outcome { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;error&lt;/c&gt; field.
+        /// Stable machine-readable code when the sign-in did not complete. For UAE PASS, <c>client_changed</c> means the application's own UAE PASS client was disabled, deleted or replaced while the person was signing in: the sign-in fails and the workflow's fallback applies.
         /// </summary>
         [JsonPropertyName("error")]
         public string? Error { get; init; }
@@ -79,7 +79,7 @@ namespace Didit
         public DigitalIdWalletApiWalletIdentity? Identity { get; init; }
 
         /// <summary>
-        /// The &lt;c&gt;attributes&lt;/c&gt; field.
+        /// The attributes the wallet shared, keyed as the wallet's catalog entry lists them. A UAE PASS sign-in returns the verified identity attributes <c>name_ar</c>, <c>emirates_id_number</c> (absent for visitors), <c>nationality</c>, <c>gender</c>, <c>document_type</c>, <c>document_issue_date</c>, <c>document_expiry_date</c> and <c>user_type</c> (<c>SOP2</c> or <c>SOP3</c>), alongside the normalized <c>full_name</c> and <c>date_of_birth</c>, and never the UAE PASS UUID.
         /// </summary>
         [JsonPropertyName("attributes")]
         public JsonElement? Attributes { get; init; }
