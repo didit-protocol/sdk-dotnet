@@ -51,7 +51,7 @@ namespace Didit
         public SessionDecisionIdVerificationsIdLookup? IdLookup { get; init; }
 
         /// <summary>
-        /// Credential evidence. Present only when <c>verification_method</c> is <c>wallet</c>; <c>null</c> otherwise. UAE PASS (<c>provider</c> <c>uae_pass</c>) is outcome only: the identity fields of this ID verification (<c>full_name</c>, <c>first_name</c>, <c>last_name</c>, <c>date_of_birth</c>, <c>nationality</c>, the document numbers) stay <c>null</c>, <c>attributes</c> holds only whether each detail declared in <c>expected_details</c> matched, and nothing UAE PASS shared about the person is returned or kept.
+        /// Credential evidence. Present only when <c>verification_method</c> is <c>wallet</c>; <c>null</c> otherwise. A UAE PASS sign-in (<c>provider</c> <c>uae_pass</c>) returns the verified identity like every other wallet: the identity fields of this ID verification carry what UAE PASS verified, and <c>attributes</c> holds its extra attributes.
         /// </summary>
         [JsonPropertyName("wallet_verification")]
         public SessionDecisionIdVerificationsWalletVerification? WalletVerification { get; init; }

@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Didit
 {
     /// <summary>
-    /// Credential evidence. Present only when <c>verification_method</c> is <c>wallet</c>; <c>null</c> otherwise. UAE PASS (<c>provider</c> <c>uae_pass</c>) is outcome only: the identity fields of this ID verification (<c>full_name</c>, <c>first_name</c>, <c>last_name</c>, <c>date_of_birth</c>, <c>nationality</c>, the document numbers) stay <c>null</c>, <c>attributes</c> holds only whether each detail declared in <c>expected_details</c> matched, and nothing UAE PASS shared about the person is returned or kept.
+    /// Credential evidence. Present only when <c>verification_method</c> is <c>wallet</c>; <c>null</c> otherwise. A UAE PASS sign-in (<c>provider</c> <c>uae_pass</c>) returns the verified identity like every other wallet: the identity fields of this ID verification carry what UAE PASS verified, and <c>attributes</c> holds its extra attributes.
     /// </summary>
     public sealed record SessionDecisionIdVerificationsWalletVerification
     {
@@ -63,7 +63,7 @@ namespace Didit
         public bool? SignatureValid { get; init; }
 
         /// <summary>
-        /// The attributes the wallet shared, keyed as the wallet's catalog entry lists them. For UAE PASS only the comparison with <c>expected_details</c>, one key per declared detail, each <c>match</c> or <c>no_match</c>: <c>name_match</c> (<c>first_name</c> / <c>last_name</c>), <c>date_of_birth_match</c> and <c>identification_number_match</c> (the Emirates ID number). A declared detail that does not match also raises the expected-details warning (<c>FULL_NAME_MISMATCH_WITH_PROVIDED</c>, <c>DOB_MISMATCH_WITH_PROVIDED</c> or <c>IDENTIFICATION_NUMBER_MISMATCH_WITH_PROVIDED</c>), handled by the workflow's expected-details mismatch action.
+        /// The attributes the wallet shared, keyed as the wallet's catalog entry lists them. A UAE PASS sign-in returns the verified identity attributes <c>name_ar</c>, <c>emirates_id_number</c> (absent for visitors), <c>nationality</c>, <c>gender</c>, <c>document_type</c>, <c>document_issue_date</c>, <c>document_expiry_date</c> and <c>user_type</c> (<c>SOP2</c> or <c>SOP3</c>), alongside the normalized <c>full_name</c> and <c>date_of_birth</c>, and never the UAE PASS UUID. Declared <c>expected_details</c> stay optional: when a session declares them, a verified identity that contradicts them raises the expected-details warning (<c>FULL_NAME_MISMATCH_WITH_PROVIDED</c>, <c>DOB_MISMATCH_WITH_PROVIDED</c> or <c>IDENTIFICATION_NUMBER_MISMATCH_WITH_PROVIDED</c>), handled by the workflow's expected-details mismatch action.
         /// </summary>
         [JsonPropertyName("attributes")]
         public JsonElement? Attributes { get; init; }
