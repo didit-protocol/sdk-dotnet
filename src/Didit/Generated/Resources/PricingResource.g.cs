@@ -78,6 +78,28 @@ namespace Didit.Resources
         }
 
         /// <summary>
+        /// Get KYB registry prices by country (public, unauthenticated)
+        /// </summary>
+        /// <remarks>
+        /// Returns the list price of a KYB registry check in every country, for each data tier: Lite (<c>basic</c>), Shareholders (<c>shareholders</c>) and UBOs (<c>ubo</c>), plus continuous registry monitoring. Use it to quote a registry step before you build a workflow, or to show KYB prices in your own product.
+        /// <para/>
+        /// Public: send no auth header. The response contains no organization data and is the same for every caller. It is cached publicly for one hour and carries an <c>ETag</c>, so send <c>If-None-Match</c> to get a <c>304 Not Modified</c> when nothing changed.
+        /// <para/>
+        /// The response is an object keyed by country code: every ISO 3166-1 alpha-2 code, plus <c>XK</c> for Kosovo, which ISO 3166-1 does not assign. A tier with <c>available: false</c> cannot be selected for that country even though it shows a price. Monitoring is priced per company per year and reads <c>available: false</c> wherever it is not offered yet.
+        /// <para/>
+        /// A company that cannot be found and is entered manually is billed the flat manual entry price on the [KYB registry pricing](/getting-started/kyb-registry-pricing) page, which this feed does not list. These are list prices before your plan discount, which applies to the whole registry price; a negotiated or contract price replaces the list price for your organization.
+        /// <para/>
+        /// <c>GET /v3/organization/kyb-registry-pricing/</c> (<c>pricing.kyb_registry</c>).
+        /// </remarks>
+        /// <param name="requestOptions">Per-request overrides of the client options.</param>
+        /// <param name="cancellationToken">Cancels the request.</param>
+        public async Task<IReadOnlyDictionary<string, KYBRegistryCountryPricing>> KybRegistryAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var response = await _raw.KybRegistryAsync(requestOptions, cancellationToken).ConfigureAwait(false);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Get the price book (public, unauthenticated)
         /// </summary>
         /// <remarks>
@@ -153,6 +175,21 @@ namespace Didit.Resources
                 ApplicationScoped = false,
             };
             return _pipeline.SendJsonAsync<BankVerificationCoverage>(request, requestOptions, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get KYB registry prices by country (public, unauthenticated)
+        /// </summary>
+        /// <remarks>Raw-response variant of <see cref="PricingResource.KybRegistryAsync"/>.</remarks>
+        public Task<DiditResponse<IReadOnlyDictionary<string, KYBRegistryCountryPricing>>> KybRegistryAsync(RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var request = new ApiRequest(HttpMethods.Get, "/v3/organization/kyb-registry-pricing/")
+            {
+                Host = ApiHost.Verification,
+                Auth = AuthKind.None,
+                ApplicationScoped = false,
+            };
+            return _pipeline.SendJsonAsync<IReadOnlyDictionary<string, KYBRegistryCountryPricing>>(request, requestOptions, cancellationToken);
         }
 
         /// <summary>

@@ -106,6 +106,13 @@ namespace Didit
         public Optional<string> ColorPillText { get; set; }
 
         /// <summary>
+        /// Omit this field to keep the saved appearance.
+        /// </summary>
+        [JsonPropertyName("appearance")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public Optional<CustomizationUpdateParamsAppearance> Appearance { get; set; }
+
+        /// <summary>
         /// Panel corner radius in pixels.
         /// </summary>
         [JsonPropertyName("border_radius_panel")]

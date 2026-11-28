@@ -93,6 +93,12 @@ namespace Didit
         public string? ColorPillText { get; init; }
 
         /// <summary>
+        /// <c>brand</c> (default for new and existing customizations) uses your colors on every device. <c>match_device</c> uses your colors on light devices and a dark background with your branding on dark devices. <c>dark</c> uses the dark background with your branding on every device. Without custom colors, the default Didit look follows the device for all three values.
+        /// </summary>
+        [JsonPropertyName("appearance")]
+        public BrandingAppearance? Appearance { get; init; }
+
+        /// <summary>
         /// The &lt;c&gt;border_radius_panel&lt;/c&gt; field.
         /// </summary>
         [JsonPropertyName("border_radius_panel")]
